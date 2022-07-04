@@ -221,6 +221,7 @@ extension StereoCalibrationViewModel {
                     calibrationResultText = L10n.loveCalibrationKo
                     calibrationResultHidden = false
                     calibrationResultColor = ColorName.errorColor.color
+                    shouldHideProgressView = true
                     stopButtonHidden = true
                     finishedButtonHighlighted = false
                     missionStateHidden = true

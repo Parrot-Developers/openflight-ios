@@ -150,6 +150,8 @@ private extension FirmwareUpdatingViewController {
     /// - Parameters:
     ///    - firmwareGlobalUpdatingState: The gobal state of the processes.
     func handleFirmwareProcesses(firmwareGlobalUpdatingState: FirmwareGlobalUpdatingState) {
+        let progress = dataSource.currentTotalProgress
+
         switch firmwareGlobalUpdatingState {
         case .notInitialized:
             break
@@ -158,6 +160,7 @@ private extension FirmwareUpdatingViewController {
         case .downloading,
              .uploading:
             // Reload tableView only one time to avoid restarting little progress animation
+            dataSource = FirmwareUpdatingDataSource()
             if updateOngoing {
                 updateOngoing = false
                 reloadUI()
@@ -165,6 +168,7 @@ private extension FirmwareUpdatingViewController {
                 updateProgress()
             }
         case .processing:
+            dataSource = FirmwareUpdatingDataSource()
             if isProcessCancelable {
                 isProcessCancelable = false
                 cancelButton.isHidden = true
@@ -174,15 +178,18 @@ private extension FirmwareUpdatingViewController {
             }
         case .waitingForReboot:
             // After the reboot, a connection with the drone must be established to finish the processes
+            dataSource = FirmwareUpdatingDataSource(withProgress: progress)
             reloadUI()
             waitForReboot()
         case .success:
             // After the reboot and the new connection of the drone, this instruction may be triggered.
+            dataSource = FirmwareUpdatingDataSource()
             reloadUI()
             displaySuccessUI()
         case .error:
             // This instruction may be triggered during the process or after the new connection of the drone following
             // a reboot.
+            dataSource = FirmwareUpdatingDataSource(withProgress: progress)
             reloadUI()
             displayErrorUI()
 
@@ -291,14 +298,12 @@ private extension FirmwareUpdatingViewController {
 
     /// Reloads the whole UI.
     func reloadUI() {
-        dataSource = FirmwareUpdatingDataSource()
         progressView.update(currentProgress: dataSource.currentTotalProgress)
         tableView.reloadData()
     }
 
     /// Updates the progress view.
     func updateProgress() {
-        dataSource = FirmwareUpdatingDataSource()
         progressView.update(currentProgress: dataSource.currentTotalProgress)
     }
 
@@ -317,7 +322,7 @@ private extension FirmwareUpdatingViewController {
     func displayErrorUI() {
         continueView.setup(delegate: self, state: .error)
         reportView.setup(with: .error)
-        progressView.setFakeSuccessOrErrorProgress()
+        progressView.update(currentProgress: dataSource.currentTotalProgress)
         cancelButton.isHidden = true
     }
 

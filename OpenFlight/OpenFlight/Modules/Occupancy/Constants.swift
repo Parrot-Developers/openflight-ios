@@ -31,9 +31,9 @@ import Foundation
 import SceneKit
 
 public enum Occupancy {
-    public static let width = Int32(100)
-    public static let height = Int32(30)
-    public static let depth = Int32(100)
+    public static let width = Int32(64)
+    public static let height = Int32(32)
+    public static let depth = Int32(64)
 
     public static let droneScene = "Parrot-Anafi.scn"
     public static let droneScale = SCNVector3(0.00342857, 0.00342857, 0.00342857) // SCNVector3(0.0055, 0.0055, 0.0055)
@@ -42,7 +42,7 @@ public enum Occupancy {
 
     public static let voxelGeometry = SCNBox(width: 0.94, height: 0.94, length: 0.94, chamferRadius: 0)
     public static let voxelColor = UIColor.init(red: 25/255, green: 168/255, blue: 126/255, alpha: 1)
-    public static let voxelRealSize = Float(0.3)
+    public static let voxelRealSize = Float(0.4)
 
     public enum Storage {
         public static let maxDropFrameForUpdate = 4
@@ -56,11 +56,12 @@ public enum Occupancy {
 
     // Trajectory Beam
     public static let beamAnchor = simd_float3(0, 0, 0)
-    public static let framesUsedForSpeed = 30
-    public static let framesUsedForRotation = 30
+    public static let framesPerSec = 30
+    public static let framesUsedForSpeed = 60
+    public static let framesUsedForRotation = 60
     public static let maxBeamSegments = 8
-    public static let minBeamSpeedDisplay = Float(0.3)
-    public static let beamSpacingCoef = Float(2) // increase the value to increase the space between two arrows
+    public static let minBeamSpeedDisplay = Float(0.4)
+    public static let beamSpacingCoef = Float(1) // increase the value to increase the space between two arrows
     public static let beamMinDistanceBetweenRings = Float(1)
     public static let beamGlobalOpacity = CGFloat(0.65)
     public static let dangerColor = UIColor(red: 255 / 255, green: 0 / 255, blue: 0 / 255, alpha: 1)
@@ -68,6 +69,8 @@ public enum Occupancy {
     public static let safeColor = UIColor(red: 255 / 255, green: 220 / 255, blue: 2 / 255, alpha: 1) // UIColor.yellow
     public static let dangerVoxelGeometry = SCNBox(width: 0.98, height: 0.98, length: 0.98, chamferRadius: 0)
 
+    // Camera Target -
+    public static let targetSpacingCoef = Float(1)
     // refresh rate for beam
     public static let beamRefreshRate = Double(15)
     // refresh rate for Following Camera

@@ -61,10 +61,5 @@ private extension LegacyCurrentDroneStore {
         if !drone.isUpdating {
             drone.getPeripheral(Peripherals.streamServer)?.enabled = true
         }
-
-        if let flightCameraRecorder = drone.getPeripheral(Peripherals.flightCameraRecorder) {
-            // Id 0xffffffffffffffff to active all FCR pipelines.
-            flightCameraRecorder.pipelines.id = UInt64.max
-        }
     }
 }

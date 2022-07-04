@@ -326,9 +326,13 @@ public enum Asset {
       public static let icDroneLowBattery = ImageAsset(name: "icDroneLowBattery")
       public static let icDroneRemoteUpdateAlert = ImageAsset(name: "icDroneRemoteUpdateAlert")
       public static let icDroneSensorAlert = ImageAsset(name: "icDroneSensorAlert")
+      public static let icDroneTooFar = ImageAsset(name: "icDroneTooFar")
       public static let icDroneUSB = ImageAsset(name: "icDroneUSB")
       public static let icDroneUpdateAlert = ImageAsset(name: "icDroneUpdateAlert")
       public static let icDroneUpdating = ImageAsset(name: "icDroneUpdating")
+      public static let icGpsDroneKoRemoteKo = ImageAsset(name: "icGpsDroneKoRemoteKo")
+      public static let icGpsDroneKoRemoteOk = ImageAsset(name: "icGpsDroneKoRemoteOk")
+      public static let icGpsDroneOkRemoteKo = ImageAsset(name: "icGpsDroneOkRemoteKo")
       public static let icHighTemperatureAlert = ImageAsset(name: "icHighTemperatureAlert")
       public static let icLowTemperatureAlert = ImageAsset(name: "icLowTemperatureAlert")
       public static let icModemInitializing = ImageAsset(name: "icModemInitializing")
@@ -340,9 +344,13 @@ public enum Asset {
         icDroneLowBattery,
         icDroneRemoteUpdateAlert,
         icDroneSensorAlert,
+        icDroneTooFar,
         icDroneUSB,
         icDroneUpdateAlert,
         icDroneUpdating,
+        icGpsDroneKoRemoteKo,
+        icGpsDroneKoRemoteOk,
+        icGpsDroneOkRemoteKo,
         icHighTemperatureAlert,
         icLowTemperatureAlert,
         icModemInitializing,
@@ -480,8 +488,6 @@ public enum Asset {
   }
   public enum Cellular {
 
-    public static let ic4GBigConnected = ImageAsset(name: "ic4GBigConnected")
-    public static let ic4GBigConnecting = ImageAsset(name: "ic4GBigConnecting")
     public static let ic4GDeactivated = ImageAsset(name: "ic4GDeactivated")
     public static let ic4GOffline = ImageAsset(name: "ic4GOffline")
     public static let ic4GQuality0 = ImageAsset(name: "ic4GQuality0")
@@ -492,8 +498,6 @@ public enum Asset {
     public static let ic4GQuality5 = ImageAsset(name: "ic4GQuality5")
     public static let ic4GQuality5Highlighted = ImageAsset(name: "ic4GQuality5Highlighted")
     public static let allValues: [ImageAsset] = [
-      ic4GBigConnected,
-      ic4GBigConnecting,
       ic4GDeactivated,
       ic4GOffline,
       ic4GQuality0,
@@ -784,7 +788,6 @@ public enum Asset {
     public static let icPhoto = ImageAsset(name: "icPhoto")
     public static let icPhotoMini = ImageAsset(name: "icPhotoMini")
     public static let icRemoteAlertShutdown = ImageAsset(name: "icRemoteAlertShutdown")
-    public static let icSkywardDashboard = ImageAsset(name: "icSkywardDashboard")
     public static let icTimePassedMini = ImageAsset(name: "icTimePassedMini")
     public static let icTotalDistance = ImageAsset(name: "icTotalDistance")
     public static let icVideoMini = ImageAsset(name: "icVideoMini")
@@ -804,7 +807,6 @@ public enum Asset {
       icPhoto,
       icPhotoMini,
       icRemoteAlertShutdown,
-      icSkywardDashboard,
       icTimePassedMini,
       icTotalDistance,
       icVideoMini,
@@ -1080,6 +1082,7 @@ public enum Asset {
     public static let centerOnUser = ImageAsset(name: "centerOnUser")
     public static let mapDrone = ImageAsset(name: "mapDrone")
     public static let mapDroneDisconnected = ImageAsset(name: "mapDroneDisconnected")
+    public static let poiBlackAndWhite = ImageAsset(name: "poi_black_and_white")
     public static let poiBlue = ImageAsset(name: "poi_blue")
     public static let poiGreen = ImageAsset(name: "poi_green")
     public static let poiLightBlue = ImageAsset(name: "poi_light_blue")
@@ -1094,6 +1097,7 @@ public enum Asset {
       centerOnUser,
       mapDrone,
       mapDroneDisconnected,
+      poiBlackAndWhite,
       poiBlue,
       poiGreen,
       poiLightBlue,
@@ -1502,12 +1506,23 @@ public enum Asset {
     public static let icAltitude = ImageAsset(name: "icAltitude")
     public static let icDistance = ImageAsset(name: "icDistance")
     public static let icDroneRadar = ImageAsset(name: "icDroneRadar")
+    public static let icGeofence = ImageAsset(name: "icGeofence")
     public static let icSpeed = ImageAsset(name: "icSpeed")
     public static let allValues: [ImageAsset] = [
       icAltitude,
       icDistance,
       icDroneRadar,
+      icGeofence,
       icSpeed,
+    ]
+  }
+  public enum TouchAndFly {
+
+    public static let touchAndFlyPoi = ImageAsset(name: "touch_and_fly_poi")
+    public static let touchAndFlyWaypoint = ImageAsset(name: "touch_and_fly_waypoint")
+    public static let allValues: [ImageAsset] = [
+      touchAndFlyPoi,
+      touchAndFlyWaypoint,
     ]
   }
   public enum Wifi {

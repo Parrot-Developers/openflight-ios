@@ -29,6 +29,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Delegate protocol for `SettingsCellularDataCell`.
 protocol SettingsCellularDataDelegate: AnyObject {
@@ -60,7 +61,8 @@ final class SettingsCellularDataCell: MainTableViewCell, NibReusable {
     weak var delegate: SettingsCellularDataDelegate?
 
     // MARK: - Private Properties
-    private let viewModel = SettingsCellularDataViewModel()
+    private let viewModel = SettingsCellularDataViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
+    private var cancellables = Set<AnyCancellable>()
     private var cellularAccessSegment: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
     private var connectionNetworkModeSegment: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
     private var connectionNetworkSelectionSegment: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
@@ -107,20 +109,54 @@ private extension SettingsCellularDataCell {
 
     /// Inits the view model.
     func initViewModel() {
-        viewModel.state.valueChanged = { [weak self] _ in
-            self?.delegate?.cellularDataDidChange()
-            self?.updateView()
-        }
-        updateView()
+        viewModel.cellularAccessEntryPublisher
+            .combineLatest(viewModel.connectionNetworkModeEntryPublisher,
+                           viewModel.connectionNetworkSelectionEntryPublisher)
+            .sink { [weak self] (cellularAccessEntry, connectionNetworkModeEntry, connectionNetworkSelectionEntry) in
+                guard let self = self else { return }
+                self.delegate?.cellularDataDidChange()
+                self.updateView(cellularAccessEntry: cellularAccessEntry,
+                                connectionNetworkModeEntry: connectionNetworkModeEntry,
+                                connectionNetworkSelectionEntry: connectionNetworkSelectionEntry)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$cellularNetworkUrl.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.accessNameTextField.text = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$cellularNetworkUsername.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.usernameTextField.text = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$cellularNetworkPassword.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.passwordTextField.text = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$cellularSelectionMode.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.networkSelectionStackView.isHidden = $0 == .auto
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates the view when cellular data is off and when a sim card is inserted.
-    func updateView() {
+    func updateView(cellularAccessEntry: SettingEntry?, connectionNetworkModeEntry: SettingEntry?, connectionNetworkSelectionEntry: SettingEntry?) {
         // Adds/removes cell segments if cellular data access is activated/desactivated
         cellularAccessAndNetworkModeStackView.removeSubViews()
-        configureCellularAccessCell()
-        configureConnectionNetworkModeCell()
-        configureConnectionNetworkSelectionCell()
+        configureCellularAccessCell(cellularAccessEntry: cellularAccessEntry)
+        configureConnectionNetworkModeCell(connectionNetworkModeEntry: connectionNetworkModeEntry)
+        configureConnectionNetworkSelectionCell(connectionNetworkSelectionEntry: connectionNetworkSelectionEntry)
         cellularAccessAndNetworkModeStackView.addArrangedSubview(cellularAccessSegment.contentView)
         cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkModeSegment.contentView)
         cellularAccessAndNetworkModeStackView.addArrangedSubview(connectionNetworkSelectionSegment.contentView)
@@ -128,8 +164,8 @@ private extension SettingsCellularDataCell {
     }
 
     /// Configures the cellular segment.
-    func configureCellularAccessCell() {
-        let settingCellularAccessEntry = viewModel.cellularAccessEntry
+    func configureCellularAccessCell(cellularAccessEntry: SettingEntry?) {
+        guard let settingCellularAccessEntry = cellularAccessEntry else { return }
 
         if let settingCellularAccessSegment: SettingsSegmentModel = settingCellularAccessEntry.segmentModel {
             cellularAccessSegment.configureCell(cellTitle: settingCellularAccessEntry.title,
@@ -144,9 +180,8 @@ private extension SettingsCellularDataCell {
     }
 
     /// Configures the network mode segment.
-    func configureConnectionNetworkModeCell() {
-        let settingConnectionNetworkModeEntry = viewModel.connectionNetworkModeEntry
-
+    func configureConnectionNetworkModeCell(connectionNetworkModeEntry: SettingEntry?) {
+        guard let settingConnectionNetworkModeEntry = connectionNetworkModeEntry else { return }
         if let settingConnectionNetworkModeSegment: SettingsSegmentModel = settingConnectionNetworkModeEntry.segmentModel {
             connectionNetworkModeSegment.configureCell(cellTitle: settingConnectionNetworkModeEntry.title,
                                                        segmentModel: settingConnectionNetworkModeSegment,
@@ -160,8 +195,8 @@ private extension SettingsCellularDataCell {
     }
 
     /// Configures the network selection segment.
-    func configureConnectionNetworkSelectionCell() {
-        let settingConnectionNetworkSelectionEntry = viewModel.connectionNetworkSelectionEntry
+    func configureConnectionNetworkSelectionCell(connectionNetworkSelectionEntry: SettingEntry?) {
+        guard let settingConnectionNetworkSelectionEntry = connectionNetworkSelectionEntry else { return }
 
         if let settingConnectionNetworkSelectionSegment: SettingsSegmentModel = settingConnectionNetworkSelectionEntry.segmentModel {
             connectionNetworkSelectionSegment.configureCell(cellTitle: settingConnectionNetworkSelectionEntry.title,
@@ -175,23 +210,19 @@ private extension SettingsCellularDataCell {
         }
 
         // updates network selection view
-        accessNameTextField.text = viewModel.state.value.cellularNetworkUrl
         accessNameTextField.isEnabled = settingConnectionNetworkSelectionEntry.isEnabled
         accessNameTextField.alphaWithEnabledState(settingConnectionNetworkSelectionEntry.isEnabled)
-        usernameTextField.text = viewModel.state.value.cellularNetworkUsername
         usernameTextField.isEnabled = settingConnectionNetworkSelectionEntry.isEnabled
         usernameTextField.alphaWithEnabledState(settingConnectionNetworkSelectionEntry.isEnabled)
-        passwordTextField.text = viewModel.state.value.cellularNetworkPassword
         passwordTextField.isEnabled = settingConnectionNetworkSelectionEntry.isEnabled
         passwordTextField.alphaWithEnabledState(settingConnectionNetworkSelectionEntry.isEnabled)
-        networkSelectionStackView.isHidden = viewModel.state.value.cellularSelectionMode == .auto
     }
 
     /// Update values when the keyboard will hide.
     @objc func keyboardWillHide(sender: NSNotification) {
         viewModel.updateAllManualValues(url: accessNameTextField.text ?? "",
-                                              username: usernameTextField.text ?? "",
-                                              password: passwordTextField.text ?? "")
+                                        username: usernameTextField.text ?? "",
+                                        password: passwordTextField.text ?? "")
     }
 }
 
@@ -223,11 +254,11 @@ extension SettingsCellularDataCell: SettingsSegmentedCellDelegate {
     func settingsSegmentedCellDidChange(selectedSegmentIndex: Int, atIndexPath indexPath: IndexPath) {
         switch indexPath.row {
         case 0:
-            viewModel.cellularAccessEntry.save(at: selectedSegmentIndex)
+            viewModel.cellularAccessEntryPublisher.value?.save(at: selectedSegmentIndex)
         case 1:
-            viewModel.connectionNetworkModeEntry.save(at: selectedSegmentIndex)
+            viewModel.connectionNetworkModeEntryPublisher.value?.save(at: selectedSegmentIndex)
         case 2:
-            viewModel.connectionNetworkSelectionEntry.save(at: selectedSegmentIndex)
+            viewModel.connectionNetworkSelectionEntryPublisher.value?.save(at: selectedSegmentIndex)
         default:
             break
         }

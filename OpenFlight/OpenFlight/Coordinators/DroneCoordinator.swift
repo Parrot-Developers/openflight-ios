@@ -43,7 +43,15 @@ public final class DroneCoordinator: Coordinator {
     // MARK: - Public Funcs
     /// Starts drone coordinator.
     public func start() {
-        let viewController = DroneDetailsViewController.instantiate(coordinator: self)
+        let buttonsViewController = DroneDetailsButtonsViewController.instantiate(coordinator: self)
+        let deviceViewController = DroneDetailsDeviceViewController.instantiate(coordinator: self)
+        let viewModel = DroneDetailsInformationsViewModel(currentDroneHolder: services.currentDroneHolder, connectedDroneHolder: services.connectedDroneHolder)
+        let informationViewController = DroneDetailsInformationsViewController.instantiate(viewModel: viewModel)
+        let viewController = DroneDetailsViewController.instantiate(coordinator: self,
+                                                                    deviceViewController: deviceViewController,
+                                                                    informationViewController: informationViewController,
+                                                                    buttonsViewController: buttonsViewController)
+
         viewController.modalPresentationStyle = .fullScreen
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
@@ -123,13 +131,10 @@ extension DroneCoordinator {
         popToRootCoordinator(coordinator: parentCoordinator)
     }
 
-    /// Displays drone password edition setting.
-    func displayDronePasswordEdition() {
-        let viewModel = SettingsNetworkViewModel()
-        let viewController = SettingsPasswordEditionViewController.instantiate(
-            coordinator: self,
-            viewModel: viewModel,
-            orientation: .all)
+    /// Displays the battery info view
+    func displayBatteryInfos() {
+        let viewModel = DroneDetailsBatteryViewModel(coordinator: self, connectedDroneHolder: services.connectedDroneHolder)
+        let viewController = DroneDetailsBatteryViewController.instantiate(viewModel: viewModel)
         presentModal(viewController: viewController)
     }
 

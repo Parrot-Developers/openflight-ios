@@ -32,18 +32,8 @@ import CoreLocation
 import GroundSdk
 import ArcGIS
 
-/// Class representing a Flight Plan waypoint.
-public final class WayPoint: Codable, Equatable {
-    public static func == (lhs: WayPoint, rhs: WayPoint) -> Bool {
-        return lhs.altitude == rhs.altitude
-            && lhs.yaw == rhs.yaw
-            && lhs.hasCustomYaw == rhs.hasCustomYaw
-            && lhs.speed == rhs.speed
-            && lhs.shouldContinue == rhs.shouldContinue
-            && lhs.shouldFollowPOI == rhs.shouldFollowPOI
-            && lhs.poiIndex == rhs.poiIndex
-            && lhs.actions == rhs.actions
-    }
+/// A Flight Plan waypoint.
+public final class WayPoint: Codable {
 
     // MARK: - Public Properties
     var altitude: Double
@@ -57,17 +47,12 @@ public final class WayPoint: Codable, Equatable {
 
     var tilt: Double {
         get {
-            return self.actions?
-                .first(where: { $0.type == .tilt })?.angle ?? 0.0
+            actions?.first(where: { $0.type == .tilt })?.angle ?? 0.0
         }
         set {
-            if let tiltAction = self.actions?.first(where: { $0.type == .tilt }) {
-                tiltAction.angle = newValue
-            } else {
-                let tiltAction = Action(type: .tilt)
-                tiltAction.angle = newValue
-                self.addAction(tiltAction)
-            }
+            actions?.removeAll { $0.type == .tilt }
+            let tiltAction = Action(type: .tilt, angle: newValue)
+            addAction(tiltAction)
         }
     }
 
@@ -222,6 +207,9 @@ public final class WayPoint: Codable, Equatable {
         // This value is not stored to prevent from serialisation issue.
         if !navigateToWaypointCommand.yaw.isNaN {
             yaw = navigateToWaypointCommand.yaw
+            hasCustomYaw = true
+        } else {
+            hasCustomYaw = false
         }
         speed = 0
         shouldContinue = false
@@ -377,5 +365,27 @@ extension WayPoint {
         self.poiPoint = nil
         self.updateYaw()
         self.clearTiltRelation()
+    }
+}
+
+/// Extension for Equatable conformance.
+extension WayPoint: Equatable {
+    public static func == (lhs: WayPoint, rhs: WayPoint) -> Bool {
+        lhs.coordinate == rhs.coordinate
+        && lhs.altitude == rhs.altitude
+        && lhs.yaw == rhs.yaw
+        && lhs.hasCustomYaw == rhs.hasCustomYaw
+        && lhs.speed == rhs.speed
+        && lhs.shouldContinue == rhs.shouldContinue
+        && lhs.shouldFollowPOI == rhs.shouldFollowPOI
+        && lhs.poiIndex == rhs.poiIndex
+        && lhs.actions == rhs.actions
+    }
+}
+
+/// Extension for debug description.
+extension WayPoint: CustomStringConvertible {
+    public var description: String {
+        "\(latitude) \(longitude) \(altitude)"
     }
 }

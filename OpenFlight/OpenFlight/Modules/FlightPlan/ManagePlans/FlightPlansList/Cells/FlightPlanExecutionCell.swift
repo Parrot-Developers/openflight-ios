@@ -64,13 +64,16 @@ final class FlightPlanExecutionCell: MainTableViewCell, NibReusable {
             color = ColorName.white.color
         }
         cellBackgroundView.backgroundColor = color
+        cellBackgroundView.directionalLayoutMargins = Layout.fileNavigationBarInnerMargins(isRegularSizeClass)
     }
 
     override func awakeFromNib() {
         super.awakeFromNib()
 
         contentView.backgroundColor = .clear
+        contentView.clipsToBounds = false
         cellBackgroundView.backgroundColor = ColorName.white.color
+        cellBackgroundView.addShadow()
 
         titleLabel.makeUp(with: .large, and: .defaultTextColor)
         dateLabel.makeUp(with: .large, and: .disabledTextColor)
@@ -88,14 +91,19 @@ final class FlightPlanExecutionCell: MainTableViewCell, NibReusable {
         extraIcon.isHidden = true
     }
 
-    func fill(execution: FlightPlanModel) {
-        titleLabel.text = execution.customTitle
+    /// Fills cell with execution details (use `customTitle` parameter content instead of
+    /// actual execution title if provided).
+    ///
+    /// - Parameters:
+    ///    - execution: the execution model
+    ///    - customTitle: the title to use instead of `execution.customTitle` (if not `nil`).
+    func fill(execution: FlightPlanModel, customTitle: String? = nil) {
+        titleLabel.text = customTitle ?? execution.customTitle
         // TODO: Inject correclty after a refactor.
         dateLabel.text = Services.hub
             .flightPlan
             .manager
-            .firstFlightFormattedDate(of: execution,
-                                      isShort: false)
+            .firstFlightFormattedDate(of: execution)
 
         Services.hub.ui.flightPlanUiStateProvider.uiStatePublisher(for: execution)
             .sink { [unowned self] stateUiParameters in

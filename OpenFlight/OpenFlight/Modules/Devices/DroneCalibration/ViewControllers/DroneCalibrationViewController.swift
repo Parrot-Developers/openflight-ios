@@ -67,6 +67,7 @@ final class DroneCalibrationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         listenFirmwareUpdate()
+        listenOphtalmoMission()
         initUI()
         setupViewModels()
         bindViewModel()
@@ -281,5 +282,19 @@ private extension DroneCalibrationViewController {
             .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
                 self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
             }
+    }
+
+    func listenOphtalmoMission() {
+        Services.hub.drone.ophtalmoService.ophtalmoMissionStatePublisher
+            .sink { [unowned self] in
+                guard let coordinator = coordinator else { return }
+                if $0 == .active {
+                    // check if viewIsDisplayed
+                    if (coordinator.childCoordinators.last as? OphtalmoCoordinator) == nil {
+                        coordinator.presentCoordinatorWithAnimator(childCoordinator: OphtalmoCoordinator(services: Services.hub))
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 }

@@ -36,12 +36,8 @@ public extension FlightModel {
         CLLocation(latitude: startLatitude, longitude: startLongitude)
     }
 
-    var formattedDate: String? {
-        startTime?.formattedString(dateStyle: .full, timeStyle: .short)
-    }
-
     var shortFormattedDate: String? {
-        startTime?.formattedString(dateStyle: .medium, timeStyle: .short)
+        startTime?.commonFormattedString
     }
 
     var formattedDuration: String {

@@ -53,9 +53,6 @@ final class GallerySelectionView: UIView, NibOwnerLoadable {
     // MARK: - Internal Properties
     weak var delegate: GallerySelectionDelegate?
 
-    // MARK: - Private Properties
-    private var isDownloadAllowed: Bool = true
-
     // MARK: - Override Funcs
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)

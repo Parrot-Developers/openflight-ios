@@ -233,6 +233,7 @@ private extension FlightPlanEditionMenuViewController {
         doneButton.setup(title: L10n.commonDone, style: .validate)
 
         buttonsStackView.screenBorders = [.bottom, .right]
+        topbar?.set(projectTitle: flightPlan?.customTitle)
         if !dataSource.isEmpty {
             let type = dataSource[0]
             topbar?.set(title: type.title)
@@ -272,7 +273,7 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
             if let categorizedSettings = fpSettings?.filter({ $0.category == category }) {
                 let setting = categorizedSettings[indexPath.row]
                 let showArrow = indexPath.row == (categorizedSettings.count / 2)
-                cell.setup(setting: setting, showArrow: showArrow)
+                cell.setup(setting: setting, arrowVisibility: showArrow ? .visible : .invisible)
             }
             return cell
         case .image:

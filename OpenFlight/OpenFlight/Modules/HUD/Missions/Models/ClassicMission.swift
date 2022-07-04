@@ -42,13 +42,14 @@ struct ClassicMission: MissionProvider {
                                                         name: L10n.missionModeManual,
                                                         icon: Asset.MissionModes.icClassicMissionMode.image,
                                                         logName: LogEvent.LogKeyHUDMissionProviderSelectorButton.manual,
-                                                        preferredSplitMode: .splited,
+                                                        preferredSplitMode: .split,
                                                         isMapRequired: false,
                                                         isRightPanelRequired: false,
                                                         isTrackingMode: false,
                                                         isAeLockEnabled: true,
                                                         isInstallationRequired: true,
-                                                        isCameraShutterButtonEnabled: true)
+                                                        isCameraShutterButtonEnabled: true,
+                                                        isTargetOnStream: false)
     static var manualMode = MissionMode(configurator: manualModeConf,
                                         bottomBarLeftStack: { () -> [UIView] in
                                             return [BehaviourModeView()]

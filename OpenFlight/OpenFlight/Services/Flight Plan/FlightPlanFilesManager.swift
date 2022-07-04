@@ -41,7 +41,7 @@ public protocol FlightPlanFilesManager {
 
     /// Writes mavlink file to FP's default URL if any
     /// - Parameter flightPlan: flight plan
-    func writeFile(of flightPlan: FlightPlanModel)
+    func writeFile(of flightPlan: FlightPlanModel) throws
 
     /// Delete the mavlink file of the FP if it exists
     /// - Parameter flightPlan: flight plan
@@ -100,18 +100,12 @@ extension FlightPlanFilesManagerImpl: FlightPlanFilesManager {
         url?.pathExtension == Constants.mavlinkExtension
     }
 
-    public func writeFile(of flightPlan: FlightPlanModel) {
+    public func writeFile(of flightPlan: FlightPlanModel) throws {
         let destination = defaultUrl(flightPlan: flightPlan)
-        do {
-            if FileManager.default.fileExists(atPath: destination.path) {
-                try FileManager.default.removeItem(at: destination)
-            }
-            try flightPlan.dataSetting?.mavlinkDataFile?.write(to: destination)
-        } catch {
-            ULog.e(.tag,
-                   "Could not write mavlink file to intended destination: "
-                    + error.localizedDescription)
+        if FileManager.default.fileExists(atPath: destination.path) {
+            try FileManager.default.removeItem(at: destination)
         }
+        try flightPlan.dataSetting?.mavlinkDataFile?.write(to: destination)
     }
 
     public func deleteMavlink(of flightPlan: FlightPlanModel) {

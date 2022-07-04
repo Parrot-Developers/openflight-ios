@@ -61,7 +61,6 @@ final class ProjectsListViewController: UIViewController {
 
                 self.collectionView?.reloadData()
                 self.emptyLabelStack.isHidden = !projects.isEmpty
-                self.scrollToSelectedProject()
             }
             .store(in: &cancellables)
 
@@ -89,9 +88,9 @@ final class ProjectsListViewController: UIViewController {
         collectionView.addDoubleTapRecognizer(target: self, action: #selector(didDoubleTap))
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        collectionView.reloadData()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        scrollToSelectedProject()
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -100,6 +99,7 @@ final class ProjectsListViewController: UIViewController {
 
     func scrollToSelectedProject() {
         if let index = viewModel.getSelectedProjectIndex() {
+            collectionView.reloadData()
             collectionView.scrollToItem(at: IndexPath(row: index, section: 0),
                                               at: .centeredVertically,
                                               animated: false)
@@ -115,11 +115,16 @@ extension ProjectsListViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as ProjectCell
+        guard indexPath.row < viewModel.filteredProjects.count else { return cell }
+
         let project = viewModel.filteredProjects[indexPath.row]
         let projectCellModel = ProjectCellModel(project: project,
                                                 isSelected: viewModel.isProjectSelected(project),
                                                 projectManager: viewModel.manager)
         cell.configureCell(viewModel: projectCellModel)
+
+        viewModel.shouldGetMoreProjects(fromIndexPath: indexPath)
+
         return cell
     }
 }
@@ -128,7 +133,7 @@ extension ProjectsListViewController: UICollectionViewDataSource {
 extension ProjectsListViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let project = viewModel.filteredProjects[indexPath.row]
-        viewModel.isProjectSelected(project) ? viewModel.didDeselectProject() : viewModel.didSelect(project: project)
+        viewModel.isProjectSelected(project) ? viewModel.removeSelectedProject() : viewModel.selectProject(forIndexPath: indexPath)
     }
 }
 
@@ -147,8 +152,8 @@ extension ProjectsListViewController {
     ///    - sender: The double tap gesture recognizer.
     @objc func didDoubleTap(_ sender: UIGestureRecognizer) {
         // Get cell's index.
-        guard let index = collectionView.indexPathForItem(at: sender.location(in: collectionView))?.item else { return }
+        guard let indexPath = collectionView.indexPathForItem(at: sender.location(in: collectionView)) else { return }
         // Update VM with double tap event.
-        viewModel.didDoubleTap(project: viewModel.filteredProjects[index])
+        viewModel.selectProjectByDoubleTap(forIndexPath: indexPath)
     }
 }

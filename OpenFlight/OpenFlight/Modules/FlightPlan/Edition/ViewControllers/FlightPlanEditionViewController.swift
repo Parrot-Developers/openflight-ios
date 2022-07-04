@@ -104,14 +104,16 @@ public class FlightPlanEditionViewController: UIViewController {
                 case .showItemEdition:
                     showItemEdition()
                 case .updateConstraint:
-                    UIView.animate(withDuration: Style.shortAnimationDuration) {
-                        settingsLeadConstraint.constant = editionSettingsContainer.frame.width
-                        view.layoutIfNeeded()
+                    UIView.animate(withDuration: Style.shortAnimationDuration) { [weak self] in
+                        guard let self = self else { return }
+                        self.settingsLeadConstraint.constant = self.editionSettingsContainer.frame.width
+                        self.view.layoutIfNeeded()
                     }
                 case .settingsLeadConstraint:
-                    UIView.animate(withDuration: Style.shortAnimationDuration) {
-                        settingsLeadConstraint.constant = 0.0
-                        view.layoutIfNeeded()
+                    UIView.animate(withDuration: Style.shortAnimationDuration) { [weak self] in
+                        guard let self = self else { return }
+                        self.settingsLeadConstraint.constant = 0.0
+                        self.view.layoutIfNeeded()
                     }
                 }
             }
@@ -119,7 +121,16 @@ public class FlightPlanEditionViewController: UIViewController {
 
         // Listen to back button publisher.
         backButtonPublisher?.sink { [weak self] in
-            self?.reset()
+            guard let self = self else { return }
+            if let viewState = self.viewModel.viewState,
+               viewState != .settingsLeadConstraint {
+                // Edition view state differs from main panel.
+                // => Close setting.
+                self.closeSettings()
+            } else {
+                // Main panel => quit edition mode.
+                self.reset()
+            }
         }
         .store(in: &cancellables)
     }
@@ -192,8 +203,8 @@ public class FlightPlanEditionViewController: UIViewController {
     }
 
     private func reset() {
-        // The block called when the editing mode is leaved.
-        let leaveEditingMode = { [weak self] in
+        // The block called when the editing mode is leaved without saving.
+        let leaveWhitoutSave = { [weak self] in
             guard let self = self else { return }
             // Restore the previous Flight Plan settings.
             self.viewModel.reset()
@@ -204,14 +215,20 @@ public class FlightPlanEditionViewController: UIViewController {
         // Check if FP has been edited.
         guard viewModel.hasChanges else {
             // No change made, just leave the editing mode.
-            leaveEditingMode()
+            leaveWhitoutSave()
             return
         }
 
+        let saveChanges = { [weak self] in
+            guard let self = self else { return }
+            self.viewModel.endEdition()
+            self.exitEdition()
+        }
+
         // User attempts to leave the view with pending changes.
-        // A confirmation popup is shown informing about modification lost.
-        // If user confirms is choice, the completion is called and editing mode is leaved.
-        panelCoordinator?.resetPopupConfirmation { leaveEditingMode() }
+        // A confirmation popup is shown asking to save or abort modification.
+        // When the user confirms is choice, the corresponding completion is called and editing mode is leaved.
+        panelCoordinator?.saveChangesPopup(cancel: leaveWhitoutSave, validate: saveChanges)
     }
 }
 
@@ -283,6 +300,10 @@ extension FlightPlanEditionViewController: EditionSettingsDelegate {
 
     public func updateSettingValue(for key: String?, value: Int) {
         viewModel.updateSettingValue(for: key, value: value)
+    }
+
+    public func isUpdatingSetting(for key: String?, isUpdating: Bool) {
+        // nothing to do
     }
 
     public func didTapCloseButton() {

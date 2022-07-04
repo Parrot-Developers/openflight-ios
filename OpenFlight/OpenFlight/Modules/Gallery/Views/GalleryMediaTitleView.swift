@@ -101,7 +101,7 @@ private extension GalleryMediaTitleView {
     ///    - model: model for the view.
     func update(with model: GalleryMedia?) {
         imageView.image = model?.type.filterImage
-        titleLabel.text = model?.displayTitle
+        titleLabel.text = model?.title
         model?.mainMediaItem?.locationDetail { [weak self] locationDetail in
             self?.subtitleLabel.text = locationDetail
 

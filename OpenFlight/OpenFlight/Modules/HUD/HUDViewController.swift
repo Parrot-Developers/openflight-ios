@@ -29,6 +29,7 @@
 
 import UIKit
 import Combine
+import GroundSdk
 
 public protocol CustomIndicatorProvider: AnyObject {
 
@@ -47,10 +48,10 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet internal weak var alertControls: AlertControls!
 
     // MARK: - Private Outlets
+    @IBOutlet private weak var bannerAlertsContainerTopConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var bannerAlertsContainer: UIView!
     @IBOutlet private weak var joysticksView: JoysticksView!
     @IBOutlet private weak var alertPanelContainerView: UIView!
-    @IBOutlet private weak var customValidationView: UIView!
-    @IBOutlet private weak var AELockContainerView: UIView!
     @IBOutlet private weak var indicatorContainerView: UIView!
     @IBOutlet private weak var topStackView: UIStackView!
     @IBOutlet private weak var infoBannerTopConstraint: NSLayoutConstraint!
@@ -70,11 +71,17 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     var delayedTaskComponents: DelayedTaskComponents = DelayedTaskComponents()
 
     // MARK: - Private Properties
-    // TODO: wrong injection
-    private unowned var currentMissionManager = Services.hub.currentMissionManager
-    private unowned var airsdkMissionsManager = Services.hub.drone.airsdkMissionsManager
-    private unowned var topBarService = Services.hub.ui.hudTopBarService
-    private unowned var pinCodeService = Services.hub.drone.pinCodeService
+    private var currentMissionManager: CurrentMissionManager?
+    private var airsdkMissionsManager: AirSdkMissionsManager?
+    private var topBarService: HudTopBarService?
+    private var pinCodeService: PinCodeService?
+    private var rthService: RthService?
+    private var panoramaService: PanoramaService?
+    private var uiComponentsDisplayReporter: UIComponentsDisplayReporter?
+    private var ophtalmoService: OphtalmoService?
+    private var touchAndFly: TouchAndFlyUiService?
+    private var missionsStore: MissionsStore?
+    private var connectedDroneHolder: ConnectedDroneHolder?
 
     private var cancellables = Set<AnyCancellable>()
     private var customIndicatorViewModel: CustomIndicatorProvider?
@@ -85,6 +92,8 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     private let remoteShutdownAlertViewModel = RemoteShutdownAlertViewModel()
     private lazy var helloWorldViewModel: HelloWorldMissionViewModel? = {
         // Prevent from useless helloWorld init if mission is not loaded.
+        guard let airsdkMissionsManager = airsdkMissionsManager else { return nil }
+
         let missionsToLoad = airsdkMissionsManager.getMissionToLoadAtStart()
         let helloMissionId = HelloWorldMissionSignature().missionUID
         guard missionsToLoad.contains(where: { $0.missionUID == helloMissionId }) else { return nil }
@@ -92,26 +101,51 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         return HelloWorldMissionViewModel()
     }()
     private let landingViewModel = HUDLandingViewModel()
-    /// Cellular indicator view model. Used to display indicator in the center of the HUD.
-    private let cellularIndicatorViewModel = HUDCellularIndicatorViewModel()
     /// View model which tells if 4G pairing is available.
     private let cellularPairingAvailabilityViewModel = CellularPairingAvailabilityViewModel()
 
     /// Property used to store the alert panel view controller.
     private var currentAlertPanelVC: AlertPanelViewController?
 
+    /// Optional top overlay view controller used for banner alerts display.
+    /// HUD container is used if `topOverlayViewController` is `nil` (default case).
+    private let topOverlayViewController: TopOverlayController? = nil
+
     // MARK: - Private Enums
     private enum Constants {
-        static let indicatorDelay: Double = 2.0
         static let cameraSlidersButtonWidth: CGFloat = 51
         static let cellularIndicatorTaskKey: String = "cellularIndicatorTaskKey"
         static let orientationKeyWord: String = "orientation"
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: HUDCoordinator) -> HUDViewController {
+
+    // swiftlint:disable:next function_parameter_count
+    static func instantiate(coordinator: HUDCoordinator,
+                            currentMissionManager: CurrentMissionManager,
+                            airsdkMissionsManager: AirSdkMissionsManager,
+                            topBarService: HudTopBarService,
+                            pinCodeService: PinCodeService,
+                            rthService: RthService,
+                            panoramaService: PanoramaService,
+                            uiComponentsDisplayReporter: UIComponentsDisplayReporter,
+                            ophtalmoService: OphtalmoService,
+                            touchAndFly: TouchAndFlyUiService,
+                            missionsStore: MissionsStore,
+                            connectedDroneHolder: ConnectedDroneHolder) -> HUDViewController {
         let viewController = StoryboardScene.Hud.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.currentMissionManager = currentMissionManager
+        viewController.airsdkMissionsManager = airsdkMissionsManager
+        viewController.topBarService = topBarService
+        viewController.pinCodeService = pinCodeService
+        viewController.rthService = rthService
+        viewController.panoramaService = panoramaService
+        viewController.uiComponentsDisplayReporter = uiComponentsDisplayReporter
+        viewController.ophtalmoService = ophtalmoService
+        viewController.touchAndFly = touchAndFly
+        viewController.missionsStore = missionsStore
+        viewController.connectedDroneHolder = connectedDroneHolder
         return viewController
     }
 
@@ -123,13 +157,18 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Override Funcs
     public override func viewDidLoad() {
         super.viewDidLoad()
+        guard let currentMissionManager = currentMissionManager,
+              let touchAndFly = touchAndFly,
+              let ophtalmoService = ophtalmoService else { return }
+
         listenWillEnterForeground()
-        splitControls.start(currentMissionManager: Services.hub.currentMissionManager)
+        splitControls.start(currentMissionManager: currentMissionManager)
         // TODO: this part needs to be fixed, some interactions with the map do not work without that (drag mostly)
-        customControls = Services.hub.ui.touchAndFly
+        customControls = touchAndFly
         customControls?.start()
         setupAlertPanel()
         setupActionWidgetContainer()
+        setupBannerAlertsManagerContainer()
 
         listenMissionMode()
         listenTopBarChanges()
@@ -141,7 +180,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
         UIDevice.current.setValue(value, forKey: Constants.orientationKeyWord)
-        Services.hub.drone.ophtalmoService.ophtalmoMissionStatePublisher
+        ophtalmoService.ophtalmoMissionStatePublisher
             .sink { [unowned self] in
                 guard let coordinator = coordinator else { return }
                 if $0 == .active, self.isViewLoaded && view.window != nil {
@@ -156,20 +195,20 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
 
     public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        guard let coordinator = coordinator else { return }
+        guard let coordinator = coordinator,
+              let pinCodeService = pinCodeService,
+              let ophtalmoService = ophtalmoService else { return }
 
         if (coordinator.childCoordinators.last as? OphtalmoCoordinator) != nil,
-           Services.hub.drone.ophtalmoService.ophtalmoMissionState != .active {
+           ophtalmoService.ophtalmoMissionState != .active {
                 coordinator.childCoordinators.removeLast()
         }
 
         splitControls.setupSplitIfNeeded()
         splitControls.updateConstraintForForeground()
-        // Check if any critical alert needs to be displayed.
-        rightPanelContainerControls.viewModel.forceHidePanel(!currentMissionManager.mode.isRightPanelRequired)
 
         // check if ophtalmo is active and show it if it is the case.
-        if Services.hub.drone.ophtalmoService.ophtalmoMissionState == .active {
+        if ophtalmoService.ophtalmoMissionState == .active {
             if (coordinator.childCoordinators.last as? OphtalmoCoordinator) == nil {
                 coordinator.presentCoordinatorWithAnimator(childCoordinator: OphtalmoCoordinator(services: Services.hub))
             }
@@ -185,6 +224,8 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         setupConstraints()
         rightPanelContainerControls.start()
         updateViewModels()
+        // Update landing view @willAppear, as it is removed when a fullscreen modal is presented.
+        updateLandingView(customIndicatorProvider: customIndicatorViewModel)
 
         super.viewWillAppear(animated)
     }
@@ -196,6 +237,16 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         removeViewModelObservers()
         stopTasksIfNeeded()
         removeContainerViews()
+    }
+
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        // Banner alerts container update only needs to be performed in case of top overlay container.
+        if topOverlayViewController != nil {
+            // Update banner alerts container frame in order to take potential right panel appearance into account.
+            coordinator?.services.bamService.setContainer(frame: bannerAlertsContainer.frame)
+        }
     }
 
     public override var shouldAutorotate: Bool {
@@ -216,13 +267,16 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         } else if let bottomBarContainerVC = segue.destination as? BottomBarContainerViewController {
             bottomBarContainerVC.coordinator = coordinator
         } else if let missionLauncherVC = segue.destination as? MissionProviderSelectorViewController {
-            // TODO: wrong injection. Also... SEGUES
-            let services: ServiceHub = Services.hub
-            missionLauncherVC.viewModel = MissionProviderSelectorViewModel(currentMissionManager: services.currentMissionManager,
-                                                                           missionsStore: services.missionsStore,
+            guard let currentMissionManager = currentMissionManager,
+                  let missionsStore = missionsStore,
+                  let airsdkMissionsManager = airsdkMissionsManager,
+                  let connectedDroneHolder = connectedDroneHolder else { return }
+
+            missionLauncherVC.viewModel = MissionProviderSelectorViewModel(currentMissionManager: currentMissionManager,
+                                                                           missionsStore: missionsStore,
                                                                            delegate: self,
-                                                                           missionsManager: services.drone.airsdkMissionsManager,
-                                                                           connectedDroneHolder: services.connectedDroneHolder)
+                                                                           missionsManager: airsdkMissionsManager,
+                                                                           connectedDroneHolder: connectedDroneHolder)
         } else if let lockAETargetZoneVC = segue.destination as? LockAETargetZoneViewController {
             videoControls.lockAETargetZoneViewController = lockAETargetZoneVC
         } else if let sliders = segue.destination as? CameraSlidersViewController {
@@ -267,6 +321,7 @@ private extension HUDViewController {
 
     /// Listen for mission mode
     func listenMissionMode() {
+        guard let currentMissionManager = currentMissionManager else { return }
         currentMissionManager.modePublisher.sink { [unowned self] mode in
             setupMap()
             coordinator?.presentModeEntryCoordinatorIfNeeded(mode: mode)
@@ -276,6 +331,8 @@ private extension HUDViewController {
     }
 
     func listenTopBarChanges() {
+        guard let topBarService = topBarService else { return }
+
         topBarService.showTopBarPublisher
             .sink { [weak self] show in
                 guard let self = self else { return }
@@ -300,8 +357,9 @@ private extension HUDViewController {
 
     /// Listens to action widgets.
     func listenToActionWidgets() {
-        guard let coordinator = coordinator else { return }
-        coordinator.services.ui.uiComponentsDisplayReporter.isActionWidgetShownPublisher.sink { [weak self] isWidgetShown in
+        guard let uiComponentsDisplayReporter = uiComponentsDisplayReporter else { return }
+
+        uiComponentsDisplayReporter.isActionWidgetShownPublisher.sink { [weak self] isWidgetShown in
             guard let self = self else { return }
             // Disable user interaction if no action widget is displayed.
             // Do not use isHidden in order to allow hiding animations.
@@ -313,7 +371,10 @@ private extension HUDViewController {
 
     /// Updates center button bottom constraint depending on layout state.
     func updateCenterButtonBottomConstraint() {
-        let isActionWidgetShown = coordinator?.services.ui.uiComponentsDisplayReporter.isActionWidgetShown ?? false
+        guard let currentMissionManager = currentMissionManager else { return }
+        guard let uiComponentsDisplayReporter = uiComponentsDisplayReporter else { return }
+
+        let isActionWidgetShown = uiComponentsDisplayReporter.isActionWidgetShown
         let isRightPanelRequired = currentMissionManager.mode.isRightPanelRequired
         // Center button bottom constraint (relative to action widget container) should only be
         // active if a widget is displayed and no right panel is required.
@@ -331,6 +392,8 @@ private extension HUDViewController {
 
     /// Updates cellular process.
     func listenPinCode() {
+        guard let pinCodeService = pinCodeService else { return }
+
         pinCodeService.isPinCodeRequested
             .removeDuplicates()
             .sink { [unowned self] isPinCodeRequested in
@@ -342,6 +405,7 @@ private extension HUDViewController {
     /// Listen for Mission Launcher sate changes
     func listenMissionLauncherState() {
         guard let coordinator = coordinator else { return }
+
         coordinator.showMissionLauncherPublisher.sink { [unowned self] isShown in
             dismissMissionLauncherButton.isHidden = !isShown
             updateCameraSlidersConstraint(isMissionPanelShown: isShown)
@@ -349,12 +413,31 @@ private extension HUDViewController {
         .store(in: &cancellables)
     }
 
+    /// Sets up the banner alerts manager container.
+    func setupBannerAlertsManagerContainer() {
+        guard let bannerAlertManagerService = coordinator?.services.bamService else { return }
+
+        // Instantiate VM and VC.
+        let bannerAlertManagerViewModel = BannerAlertsManagerViewModel(service: bannerAlertManagerService)
+        let bannerAlertsManagerViewController = BannerAlertsManagerViewController.instantiate(viewModel: bannerAlertManagerViewModel)
+
+        if let topOverlayViewController = topOverlayViewController {
+            // Top overlay mode: banners will be displayed above any view.
+            topOverlayViewController.addAndMakeVisible(viewController: bannerAlertsManagerViewController)
+        } else {
+            // HUD mode: banners will be displayed in HUD view only.
+            add(bannerAlertsManagerViewController, in: bannerAlertsContainer)
+        }
+    }
+
     /// Sets up constraints.
     func setupConstraints() {
+        bannerAlertsContainerTopConstraint.constant = Layout.hudTopBarHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass)
         infoBannerTopConstraint.constant = Layout.hudTopBarHeight(isRegularSizeClass) + Layout.mainSpacing(isRegularSizeClass)
         centerButtonHeightConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
         centerButtonBottomConstraint.constant = -Layout.mainPadding(isRegularSizeClass)
-        missionControls.updateConstraints(animated: false)
+        missionControls.setupUI()
+        rightPanelContainerControls.setupUI()
         alertControls.updateConstraints(animated: false)
         updateCameraSlidersConstraint()
 
@@ -376,6 +459,8 @@ private extension HUDViewController {
 
     /// Map setup.
     func setupMap() {
+        guard let currentMissionManager = currentMissionManager else { return }
+
         let mode = currentMissionManager.mode
         if let map = mode.customMapProvider?() as? MapViewController {
             // Add custom map.
@@ -406,10 +491,13 @@ private extension HUDViewController {
 
     /// Sets up action widget container.
     func setupActionWidgetContainer() {
-        guard let coordinator = coordinator else { return }
-        let viewModel = ActionWidgetViewModel(rthService: coordinator.services.drone.rthService,
-                                              panoramaService: coordinator.services.panoramaService,
-                                              currentMissionManager: coordinator.services.currentMissionManager)
+        guard let rthService = rthService,
+              let panoramaService = panoramaService,
+              let currentMissionManager = currentMissionManager else { return }
+
+        let viewModel = ActionWidgetViewModel(rthService: rthService,
+                                              panoramaService: panoramaService,
+                                              currentMissionManager: currentMissionManager)
         let actionWidgetContainerVC = ActionWidgetContainerViewController.instantiate(viewModel: viewModel)
         addChild(actionWidgetContainerVC)
         actionWidgetContainerView.addWithConstraints(subview: actionWidgetContainerVC.view)
@@ -430,21 +518,22 @@ private extension HUDViewController {
 
     /// Updates view models values.
     func updateViewModels() {
-        helloWorldViewModel?.state.valueChanged = { [weak self] state in
-            self?.showHelloWorldIfNeeded(state: state)
+        if let helloWorldViewModel = helloWorldViewModel {
+            helloWorldViewModel.$missionState.removeDuplicates()
+                .combineLatest(helloWorldViewModel.$messageReceivedCount.removeDuplicates())
+                .sink { [weak self] (missionState, _) in
+                    guard let self = self else { return }
+                    self.showHelloWorldIfNeeded(state: missionState)
+                    self.showHelloWorldDepth(state: missionState)
+                }
+                .store(in: &cancellables)
         }
+
         joysticksViewModel.state.valueChanged = { [weak self] state in
             self?.updateJoysticksVisibility(with: state)
         }
-        cellularIndicatorViewModel.state.valueChanged = { [weak self] state in
-            self?.updateCellularIndicatorView(with: state)
-        }
-        if let state = helloWorldViewModel?.state.value {
-            showHelloWorldIfNeeded(state: state)
-        }
 
         updateJoysticksVisibility(with: joysticksViewModel.state.value)
-        updateCellularIndicatorView(with: cellularIndicatorViewModel.state.value)
         cellularPairingAvailabilityViewModel.updateAvailabilityState()
     }
 
@@ -463,8 +552,6 @@ private extension HUDViewController {
     /// Removes each view model value changed.
     func removeViewModelObservers() {
         joysticksViewModel.state.valueChanged = nil
-        helloWorldViewModel?.state.valueChanged = nil
-        cellularIndicatorViewModel.state.valueChanged = nil
     }
 
     /// Removes container views.
@@ -496,101 +583,36 @@ private extension HUDViewController {
     ///
     /// - Parameters:
     ///     - state: The state of the Hello World AirSdk mission
-    func showHelloWorldIfNeeded(state: HelloWorldMissionState) {
-        guard state.missionState == .active,
+    func showHelloWorldIfNeeded(state: MissionState) {
+        guard state == .active,
               let messageToDisplay = helloWorldViewModel?.messageToDisplay(),
               !HelloWorldMessageView.isAlreadyDisplayed(in: self) else {
-                  return
-              }
+            return
+        }
 
         let helloWorldMessageView = HelloWorldMessageView()
         helloWorldMessageView.displayThenHide(in: self, with: messageToDisplay)
+    }
+
+    /// Display a view when the drone sends a Hello World AirSdk message.
+    ///
+    /// - Parameters:
+    ///     - state: The state of the Hello World AirSdk mission
+    func showHelloWorldDepth(state: MissionState) {
+        guard state == .active else {
+            let helloWorldDepthView = view.subviews.first { $0 is HelloWorldDepthView }
+            helloWorldDepthView?.removeFromSuperview()
+            return
+        }
+
+        guard !HelloWorldDepthView.isAlreadyDisplayed(in: self) else { return }
+        let helloWorldDepthView = HelloWorldDepthView()
+        helloWorldDepthView.display(in: self)
     }
 }
 
 // MARK: - Cellular Landing Indicator Views
 private extension HUDViewController {
-    /// Updates cellular indicator view or display error.
-    ///
-    /// - Parameters:
-    ///     - state: The cellular indicator state
-    func updateCellularIndicatorView(with state: HUDCellularIndicatorState?) {
-        guard let state = state else { return }
-
-        if state.shouldShowCellularAlert {
-            switch state.currentAlert {
-            case .airplaneMode,
-                    .networkStatusDenied,
-                    .networkStatusError,
-                    .notRegistered,
-                    .simBlocked:
-                displayCellularAlert(with: state)
-            default:
-                break
-            }
-        } else if state.shouldShowCellularInfo {
-            guard landingViewModel.isLandingOrRth else { return }
-
-            displayCellularIndicatorView(with: state)
-        }
-    }
-
-    /// Displays a cellular alert.
-    ///
-    /// - Parameters:
-    ///     - state: The cellular indicator state
-    func displayCellularAlert(with state: HUDCellularIndicatorState) {
-        guard let title = state.currentAlert?.title,
-              let description = state.currentAlert?.description else {
-                  return
-              }
-
-        let resumeAction = AlertAction(title: L10n.commonRetry, actionHandler: { [weak self] in
-            self?.cellularIndicatorViewModel.resumeProcess()
-        })
-
-        let cancelAction = AlertAction(title: L10n.cancel,
-                                       actionHandler: { [weak self] in
-            self?.cellularIndicatorViewModel.stopProcess()
-        })
-
-        let alert = AlertViewController.instantiate(title: title,
-                                                    message: description,
-                                                    messageColor: .errorColor,
-                                                    closeButtonStyle: .cross,
-                                                    cancelAction: cancelAction,
-                                                    validateAction: resumeAction)
-
-        self.present(alert, animated: true)
-    }
-
-    /// Adds a cellular indicator view.
-    ///
-    /// - Parameters:
-    ///     - state: The cellular indicator state
-    func displayCellularIndicatorView(with state: HUDCellularIndicatorState) {
-        let view = HUDCellularIndicatorView()
-        view.configure(state: state.currentCellularState)
-        addIndicatorView(with: view)
-        setupDelayedTask(addCellularAnimation,
-                         delay: Constants.indicatorDelay,
-                         key: Constants.cellularIndicatorTaskKey)
-    }
-
-    /// Adds the cellular animation.
-    func addCellularAnimation() {
-        UIView.animate(withDuration: Style.longAnimationDuration,
-                       delay: 0.0,
-                       options: .curveEaseOut,
-                       animations: {
-            self.indicatorContainerView.alpha = 0.0
-        }, completion: { (_) in
-            self.indicatorContainerView.isHidden = true
-            self.indicatorContainerView.alpha = 1.0
-            self.cellularIndicatorViewModel.stopProcess()
-        })
-    }
-
     /// Adds indicator view.
     ///
     /// - Parameters:

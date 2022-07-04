@@ -33,9 +33,13 @@ import GroundSdk
 /// Class to manage debug logs.
 public class ParrotDebug {
     // MARK: - Public Properties
-    static let debugTag = ULogTag(name: "ParrotDebug")
-    static var activeLogFileName: String?
-    static let streamDbgPath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+    static var currentLogDirectory: URL?
+
+    // MARK: - Private Properties
+    private static let debugTag = ULogTag(name: "ParrotDebug")
+    private static var activeLogBinRecorder: RotatingLogRecorder?
+    private static var activeLogTxtRecorder: RotatingLogRecorder?
+    private static let streamDbgPath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         as NSString).appendingPathComponent("stream")
 }
 
@@ -61,21 +65,36 @@ public extension ParrotDebug {
 
     /// Starts Log.
     static func startLog() {
-        guard activeLogFileName == nil else {
+        guard activeLogBinRecorder == nil else {
             return
         }
+
+        let dirName = dateFormatter.string(from: Date())
+        currentLogDirectory = logsURL.appendingPathComponent(dirName)
+        guard let currentLogDirectory = currentLogDirectory else {
+            return
+        }
+
+        if !FileManager.default.fileExists(atPath: currentLogDirectory.path) {
+            do {
+                try FileManager.default.createDirectory(at: currentLogDirectory, withIntermediateDirectories: true)
+            } catch {
+                print("Failed to create log directory \(currentLogDirectory) \(error.localizedDescription)")
+            }
+        }
         setenv("ULOG_LEVEL", "D", 1)
-        activeLogFileName = ULog.startFileRecord()
+        let logBinConfig = LogBinRecorderConfig(currentLogDirectory)
+        let logTxtConfig = LogTxtRecorderConfig(currentLogDirectory)
+        activeLogBinRecorder = ULog.redirectToLogBin(config: logBinConfig)
+        activeLogTxtRecorder = ULog.redirectToLogTxt(config: logTxtConfig)
         setStreamDbgEnv()
     }
 
     /// Stops Log.
     static func stopLog() {
-        guard activeLogFileName != nil else {
-            return
-        }
-        ULog.stopFileRecord()
-        self.activeLogFileName = nil
+        currentLogDirectory = nil
+        activeLogBinRecorder = nil
+        activeLogTxtRecorder = nil
     }
 
     /// Creates a stream debug path.
@@ -137,6 +156,40 @@ public extension ParrotDebug {
             ULog.e(debugTag, "Rename from \(fromUrl) to \(newUrl) - Error \(error)")
         }
     }
+
+    /// Prepares file to share for logs at a given URL.
+    ///
+    /// If the given URL is a directory, this method creates an archive file
+    /// containing the directory content.
+    /// If the given URL is a file, this methods returns the URL itself. The
+    /// file can be shared directly.
+    ///
+    /// - Parameters:
+    ///    - url: path to logs
+    /// - Returns: file to share, `nil` if an error occured
+    static func fileToShare(for url: URL) -> URL? {
+        guard url.isDirectory else {
+            return url
+        }
+
+        var archiveUrl: URL?
+        var error: NSError?
+        let fileManager = FileManager.default
+        let coordinator = NSFileCoordinator()
+        // zip directory content
+        coordinator.coordinate(readingItemAt: url, options: [.forUploading], error: &error) { (zipUrl) in
+            // move archive file to a temporary folder
+            let tmpUrl = try? fileManager.url(
+                for: .itemReplacementDirectory,
+                in: .userDomainMask,
+                appropriateFor: zipUrl,
+                create: true
+            ).appendingPathComponent(url.lastPathComponent.appending(".zip"))
+            tmpUrl.map { try? fileManager.moveItem(at: zipUrl, to: $0) }
+            archiveUrl = tmpUrl
+        }
+        return archiveUrl
+    }
 }
 
 // MARK: - Private Funcs
@@ -151,7 +204,15 @@ private extension ParrotDebug {
     }
 
     /// Returns the log directory url.
-    static var logsURL: URL = {
-        return URL(fileURLWithPath: ULog.getPath())
-    }()
+    static var logsURL: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("log")
+    }
+
+    /// Date formatter for directory name.
+    static var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd-HHmmss"
+        return formatter
+    }
 }

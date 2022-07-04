@@ -31,6 +31,7 @@ import Foundation
 import Combine
 import CoreLocation
 import ArcGIS
+import GroundSdk
 
 /// ViewModel for `MapViewController`
 public class MapViewModel {
@@ -56,6 +57,10 @@ public class MapViewModel {
     private let flightPlanEdition: FlightPlanEditionService
     /// Current drone connection state
     private var droneConnectionStateSubject = CurrentValueSubject<Bool, Never>(false)
+    /// Reference to GPS Instrument
+    private var gpsRef: Ref<Gps>?
+    /// Drone gps strength
+    @Published private(set) var droneIcon = Asset.Map.mapDrone.image
 
     // MARK: Public Properties
     /// User location publisher
@@ -103,7 +108,7 @@ public class MapViewModel {
         }
     }
     /// Terrain elevation source.
-    public var elevationSource = MapElevationSource()
+    public var elevationSource: MapElevationSource
 
     // MARK: Init
 
@@ -122,11 +127,37 @@ public class MapViewModel {
         self.networkService = networkService
         self.flightPlanEdition = flightPlanEdition
 
+        elevationSource = MapElevationSource(networkService: networkService)
+
         connectedDroneHolder.dronePublisher
-            .sink { [unowned self] in
-                droneConnectionStateSubject.value = $0 != nil
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.droneConnectionStateSubject.value = drone != nil
+                self.listenGps(drone: drone)
             }
             .store(in: &cancellables)
+    }
+
+    /// Starts observing changes for gps strength and updates the gps Strength published property.
+    ///
+    /// - Parameter drone: the current drone
+    func listenGps(drone: Drone?) {
+        guard let drone = drone else {
+            updateDroneIcon(gps: .none)
+            return
+        }
+        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
+            self?.updateDroneIcon(gps: gps?.gpsStrength ?? .none)
+        }
+    }
+
+    /// Updates drone icon according to its gps strength
+    ///
+    /// - Parameter gps: the current gps strength
+    func updateDroneIcon(gps: GpsStrength) {
+        droneIcon = (gps == .none || gps == .notFixed)
+            ? Asset.Map.mapDroneDisconnected.image
+            : Asset.Map.mapDrone.image
     }
 
     /// Listen to publishers that may change center map button behaviour
@@ -158,7 +189,13 @@ private extension MapViewModel {
                      alwaysCenterOnDrone: Bool,
                      currentFlightPlanEdition: FlightPlanModel?,
                      currentMapMode: MapMode) -> MapCenterState {
-        if currentMapMode == .flightPlanEdition, currentFlightPlanEdition != nil {
+
+        var isFlying: Bool = false
+        if let drone = self.connectedDroneHolder.drone, drone.isFlying {
+            isFlying = drone.isFlying
+        }
+        if currentMapMode == .flightPlanEdition || currentMapMode == .flightPlan,
+           currentFlightPlanEdition != nil, !isFlying {
             return .project
         } else if droneLocation.isValid, droneGpsFixed || alwaysCenterOnDrone {
             return .drone

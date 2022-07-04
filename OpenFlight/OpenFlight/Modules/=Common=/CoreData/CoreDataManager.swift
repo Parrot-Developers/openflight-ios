@@ -50,7 +50,7 @@ public protocol CoreDataService: AnyObject {
     func deleteUsersData()
 
     /// Batch delete all stored  data of other users with apcId
-    func deleteAllOtherUsersData(withApcId apcId: String)
+    func deleteAllOtherUsersData(withApcId apcId: String, completion: ((_ status: Bool) -> Void)?)
 
     var latestFlightLocalModificationDatePublisher: AnyPublisher<Date, Never> { get }
 
@@ -153,14 +153,30 @@ public class CoreDataServiceImpl: CoreDataService {
 
         backgroundContext = persistentContainer.newBackgroundContext()
 
+        // `currentContext` is a main queue context dedicated to be used in the app (e.g. fetch object, update UI...)
+        // `backgroundContext` is a private backgroubd queue context, set as parent of the `currentContext`.
+        // `backgroundContext` is dedicated to save changes into DB file in background.
+
         currentContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         currentContext?.parent = backgroundContext
+        // Our implementation is designed to have all changes being made in the current context.
+        // Changes performed in current context are automatically propagated to its parent (the background context).
+        // The background context is only used to save the context in the Core Data file.
+        // So no need to automatically merge the `backgroundContext` changes to the `currentContext`.
+        // Specific cases like BatchDelete are handled in dedicated method.
+        // /!\ Depending on implementation, setting automaticallyMergesChangesFromParent = true
+        //     can cause some potential unwanted behaviors (or crashs). This must be used carefully.
+        currentContext?.automaticallyMergesChangesFromParent = false
         currentContext?.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
+        // Ask background context to perform a save (store in DB file) before terminating app.
         NotificationCenter.default.addObserver(forName: UIApplication.willTerminateNotification, object: nil, queue: nil) { [weak self] _ in
             self?.saveChangesOnBG()
         }
 
+        // Ask background context to perform a save (store in DB file) when a save is detected on the current context.
+        // /!\ Ensure to ALWAYS use `queue: nil` when adding an observer to NSManagedObjectContext changes.
+        // Passing the .main queue will freeze app.
         NotificationCenter.default.addObserver(forName: .NSManagedObjectContextDidSave, object: currentContext, queue: nil) { [weak self] _ in
             self?.saveChangesOnBG()
         }
@@ -197,15 +213,15 @@ extension CoreDataServiceImpl {
         }
     }
 
-    public func deleteAllOtherUsersData(withApcId apcId: String) {
+    public func deleteAllOtherUsersData(withApcId apcId: String, completion: ((_ status: Bool) -> Void)?) {
         deleteAllOtherUsersExceptAnonymous(fromApcId: apcId)
         persistentContainer.managedObjectModel.entities
             .compactMap { $0.name }
             .filter { $0 != UserParrot.entityName}
             .forEach { [weak self] in
                 self?.deleteAllUsersDataForEntityName(entityName: $0,
-                                                      withApcId: apcId)
-
+                                                      withApcId: apcId,
+                                                      completion: completion)
             }
     }
 }
@@ -267,14 +283,15 @@ internal extension CoreDataServiceImpl {
         }
     }
 
-    func batchDeleteAndSave(_ task: @escaping ((_ context: NSManagedObjectContext) -> NSFetchRequest<NSFetchRequestResult>?), _ completion: ((Result<Void, Error>) -> Void)? = nil) {
+    func batchDeleteAndSave(_ task: @escaping ((_ context: NSManagedObjectContext) -> NSFetchRequest<NSFetchRequestResult>?),
+                            _ completion: ((Result<Void, Error>) -> Void)? = nil) {
         guard let context = currentContext else {
             ULog.e(.dataModelTag, "Error saveContext: No current context found !")
             completion?(.failure(CoreDataError.unknownContext))
             return
         }
 
-        context.performAndWait {
+        context.perform { [unowned self] in
             let request = task(context)
 
             guard let request = request else {
@@ -282,22 +299,29 @@ internal extension CoreDataServiceImpl {
                 return
             }
 
-            request.resultType = .managedObjectIDResultType
             let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+            deleteRequest.resultType = .resultTypeObjectIDs
 
             do {
                 let deleteResult = try context.execute(deleteRequest) as? NSBatchDeleteResult
+                ULog.i(.dataModelTag, "Performing batchDelete")
 
                 // Extract the IDs of the deleted managed objectss from the request's result.
                 if let objectIDs = deleteResult?.result as? [NSManagedObjectID] {
-                    // Merge the deletions into the app's managed object context.
+                    // When we delete the objects by fetching and then deleting, we're working through the context,
+                    // so it knows about the changes being made. But it's not the case of BatchDelete.
+                    // Batch updates work directly on the persistent store file instead of going through
+                    // the managed object context, so the context doesn't know about them.
+                    // Therefore we need to merge changes into all contexts used in the app (especially the currentContext).
                     NSManagedObjectContext.mergeChanges(
                         fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
-                        into: [context]
+                        into: [backgroundContext, context]
                     )
-                }
 
-                completion?(.success())
+                    completion?(.success())
+                } else {
+                    completion?(.failure(CoreDataError.unableToSaveContext))
+                }
             } catch let error {
                 ULog.e(.dataModelTag, "batchDelete failed in CoreData : \(error.localizedDescription)")
                 completion?(.failure(error))
@@ -338,6 +362,18 @@ internal extension CoreDataServiceImpl {
         }
 
         return resultList
+    }
+
+    func fetch<T: NSManagedObject>(request: NSFetchRequest<T>, completion: ((_ objects: [T]) -> Void)?) {
+        backgroundContext.perform { [unowned self] in
+            do {
+                let resultList = try backgroundContext.fetch(request)
+                completion?(resultList)
+            } catch let error {
+                ULog.e(.dataModelTag, "Failed fetch async request: \(error.localizedDescription)")
+                completion?([])
+            }
+        }
     }
 
     /// Fetch count specified request
@@ -456,13 +492,15 @@ internal extension CoreDataServiceImpl {
         }
     }
 
-    @discardableResult
     private func deleteAllUsersDataForEntityName(entityName: String,
-                                                 withApcId apcId: String) -> Error? {
-        guard let _ = currentContext else { return CoreDataError.unknownContext }
-        var deleteError: Error?
+                                                 withApcId apcId: String,
+                                                 completion: ((_ status: Bool) -> Void)?) {
+        guard currentContext != nil else {
+            completion?(false)
+            return
+        }
 
-        batchDeleteAndSave({ context in
+        batchDeleteAndSave({ _ in
             let apcIdPredicate = NSPredicate(format: "apcId != %@", apcId)
             let anonymousPredicate = NSPredicate(format: "apcId != %@", User.anonymousId)
             let subPredicateList: [NSPredicate] = [apcIdPredicate, anonymousPredicate]
@@ -492,13 +530,12 @@ internal extension CoreDataServiceImpl {
                 default:
                     break
                 }
+                completion?(true)
             case .failure(let error):
                 ULog.e(.dataModelTag, "An error is occured when batch delete entity \(entityName) in CoreData : \(error.localizedDescription)")
-                deleteError = error
+                completion?(false)
             }
         })
-
-        return deleteError
     }
 
     @discardableResult
@@ -519,7 +556,7 @@ internal extension CoreDataServiceImpl {
     func deleteAllData(ofEntityName entityName: String) -> Error? {
         var deleteError: Error?
 
-        batchDeleteAndSave({ context in
+        batchDeleteAndSave({ _ in
             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 
             return fetchRequest

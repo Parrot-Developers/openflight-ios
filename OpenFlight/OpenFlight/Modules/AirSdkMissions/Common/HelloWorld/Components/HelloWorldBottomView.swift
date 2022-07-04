@@ -30,6 +30,7 @@
 import UIKit
 import Reusable
 import GroundSdk
+import Combine
 
 /// A View for Hello World AirSdk Mission.
 final class HelloWorldBottomView: UIView, NibOwnerLoadable {
@@ -50,6 +51,7 @@ final class HelloWorldBottomView: UIView, NibOwnerLoadable {
 
     // MARK: - Private Properties
     private let helloWorldMissionViewModel = HelloWorldMissionViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
@@ -76,21 +78,20 @@ private extension HelloWorldBottomView {
 
     /// Inits the view model.
     func initViewModel() {
-        helloWorldMissionViewModel.state.valueChanged = { [weak self] state in
-            let messageCount = state.messageReceivedCount
-            self?.updateStackView(missionState: state.missionState,
-                                  didReceiveMessage: messageCount > 0)
-            self?.startAndStopView.update(with: state.missionState,
-                                          didReceiveMessage: messageCount > 0)
-        }
+        helloWorldMissionViewModel.$missionState.removeDuplicates()
+            .combineLatest(helloWorldMissionViewModel.$isSayingHello.removeDuplicates())
+            .sink { [weak self] (missionState, isSayingHello) in
+                guard let self = self else { return }
+                self.updateStackView(missionState: missionState, isSayingHello: isSayingHello)
+                self.startAndStopView.update(with: missionState, isSayingHello: isSayingHello)
+            }
+            .store(in: &cancellables)
     }
 
     /// Inits the UI.
     func initUI() {
         updateStackView(missionState: .unavailable,
                         didReceiveMessage: false)
-        startAndStopView.update(with: .unavailable,
-                                didReceiveMessage: false)
     }
 
     /// Updates the stackView.
@@ -101,6 +102,24 @@ private extension HelloWorldBottomView {
     func updateStackView(missionState: MissionState, didReceiveMessage: Bool) {
         self.stateView.model = buttonStateModel(missionState: missionState,
                                                 didReceiveMessage: didReceiveMessage)
+    }
+
+    /// Updates the stackView.
+    ///
+    /// - Parameters:
+    ///     - missionState: The Mission State
+    ///     - isSayingHello: If the drone is saying hello
+    func updateStackView(missionState: MissionState, isSayingHello: Bool) {
+        let subtext: String
+        switch missionState {
+        case .active:
+            subtext = isSayingHello ? L10n.helloFeedback : L10n.helloSayHello
+
+        case .idle, .unloaded, .unavailable, .activating:
+            subtext = missionState.description
+        }
+
+        stateView.model = BottomBarButtonState(title: L10n.commonAction.uppercased(), subtext: subtext)
     }
 
     /// Returns a BottomBarButtonState.

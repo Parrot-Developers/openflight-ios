@@ -30,6 +30,11 @@
 import Foundation
 import Combine
 import SwiftyUserDefaults
+import GroundSdk
+
+extension ULogTag {
+    static let currentMissionManager = ULogTag(name: "CurrentMissionManager")
+}
 
 /// Current mission manager is responsible for centralizing the selected mission mode and provider
 public protocol CurrentMissionManager: AnyObject {
@@ -43,9 +48,9 @@ public protocol CurrentMissionManager: AnyObject {
     /// Mode for current mission mode
     var modePublisher: AnyPublisher<MissionMode, Never> { get }
     /// Last mission selected in the HUD
-    var hudLastSelection: (provider: MissionProvider, mode: MissionMode) { get }
+    var hudLatestSelection: (provider: MissionProvider, mode: MissionMode) { get }
     /// Last mission selected in the HUD Publisher
-    var hudLastSelectionPublisher: AnyPublisher<(provider: MissionProvider, mode: MissionMode), Never> { get }
+    var hudLatestSelectionPublisher: AnyPublisher<(provider: MissionProvider, mode: MissionMode), Never> { get }
 
     /// Change the current mission provider
     func set(provider: MissionProvider)
@@ -53,11 +58,11 @@ public protocol CurrentMissionManager: AnyObject {
     /// Change the current mission mode
     func set(mode: MissionMode)
 
-    /// Store last mission selected in the HUD
-    func storeLastHudSelection(provider: MissionProvider, mode: MissionMode)
+    /// Store the current mission as the latest selected in the HUD.
+    func storeCurrentMissionAsLatestHudSelection()
 
-    /// Restore last mission selected in the HUD
-    func restoreLastHudSelection()
+    /// Restore the latest mission selected in the HUD.
+    func restoreLatestHudSelection()
 
     /// Update active mission mode regarding active mission Uid when relevant
     ///
@@ -91,14 +96,31 @@ public class CurrentMissionManagerImpl {
     private var providerSubject: CurrentValueSubject<MissionProvider, Never>
     /// Current mission mode subject
     private var modeSubject: CurrentValueSubject<MissionMode, Never>
-    /// Last mission selected in the HUD subject
-    private var hudLastSelectionSubject: CurrentValueSubject<(provider: MissionProvider, mode: MissionMode), Never>
+    /// Latest mission selected in the HUD subject
+    private var hudLatestSelectionSubject: CurrentValueSubject<(provider: MissionProvider, mode: MissionMode), Never>
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
 
     init(store: MissionsStore) {
         self.store = store
         providerSubject = CurrentValueSubject(store.defaultMission)
         modeSubject = CurrentValueSubject(store.defaultMission.mission.defaultMode)
-        hudLastSelectionSubject = CurrentValueSubject((store.defaultMission, store.defaultMission.mission.defaultMode))
+        hudLatestSelectionSubject = CurrentValueSubject((store.defaultMission, store.defaultMission.mission.defaultMode))
+
+        // ----
+        // TODO: Temporary log used to debug. Will be removed when feature validated.
+        providerPublisher
+            .sink { ULog.d(.currentMissionManager, "Provider updated to '\($0.mission.name)'") }
+            .store(in: &cancellables)
+
+        modePublisher
+            .sink { ULog.d(.currentMissionManager, "Mode updated to '\($0.name)'") }
+            .store(in: &cancellables)
+
+        hudLatestSelectionPublisher
+            .sink { ULog.d(.currentMissionManager, "Last HUD updated to '\($0.provider.mission.name)' / '\($0.mode.name)'") }
+            .store(in: &cancellables)
+        // ----
     }
 }
 
@@ -107,14 +129,14 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
 
     public var mode: MissionMode { modeSubject.value }
 
-    public var hudLastSelection: (provider: MissionProvider, mode: MissionMode) { hudLastSelectionSubject.value }
+    public var hudLatestSelection: (provider: MissionProvider, mode: MissionMode) { hudLatestSelectionSubject.value }
 
     public var providerPublisher: AnyPublisher<MissionProvider, Never> { providerSubject.eraseToAnyPublisher() }
 
     public var modePublisher: AnyPublisher<MissionMode, Never> { modeSubject.eraseToAnyPublisher() }
 
-    public var hudLastSelectionPublisher: AnyPublisher<(provider: MissionProvider, mode: MissionMode), Never> {
-        hudLastSelectionSubject.eraseToAnyPublisher()
+    public var hudLatestSelectionPublisher: AnyPublisher<(provider: MissionProvider, mode: MissionMode), Never> {
+        hudLatestSelectionSubject.eraseToAnyPublisher()
     }
 
     public func set(provider: MissionProvider) {
@@ -125,13 +147,16 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
         guard mode.key != modeSubject.value.key else { return }
         // If ophtalmo mission is active there is no need to stop the mission.
         if Services.hub.drone.ophtalmoService.ophtalmoMissionState != .active {
+            ULog.i(.currentMissionManager, "stop current mission if needed")
             // Stops current mission if needed.
             modeSubject.value.missionActivationModel.stopMissionIfNeeded()
         }
         modeSubject.value = mode
+        ULog.i(.currentMissionManager, "set mode '\(mode.name)'")
         // If ophtalmo mission is active, then do not start another mission.
         // Start mission will be called when ophtalmo is dismissed.
         if Services.hub.drone.ophtalmoService.ophtalmoMissionState != .active {
+            ULog.i(.currentMissionManager, "start active mission")
             // Starts new mission if needed.
             mode.missionActivationModel.startMission()
         }
@@ -153,13 +178,14 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
         modeSubject.value.missionActivationModel.showFailedDectivationMessage()
     }
 
-    public func storeLastHudSelection(provider: MissionProvider, mode: MissionMode) {
-        hudLastSelectionSubject.value = (provider, mode)
+    public func storeCurrentMissionAsLatestHudSelection() {
+        hudLatestSelectionSubject.value = (provider, mode)
     }
 
-    public func restoreLastHudSelection() {
-        set(provider: hudLastSelectionSubject.value.provider)
-        set(mode: hudLastSelectionSubject.value.mode)
+    public func restoreLatestHudSelection() {
+        ULog.d(.currentMissionManager, "Restore latest hud selection, mode: '\(hudLatestSelectionSubject.value.mode.name)'")
+        set(provider: hudLatestSelectionSubject.value.provider)
+        set(mode: hudLatestSelectionSubject.value.mode)
     }
 
     public func updateActiveMissionIfNeeded(activeMissionUid: String) {

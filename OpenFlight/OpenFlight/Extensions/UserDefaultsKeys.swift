@@ -59,6 +59,7 @@ public extension DefaultsKeys {
     // MARK: - Parrot Debug
     var activatedLog: DefaultsKey<Bool> { .init("key_activatedLog", defaultValue: false) }
     var debugC: DefaultsKey<Bool> { .init("key_checkC", defaultValue: false) }
+    var activatedCalibration: DefaultsKey<Bool> { .init("key_activatedCalibration", defaultValue: false) }
 
     // MARK: - Gallery
     var localMediaCounts: DefaultsKey<[String: Any]?> { .init("key_localMediaCounts") }
@@ -128,6 +129,16 @@ public extension DefaultsKeys {
     }
     var latestSuccessfulSynchroMultiSessionDate: DefaultsKey<Date?> {
         DefaultsKey<Date?>.init("cloudSync.service.latestSuccessfulMultiSession")
+    }
+    var latestBackgroundSynchroMultiSessionDate: DefaultsKey<Date?> {
+        DefaultsKey<Date?>.init("cloudSync.service.latestBackgroundMultiSession")
+    }
+    // - Sanity check
+    var latestTriedSanityCheckDate: DefaultsKey<Date?> {
+        DefaultsKey<Date?>.init("cloudSync.service.latestTriedSanityCheck")
+    }
+    var latestSuccessfulSanityCheckDate: DefaultsKey<Date?> {
+        DefaultsKey<Date?>.init("cloudSync.service.latestSuccessfulSanityCheck")
     }
 
     // - Incremental

@@ -73,16 +73,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Enable device battery monitoring.
         UIDevice.current.isBatteryMonitoringEnabled = true
 
+        // Enable gsdk system log
+        ULog.redirectToSystemLog(enabled: true)
+
         // Setup GroundSdk and retain it
         groundSdk = AppDelegateSetup.sdkSetup()
+
+        ULog.i(.appDelegate, "Application start \(AppUtils.version)")
+
         // Create instance of services
         let missionsToLoadAtStart: [AirSdkMissionSignature] = [OFMissionSignatures.defaultMission,
                                                                OFMissionSignatures.helloWorld]
 
         let services = Services.createInstance(variableAssetsService: VariableAssetsServiceImpl(),
                                                persistentContainer: persistentContainer,
-                                               missionsToLoadAtStart: missionsToLoadAtStart)
+                                               missionsToLoadAtStart: missionsToLoadAtStart,
+                                               dashboardUiProvider: DashboardUiProviderImpl())
         self.services = services
+        services.start()
         // TODO move to service hub
         addMissionsToHUDPanel()
 

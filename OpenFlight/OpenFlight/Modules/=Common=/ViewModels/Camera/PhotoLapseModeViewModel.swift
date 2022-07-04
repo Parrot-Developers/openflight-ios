@@ -43,8 +43,6 @@ final class PhotoLapseState: DeviceConnectionState {
     var isGpslapseInProgress: Bool = false
     /// Number of photos which has been take.
     var photosNumber: Int = 0
-    /// Current progress of the gpslapse or timelapse. It represents the interval between each photo capture.
-    var currentProgress: Double = 0.0
     /// Selected gpslapse or timelapse value.
     var selectedValue: Double = 1.0
 
@@ -60,19 +58,16 @@ final class PhotoLapseState: DeviceConnectionState {
     ///    - isTimelapseInProgress: boolean describing current timelapse state
     ///    - isGpslapseInProgress: boolean describing current gpslapse state
     ///    - photosNumber: number of photos which has been take
-    ///    - currentProgress: current progress of the gpslapse or timelapse
     ///    - selectedValue: selected value
     init(connectionState: DeviceState.ConnectionState,
          isTimelapseInProgress: Bool,
          isGpslapseInProgress: Bool,
          photosNumber: Int,
-         currentProgress: Double,
          selectedValue: Double) {
         super.init(connectionState: connectionState)
         self.isTimelapseInProgress = isTimelapseInProgress
         self.isGpslapseInProgress = isGpslapseInProgress
         self.photosNumber = photosNumber
-        self.currentProgress = currentProgress
         self.selectedValue = selectedValue
     }
 
@@ -85,7 +80,6 @@ final class PhotoLapseState: DeviceConnectionState {
             && self.isTimelapseInProgress == other.isTimelapseInProgress
             && self.isGpslapseInProgress == other.isGpslapseInProgress
             && self.photosNumber == other.photosNumber
-            && self.currentProgress == other.currentProgress
             && self.selectedValue == other.selectedValue
     }
 
@@ -94,7 +88,6 @@ final class PhotoLapseState: DeviceConnectionState {
                                isTimelapseInProgress: isTimelapseInProgress,
                                isGpslapseInProgress: isGpslapseInProgress,
                                photosNumber: photosNumber,
-                               currentProgress: currentProgress,
                                selectedValue: selectedValue)
     }
 }
@@ -104,7 +97,6 @@ final class PhotoLapseModeViewModel: DroneStateViewModel<PhotoLapseState> {
     // MARK: - Private Properties
     private var mediaListRef: Ref<[MediaItem]>?
     private var photoCaptureRef: Ref<Camera2PhotoCapture>?
-    private var photoProgressIndicatorRef: Ref<Camera2PhotoProgressIndicator>?
     private var cameraRef: Ref<MainCamera2>?
     private var camera: Camera2? { drone?.currentCamera }
 
@@ -123,7 +115,6 @@ final class PhotoLapseModeViewModel: DroneStateViewModel<PhotoLapseState> {
             .sink { [unowned self] drone, activeFlightPlan in
                 guard let drone = drone else {
                     photoCaptureRef = nil
-                    photoProgressIndicatorRef = nil
                     cameraRef = nil
                     return
                 }
@@ -165,7 +156,6 @@ private extension PhotoLapseModeViewModel {
     func listenCamera(drone: Drone, adjustPhotoCount: Bool = false) {
         // reset capture and progress references on drone change
         photoCaptureRef = nil
-        photoProgressIndicatorRef = nil
         photoCaptureCount = 0
 
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
@@ -174,9 +164,8 @@ private extension PhotoLapseModeViewModel {
             updateMode(withCamera: camera)
             updateSelectedValue(withCamera: camera)
 
-            // listen to capture and progress components
+            // listen photo capture component
             listenPhotoCapture(camera: camera, adjustPhotoCount: adjustPhotoCount)
-            listenProgressIndicator(camera: camera)
         }
     }
 
@@ -216,20 +205,6 @@ private extension PhotoLapseModeViewModel {
             default:
                 break
             }
-        }
-    }
-
-    /// Listens to photo progress indicator component.
-    ///
-    /// - Parameters:
-    ///    - camera: the camera
-    func listenProgressIndicator(camera: Camera2) {
-        // do not register progress indicator observer if not needed
-        guard photoProgressIndicatorRef?.value == nil else { return }
-
-        photoProgressIndicatorRef = camera.getComponent(Camera2Components.photoProgressIndicator) { [unowned self] photoProgressIndicator in
-            guard let photoProgressIndicator = photoProgressIndicator else { return }
-            updateProgress(photoProgressIndicator: photoProgressIndicator)
         }
     }
 
@@ -276,22 +251,6 @@ private extension PhotoLapseModeViewModel {
         default:
             break
         }
-        state.set(copy)
-    }
-
-    /// Updates timelapse or gpslapse progress.
-    ///
-    /// - Parameters:
-    ///     - photoProgressIndicator: current photo progress indicator
-    func updateProgress(photoProgressIndicator: Camera2PhotoProgressIndicator) {
-        let copy = state.value.copy()
-
-        if copy.isGpslapseInProgress {
-            copy.currentProgress = photoProgressIndicator.remainingDistance ?? 0.0
-        } else if copy.isTimelapseInProgress {
-            copy.currentProgress = photoProgressIndicator.remainingTime ?? 0.0
-        }
-
         state.set(copy)
     }
 }

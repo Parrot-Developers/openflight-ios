@@ -84,6 +84,8 @@ final class HUDTopBannerViewModel {
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private let alertBannerViewModel = HUDAlertBannerViewModel()
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove property.
     private var shouldShowHomeSetInfo: Bool = false
     private var isAutoModeActive: Bool = false
     private let autoModeViewModel: ImagingBarAutoModeViewModel
@@ -92,9 +94,12 @@ final class HUDTopBannerViewModel {
     /// Camera exposure lock service.
     private unowned var exposureLockService: ExposureLockService
     private unowned var currentDroneHolder: CurrentDroneHolder
+    /// The banner alert manager service.
+    private let bamService: BannerAlertManagerService
 
     init() {
         // TODO injection
+        bamService = Services.hub.bamService
         exposureLockService = Services.hub.drone.exposureLockService
         autoModeViewModel = ImagingBarAutoModeViewModel(exposureLockService: exposureLockService)
         currentDroneHolder = Services.hub.currentDroneHolder
@@ -184,6 +189,8 @@ private extension HUDTopBannerViewModel {
         }
     }
 
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove function.
     /// Starts watcher for banner alerts.
     func listenAlertBannerViewModel() {
         alertBannerViewModel.state.valueChanged = { [weak self] state in
@@ -192,6 +199,8 @@ private extension HUDTopBannerViewModel {
         updateAlertDisplay(alertBannerViewModel.state.value)
     }
 
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove function.
     /// Update alert display state.
     ///
     /// - Parameters:
@@ -211,6 +220,9 @@ private extension HUDTopBannerViewModel {
         shouldDisplayAutoExposureLock = lockAeMode.locked
             && camera.isHdrOn == false
             && isAutoModeActive == true
+
+        bamService.update(ExposureAlert.hdrOn, show: hdrOn)
+        bamService.update(ExposureAlert.lockAe, show: shouldDisplayAutoExposureLock)
     }
 
     /// Updates state for home.

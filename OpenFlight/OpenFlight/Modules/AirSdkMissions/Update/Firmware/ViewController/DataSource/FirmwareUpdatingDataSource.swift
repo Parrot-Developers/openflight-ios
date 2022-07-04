@@ -42,7 +42,7 @@ final class FirmwareUpdatingDataSource {
     }
 
     // MARK: - Init
-    init() {
+    init(withProgress: Float? = nil) {
         let firmwareUpdaterManager = FirmwareUpdaterManager.shared
         var temporaryElements: [FirmwareMissionsUpdatingCase] = []
         var temporaryProgress: Float = Constants.minProgress
@@ -70,6 +70,11 @@ final class FirmwareUpdatingDataSource {
         }
 
         elements = temporaryElements
-        currentTotalProgress = elements.isEmpty ? Constants.maxProgress : temporaryProgress / Float(elements.count)
+
+        if let withProgress = withProgress {
+            currentTotalProgress = withProgress
+        } else {
+            currentTotalProgress = elements.isEmpty ? Constants.maxProgress : temporaryProgress / Float(elements.count)
+        }
     }
 }

@@ -27,6 +27,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+// TODO: Remove file.
+
 /// Provider which handles alert banner datas.
 public final class HUDAlertBannerProvider {
     // MARK: - Public Properties

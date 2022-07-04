@@ -165,16 +165,27 @@ private extension RemoteUpdateViewController {
         case .updateStarted,
                 .uploading:
             sendingStepView?.model.step = .doing
-        case .processing,
-                .rebooting:
-            sendingStepView?.model.step = .done
-            rebootingStepView?.model.step = .doing
+            rebootingStepView?.model.step = .todo
+            continueButton.isHidden = true
         case .updateCompleted:
             rebootingStepView?.model.step = .done
             isUpdateFinished = true
             updateButtonView()
         case .updateFailed:
             sendingStepView?.model.step = .error
+            isUpdateFinished = false
+            updateButtonView()
+        case .processing,
+                .rebooting:
+            if viewModel?.state.value.currentProgress == 100 {
+                sendingStepView?.model.step = .done
+                rebootingStepView?.model.step = .doing
+            } else {
+                sendingStepView?.model.step = .error
+                rebootingStepView?.model.step = .error
+                showUpdateCancelledAlert()
+            }
+        case .cancelled:
             isUpdateFinished = false
             updateButtonView()
         default:
@@ -205,9 +216,13 @@ private extension RemoteUpdateViewController {
             updateProgress(progress: progress)
         case .processing,
                 .rebooting:
-            progressView.lockCompleteProgress(Constants.afterRebootProgressValue, duration: Constants.rebootDuration)
+            if progress == 100 {
+                progressView.lockCompleteProgress(Constants.afterRebootProgressValue, duration: Constants.rebootDuration)
+            }
         case .updateCompleted:
             progressView.lockCompleteProgress(Constants.maxProgressValue, duration: Constants.progressDuration)
+        case .cancelled:
+            updateProgress(progress: progress)
         default:
             break
         }

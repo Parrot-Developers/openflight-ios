@@ -31,13 +31,13 @@ import Foundation
 import UIKit
 
 /// Class for Application version and application locales.
-final class AppUtils {
+public final class AppUtils {
     private init() { }
 
     /// Get Application version.
     ///
     /// - Returns: String with current application version
-    static var version: String {
+    public static var version: String {
         var appVersion = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? ""
 
         appVersion += " v"

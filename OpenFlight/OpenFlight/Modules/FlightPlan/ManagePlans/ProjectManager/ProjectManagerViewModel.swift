@@ -126,18 +126,29 @@ extension ProjectManagerViewModel {
 extension ProjectManagerViewModel {
 
     func openProject(_ project: ProjectModel) {
+        // If we are trying to open the currently opened project,
+        // show directly the HUD without loading anything.
+        // This prevents to stop a running flight plan.
+        guard manager.currentProject?.uuid != project.uuid else {
+            coordinator?.showCurrentProject()
+            return
+        }
         coordinator?.open(project: project, startEdition: false, isBrandNew: false)
     }
 
     func renameProject(_ project: ProjectModel, with title: String) {
-            manager.rename(project, title: title)
-            projectDidUpdateSubject.value = project
+        manager.rename(project, title: title) { [weak self] in
+            self?.projectDidUpdateSubject.value = $0
+        }
     }
 
     func duplicateProject(_ project: ProjectModel) {
-        let duplicatedProject = manager.duplicate(project: project)
-        projectAddedSubject.value = manager.currentProject
-        coordinator?.open(project: duplicatedProject, startEdition: false, isBrandNew: true)
+        manager.duplicate(project: project) { [weak self] duplicatedProject in
+            guard let self = self, let duplicatedProject = duplicatedProject else { return }
+
+            self.projectAddedSubject.value = self.manager.currentProject
+            self.coordinator?.open(project: duplicatedProject, startEdition: false, isBrandNew: true)
+        }
    }
 
     func createNewProject(for flightPlanProvider: FlightPlanProvider) {
@@ -158,8 +169,9 @@ extension ProjectManagerViewModel {
     func deleteProject(_ project: ProjectModel) {
         // TODO: Inform user he can't delete a project in use.
         guard canDeleteProject(project) else { return }
-        manager.delete(project: project)
-        projectDidUpdateSubject.value = nil
+        manager.delete(project: project) { [weak self] _ in
+            self?.projectDidUpdateSubject.value = nil
+        }
     }
 
     func canDeleteProject(_ project: ProjectModel) -> Bool {

@@ -37,6 +37,7 @@ public enum UnitType {
     case degreePerSecond
     case percent
     case centimeterPerpixel
+    case noUnitInt
     case none
 
     // MARK: - helpers
@@ -54,7 +55,7 @@ public enum UnitType {
             return L10n.unitPercentIos
         case .centimeterPerpixel:
             return L10n.unitCentimeterPerPixel
-        case .none:
+        case .none, .noUnitInt:
             return ""
         }
     }
@@ -75,6 +76,8 @@ public enum UnitType {
             return UnitHelper.stringSpeedWithFloat(value)
         case .degree, .degreePerSecond, .percent:
             return String(format: "%.0f", value) + " \(unit)"
+        case .noUnitInt:
+            return String(format: "%.0f", value)
         default:
             return String(format: "%.1f", value) + " \(unit)"
         }
@@ -95,6 +98,8 @@ public enum UnitType {
             return UnitHelper.stringSpeedWithFloat2f(value)
         case .degree, .degreePerSecond, .percent:
             return String(format: "%.2f", value) + " \(unit)"
+        case .noUnitInt:
+            return String(format: "%.0f", value)
         default:
             return String(format: "%.2f", value) + " \(unit)"
         }

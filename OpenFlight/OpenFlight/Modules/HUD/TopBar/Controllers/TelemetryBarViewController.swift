@@ -47,9 +47,8 @@ final class TelemetryBarViewController: UIViewController {
     @IBOutlet private weak var altitudeItemView: TelemetryItemView!
     @IBOutlet private weak var distanceItemView: TelemetryItemView!
     @IBOutlet private weak var obstacleAvoidanceItemView: TelemetryItemView!
-    @IBOutlet private weak var liveTelemetryItemView: TelemetryItemView!
 
-        // MARK: - Internal Properties
+    // MARK: - Internal Properties
     weak var navigationDelegate: TelemetryBarViewControllerNavigation?
 
     // MARK: - Private Properties
@@ -133,23 +132,6 @@ private extension TelemetryBarViewController {
                                                 distanceDidChange: { [weak self] distance in
                                                     self?.onDistanceChanged(distance)
                                                 })
-
-        if let telemetryViewModel = telemetryViewModel {
-            telemetryViewModel.$liveTlmState
-                .sink { [unowned self] state in
-                    guard let state = state else {
-                        liveTelemetryItemView.isHidden = true
-                        return
-                    }
-
-                    liveTelemetryItemView.model = TelemetryItemModel(image: state.image,
-                                                                     label: "",
-                                                                     backgroundColor: .clear,
-                                                                     borderColor: state.borderColor)
-                    liveTelemetryItemView.isHidden = false
-                }
-                .store(in: &cancellables)
-        }
     }
 
     /// Updates the obstacle avoidance item view with state.
@@ -161,17 +143,18 @@ private extension TelemetryBarViewController {
         switch state {
         case .disconnected:
             image = Asset.ObstacleAvoidance.icOADisconnected.image
-        case .unwanted:
+        case .unwanted(.inactive):
             image = Asset.ObstacleAvoidance.icOAUnwanted.image
-        case .wanted(let oaState):
-            switch oaState {
-            case .inactive:
-                image = Asset.ObstacleAvoidance.icOAInactive.image
-            case .active:
-                image = Asset.ObstacleAvoidance.icOAActive.image
-            case .degraded:
-                image = Asset.ObstacleAvoidance.icOADegraded.image
-            }
+        case .unwanted(.active):
+            image = Asset.ObstacleAvoidance.icOAActive.image
+        case .unwanted(.degraded):
+            image = Asset.ObstacleAvoidance.icOADegraded.image
+        case .wanted(.inactive):
+            image = Asset.ObstacleAvoidance.icOAInactive.image
+        case .wanted(.active):
+            image = Asset.ObstacleAvoidance.icOAActive.image
+        case .wanted(.degraded):
+            image = Asset.ObstacleAvoidance.icOADegraded.image
         }
         obstacleAvoidanceItemView.model = TelemetryItemModel(image: image,
                                                              label: "",

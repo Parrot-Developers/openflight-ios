@@ -476,7 +476,7 @@ public extension AcademyApiServiceImpl {
 
         ULog.d(.academyApiTag, "🦜 getPairedDroneList: \(DroneAcademyEndPoints.getDroneList.rawValue)")
         get(DroneAcademyEndPoints.getDroneList.rawValue, session: session) { data, error in
-            ULog.d(.academyApiTag, "🦜 getPairedDroneList - data: \(String(data: data ?? Data(), encoding: .utf8)), error: \(error)")
+            ULog.d(.academyApiTag, "🦜 getPairedDroneList - data: \(String(data: data ?? Data(), encoding: .utf8) ?? ""), error: \(error.debugDescription)")
             if let error = error {
                 completion(.failure(error))
                 return

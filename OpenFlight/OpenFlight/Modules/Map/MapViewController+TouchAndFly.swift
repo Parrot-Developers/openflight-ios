@@ -44,24 +44,26 @@ extension MapViewController {
     /// - Parameters:
     ///    - location: waypoint's location
     ///    - droneLocation: drone's location
-    func displayWayPoint(at location: Location3D, droneLocation: CLLocation) {
+    func displayWayPoint(at location: Location3D, droneLocation: CLLocation?) {
         // Create overlays if needed.
         if flightPlanOverlay == nil {
             createOverlays()
         }
         // Add or update waypoint line.
-        let line = AGSPolyline(points: [droneLocation.agsPoint, location.agsPoint])
-        if let lineGraphic = flightPlanOverlay?.touchAndFlyWayPointLineGraphic {
-            lineGraphic.update(with: line)
-        } else {
-            let lineGraphic = TouchAndFlyDroneToPointLineGraphic(polyline: line, isWayPoint: true)
-            flightPlanOverlay?.graphics.add(lineGraphic)
+        if let droneLocation = droneLocation {
+            let line = AGSPolyline(points: [droneLocation.agsPoint, location.agsPoint])
+            if let lineGraphic = flightPlanOverlay?.touchAndFlyWayPointLineGraphic {
+                lineGraphic.update(with: line)
+            } else {
+                let lineGraphic = TouchAndFlyDroneToPointLineGraphic(polyline: line, isWayPoint: true)
+                flightPlanOverlay?.graphics.add(lineGraphic)
+            }
         }
 
         let camera = sceneView.currentViewpointCamera()
         // Add or update waypoint.
         if let wayPointGraphic = flightPlanOverlay?.touchAndFlyWayPointGraphic {
-            wayPointGraphic.update(with: location.agsPoint)
+            wayPointGraphic.update(location: location)
             wayPointGraphic.update(heading: camera.heading)
         } else {
             let wpGraphic = FlightPlanWayPointGraphic(touchAndFlyLocation: location)
@@ -90,7 +92,7 @@ extension MapViewController {
         // Add or update point of interest.
         let camera = sceneView.currentViewpointCamera()
         if let poiPointGraphic = flightPlanOverlay?.touchAndFlyPoiPointGraphic {
-            poiPointGraphic.update(with: location.agsPoint)
+            poiPointGraphic.update(location: location)
             poiPointGraphic.update(heading: camera.heading)
         } else {
             let poiGraphic = FlightPlanPoiPointGraphic(touchAndFlyLocation: location)

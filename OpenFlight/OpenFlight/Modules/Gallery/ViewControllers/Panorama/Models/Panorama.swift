@@ -171,6 +171,11 @@ enum PanoramaMediaType: String, CaseIterable {
     }
 }
 
+/// Extension for debug description.
+extension PanoramaMediaType: CustomStringConvertible {
+    public var description: String { rawValue }
+}
+
 /// A panorama generation state.
 enum PanoramaGenerationState: Int {
     /// The panorama has already been generated, or media is not of panorama type.

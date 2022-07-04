@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="ipad12_9rounded" orientation="landscape" layout="fullscreen" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -142,33 +142,29 @@
                                             <constraint firstAttribute="width" id="KMx-LU-whJ"/>
                                         </constraints>
                                     </view>
-                                    <view contentMode="scaleToFill" horizontalCompressionResistancePriority="749" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="Wii-03-RKy" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="4" y="0.0" width="46" height="40"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </view>
                                     <view contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="ShW-MJ-oyK" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="54" y="0.0" width="50" height="40"/>
+                                        <rect key="frame" x="14" y="0.0" width="50" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="speedItemTouchedUpInside:" destination="cxA-op-ycB" eventType="touchUpInside" id="wNv-eI-sNG"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="aDH-VF-Gop" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="108" y="0.0" width="50" height="40"/>
+                                        <rect key="frame" x="78" y="0.0" width="50" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="altitudeItemTouchedUpInside:" destination="cxA-op-ycB" eventType="touchUpInside" id="GQm-zK-fNj"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" placeholderIntrinsicWidth="40" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="QGj-5B-Yan" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="162" y="0.0" width="40" height="40"/>
+                                        <rect key="frame" x="142" y="0.0" width="40" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="distanceItemTouchedUpInside:" destination="cxA-op-ycB" eventType="touchUpInside" id="zhZ-aQ-quY"/>
                                         </connections>
                                     </view>
                                     <view contentMode="scaleToFill" placeholderIntrinsicWidth="40" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="CXm-gG-DxE" userLabel="ObstacleAvoidanceItemView" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="206" y="0.0" width="40" height="40"/>
+                                        <rect key="frame" x="196" y="0.0" width="40" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
                                             <action selector="obstacleAvoidanceItemTouchedUpInside:" destination="cxA-op-ycB" eventType="touchUpInside" id="lJn-XP-ZY4"/>
@@ -196,7 +192,6 @@
                     <connections>
                         <outlet property="altitudeItemView" destination="aDH-VF-Gop" id="1Fq-kA-grA"/>
                         <outlet property="distanceItemView" destination="QGj-5B-Yan" id="qP4-hn-bQo"/>
-                        <outlet property="liveTelemetryItemView" destination="Wii-03-RKy" id="90M-vU-pfl"/>
                         <outlet property="obstacleAvoidanceItemView" destination="CXm-gG-DxE" id="pNy-NF-bE4"/>
                         <outlet property="speedItemView" destination="ShW-MJ-oyK" id="G5b-PJ-c7Q"/>
                     </connections>
@@ -214,19 +209,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view userInteractionEnabled="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jL0-kC-2oH">
-                                <rect key="frame" x="9" y="7" width="37.5" height="26"/>
+                                <rect key="frame" x="9.5" y="7" width="36" height="26"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cf5-pz-qmg" userLabel="Drone Battery Alert Background View">
-                                <rect key="frame" x="98" y="7" width="37.5" height="26"/>
+                                <rect key="frame" x="98" y="7" width="36" height="26"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Yae-Al-Zrg" userLabel="Background 4G">
-                                <rect key="frame" x="187" y="7" width="26" height="26"/>
+                                <rect key="frame" x="186.5" y="7" width="26" height="26"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EWi-Aw-xP9" userLabel="Background WIFI">
-                                <rect key="frame" x="213" y="7" width="28" height="26"/>
+                                <rect key="frame" x="212.5" y="7" width="28" height="26"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <stackView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" distribution="equalSpacing" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="CPd-Dr-vFp">
@@ -240,7 +235,7 @@
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="3oz-q9-1ME">
-                                        <rect key="frame" x="12" y="0.0" width="31.5" height="20"/>
+                                        <rect key="frame" x="12.5" y="0.0" width="30" height="20"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="icPhoneBattery" translatesAutoresizingMaskIntoConstraints="NO" id="JzN-Ip-Pdz">
                                                 <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
@@ -248,7 +243,7 @@
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="-" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5xA-CN-FR2">
-                                                <rect key="frame" x="24" y="0.0" width="7.5" height="20"/>
+                                                <rect key="frame" x="24" y="0.0" width="6" height="20"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -260,19 +255,19 @@
                                         </subviews>
                                     </stackView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="Oej-5q-FyF" userLabel="Controller Gps Image View">
-                                        <rect key="frame" x="56" y="0.0" width="20" height="20"/>
+                                        <rect key="frame" x="55" y="0.0" width="20" height="20"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </imageView>
                                     <view alpha="0.20000000000000001" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fiw-vs-hRj" userLabel="Separator">
-                                        <rect key="frame" x="88" y="0.0" width="1" height="20"/>
+                                        <rect key="frame" x="87.5" y="0.0" width="1" height="20"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="1" id="yEo-pW-Qci"/>
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Mzq-S5-lzZ">
-                                        <rect key="frame" x="101" y="0.0" width="31.5" height="20"/>
+                                        <rect key="frame" x="101" y="0.0" width="30" height="20"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="icDroneBattery" translatesAutoresizingMaskIntoConstraints="NO" id="a4P-mK-2av" userLabel="icDroneBattery">
                                                 <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
@@ -280,7 +275,7 @@
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="-" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EYx-ib-buk" userLabel="batteryLevelLabel">
-                                                <rect key="frame" x="24" y="0.0" width="7.5" height="20"/>
+                                                <rect key="frame" x="24" y="0.0" width="6" height="20"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -292,19 +287,19 @@
                                         </subviews>
                                     </stackView>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="Xdu-cd-Pd1">
-                                        <rect key="frame" x="144.5" y="0.0" width="20" height="20"/>
+                                        <rect key="frame" x="143.5" y="0.0" width="20" height="20"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </imageView>
                                     <view alpha="0.20000000298023224" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wL4-dj-nuz" userLabel="Separator">
-                                        <rect key="frame" x="177" y="0.0" width="1" height="20"/>
+                                        <rect key="frame" x="176" y="0.0" width="1" height="20"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="1" id="9yx-RL-Ose"/>
                                         </constraints>
                                     </view>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="owR-lS-KyB">
-                                        <rect key="frame" x="190" y="0.0" width="48" height="20"/>
+                                        <rect key="frame" x="189.5" y="0.0" width="48" height="20"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="ic4GOffline" translatesAutoresizingMaskIntoConstraints="NO" id="En6-r2-73e">
                                                 <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>

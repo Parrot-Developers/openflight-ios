@@ -34,9 +34,28 @@ public final class RemoteCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public weak var parentCoordinator: Coordinator?
 
+    private let services: ServiceHub
+
+    init(services: ServiceHub) {
+        self.services = services
+    }
+
     // MARK: - Public Funcs
     public func start() {
-        let viewController = RemoteDetailsViewController.instantiate(coordinator: self)
+        let buttonsViewModel = RemoteDetailsButtonsViewModel(connectedDroneHoler: services.connectedDroneHolder,
+                                                             currentRemoteControlHolder: services.currentRemoteControlHolder,
+                                                             connectedRemoteControlHolder: services.connectedRemoteControlHolder,
+                                                             updateService: services.update)
+        let buttonsViewController = RemoteDetailsButtonsViewController.instantiate(coordinator: self,
+                                                                                   viewModel: buttonsViewModel)
+        let deviceViewController = RemoteDetailsDeviceViewController.instantiate(coordinator: self)
+        let viewModel = RemoteDetailsInformationsViewModel(connectedRemoteControlHolder: services.connectedRemoteControlHolder,
+                                                           currentRemoteControlHolder: services.currentRemoteControlHolder)
+        let informationViewController = RemoteDetailsInformationsViewController.instantiate(viewModel: viewModel)
+        let viewController = RemoteDetailsViewController.instantiate(coordinator: self,
+                                                                     deviceViewController: deviceViewController,
+                                                                     buttonsViewController: buttonsViewController,
+                                                                     informationViewController: informationViewController)
         // Prevents not fullscreen presentation style since iOS 13.
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
@@ -65,6 +84,11 @@ extension RemoteCoordinator {
     func startUpdate() {
         let viewController = RemoteUpdateViewController.instantiate(coordinator: self)
         push(viewController)
+    }
+
+    /// Dismisses current coordinator.
+    func dismissRemoteInfos() {
+        parentCoordinator?.dismissChildCoordinator()
     }
 }
 

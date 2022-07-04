@@ -5,6 +5,7 @@
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -22,86 +23,138 @@
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dxX-xu-4ml">
-                        <rect key="frame" x="0.0" y="0.0" width="163.5" height="50"/>
+                        <rect key="frame" x="0.0" y="0.0" width="681" height="50"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="Sdn-Sa-YyJ">
-                                <rect key="frame" x="0.0" y="0.0" width="163.5" height="50"/>
+                                <rect key="frame" x="0.0" y="0.0" width="681" height="50"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="bottom" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="gR3-gl-HYN">
-                                        <rect key="frame" x="0.0" y="0.0" width="163.5" height="50"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="681" height="50"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Cvq-TH-B2H">
-                                                <rect key="frame" x="0.0" y="24" width="29" height="26"/>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="Yy4-ik-RuC">
+                                                <rect key="frame" x="0.0" y="24" width="304" height="26"/>
                                                 <subviews>
-                                                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="App" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cne-ai-XYQ">
-                                                        <rect key="frame" x="0.0" y="0.0" width="29" height="13"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="black_pearl"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
-                                                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="B1J-xC-GGG">
-                                                        <rect key="frame" x="0.0" y="13" width="29" height="13"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="black_pearl"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Cvq-TH-B2H">
+                                                        <rect key="frame" x="0.0" y="0.0" width="169.5" height="26"/>
+                                                        <subviews>
+                                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="App" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cne-ai-XYQ">
+                                                                <rect key="frame" x="0.0" y="0.0" width="169.5" height="13"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="black_pearl"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="B1J-xC-GGG">
+                                                                <rect key="frame" x="0.0" y="13" width="169.5" height="13"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="black_pearl"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="AwG-QN-FfT">
+                                                        <rect key="frame" x="194.5" y="0.0" width="53" height="26"/>
+                                                        <subviews>
+                                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Controller" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dx4-gi-Xtr">
+                                                                <rect key="frame" x="0.0" y="0.0" width="53" height="13"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="black_pearl"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gq0-6j-hme">
+                                                                <rect key="frame" x="0.0" y="13" width="53" height="13"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="black_pearl"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="YiE-Lc-cre">
+                                                        <rect key="frame" x="272.5" y="0.0" width="31.5" height="26"/>
+                                                        <subviews>
+                                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Drone" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KyW-Gs-jae">
+                                                                <rect key="frame" x="0.0" y="0.0" width="31.5" height="13"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="black_pearl"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="0.0.0" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0Te-OI-pNH">
+                                                                <rect key="frame" x="0.0" y="13" width="31.5" height="13"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="black_pearl"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                        </subviews>
+                                                    </stackView>
                                                 </subviews>
                                             </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="AwG-QN-FfT">
-                                                <rect key="frame" x="54" y="24" width="53" height="26"/>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="u7d-f9-ri7" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="329" y="0.0" width="163.5" height="50"/>
+                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                            </view>
+                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="bottom" translatesAutoresizingMaskIntoConstraints="NO" id="V5X-d4-LKK">
+                                                <rect key="frame" x="517.5" y="0.0" width="163.5" height="50"/>
                                                 <subviews>
-                                                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Controller" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dx4-gi-Xtr">
-                                                        <rect key="frame" x="0.0" y="0.0" width="53" height="13"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="black_pearl"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
-                                                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gq0-6j-hme">
-                                                        <rect key="frame" x="0.0" y="13" width="53" height="13"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="black_pearl"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
-                                                </subviews>
-                                            </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="YiE-Lc-cre">
-                                                <rect key="frame" x="132" y="24" width="31.5" height="26"/>
-                                                <subviews>
-                                                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Drone" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KyW-Gs-jae">
-                                                        <rect key="frame" x="0.0" y="0.0" width="31.5" height="13"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="black_pearl"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
-                                                    <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0UK-Sb-8tW">
-                                                        <rect key="frame" x="0.0" y="13" width="31.5" height="13"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                        <color key="textColor" name="black_pearl"/>
-                                                        <nil key="highlightedColor"/>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
-                                                        </variation>
-                                                    </label>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XZH-iE-5Zn">
+                                                        <rect key="frame" x="0.0" y="0.0" width="163.5" height="50"/>
+                                                        <subviews>
+                                                            <label opaque="NO" contentMode="left" horizontalHuggingPriority="248" horizontalCompressionResistancePriority="748" text="Right button" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="Q77-ha-OY3" userLabel="right button label">
+                                                                <rect key="frame" x="0.0" y="18.5" width="163.5" height="13"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                <color key="textColor" name="black_pearl"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="16"/>
+                                                                </variation>
+                                                            </label>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" pointerInteraction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cU5-1b-QHQ">
+                                                                <rect key="frame" x="0.0" y="0.0" width="163.5" height="50"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <color key="tintColor" name="black_pearl"/>
+                                                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                                <connections>
+                                                                    <action selector="termsOfUseButtonTouchUpInside" destination="gTV-IL-0wX" eventType="touchUpInside" id="2ah-1c-sJy"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                        <constraints>
+                                                            <constraint firstAttribute="trailing" secondItem="Q77-ha-OY3" secondAttribute="trailing" id="5y9-J0-UDf"/>
+                                                            <constraint firstItem="Q77-ha-OY3" firstAttribute="centerY" secondItem="XZH-iE-5Zn" secondAttribute="centerY" id="BL0-q0-I7e"/>
+                                                            <constraint firstItem="cU5-1b-QHQ" firstAttribute="leading" secondItem="XZH-iE-5Zn" secondAttribute="leading" id="Ot4-dV-8Mx"/>
+                                                            <constraint firstItem="Q77-ha-OY3" firstAttribute="leading" secondItem="XZH-iE-5Zn" secondAttribute="leading" id="QrD-g0-L2N"/>
+                                                            <constraint firstAttribute="trailing" secondItem="cU5-1b-QHQ" secondAttribute="trailing" id="jn6-Kn-kjK"/>
+                                                            <constraint firstItem="cU5-1b-QHQ" firstAttribute="top" secondItem="XZH-iE-5Zn" secondAttribute="top" id="sxx-TN-BUG"/>
+                                                            <constraint firstAttribute="bottom" secondItem="cU5-1b-QHQ" secondAttribute="bottom" id="yRJ-Dv-bKs"/>
+                                                        </constraints>
+                                                    </view>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
                                     </stackView>
                                 </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="gR3-gl-HYN" secondAttribute="trailing" id="0Pn-9u-1p2"/>
+                                    <constraint firstItem="gR3-gl-HYN" firstAttribute="leading" secondItem="Sdn-Sa-YyJ" secondAttribute="leading" id="4Oo-7F-PEz"/>
+                                    <constraint firstAttribute="bottom" secondItem="gR3-gl-HYN" secondAttribute="bottom" id="KZn-T1-E2R"/>
+                                    <constraint firstItem="gR3-gl-HYN" firstAttribute="top" secondItem="Sdn-Sa-YyJ" secondAttribute="top" id="yTd-Ba-WEe"/>
+                                </constraints>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -118,23 +171,29 @@
                 <constraint firstItem="dxX-xu-4ml" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="0LA-Y6-Bgd"/>
                 <constraint firstItem="dxX-xu-4ml" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="U7A-U9-4rN"/>
                 <constraint firstAttribute="bottom" secondItem="dxX-xu-4ml" secondAttribute="bottom" id="YdX-Eb-gdQ"/>
+                <constraint firstAttribute="trailing" secondItem="dxX-xu-4ml" secondAttribute="trailing" id="qD1-OS-JsG"/>
             </constraints>
             <size key="customSize" width="681" height="50"/>
             <connections>
                 <outlet property="controllerTitleLabel" destination="dx4-gi-Xtr" id="PX8-R2-soH"/>
                 <outlet property="controllerVersionLabel" destination="Gq0-6j-hme" id="XZf-fU-NZ3"/>
                 <outlet property="droneTitleLabel" destination="KyW-Gs-jae" id="B9s-g0-SEH"/>
-                <outlet property="droneVersionLabel" destination="0UK-Sb-8tW" id="LgM-rI-Hxg"/>
+                <outlet property="droneVersionLabel" destination="0Te-OI-pNH" id="UdQ-1b-eYl"/>
+                <outlet property="rightButton" destination="cU5-1b-QHQ" id="vOo-DT-TfC"/>
+                <outlet property="rightButtonLabel" destination="Q77-ha-OY3" id="EgA-3q-0JN"/>
                 <outlet property="versionLabel" destination="B1J-xC-GGG" id="YLz-W6-duD"/>
                 <outlet property="versionTitleLabel" destination="Cne-ai-XYQ" id="41r-g0-k88"/>
                 <outlet property="versionsView" destination="dxX-xu-4ml" id="4fH-rC-G5b"/>
             </connections>
-            <point key="canvasLocation" x="197.20982142857142" y="259.4202898550725"/>
+            <point key="canvasLocation" x="135.60267857142856" y="215.94202898550725"/>
         </collectionViewCell>
     </objects>
     <resources>
         <namedColor name="black_pearl">
             <color red="0.090196078431372548" green="0.11764705882352941" blue="0.14509803921568629" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
     </resources>
 </document>

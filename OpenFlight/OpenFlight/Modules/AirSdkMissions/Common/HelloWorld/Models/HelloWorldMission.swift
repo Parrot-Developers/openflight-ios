@@ -59,7 +59,8 @@ enum HelloWorldMissionMode: String, CaseIterable {
                                                    isTrackingMode: false,
                                                    isAeLockEnabled: false,
                                                    isInstallationRequired: true,
-                                                   isCameraShutterButtonEnabled: true)
+                                                   isCameraShutterButtonEnabled: true,
+                                                   isTargetOnStream: false)
 
         return MissionMode(configurator: configurator,
                            missionActivationModel: HelloWorldMissionViewModel(),
@@ -87,7 +88,7 @@ enum HelloWorldMissionMode: String, CaseIterable {
     private var preferredSplitMode: SplitScreenMode {
         switch self {
         case .standard:
-            return .splited
+            return .split
         }
     }
 

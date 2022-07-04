@@ -62,6 +62,8 @@ public protocol ServiceHub: AnyObject {
     var currentRemoteControlHolder: CurrentRemoteControlHolder { get }
     /// Access to the connected remote control if any
     var connectedRemoteControlHolder: ConnectedRemoteControlHolder { get }
+    /// Manual or automatic update of remote control settings
+    var remoteControlUpdater: RemoteControlUpdater { get }
     /// Access to locations tracking
     var locationsTracker: LocationsTracker { get }
     /// Access to the Data Repositories
@@ -81,14 +83,18 @@ public protocol ServiceHub: AnyObject {
     var cloudSynchroWatcher: CloudSynchroWatcher? { get set }
     /// Panorama capture mode service
     var panoramaService: PanoramaService { get }
-    /// Watch the live telemetry
-    var liveTelemetryWatcher: LiveTelemetryWatcher? { get set }
     /// Touch and fly service
     var touchAndFly: TouchAndFlyService { get }
     /// Update service
     var update: UpdateService { get }
     /// System service
     var systemServices: SystemServices { get }
+    /// Banner alert manager service
+    var bamService: BannerAlertManagerService { get }
+    /// Preset service
+    var presetService: PresetsService { get }
+    /// Start active services
+    func start()
 }
 
 /// Namespace to expose the service hub (until refactor is complete)
@@ -98,10 +104,12 @@ public enum Services {
 
     public static func createInstance(variableAssetsService: VariableAssetsService,
                                       persistentContainer: NSPersistentContainer,
-                                      missionsToLoadAtStart: [AirSdkMissionSignature]) -> ServiceHub {
+                                      missionsToLoadAtStart: [AirSdkMissionSignature],
+                                      dashboardUiProvider: DashboardUiProvider) -> ServiceHub {
         hub = ServiceHubImpl(variableAssetsService: variableAssetsService,
                              persistentContainer: persistentContainer,
-                             missionsToLoadAtStart: missionsToLoadAtStart)
+                             missionsToLoadAtStart: missionsToLoadAtStart,
+                             dashboardUiProvider: dashboardUiProvider)
         return hub
     }
 }
@@ -137,6 +145,8 @@ public struct UIServices {
     public let flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider
     /// Project manager views UI provider
     public let projectManagerUiProvider: ProjectManagerUiProvider
+    /// Dashboard UI provider
+    public let dashboardUiProvider: DashboardUiProvider
     /// Navigation Stack Service
     public let navigationStack: NavigationStackService
     /// Touch and fly ui service
@@ -245,6 +255,7 @@ private class ServiceHubImpl: ServiceHub {
     let obstacleAvoidanceMonitor: ObstacleAvoidanceMonitor
     let currentRemoteControlHolder: CurrentRemoteControlHolder
     let connectedRemoteControlHolder: ConnectedRemoteControlHolder
+    let remoteControlUpdater: RemoteControlUpdater
     let locationsTracker: LocationsTracker
     let repos: Repositories
     // swiftlint:disable:next identifier_name
@@ -255,10 +266,12 @@ private class ServiceHubImpl: ServiceHub {
     let academyApiService: AcademyApiService
     var cloudSynchroWatcher: CloudSynchroWatcher?
     let panoramaService: PanoramaService
-    var liveTelemetryWatcher: LiveTelemetryWatcher?
     var touchAndFly: TouchAndFlyService
     let update: UpdateService
     let systemServices: SystemServices
+    let bamService: BannerAlertManagerService
+    let alertMonitorManager: AlertsMonitor
+    let presetService: PresetsService
 
     /// Legacy drone store, implements some side effects of current drone change
     private let legacyCurrentDroneStore: LegacyCurrentDroneStore
@@ -266,7 +279,8 @@ private class ServiceHubImpl: ServiceHub {
     // swiftlint:disable:next function_body_length
     fileprivate init(variableAssetsService: VariableAssetsService,
                      persistentContainer: NSPersistentContainer,
-                     missionsToLoadAtStart: [AirSdkMissionSignature]) {
+                     missionsToLoadAtStart: [AirSdkMissionSignature],
+                     dashboardUiProvider: DashboardUiProvider) {
 
         apcApiManager = APCApiManager()
 
@@ -315,6 +329,8 @@ private class ServiceHubImpl: ServiceHub {
 
         currentRemoteControlHolder = CurrentRemoteControlHolderImpl(connectedRemoteControlHolder: connectedRemoteControlHolder)
 
+        remoteControlUpdater = RemoteControlUpdaterImpl(currentRemoteControlHolder: currentRemoteControlHolder)
+
         let activeFlightPlanWatcher = ActiveFlightPlanExecutionWatcherImpl(flightPlanRepository: repos.flightPlan)
 
         obstacleAvoidanceMonitor = ObstacleAvoidanceMonitorImpl(currentDroneHolder: currentDroneHolder,
@@ -326,7 +342,10 @@ private class ServiceHubImpl: ServiceHub {
                                                                             connectedDroneHolder: connectedDroneHolder,
                                                                             connectedRemoteControlHolder: connectedRemoteControlHolder)
 
-        let rthService = RthServiceImpl(currentDroneHolder: currentDroneHolder)
+        bamService = BannerAlertManagerServiceImpl()
+
+        let rthService = RthServiceImpl(currentDroneHolder: currentDroneHolder,
+                                        bamService: bamService)
         let zoomService = ZoomServiceImpl(currentDroneHolder: currentDroneHolder,
                                           activeFlightPlanWatcher: activeFlightPlanWatcher)
         let gimbalTiltService = GimbalTiltServiceImpl(connectedDroneHolder: connectedDroneHolder,
@@ -408,7 +427,8 @@ private class ServiceHubImpl: ServiceHub {
                                                                     flightPlanManager: flightPlanManager,
                                                                     typeStore: flightPlanTypeStore,
                                                                     currentMissionManager: currentMissionManager,
-                                                                    userService: userService)
+                                                                    userService: userService,
+                                                                    cloudSynchroWatcher: cloudSynchroWatcher)
 
         let flightPlanRunManager = FlightPlanRunManagerImpl(typeStore: flightPlanTypeStore,
                                                             projectRepo: repos.project,
@@ -432,7 +452,8 @@ private class ServiceHubImpl: ServiceHub {
 
         let flightPlanCameraSettingsHandler = FlightPlanCameraSettingsHandlerImpl(activeFlightPlanWatcher: activeFlightPlanWatcher,
                                                                                   currentDroneHolder: currentDroneHolder,
-                                                                                  projectManager: projectManager)
+                                                                                  projectManager: projectManager,
+                                                                                  cameraConfigWatcher: cameraConfigWatcher)
 
         let mavlinkGenerator = MavlinkGeneratorImpl(typeStore: flightPlanTypeStore,
                                                     filesManager: flightPlanFilesManager,
@@ -446,7 +467,8 @@ private class ServiceHubImpl: ServiceHub {
                                                                 mavlinkGenerator: mavlinkGenerator,
                                                                 mavlinkSender: mavlinkSender,
                                                                 startAvailabilityWatcher: flightPlanStartAvailabilityWatcher,
-                                                                edition: flightPlanEditionService)
+                                                                edition: flightPlanEditionService,
+                                                                cloudSynchroWatcher: cloudSynchroWatcher)
         let flightPlanUiStateProvider = FlightPlanUiStateProviderImpl(stateMachine: flightPlanStateMachine,
                                                                       projectManager: projectManager)
         let flightPlanRecoveryInfo = FlightPlanRecoveryInfoServiceImpl(connectedDroneHolder: connectedDroneHolder,
@@ -492,6 +514,7 @@ private class ServiceHubImpl: ServiceHub {
                         flightPlanUiStateProvider: flightPlanUiStateProvider,
                         flightPlanExecutionDetailsSettingsProvider: flightPlanExecutionDetailsSettingsProvider,
                         projectManagerUiProvider: projectManagerUiProvider,
+                        dashboardUiProvider: dashboardUiProvider,
                         navigationStack: navigationStack,
                         touchAndFly: touchAndFlyUi,
                         criticalAlert: criticalAlert)
@@ -509,6 +532,15 @@ private class ServiceHubImpl: ServiceHub {
 
         flight = FlightServices(gutmaWatcher: gutmaWatcher, service: flightService)
 
-        panoramaService = PanoramaServiceImpl(currentDroneHolder: currentDroneHolder)
+        panoramaService = PanoramaServiceImpl(currentDroneHolder: currentDroneHolder,
+                                              bamService: bamService)
+
+        alertMonitorManager = AlertsMonitor(connectedDroneHolder: connectedDroneHolder,
+                                            bamService: bamService)
+        presetService = PresetsServiceImpl(currentDroneHolder: currentDroneHolder)
+    }
+
+    func start() {
+        presetService.start()
     }
 }

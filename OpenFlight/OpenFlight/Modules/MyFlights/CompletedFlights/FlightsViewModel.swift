@@ -31,16 +31,19 @@ import Foundation
 import Combine
 
 class FlightsViewModel {
-
     private let service: FlightService
     private let navigationStack: NavigationStackService
     private weak var coordinator: MyFlightsCoordinator?
 
-    var flights: AnyPublisher<[FlightModel], Never> {
+    var flightsPublisher: AnyPublisher<[FlightModel], Never> {
         flightsSubject.eraseToAnyPublisher()
     }
+    var flights: [FlightModel] { flightsSubject.value }
     private var flightsSubject = CurrentValueSubject<[FlightModel], Never>([])
+
     @Published private(set) var selectedFlight: FlightModel?
+
+    private var isLastPage: Bool = false
     private var cancellable = Set<AnyCancellable>()
 
     init(service: FlightService,
@@ -49,34 +52,39 @@ class FlightsViewModel {
         self.service = service
         self.coordinator = coordinator
         self.navigationStack = navigationStack
-        self.flightsSubject.value = service.getAllFlights()
+        self.flightsSubject.value = service.getFlights(limit: service.numberOfFlightsPerPage)
 
         Services.hub.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [weak self] in
             // Ensure there is no sync on-going.
             guard let self = self, !$0  else { return }
-            Task { await self.service.handleFlightsUnknownLocationTitle() }
+            Task { await self.service.handleFlightsUnknownLocationTitle(inFlights: self.flightsSubject.value) }
         }.store(in: &cancellable)
 
         service.flightsDidChangePublisher.sink { [weak self] in
-            self?.flightsSubject.value = service.getAllFlights()
+            self?.refreshFlights()
         }.store(in: &cancellable)
     }
 
-    func delete(flight: FlightModel) {
-        service.delete(flight: flight)
+    func getSelectedFlightIndex() -> Int? {
+        guard let selectedFlight = selectedFlight else { return nil }
+        return flights.firstIndex(where: { $0.uuid == selectedFlight.uuid })
     }
 
-    func didTapOn(flight: FlightModel) {
+    func didTapOn(indexPath: IndexPath) {
+        guard indexPath.row < flights.count else { return }
+        let flight = flights[indexPath.row]
         navigationStack.updateLast(with: .myFlights(selectedFlight: flight))
         coordinator?.startFlightDetails(flight: flight)
         selectedFlight = flight
     }
 
-    func askForDeletion(flight: FlightModel) {
-        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: {
-            self.service.delete(flight: flight)
+    func askForDeletion(forIndexPath: IndexPath) {
+        guard forIndexPath.row < flights.count else { return }
+        let flight = flights[forIndexPath.row]
+        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: { [weak self] in
+            self?.service.delete(flight: flight)
         })
-     }
+    }
 
     func cellViewModel(flight: FlightModel) -> FlightTableViewCellModel {
         FlightTableViewCellModel(service: service,
@@ -86,5 +94,27 @@ class FlightsViewModel {
 
     func didSelectFlight(_ flight: FlightModel) {
         selectedFlight = flight
+    }
+
+    func getMoreFlights() {
+        let allFlightsCount = service.getAllFlightsCount()
+        guard flights.count < allFlightsCount else {
+            return
+        }
+        let moreFlights = service.getFlights(offset: flights.count, limit: service.numberOfFlightsPerPage)
+        flightsSubject.value.append(contentsOf: moreFlights)
+    }
+
+    func refreshFlights() {
+        flightsSubject.value = service.getFlights(limit: flights.count)
+    }
+
+    func getThumbnails(forIndexPaths: [IndexPath]) {
+        let flightsToHandle = forIndexPaths.compactMap { flights[$0.row] }
+        flightsToHandle.forEach({
+            if $0.thumbnail == nil {
+                service.thumbnail(flight: $0) { _ in }
+            }
+        })
     }
 }

@@ -59,8 +59,6 @@ extension Flight {
     @NSManaged public var fileSynchroStatus: Int16
     @NSManaged public var fileSynchroDate: Date?
     @NSManaged public var latestCloudModificationDate: Date?
-    @NSManaged public var externalSynchroStatus: Int16
-    @NSManaged public var externalSynchroDate: Date?
     @NSManaged public var latestLocalModificationDate: Date?
     @NSManaged public var synchroError: Int16
 

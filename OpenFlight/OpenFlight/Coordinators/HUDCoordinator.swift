@@ -54,7 +54,18 @@ open class HUDCoordinator: Coordinator {
 
     // MARK: - Public Funcs
     open func start() {
-        let viewController = HUDViewController.instantiate(coordinator: self)
+        let viewController = HUDViewController.instantiate(coordinator: self,
+                                                           currentMissionManager: services.currentMissionManager,
+                                                           airsdkMissionsManager: services.drone.airsdkMissionsManager,
+                                                           topBarService: services.ui.hudTopBarService,
+                                                           pinCodeService: services.drone.pinCodeService,
+                                                           rthService: services.drone.rthService,
+                                                           panoramaService: services.panoramaService,
+                                                           uiComponentsDisplayReporter: services.ui.uiComponentsDisplayReporter,
+                                                           ophtalmoService: services.drone.ophtalmoService,
+                                                           touchAndFly: services.ui.touchAndFly,
+                                                           missionsStore: services.missionsStore,
+                                                           connectedDroneHolder: services.connectedDroneHolder)
         self.viewController = viewController
         viewController.loadViewIfNeeded()
         navigationController?.viewControllers = [viewController]
@@ -99,10 +110,20 @@ open class HUDCoordinator: Coordinator {
     func cleanRightPanel() {
         guard let rightPanelCoordinator = rightPanelCoordinator,
               let previousContentNavigationController = rightPanelCoordinator.navigationController else { return }
-        previousContentNavigationController.willMove(toParent: nil)
-        previousContentNavigationController.view.removeFromSuperview()
-        previousContentNavigationController.removeFromParent()
-        self.rightPanelCoordinator = nil
+        // Block dedicated to remove the right panel.
+        let removeRightPanel = { [weak self] in
+            previousContentNavigationController.willMove(toParent: nil)
+            previousContentNavigationController.view.removeFromSuperview()
+            previousContentNavigationController.removeFromParent()
+            self?.rightPanelCoordinator = nil
+        }
+
+        // If Project Manager is displayed, dismiss it before removing the right panel.
+        if rightPanelCoordinator.childCoordinators.last is ProjectManagerCoordinator {
+            rightPanelCoordinator.dismissChildCoordinator(animated: false) { removeRightPanel() }
+        } else {
+            removeRightPanel()
+        }
     }
 
     func insertRightPanelIfNeeded(mode: MissionMode) {
@@ -137,17 +158,27 @@ open class HUDCoordinator: Coordinator {
     /// - Parameters:
     ///   - completion: The completion block
     open func returnToPreviousView(completion: (() -> Void)? = nil) {
+
+        // When leaving the "main" HUD, we must store the current mission to restore it, when coming back, if needed.
+        if isMainHud { services.currentMissionManager.storeCurrentMissionAsLatestHudSelection() }
+
         let coordinators = services.ui.navigationStack.coordinators(services: services, hudCoordinator: self)
         guard !coordinators.isEmpty else {
             startDashboard()
+            completion?()
             return
         }
-        presentCoordinatorsStack(coordinators: coordinators, transitionSubtype: .fromLeft) { [weak self] in
-            guard let self = self else { return }
-            // Restore HUD with last opened Mission
-            self.services.currentMissionManager.restoreLastHudSelection()
-            completion?()
-        }
+
+        presentCoordinatorsStack(coordinators: coordinators, transitionSubtype: .fromLeft, completion: completion)
+    }
+
+    /// Wether the current HUD is the main or the one used to display a project from the dashboard's project manager.
+    var isMainHud: Bool {
+        // The presence of a project manager instance in the navigation stack
+        // means the current HUD is not the "main" but a view to display a project.
+        services.ui.navigationStack.coordinators(services: services,
+                                                 hudCoordinator: self)
+        .first { $0 is ProjectManagerCoordinator } == nil
     }
 
     /// Listens camera recording state changes
@@ -194,6 +225,10 @@ extension HUDCoordinator {
     /// - Parameters:
     ///    - type: settings type
     func startSettings(_ type: SettingsType?) {
+        // hide mission launcher if it was opened
+        hideMissionLauncher()
+
+        // open settings screen
         let settingsCoordinator = SettingsCoordinator()
         settingsCoordinator.startSettingType = type
         presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
@@ -209,6 +244,10 @@ extension HUDCoordinator {
 
     /// Starts drone details coordinator.
     func startDroneInformation() {
+        // hide mission launcher if it was opened
+        hideMissionLauncher()
+
+        // open drone information screen
         let droneCoordinator = DroneCoordinator(services: services)
         droneCoordinator.parentCoordinator = self
         droneCoordinator.start()
@@ -217,7 +256,11 @@ extension HUDCoordinator {
 
     /// Starts remote details coordinator.
     func startRemoteInformation() {
-        let remoteCoordinator = RemoteCoordinator()
+        // hide mission launcher if it was opened
+        hideMissionLauncher()
+
+        // open remote information screen
+        let remoteCoordinator = RemoteCoordinator(services: services)
         remoteCoordinator.parentCoordinator = self
         remoteCoordinator.start()
         present(childCoordinator: remoteCoordinator)

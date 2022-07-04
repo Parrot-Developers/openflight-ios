@@ -64,8 +64,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
         static let selectedColor: UIColor = ColorName.highlightColor.color
         static let touchAreaColor: UIColor = .clear
         static let lineWidth: CGFloat = 2.0
-        static let lineWidthTouchArea: CGFloat = 20.0
-        static let invisibleLineWidth: CGFloat = 40.0
+        static let lineWidthTouchArea: CGFloat = 60.0
     }
 
     // MARK: - Init
@@ -75,6 +74,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     ///    - origin: origin waypoint
     ///    - destination: destination waypoint
     ///    - originIndex: index of the origin waypoint
+    ///    - isDetail: If the detail execution screen is open
     init(origin: WayPoint,
          destination: WayPoint,
          originIndex: Int) {
@@ -90,13 +90,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
                                          color: Constants.defaultColor,
                                          width: Constants.lineWidth)
 
-        // Larger invisible line symbol is created to ease graphic selection (workaround
-        // due to ArcGIS not handling identify tolerance properly on line graphics).
-        let invisibleSymbol = AGSSimpleLineSymbol(style: .null,
-                                                  color: UIColor.clear,
-                                                  width: Constants.invisibleLineWidth)
-
-        let compositeSymbol = AGSCompositeSymbol(symbols: [symbolTouchArea, symbol, invisibleSymbol])
+        let compositeSymbol = AGSCompositeSymbol(symbols: [symbolTouchArea, symbol])
 
         super.init(geometry: polyline,
                    symbol: compositeSymbol,

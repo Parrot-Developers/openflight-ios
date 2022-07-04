@@ -97,8 +97,12 @@ public class TimelapseRestartServiceImpl {
         // to trigger timelapse restart process if required
         cameraConfigWatcher.willApplyConfigPublisher
             .sink { [unowned self ] editor in
-                // check if timelapse is ongoing
-                // and if configuration changes require restarting timelapse
+                // Check if the following conditions are met to restart a timelapse:
+                //    • Drone's camera is accessible
+                //    • A timelapse is ongoing
+                //    • There is NO Flight Plan execution running
+                //    • A timelapse restart is not already asked
+                //    • The camera config to apply doesn't come from a restore after an FP stop
                 guard let camera = connectedDroneHolder.drone?.currentCamera,
                       cameraPhotoCaptureService.state.canStop,
                       camera.config[Camera2Params.mode]?.value == .photo,
@@ -106,7 +110,8 @@ public class TimelapseRestartServiceImpl {
                       editor[Camera2Params.mode]?.value == .photo,
                       editor[Camera2Params.photoMode]?.value == .timeLapse,
                       requireRestart(config: camera.config, editor: editor),
-                      activeFlightPlanWatcher.activeFlightPlan == nil,
+                      case .none = activeFlightPlanWatcher.activeFlightPlanState,
+                      !cameraConfigWatcher.isRestoringSavedCameraSettings,
                       restartState == .none
                 else { return }
 

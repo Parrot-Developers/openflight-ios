@@ -29,6 +29,11 @@
 
 import Combine
 import ArcGIS
+import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "MapElevationSource")
+}
 
 /// Data source for map elevation.
 public class MapElevationSource: AGSArcGISTiledElevationSource {
@@ -36,23 +41,58 @@ public class MapElevationSource: AGSArcGISTiledElevationSource {
     /// Whether elevation is loaded.
     @Published var elevationLoaded: Bool = false
 
+    /// Whether elevation load failed and should be retried.
+    @Published private var retry = false
+
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Private Enums
     private enum MapConstants {
         static let elevationURL = "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
     }
 
     /// Constructor.
-    override init() {
+    ///
+    /// - Parameters:
+    ///    - networkService: network reachability service
+    init(networkService: NetworkService) {
         guard let elevationUrl = URL(string: MapConstants.elevationURL) else {
             fatalError("Invalid URL")
         }
 
         super.init(url: elevationUrl)
+
+        // retry load of elevation data when network is reachable
+        networkService.networkReachable
+            .combineLatest($retry)
+            .filter { $0.0 && $0.1 }
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                ULog.i(.tag, "Retry load")
+                self.retry = false
+                self.retryLoad()
+            }.store(in: &cancellables)
     }
 
     /// Never call this method directly. The ArcGIS framework calls this method on a background thread.
     public override func onLoadStatusChanged() {
         super.onLoadStatusChanged()
+        ULog.i(.tag, "Load status changed \(loadStatus)")
         elevationLoaded = loadStatus == .loaded
+        retry = loadStatus == .failedToLoad
+    }
+}
+
+/// Extension for debug description.
+extension AGSLoadStatus: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .notLoaded: return "notLoaded"
+        case .loading: return "loading"
+        case .loaded: return "loaded"
+        case .failedToLoad: return "failedToLoad"
+        default: return "unknown"
+        }
     }
 }

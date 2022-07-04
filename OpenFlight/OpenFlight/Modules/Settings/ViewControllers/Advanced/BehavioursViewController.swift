@@ -28,12 +28,15 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Settings content sub class dedicated to behaviours settings.
 final class BehavioursViewController: SettingsContentViewController {
     // MARK: - Outlets
     @IBOutlet private weak var presetView: SettingsPresetsView!
     @IBOutlet private weak var presetViewHeightConstraint: NSLayoutConstraint!
+
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
@@ -79,17 +82,21 @@ private extension BehavioursViewController {
     /// Sets up view model.
     func setupViewModel() {
         // Setup view model.
-        viewModel = BehavioursViewModel()
-        viewModel?.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-        // Inital data source update.
-        updateDataSource()
+        viewModel = BehavioursViewModel(currentDroneHolder: Services.hub.currentDroneHolder, presetService: Services.hub.presetService)
+        guard let viewModel = viewModel as? BehavioursViewModel else { return }
 
-        viewModel?.infoHandler = { [weak self] modeType in
-            self?.showInfo(modeType)
-        }
+        viewModel.notifyChangePublisher
+            .combineLatest(viewModel.resetSettingPublisher)
+            .sink { [weak self] (_, _) in
+                guard let self = self else { return }
+                self.updateDataSource()
+            }
+            .store(in: &cancellables)
 
+        viewModel.infoHandler = { [weak self] modeType in
+            guard let self = self else { return }
+            self.showInfo(modeType)
+        }
     }
 
     /// Show info related to setting type.

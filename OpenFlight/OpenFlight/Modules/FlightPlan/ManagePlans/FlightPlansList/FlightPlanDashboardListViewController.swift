@@ -52,6 +52,7 @@ final class FlightPlanDashboardListViewController: UIViewController {
         let project: ProjectModel
         let executions: [FlightPlanModel]
         let index: Int
+        var selectedExecutionUuid: String?
     }
     private var selectedProject: SelectedProject? {
         didSet {
@@ -78,29 +79,17 @@ final class FlightPlanDashboardListViewController: UIViewController {
 
     private func bindViewModel() {
         viewModel.allProjectsPublisher
-            .sink { [weak self] allFlightPlans in
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
                 guard let self = self else { return }
-
                 self.collectionView?.reloadData()
-
-                // Keep current selection if project still exist
-                if let project = self.selectedProject?.project,
-                   let projectIndex = allFlightPlans.firstIndex(where: { $0.uuid == project.uuid }) {
-                    self.didSelectProject(allFlightPlans[projectIndex], at: projectIndex)
-
-                    self.collectionView.scrollToItem(at: IndexPath(row: projectIndex, section: 0),
-                                                     at: .centeredVertically,
-                                                     animated: true)
-                } else {
-                    self.didDeselectProject()
-                }
-
                 self.emptyLabelContainer.isHidden = self.viewModel.projectsCount() > 0
                 self.emptyExecutionLabel.isHidden = self.selectedProject?.executions.count ?? 0 > 0
             }
             .store(in: &cancellables)
 
         viewModel.uuidPublisher
+            .receive(on: RunLoop.main)
             .dropFirst() // do not fire on initialization
             .sink { [unowned self] _ in
                 collectionView?.reloadData()
@@ -133,6 +122,7 @@ final class FlightPlanDashboardListViewController: UIViewController {
         emptyFlightPlansTitleLabel.text = L10n.dashboardMyFlightsEmptyProjectExecutionsTitle
         emptyFlightPlansDescriptionLabel.text = L10n.dashboardMyFlightsEmptyListDesc
         emptyExecutionLabel.text = L10n.dashboardMyFlightsEmptyProjectExecutionsList
+        emptyLabelContainer.isHidden = true
 
         // Right panel button button
         openProjectButton.setup(title: L10n.dashboardMyFlightsProjectExecutionOpenProject,
@@ -151,9 +141,16 @@ final class FlightPlanDashboardListViewController: UIViewController {
         collectionView.reloadData()
         // If a prject was already selected, refresh his execution list.
         if let selectedProject = selectedProject {
-            didSelectProject(selectedProject.project, at: selectedProject.index)
+            didSelectProject(selectedProject.project,
+                             at: selectedProject.index,
+                             selectedExecutionUuid: selectedProject.selectedExecutionUuid)
         }
         LogEvent.log(.screen(LogEvent.Screen.flightPlanList))
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
+        scrollToSelectedProject()
     }
 
     override func viewWillLayoutSubviews() {
@@ -179,11 +176,12 @@ final class FlightPlanDashboardListViewController: UIViewController {
         viewModel?.updateNavigationStack(with: projectProvider.project)
     }
 
-    func didSelectProject(_ project: ProjectModel, at index: Int) {
+    func didSelectProject(_ project: ProjectModel, at index: Int, selectedExecutionUuid: String? = nil) {
         let executions = viewModel.flightPlanExecutions(ofProject: project)
         selectedProject = SelectedProject(project: project,
                                           executions: executions,
-                                          index: index)
+                                          index: index,
+                                          selectedExecutionUuid: selectedExecutionUuid)
         viewModel.selectProject(project)
     }
 
@@ -195,6 +193,21 @@ final class FlightPlanDashboardListViewController: UIViewController {
     func didDeselectProject() {
         selectedProject = nil
         viewModel.deselectProject()
+    }
+
+    func scrollToSelectedProject() {
+        guard let selectedProject = selectedProject else {
+            return
+        }
+        if let index = viewModel.getProjectIndex(forSelectedProject: selectedProject.project) {
+            self.didSelectProject(selectedProject.project, at: index)
+            collectionView.reloadData()
+            collectionView.scrollToItem(at: IndexPath(row: index, section: 0),
+                                        at: .centeredVertically,
+                                        animated: false)
+        } else {
+            self.didDeselectProject()
+        }
     }
 
     @IBAction private func openProjectAction() {
@@ -225,6 +238,9 @@ extension FlightPlanDashboardListViewController: UICollectionViewDataSource {
         guard let cellProvider = viewModel.projectProvider(at: indexPath.row) else { return cell }
         cell.configureCell(project: cellProvider.project,
                            isSelected: cellProvider.isSelected)
+
+        viewModel.shouldGetMoreProjects(fromIndexPath: indexPath)
+
         return cell
     }
 
@@ -278,6 +294,14 @@ extension FlightPlanDashboardListViewController: UITableViewDataSource {
             return cell
         }
     }
+
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard indexPath.row > 0 else { return }
+        if let selectedExecutionUuid = selectedProject?.selectedExecutionUuid,
+               selectedExecutionUuid == selectedProject?.executions[indexPath.row - 1].uuid {
+                cell.setSelected(true, animated: true)
+        }
+    }
 }
 
 // MARK: - UITableViewDelegate
@@ -286,6 +310,7 @@ extension FlightPlanDashboardListViewController: UITableViewDelegate {
         guard let execution = selectedProject?.executions[indexPath.row - 1] else {
             return
         }
+        selectedProject?.selectedExecutionUuid = execution.uuid
         viewModel.selectExecution(execution)
     }
 }

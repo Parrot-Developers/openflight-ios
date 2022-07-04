@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 import Reusable
 
 /// Protocol used to handle full screen cell panorama actions.
@@ -50,6 +51,8 @@ struct GalleryMediaFullScreenCellModel {
     var panoramaGenerationState: PanoramaGenerationState
     /// Whether media to display can show an immersive panorama.
     var hasShowImmersivePanoramaButton = false
+    /// the galleryMediaViewModel is used to update state on other downloads.
+    var galleryMediaViewModel: GalleryMediaViewModel?
 }
 
 /// A class for displaying a full screen gallery media collectionView cell.
@@ -98,6 +101,8 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
             updateState()
         }
     }
+    private var otherDownloadCancellable: AnyCancellable?
+    private var otherDownloadRunning: Bool = false
 
     func updateZoomLevel(_ level: GalleryMediaBrowsingViewModel.ZoomLevel) {
         guard level != .custom else { return }
@@ -105,7 +110,6 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
         UIView.animate(withDuration: Style.shortAnimationDuration) {
             let zoom = level == .maximum ? Constants.maxZoom : Constants.minZoom
             self.scrollView.zoomScale = zoom
-            self.centerZoomableView(animated: false, zoom: zoom)
         }
     }
 }
@@ -125,6 +129,13 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
 internal extension GalleryMediaFullScreenCollectionViewCell {
     /// Updates view content according to model.
     func update() {
+        if otherDownloadCancellable == nil, let viewModel = model?.galleryMediaViewModel {
+            otherDownloadCancellable = viewModel.$downloadProgress
+                .combineLatest(viewModel.$downloadStatus)
+                .sink { (progress, status) in
+                    self.otherDownloadRunning = status == .running && progress != nil
+                }
+        }
         if let previousUrl = previousUrl, previousUrl != model?.url?.absoluteString {
             imageView.image = nil
         }
@@ -134,7 +145,6 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
             guard let self = self else { return }
             self.previousUrl = self.model?.url?.absoluteString
             self.imageView.image = image
-            self.centerZoomableView(animated: false)
             self.isLoading = false
         }
     }
@@ -145,6 +155,7 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
         scrollView.minimumZoomScale = Constants.minZoom
         scrollView.maximumZoomScale = zoomable ? Constants.maxZoom : Constants.minZoom
         scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.delegate = self
         generatePanoramaButton.model = ActionButtonModel(title: L10n.galleryGeneratePanorama,
                                                          fontStyle: .big,
                                                          style: .action1)
@@ -158,31 +169,12 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
         updateState()
     }
 
-    func centerZoomableView(animated: Bool, zoom: CGFloat? = nil) {
-        guard let image = imageView.image else { return }
-        let zoomScale = zoom ?? scrollView.zoomScale
-        let imageScale = min(scrollView.bounds.width / image.size.width,
-                             scrollView.bounds.height / image.size.height)
-        let imageContentSize = CGSize(width: image.size.width * imageScale * zoomScale,
-                                      height: image.size.height * imageScale * zoomScale)
-        let offsetX = max(scrollView.bounds.size.width - imageContentSize.width, 0.0)
-        let offsetY = max(scrollView.bounds.size.height - imageContentSize.height, 0.0)
-        zoomableImageWidthConstraint.constant = image.size.width * imageScale + offsetX / zoomScale
-        zoomableImageHeightConstraint.constant = image.size.height * imageScale + offsetY / zoomScale
-        if animated {
-            UIView.animate(withDuration: Style.shortAnimationDuration) {
-                self.scrollView.layoutIfNeeded()
-            }
-        } else {
-            scrollView.layoutIfNeeded()
-        }
-    }
-
     /// Updates buttons state according to model.
     func updateState() {
         let shouldShowPanoramaGenerationError = canGeneratePanorama && model?.panoramaGenerationState == .missingResources
         expectedResourcesErrorInfoView.isHidden = !shouldShowPanoramaGenerationError
         generatePanoramaButton.isHidden = !canGeneratePanorama || model?.panoramaGenerationState != .toGenerate
+        generatePanoramaButton.isEnabled = !otherDownloadRunning
         imageView.contentMode = canGeneratePanorama ? .scaleAspectFill : .scaleAspectFit
 
         showImmersivePanoramaButton.isHidden = !canShowImmersivePanorama
@@ -224,8 +216,26 @@ extension GalleryMediaFullScreenCollectionViewCell: UIScrollViewDelegate {
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        centerZoomableView(animated: true)
         delegate?.fullScreenCellDidStopZooming()
+    }
+
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        if scrollView.zoomScale > 1 {
+            if let image = imageView.image {
+                let ratioW = imageView.frame.width / image.size.width
+                let ratioH = imageView.frame.height / image.size.height
+                let ratio = ratioW < ratioH ? ratioW : ratioH
+                let newWidth = image.size.width * ratio
+                let newHeight = image.size.height * ratio
+                let conditionLeft = newWidth * scrollView.zoomScale > imageView.frame.width
+                let left = 0.5 * (conditionLeft ? newWidth - imageView.frame.width : (scrollView.frame.width - scrollView.contentSize.width))
+                let conditionTop = newHeight * scrollView.zoomScale > imageView.frame.height
+                let top = 0.5 * (conditionTop ? newHeight - imageView.frame.height : (scrollView.frame.height - scrollView.contentSize.height))
+                scrollView.contentInset = UIEdgeInsets(top: top, left: left, bottom: top, right: left)
+            }
+        } else {
+            scrollView.contentInset = .zero
+        }
     }
 }
 

@@ -243,17 +243,6 @@ final class GalleryMediaViewModel: DroneStateViewModel<GalleryMediaState> {
     var deviceViewModel: GalleryDeviceMediaViewModel? = GalleryDeviceMediaViewModel.shared
     var selectionModeEnabled: Bool = false
 
-    var mediaStore: MediaStore? {
-        switch sourceType {
-        case .droneSdCard:
-            return sdCardViewModel?.mediaStore
-        case .droneInternal:
-            return internalViewModel?.mediaStore
-        default:
-            return nil
-        }
-    }
-
     // MARK: - Public Properties
     public var selectedMediaTypes: [GalleryMediaType] {
         return self.state.value.selectedMediaTypes
@@ -727,6 +716,10 @@ private extension GalleryMediaViewModel {
         internalListener = nil
         deviceViewModel?.unregisterListener(deviceListener)
         deviceListener = nil
+        // Reset media list refs in order to avoid unwanted media server updates
+        // when VM is not active.
+        sdCardViewModel?.resetMediaRef()
+        internalViewModel?.resetMediaRef()
     }
 
     /// Init gallery SD Card view Model.
@@ -824,6 +817,9 @@ extension GalleryMediaViewModel {
         guard let listener = listener else { return }
 
         self.mediaListener.remove(listener)
+        downloadProgress = nil
+        downloadStatus = nil
+        downloadingItem = nil
     }
 
     /// Unregister all listener.

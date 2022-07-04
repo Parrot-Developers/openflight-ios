@@ -47,16 +47,6 @@ class SplitControlsViewModel {
     var bottomBarMode: BottomBarMode { bottomBarModeSubject.value }
     /// Tells if joysticks are visible.
     var isJoysticksVisible: Bool { isJoysticksVisibleSubject.value }
-    /// Helper for secondary miniature visibility.
-    var shouldHideSecondary: AnyPublisher<Bool, Never> {
-        modeSubject
-            .combineLatest(bottomBarModeSubject)
-            .map { (couple: (SplitScreenMode?, BottomBarMode)) -> Bool in
-                let (mode, bottomBarMode) = couple
-                return mode == .stream && bottomBarMode != .closed
-            }
-            .eraseToAnyPublisher()
-    }
     /// Current split screen mode.
     var modePublisher: AnyPublisher<SplitScreenMode?, Never> { modeSubject.eraseToAnyPublisher() }
     /// Tells if joysticks are visible.

@@ -40,7 +40,9 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     private var mainLabel: AGSPictureMarkerSymbol?
     private var subLabel: AGSPictureMarkerSymbol?
     private var largeCircle: AGSSimpleMarkerSymbol
+    private var selectedLargeCircle: AGSSimpleMarkerSymbol
     private var smallCircle: AGSSimpleMarkerSymbol?
+    private var touchAreaCircle: AGSSimpleMarkerSymbol?
 
     /// Camera heading
     private var heading: Int = 0
@@ -61,11 +63,15 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
         static let defaultColor: UIColor = ColorName.black.color
         static let selectedColor: UIColor = ColorName.greenSpring.color
         static let secondaryColor: UIColor = ColorName.white.color
-        static let customSecondaryColor: UIColor = ColorName.highlightColor.color
+        static let customSecondaryColor: UIColor = ColorName.white.color
+        static let touchAreaCircleSize: CGFloat = 60.0
+        static let touchAreaColor: UIColor = ColorName.clear.color
         static let largeCircleSize: CGFloat = 42.0
         static let largeCircleOutlineWidth: CGFloat = 1.0
+        static let selectedLargeCircle: CGFloat = 50.0
         static let smallCircleSize: CGFloat = 14.0
-        static let smallCircleOffset: CGFloat = 16.0
+        static let smallCircleOffset: CGFloat = 15.0
+        static let selectedSmallCircleOffset: CGFloat = 16.0
         static let smallCircleOutlineWidth: CGFloat = 1.0
         static let displayedIndexOffset: Int = 1
         static let mainTextColor: UIColor = ColorName.white.color
@@ -81,13 +87,25 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     ///    - wayPoint: waypoint
     ///    - index: index of waypoint
     ///    - heading: camera heading
-    public init(wayPoint: WayPoint, index: Int, heading: Double) {
+    ///    - isDetail: If the detail execution screen is open
+    public init(wayPoint: WayPoint, index: Int, heading: Double, isDetail: Bool = false) {
         self.heading = Int(heading)
+        if !isDetail {
+            touchAreaCircle = AGSSimpleMarkerSymbol(style: .circle,
+                                                    color: Constants.touchAreaColor,
+                                                    size: Constants.touchAreaCircleSize)
+        }
         largeCircle = AGSSimpleMarkerSymbol(style: .circle,
                                             color: Constants.defaultColor,
                                             size: Constants.largeCircleSize)
         largeCircle.outline = AGSSimpleLineSymbol(style: .solid,
                                                   color: Constants.secondaryColor,
+                                                  width: Constants.largeCircleOutlineWidth)
+        selectedLargeCircle = AGSSimpleMarkerSymbol(style: .circle,
+                                                    color: Constants.selectedColor,
+                                                    size: Constants.selectedLargeCircle)
+        selectedLargeCircle.outline = AGSSimpleLineSymbol(style: .solid,
+                                                  color: Constants.customSecondaryColor,
                                                   width: Constants.largeCircleOutlineWidth)
         smallCircle = AGSSimpleMarkerSymbol(style: .circle,
                                             color: Constants.secondaryColor,
@@ -125,10 +143,19 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     /// - Parameters:
     ///    - location: waypoint's location
     public init(location: Location3D) {
+        touchAreaCircle = AGSSimpleMarkerSymbol(style: .circle,
+                                                color: Constants.touchAreaColor,
+                                                size: Constants.touchAreaCircleSize)
         largeCircle = AGSSimpleMarkerSymbol(style: .circle,
                                             color: Constants.defaultColor,
                                             size: Constants.largeCircleSize)
         largeCircle.outline = AGSSimpleLineSymbol(style: .solid,
+                                                  color: Constants.customSecondaryColor,
+                                                  width: Constants.largeCircleOutlineWidth)
+        selectedLargeCircle = AGSSimpleMarkerSymbol(style: .circle,
+                                                    color: Constants.selectedColor,
+                                                    size: Constants.selectedLargeCircle)
+        selectedLargeCircle.outline = AGSSimpleLineSymbol(style: .solid,
                                                   color: Constants.customSecondaryColor,
                                                   width: Constants.largeCircleOutlineWidth)
         self.location = location
@@ -149,7 +176,14 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     /// - Returns: symbol
     private func getSymbol() -> AGSCompositeSymbol {
         var array = [AGSSymbol]()
-        array.append(largeCircle)
+        if let touchAreaCircle = touchAreaCircle {
+            array.append(touchAreaCircle)
+        }
+        if isSelected {
+            array.append(selectedLargeCircle)
+        } else {
+            array.append(largeCircle)
+        }
         if let mainLabel = mainLabel {
             array.append(mainLabel)
         }
@@ -164,9 +198,17 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
 
     // MARK: - Override Funcs
     override func updateColors(isSelected: Bool) {
-        largeCircle.color = isSelected
-            ? Constants.selectedColor
-            : Constants.defaultColor
+        if isSelected {
+            smallCircle?.offsetX = Constants.selectedSmallCircleOffset
+            smallCircle?.offsetY = Constants.selectedSmallCircleOffset
+            subLabel?.offsetX = Constants.selectedSmallCircleOffset
+            subLabel?.offsetY = Constants.selectedSmallCircleOffset
+        } else {
+            smallCircle?.offsetX = Constants.smallCircleOffset
+            smallCircle?.offsetY = Constants.smallCircleOffset
+            subLabel?.offsetX = Constants.smallCircleOffset
+            subLabel?.offsetY = Constants.smallCircleOffset
+        }
         refreshText(altitude: wayPoint?.formattedAltitude ?? "")
         applyRotation()
         symbol = getSymbol()
@@ -241,9 +283,13 @@ public extension FlightPlanWayPointGraphic {
     /// Updates waypoint.
     ///
     /// - Parameters:
-    ///    - point: new point to apply
-    func update(with point: AGSPoint) {
-        geometry = point
+    ///    - location: new location to apply
+    func update(location: Location3D) {
+        geometry = location.agsPoint
+        zIndex = Int(location.altitude)
+        refreshText(altitude: location.formattedAltitude)
+        applyRotation()
+        symbol = getSymbol()
     }
 
     func decrementWayPointIndex() {

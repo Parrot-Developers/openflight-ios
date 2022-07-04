@@ -293,7 +293,6 @@ extension GalleryMediaViewController: UICollectionViewDataSource {
 
         let media = dataSource[indexPath.section].medias[indexPath.row]
         cell.setup(media: media,
-                   mediaStore: viewModel.mediaStore,
                    index: viewModel.getMediaImageDefaultIndex(media),
                    delegate: self,
                    selected: selectedMedias.first(where: { $0.uid == media.uid }) != nil)
@@ -354,7 +353,7 @@ extension GalleryMediaViewController: UICollectionViewDelegateFlowLayout {
         // Prevent from issue when rotate.
         guard width >= 0.0 else { return CGSize() }
         var height = width
-        if dataSource[indexPath.section].medias[indexPath.row].cellTitle?.isEmpty == false {
+        if dataSource[indexPath.section].medias[indexPath.row].cellTitle.isEmpty == false {
             height += Constants.itemTitleHeight
         }
 

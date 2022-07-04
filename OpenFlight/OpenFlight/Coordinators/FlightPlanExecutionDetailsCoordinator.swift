@@ -66,7 +66,8 @@ public final class FlightPlanExecutionDetailsCoordinator: Coordinator {
                                                      flightPlanExecutionDetailsSettingsProvider: uiServices.flightPlanExecutionDetailsSettingsProvider,
                                                      flightPlanUiStateProvider: uiServices.flightPlanUiStateProvider,
                                                      flightService: flightServices.service,
-                                                     navigationStack: uiServices.navigationStack)
+                                                     navigationStack: uiServices.navigationStack,
+                                                     flightPlanManager: flightPlanServices.manager)
         let viewController = FlightDetailsViewController.instantiate(viewModel: .execution(viewModel))
         viewController.modalPresentationStyle = .fullScreen
         navigationController = NavigationController(rootViewController: viewController)

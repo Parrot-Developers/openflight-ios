@@ -54,6 +54,8 @@ public class RthServiceImpl {
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     /// The RTH active state.
     private var isActiveSubject = CurrentValueSubject<Bool, Never>(false)
+    /// The banner alert manager service.
+    private var bamService: BannerAlertManagerService
 
     // MARK: init
 
@@ -61,7 +63,10 @@ public class RthServiceImpl {
     ///
     /// - Parameters:
     ///   - currentDroneHolder: drone holder
-    public init(currentDroneHolder: CurrentDroneHolder) {
+    ///   - bamService: the banner alert manager service
+    public init(currentDroneHolder: CurrentDroneHolder,
+                bamService: BannerAlertManagerService) {
+        self.bamService = bamService
         // listen to drone changes
         listen(dronePublisher: currentDroneHolder.dronePublisher)
     }
@@ -84,10 +89,23 @@ private extension RthServiceImpl {
     ///
     /// - Parameter drone: drone to monitor
     func listenToRth(drone: Drone) {
-        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] _ in
-            ULog.i(.tag, "updateReturnHomeState isReturningHome: \(drone.isReturningHome) isForceLandingInProgress: \(drone.isForceLandingInProgress)")
-            self?.isActiveSubject.value = drone.isReturningHome && !drone.isForceLandingInProgress
+        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] returnHome in
+            ULog.i(.tag, "updateReturnHomeState isReturningHome: \(drone.isReturningHome) reason: \(returnHome?.reason ?? .none)")
+            self?.updateRthState(drone: drone, returnHome: returnHome)
         }
+    }
+
+    /// Updates the RTH state according to the drone and the piloting interface states.
+    ///
+    /// - Parameters:
+    ///    - drone: the drone
+    ///    - returnHome: the RTH piloting interface
+    func updateRthState(drone: Drone, returnHome: ReturnHomePilotingItf?) {
+        isActiveSubject.value = drone.isReturningHome && !drone.isForceLanding
+
+        // Show iced propeller RTH banner alert if corresponding reason is set in RTH interface.
+        let isIcedPropellerRth = drone.isReturningHome && returnHome?.reason == .icedPropeller
+        bamService.update(WarningBannerAlert.rthIcedPropeller, show: isIcedPropellerRth)
     }
 }
 

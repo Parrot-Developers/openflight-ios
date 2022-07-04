@@ -37,7 +37,7 @@ public final class FlightPlanCourseGraphic: FlightPlanGraphic {
     // MARK: - Private Enums
     private enum Constants {
         static let defaultColor: UIColor = ColorName.blueDodger.color
-        static let lineWidth: CGFloat = 5.0
+        static let lineWidth: CGFloat = 2.0
     }
 
     // MARK: - Init

@@ -185,10 +185,8 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
 final class HUDAlertPanelReturnHomeViewModel: DevicesStateViewModel<HUDAlertPanelReturnHomeState> {
     // MARK: - Private Properties
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
-    private var batteryRemoteControlRef: Ref<BatteryInfo>?
     private var alarmsRef: Ref<Alarms>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var connectionStateRef: Ref<DeviceState>?
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {

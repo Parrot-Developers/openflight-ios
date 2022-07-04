@@ -28,10 +28,12 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// Settings content sub class dedicated to return to home settings.
 final class SettingsRTHViewController: SettingsContentViewController {
     // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
     private var maxGridHeight: CGFloat {
         let height = view.bounds.height
                         - Layout.buttonIntrinsicHeight(isRegularSizeClass)
@@ -98,12 +100,14 @@ private extension SettingsRTHViewController {
 
     /// Sets up the view model.
     func setupViewModel() {
-        viewModel = SettingsRthViewModel()
-        viewModel?.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-        // Inital data source update.
-        updateDataSource()
+        viewModel = SettingsRthViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
+        guard let viewModel = viewModel as? SettingsRthViewModel else { return }
+        viewModel.notifyChangePublisher
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.updateDataSource()
+            }
+            .store(in: &cancellables)
     }
 
     /// Configures Control Mode Cell.

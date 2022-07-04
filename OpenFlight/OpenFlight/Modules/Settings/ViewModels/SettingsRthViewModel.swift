@@ -28,12 +28,23 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
+import Combine
 
 /// Return to home settings view model.
-final class SettingsRthViewModel: DroneStateViewModel<DeviceConnectionState>, SettingsViewModelProtocol {
+final class SettingsRthViewModel: SettingsViewModelProtocol {
+    // MARK: - Published Properties
+
+    private(set) var notifyChangePublisher = CurrentValueSubject<Void, Never>(())
+
+    // MARK: - Private Properties
+
+    private var currentDroneHolder: CurrentDroneHolder
+    private var cancellables = Set<AnyCancellable>()
+    private var rth: ReturnHomePilotingItf?
+
     // MARK: - Internal Properties
     var settingEntries: [SettingEntry] {
-        var entries = [SettingEntry(setting: rthTargetModel,
+        var entries = [SettingEntry(setting: rthTargetModel(returnHome: rth),
                                     title: L10n.settingsRthTypeTitle,
                                     itemLogKey: LogEvent.LogKeyAdvancedSettings.returnHome)]
 
@@ -52,19 +63,25 @@ final class SettingsRthViewModel: DroneStateViewModel<DeviceConnectionState>, Se
     // MARK: - Private Properties
     private var returnHomePilotingRef: Ref<ReturnHomePilotingItf>?
 
+    init(currentDroneHolder: CurrentDroneHolder) {
+        self.currentDroneHolder = currentDroneHolder
+
+        currentDroneHolder.dronePublisher
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenReturnHome(drone)
+            }
+            .store(in: &cancellables)
+    }
+
     // MARK: - Deinit
     deinit {
         returnHomePilotingRef = nil
     }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        listenReturnHome(drone)
-    }
-
     /// Resets Return Home settings to default.
     func resetSettings() {
-        guard let returnHome = returnHomePilotingRef?.value else { return }
+        guard let returnHome = rth else { return }
 
         returnHome.minAltitude?.value = RthPreset.defaultAltitude
         returnHome.endingBehavior.behavior = RthPreset.defaultEndingBehavior
@@ -77,14 +94,16 @@ final class SettingsRthViewModel: DroneStateViewModel<DeviceConnectionState>, Se
 private extension SettingsRthViewModel {
     /// Starts watcher for Return Home.
     func listenReturnHome(_ drone: Drone) {
-        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] _ in
-            notifyChange()
+        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] returnHome in
+            guard let self = self else { return }
+            self.rth = returnHome
+            self.notifyChangePublisher.send()
         }
     }
 
     /// Returns a RTH preferred target model.
-    var rthTargetModel: DroneSettingModel? {
-        let homeTarget = drone?.getPilotingItf(PilotingItfs.returnHome)?.preferredTarget
+    func rthTargetModel(returnHome: ReturnHomePilotingItf?) -> DroneSettingModel? {
+        let homeTarget = returnHome?.preferredTarget
         guard homeTarget?.target.isHomeAvailable == true else {
             return DroneSettingModel(allValues: ReturnHomeTarget.allValues,
                                      supportedValues: ReturnHomeTarget.allValues,

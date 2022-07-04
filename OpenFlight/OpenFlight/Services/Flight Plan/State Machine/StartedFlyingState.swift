@@ -37,6 +37,7 @@ public protocol StartedFlyingStateDelegate: AnyObject {
     func flightPlanRunDidBegin(flightPlan: FlightPlanModel)
     func flightPlanRunDidPause(flightPlan: FlightPlanModel)
     func flightPlanRunDidFinish(flightPlan: FlightPlanModel, completed: Bool)
+    func flightPlanRunDidUpdate(flightPlan: FlightPlanModel)
 }
 
 private extension ULogTag {
@@ -60,7 +61,6 @@ open class StartedFlyingState: GKState {
     private weak var delegate: StartedFlyingStateDelegate?
     public let runManager: FlightPlanRunManager
     public let flightPlanManager: FlightPlanManager
-    public let projectManager: ProjectManager
     private var activateTimer: Timer?
     var flightPlan: FlightPlanModel!
     var commands: [MavlinkStandard.MavlinkCommand]!
@@ -73,20 +73,14 @@ open class StartedFlyingState: GKState {
 
     required public init(delegate: StartedFlyingStateDelegate,
                          runManager: FlightPlanRunManager,
-                         flightPlanManager: FlightPlanManager,
-                         projectManager: ProjectManager) {
+                         flightPlanManager: FlightPlanManager) {
         self.delegate = delegate
         self.runManager = runManager
         self.flightPlanManager = flightPlanManager
-        self.projectManager = projectManager
         super.init()
     }
 
     open override func didEnter(from previousState: GKState?) {
-        // If it's not a resume, update the customTitle to add the execution index.
-        if flightPlan.state == .editable {
-            flightPlan = projectManager.updateExecutionCustomTitle(for: flightPlan)
-        }
         flightPlan = flightPlanManager.update(flightplan: flightPlan, with: .flying)
         delegate?.flightPlanRunWillBegin(flightPlan: flightPlan)
         runManager.setup(flightPlan: flightPlan, mavlinkCommands: commands)
@@ -107,9 +101,9 @@ open class StartedFlyingState: GKState {
             case .activating:
                 // if the runState failed to activate, firing the timer will create an infinite
                 // recursion that will provoke a stack overflow and crash the application.
-                if case .activationError = newState {
-                    break
-                }
+                if case .activationError = newState { break }
+                // If a stop has been asked during the activation, the timer must not be fired.
+                if case .ended = newState { break }
                 activateTimer?.fire()
             case .running:
                 handleRunUpdate()
@@ -168,9 +162,9 @@ open class StartedFlyingState: GKState {
 
     private func handleRunUpdate() {
         switch runState {
-        case .playing:
-            // Ok, still running
-            break
+        case .playing(droneConnected: true, flightPlan: let flightPlan, rth: false):
+            // Informs the State Machine that Flight Plan has been updated.
+            delegate?.flightPlanRunDidUpdate(flightPlan: flightPlan)
         case .paused(flightPlan: let flightPlan, startAvailability: _):
             // Informs the State Machine Flight Plan is paused.
             delegate?.flightPlanRunDidPause(flightPlan: flightPlan)
@@ -180,6 +174,8 @@ open class StartedFlyingState: GKState {
             state = .finished
             self.flightPlan = flightPlan
             delegate?.flightPlanRunDidFinish(flightPlan: flightPlan, completed: completed)
+        default:
+            break
         }
     }
 
@@ -228,12 +224,17 @@ open class StartedFlyingState: GKState {
 
     open override func isValidNextState(_ stateClass: AnyClass) -> Bool {
         return stateClass is EndedState.Type
-            || stateClass is IdleState.Type
+        || stateClass is IdleState.Type
+        || stateClass is EditableState.Type
     }
 
     open override func willExit(to nextState: GKState) {
         cancellables = []
         activateTimer?.invalidate()
+        // If the FlyingState is exit during the activation,
+        // the runManager must not be resetted to let it stops the Piloting interface
+        // when active.
+        guard state != .activating else { return }
         runManager.reset()
     }
 

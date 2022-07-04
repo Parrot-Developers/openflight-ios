@@ -43,65 +43,64 @@ final class MavlinkToFlightPlanParser {
     ///    - flightPlan: the existing flight plan.
     ///
     /// - Returns: generated `FlightPlanModel` is operation succeeded, `nil` otherwise
-    static func generateFlightPlanFromMavlinkLegacy(
-        url: URL? = nil,
-        mavlinkString: String? = nil,
-        flightPlan: FlightPlanModel) -> FlightPlanModel? {
+    static func generateFlightPlanFromMavlinkLegacy(url: URL? = nil,
+                                                    mavlinkString: String? = nil,
+                                                    flightPlan: FlightPlanModel) -> FlightPlanModel? {
 
-            var commands: [MavlinkCommand] = []
+        var commands: [MavlinkCommand] = []
 
-            if let strongUrl = url {
-                commands = MavlinkFiles.parse(filepath: strongUrl.path)
-            } else if let strongMavlinkString = mavlinkString {
-                commands = MavlinkFiles.parse(mavlinkString: strongMavlinkString)
-            }
+        if let strongUrl = url {
+            commands = MavlinkFiles.parse(filepath: strongUrl.path)
+        } else if let strongMavlinkString = mavlinkString {
+            commands = MavlinkFiles.parse(mavlinkString: strongMavlinkString)
+        }
 
-            var takeOffActions = [Action]()
-            var pois = [PoiPoint]()
-            var waypoints = [WayPoint]()
+        var takeOffActions = [Action]()
+        var pois = [PoiPoint]()
+        var waypoints = [WayPoint]()
 
-            var currentWaypoint: WayPoint?
-            var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
-            var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
+        var currentWaypoint: WayPoint?
+        var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
+        var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
 
-            for command in commands {
-                switch command {
-                case let roiCommand as SetRoiCommand:
-                    let newPoi = PoiPoint(roiMavLinkCommand: roiCommand.asStandard)
-                    pois.append(newPoi)
+        for command in commands {
+            switch command {
+            case let roiCommand as SetRoiCommand:
+                let newPoi = PoiPoint(roiMavLinkCommand: roiCommand.asStandard)
+                pois.append(newPoi)
 
-                case let viewModeCommand as SetViewModeCommand:
-                    currentWaypoint?.update(viewModeCommand: viewModeCommand.asStandard)
-                    currentViewModeCommand = viewModeCommand.asStandard
+            case let viewModeCommand as SetViewModeCommand:
+                currentWaypoint?.update(viewModeCommand: viewModeCommand.asStandard)
+                currentViewModeCommand = viewModeCommand.asStandard
 
-                case let speedModeCommand as ChangeSpeedCommand:
-                    currentWaypoint?.update(speedMavlinkCommand: speedModeCommand.asStandard)
-                    currentSpeedCommand = speedModeCommand.asStandard
+            case let speedModeCommand as ChangeSpeedCommand:
+                currentWaypoint?.update(speedMavlinkCommand: speedModeCommand.asStandard)
+                currentSpeedCommand = speedModeCommand.asStandard
 
-                case let waypointCommand as NavigateToWaypointCommand:
-                    let newWaypoint = WayPoint(navigateToWaypointCommand: waypointCommand.asStandard,
-                                               speedMavlinkCommand: currentSpeedCommand,
-                                               viewModeCommand: currentViewModeCommand)
-                    waypoints.append(newWaypoint)
-                    currentWaypoint = newWaypoint
+            case let waypointCommand as NavigateToWaypointCommand:
+                let newWaypoint = WayPoint(navigateToWaypointCommand: waypointCommand.asStandard,
+                                           speedMavlinkCommand: currentSpeedCommand,
+                                           viewModeCommand: currentViewModeCommand)
+                waypoints.append(newWaypoint)
+                currentWaypoint = newWaypoint
 
-                default:
-                    guard let newAction = Action(mavLinkCommand: command) else { continue }
+            default:
+                guard let newAction = Action(mavLinkCommand: command) else { continue }
 
-                    if let currentWaypoint = currentWaypoint {
-                        currentWaypoint.addAction(newAction)
-                    } else {
-                        takeOffActions.append(newAction)
-                    }
+                if let currentWaypoint = currentWaypoint {
+                    currentWaypoint.addAction(newAction)
+                } else {
+                    takeOffActions.append(newAction)
                 }
             }
-
-            let newDataSetting = dataSetting(fromFlightPlan: flightPlan,
-                                             takeOffActions: takeOffActions,
-                                             pois: pois,
-                                             waypoints: waypoints)
-            return derivedFligthPlan(fromFlightPlan: flightPlan, dataSetting: newDataSetting)
         }
+
+        let newDataSetting = dataSetting(fromFlightPlan: flightPlan,
+                                         takeOffActions: takeOffActions,
+                                         pois: pois,
+                                         waypoints: waypoints)
+        return derivedFligthPlan(fromFlightPlan: flightPlan, dataSetting: newDataSetting)
+    }
 
     /// Generates FlightPlan from MAVLink file at given URL or MAVLink string (standard).
     ///
@@ -150,7 +149,6 @@ final class MavlinkToFlightPlanParser {
                     currentViewModeCommand = viewModeCommand
 
                 case let speedModeCommand as MavlinkStandard.ChangeSpeedCommand:
-                    currentWaypoint?.update(speedMavlinkCommand: speedModeCommand)
                     currentSpeedCommand = speedModeCommand
 
                 case let waypointCommand as MavlinkStandard.NavigateToWaypointCommand:
@@ -170,7 +168,7 @@ final class MavlinkToFlightPlanParser {
                 }
             }
 
-            let newDataSetting = dataSetting(fromFlightPlan: flightPlan,
+            var newDataSetting = dataSetting(fromFlightPlan: flightPlan,
                                              takeOffActions: takeOffActions,
                                              pois: pois,
                                              waypoints: waypoints)
@@ -182,14 +180,15 @@ final class MavlinkToFlightPlanParser {
                                     takeOffActions: [Action],
                                     pois: [PoiPoint],
                                     waypoints: [WayPoint]) -> FlightPlanDataSetting {
-        let newDataSetting = flightPlan.dataSetting!.copy()
+        var newDataSetting = flightPlan.dataSetting!
         newDataSetting.takeoffActions = takeOffActions
         newDataSetting.pois = pois
         newDataSetting.wayPoints = waypoints
         return newDataSetting
     }
 
-    static private func derivedFligthPlan(fromFlightPlan flightPlan: FlightPlanModel, dataSetting: FlightPlanDataSetting) -> FlightPlanModel {
+    static private func derivedFligthPlan(fromFlightPlan flightPlan: FlightPlanModel,
+                                          dataSetting: FlightPlanDataSetting) -> FlightPlanModel {
         FlightPlanModel(apcId: Services.hub.userService.currentUser.apcId,
                         type: flightPlan.type,
                         uuid: flightPlan.uuid,
@@ -278,22 +277,22 @@ private extension Action {
     ///
     /// - Parameters:
     ///    - mavLinkCommand: Mavlink command
-    convenience init?(mavLinkCommand: MavlinkCommand) {
+    init?(mavLinkCommand: MavlinkCommand) {
         switch mavLinkCommand {
         case is TakeOffCommand:
             self.init(type: .takeOff)
         case is LandCommand:
             self.init(type: .landing)
         case let command as MountControlCommand:
-            self.init(type: .tilt)
-            self.angle = command.tiltAngle
+            self.init(type: .tilt,
+                      angle: command.tiltAngle)
         case let command as DelayCommand:
-            self.init(type: .delay)
-            self.delay = command.delay
+            self.init(type: .delay,
+                      delay: command.delay)
         case let command as StartPhotoCaptureCommand:
-            self.init(type: .imageStartCapture)
-            self.period = command.interval
-            self.nbOfPictures = command.count
+            self.init(type: .imageStartCapture,
+                      period: command.interval,
+                      nbOfPictures: command.count)
             self.photoFormat = command.format.photoFormat
         case is StopPhotoCaptureCommand:
             self.init(type: .imageStopCapture)
@@ -302,12 +301,12 @@ private extension Action {
         case is StopVideoCaptureCommand:
             self.init(type: .videoStopCapture)
         case let command as CreatePanoramaCommand:
-            self.init(type: .panorama)
-            self.angle = command.horizontalAngle
-            self.speed = command.horizontalSpeed
+            self.init(type: .panorama,
+                      angle: command.horizontalAngle,
+                      speed: command.horizontalSpeed)
         case let command as SetStillCaptureModeCommand:
-            self.init(type: .stillCapture)
-            self.period = command.interval
+            self.init(type: .stillCapture,
+                      period: command.interval)
         default:
             // FIXME: Remove this print when all MavLink commands management will be approved.
             ULog.e(.tag, "Unknown mavlink command : \(mavLinkCommand)")

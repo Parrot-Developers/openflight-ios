@@ -42,7 +42,9 @@ final class DashboardViewController: UIViewController {
     private var cancellables = [AnyCancellable]()
 
     // MARK: - Init
-    static func instantiate(coordinator: DashboardCoordinator, viewModel: DashboardViewModel) -> DashboardViewController {
+    static func instantiate(
+        coordinator: DashboardCoordinator,
+        viewModel: DashboardViewModel) -> DashboardViewController {
         let viewController = StoryboardScene.Dashboard.initialScene.instantiate()
         viewController.coordinator = coordinator
         viewModel.initViewModels()
@@ -337,11 +339,12 @@ private extension DashboardViewController {
     /// - Parameters:
     ///    - indexPath: index of the cell
     /// - Returns: DashboardFooterCell
-    func createFooterCell(_ viewModel: DashboardFooterViewModel, _ indexPath: IndexPath) -> DashboardFooterCell {
+    func createFooterCell(_ dashboardFooterViewModel: DashboardFooterViewModel, _ indexPath: IndexPath) -> DashboardFooterCell {
         let dashboardFooterCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardFooterCell
 
         dashboardFooterCell.delegate = self
-        dashboardFooterCell.setup(state: viewModel.state.value)
+        dashboardFooterCell.setup(state: dashboardFooterViewModel.state.value,
+                                  dashboardUiProvider: viewModel.dashboardUiProvider)
 
         return dashboardFooterCell
     }
@@ -426,6 +429,11 @@ extension DashboardViewController: DashboardFooterCellDelegate {
     func startParrotDebugScreen() {
         LogEvent.log(.simpleButton( LogEvent.Screen.debugLogs))
         coordinator?.startParrotDebug()
+    }
+
+    func rightButtonAction() {
+        guard let coordinator = coordinator else { return }
+        viewModel.dashboardUiProvider.rightButtonAction(coordinator: coordinator)
     }
 }
 

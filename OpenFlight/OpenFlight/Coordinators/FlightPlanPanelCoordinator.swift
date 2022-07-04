@@ -83,6 +83,7 @@ public final class FlightPlanPanelCoordinator: Coordinator {
         let viewModel = FlightPlanPanelViewModel(projectManager: services.flightPlan.projectManager,
                                                  runStateProgress: services.flightPlan.run,
                                                  currentMissionManager: services.currentMissionManager,
+                                                 flightService: services.flight.service,
                                                  coordinator: self, splitControls: splitControls)
         // FlightPlanPanel : ViewController + viewModel
         let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(flightPlanPanelViewModel: viewModel)
@@ -108,28 +109,23 @@ public extension FlightPlanPanelCoordinator {
         startFlightPlanEdition(mapViewController: mapViewController)
     }
 
-    func centerMapViewController() {
-        guard let splitControls = splitControls,
-              let mapViewController = splitControls.mapViewController else { return }
-        mapViewController.centerMapOnDroneOrUser()
-    }
-
     func back(animated: Bool = true) {
         navigationController?.popViewController(animated: animated)
     }
 
-    func resetPopupConfirmation(_ resetConfirmed: @escaping () -> Void) {
-        let cancel = AlertAction(title: L10n.commonNo,
-                                 style: .default2)
-        let action = AlertAction(title: L10n.commonYes,
+    func saveChangesPopup(cancel: @escaping () -> Void, validate: @escaping () -> Void) {
+        let cancelAction = AlertAction(title: L10n.commonDiscard,
                                  style: .destructive,
-                                 actionHandler: resetConfirmed)
+                                 actionHandler: cancel)
+        let validateAction = AlertAction(title: L10n.commonSave,
+                                 style: .validate,
+                                 actionHandler: validate)
         let controller = AlertViewController.instantiate(title: L10n.flightPlanDiscardChangesTitle,
                                                          message: L10n.flightPlanDiscardChangesDescription,
                                                          messageColor: .defaultTextColor,
                                                          closeButtonStyle: .none,
-                                                         cancelAction: cancel,
-                                                         validateAction: action)
+                                                         cancelAction: cancelAction,
+                                                         validateAction: validateAction)
         presentModal(viewController: controller)
     }
 
@@ -202,55 +198,6 @@ private extension FlightPlanPanelCoordinator {
     /// - Parameter show: whether the navigation bar needs to be shown
     private func showNavBar(show: Bool) {
         splitControls?.mapViewController?.navBarView.isHidden = !show
-    }
-}
-
-extension FlightPlanPanelCoordinator: ManagePlansViewModelDelegate {
-    func displayDeletePopup(actionHandler: @escaping () -> Void) {
-        let goBackAction = AlertAction(title: L10n.cancel,
-                                       style: .default2,
-                                       actionHandler: nil)
-        let continueAction = AlertAction(title: L10n.commonDelete,
-                                         style: .destructive,
-                                         actionHandler: actionHandler)
-        let type = services.currentMissionManager.mode.flightPlanProvider?.projectTitle ?? ""
-        let goBackConnectionAlert = AlertViewController
-            .instantiate(title: L10n.flightPlanDelete(type),
-                         message: L10n.flightPlanDeleteDescription(type),
-                         closeButtonStyle: .cross,
-                         cancelAction: goBackAction,
-                         validateAction: continueAction)
-
-        // display on overFullScreen for iPad
-        if navigationController?.isRegularSizeClass == true {
-            goBackConnectionAlert.modalPresentationStyle = .overFullScreen
-        } else {
-            goBackConnectionAlert.modalPresentationStyle = .automatic
-        }
-        goBackConnectionAlert.preferredOrientation = navigationController?.preferredInterfaceOrientationForPresentation ?? .unknown
-        goBackConnectionAlert.supportedOrientation = navigationController?.supportedInterfaceOrientations ?? .landscape
-        presentPopup(goBackConnectionAlert)
-    }
-
-    /// Closes manage plans view.
-    ///
-    /// - Parameters:
-    ///    - editionPreference: should start flight plan edition
-    ///    - shouldCenter: should center position on map
-    func endManagePlans(editionPreference: ManagePlansViewModel.EndManageEditionPreference, shouldCenter: Bool) {
-        applyTransition(type: .reveal, direction: .fromLeft, to: navigationController)
-        dismiss(animated: false) { [weak self] in
-            switch editionPreference {
-            case .start:
-                self?.startFlightPlanEdition()
-            default:
-                break
-            }
-            if shouldCenter {
-                self?.centerMapViewController()
-            }
-        }
-        services.ui.uiComponentsDisplayReporter.modalWasDismissed()
     }
 }
 

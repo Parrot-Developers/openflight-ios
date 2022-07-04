@@ -32,6 +32,10 @@ import Reusable
 import SwiftyUserDefaults
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "SettingsQuickCollectionViewCell")
+}
+
 // MARK: - Protocols
 protocol SettingsQuickCollectionViewCellDelegate: AnyObject {
     /// Called when user did tap on a cell.
@@ -143,7 +147,10 @@ private extension SettingsQuickCollectionViewCell {
             }
         }
 
-        guard isEnabled else { return }
+        guard isEnabled else {
+            ULog.e(.tag, "settings button is disabled : \(settingEntry?.title ?? "unknown")")
+            return
+        }
         changeItem()
     }
 

@@ -42,6 +42,7 @@ enum GutmaConstants {
     static let eventInfoFlightPlan: String = "FLIGHTPLAN"
     static let eventTypeFlightPlan: String = "CONTROLLER_FLIGHTPLAN"
     static let eventStepMissionItem: String = "MISSION_ITEM"
+    static let eventStepTakeOff: String = "TOF"
     static let eventStepStart: String = "START"
     static let eventStepPause: String = "PAUSE"
     static let eventStepResume: String = "RESUME"
@@ -50,6 +51,8 @@ enum GutmaConstants {
     static let eventInfoVideo = "VIDEO"
     static let eventMediaTypeSaved = "saved"
     static let eventMediaTypeStarted = "start"
+    static let eventMediaTypeTaken = "taken"
+    static let eventMediaTypeDeleted = "deleted"
 }
 
 // MARK: - Gutma helpers.
@@ -62,15 +65,14 @@ extension Gutma {
     }
 
     var startDate: Date? {
-        if let dateString = exchange?.message?.flightLogging?.loggingStartDtg {
-            let formatter = DateFormatter()
-            formatter.dateFormat = GutmaConstants.dateFormatFile
-            // Handle both 24-h and 12-h format.
-            formatter.timeZone = TimeZone(abbreviation: "UTC")
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            return formatter.date(from: dateString)
-        }
-        return nil
+        guard let dateString = exchange?.message?.flightLogging?.loggingStartDtg else { return nil }
+        let formatter = DateFormatter()
+        formatter.dateFormat = GutmaConstants.dateFormatFile
+        // Handle both 24-h and 12-h format.
+        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        let date = formatter.date(from: dateString)
+        return date?.addingTimeInterval(takeOffTimestamp)
     }
 
     var duration: TimeInterval {
@@ -123,32 +125,34 @@ extension Gutma {
         return false
     }
 
-    var photoCount: Int { exchange?.message?.flightLogging?.events?.filter { $0.eventInfo == GutmaConstants.eventInfoPhoto }.count ?? 0 }
+    var takeOffTimestamp: TimeInterval {
+        return exchange?.message?.flightLogging?.takeOffTimestamp ?? 0
+    }
+
+    var photoCount: Int {
+        let photos = (exchange?.message?.flightLogging?.events?
+            .filter { $0.eventInfo == GutmaConstants.eventInfoPhoto }
+            .filter {
+                guard let photoTimestamp = TimeInterval($0.eventTimestamp ?? "") else { return false }
+                return photoTimestamp > takeOffTimestamp
+            })
+        let total = (photos?.filter { $0.mediaEvent == GutmaConstants.eventMediaTypeTaken }.count ?? 0)
+                    - (photos?.filter {$0.mediaEvent == GutmaConstants.eventMediaTypeDeleted }.count ?? 0)
+        return max(total, 0)
+    }
 
     var videoCount: Int {
-        guard let videoEvents = exchange?.message?.flightLogging?.events?.filter({ $0.eventInfo == GutmaConstants.eventInfoVideo }),
-              !videoEvents.isEmpty else {
-                  return 0
-              }
-        var videosAffectingFlight = 0
-        var videoSavePending = false
-        for videoEvent in videoEvents {
-            switch videoEvent.mediaEvent {
-            case GutmaConstants.eventMediaTypeStarted:
-                videoSavePending = true
-                videosAffectingFlight += 1
-            case GutmaConstants.eventMediaTypeSaved:
-                if videoSavePending {
-                    // already counted this video in "start" event
-                    videoSavePending = false
-                    continue
-                }
-                videosAffectingFlight += 1
-            default:
-                continue
+        let autoRecordTolerance: TimeInterval = 0.5
+        let videos = (exchange?.message?.flightLogging?.events?
+            .filter {
+                $0.eventInfo == GutmaConstants.eventInfoVideo
+                && $0.mediaEvent == GutmaConstants.eventMediaTypeStarted
             }
-        }
-        return videosAffectingFlight
+            .filter {
+                guard let photoTimestamp = TimeInterval($0.eventTimestamp ?? "") else { return false }
+                return photoTimestamp > takeOffTimestamp - autoRecordTolerance
+            })
+        return videos?.count ?? 0
     }
 
     func flightPlanExecutions(apcId: String, flightUuid: String) -> [FlightPlanFlightsModel] {
@@ -285,12 +289,10 @@ extension Gutma {
 // MARK: - FlightLogging private helpers.
 
 private extension Gutma.FlightLogging {
-    /// Start flight date.
-    var startDate: Date? {
-        guard let dateString = loggingStartDtg else {
-            return nil
-        }
-        return Gutma.FlightLogging.formatter.date(from: dateString)
+    /// Take off time.
+    var takeOffTimestamp: TimeInterval {
+        let takeOff = events?.first(where: { $0.eventInfo == GutmaConstants.eventStepTakeOff })
+        return TimeInterval(takeOff?.eventTimestamp ?? "") ?? 0
     }
 
     /// Flight duration.
@@ -299,26 +301,23 @@ private extension Gutma.FlightLogging {
               let last = itemValue(forKey: .timestamp, at: (flightLoggingItems?.endIndex ?? 1) - 1) else {
                   return nil
               }
-        return last - first
+        return last - first - takeOffTimestamp
     }
 
     /// Flight battery consumption.
     var batteryConsumption: Double? {
-        guard let items = flightLoggingItems else {
-            return nil
-        }
+        let items = items(startingFrom: takeOffTimestamp)
         return calculateBatteryConsumption(ofItems: items)
     }
 
     /// Returns start position
     var startPosition: CLLocation? {
-        guard let items = flightLoggingItems,
-              let index = (items.startIndex..<items.endIndex).firstIndex(where: { index in
+        let items = items(startingFrom: takeOffTimestamp)
+        guard let index = (items.startIndex..<items.endIndex).firstIndex(where: { index in
                   location(ofItems: items, at: index)?.isValid ?? false
               }),
-              let location = location(ofItems: items, at: index) else {
-                  return nil
-              }
+              let location = location(ofItems: items, at: index)
+        else { return nil }
         return CLLocation(latitude: location.latitude, longitude: location.longitude)
     }
 
@@ -344,10 +343,9 @@ private extension Gutma.FlightLogging {
     ///   - endTime: maximal timestamp of trajectory points to include, if not `nil`
     /// - Returns: trajectory points in the given time range
     func points(startTime: Double?, endTime: Double?) -> [TrajectoryPoint] {
-        guard let items = flightLoggingItems,
-              let timestampIndex = valueIndex(forKey: .timestamp) else {
-                  return []
-              }
+        let items = items(startingFrom: takeOffTimestamp)
+        guard let timestampIndex = valueIndex(forKey: .timestamp) else { return [] }
+
         let subItems = items.filter { item in
             startTime.map { $0 <= item[timestampIndex] } ?? true
             && endTime.map { item[timestampIndex] <= $0 } ?? true
@@ -361,9 +359,7 @@ private extension Gutma.FlightLogging {
 
     /// Add distance between all points.
     var distance: Double {
-        guard let items = flightLoggingItems else {
-            return 0
-        }
+        let items = items(startingFrom: takeOffTimestamp)
         return calculateDistance(ofItems: items)
     }
 
@@ -385,13 +381,25 @@ private extension Gutma.FlightLogging {
     enum ExecutionParseStateMachine {
         /// Uninitialized state.
         case notStarted
+
         /// Started state. A start/resume or a WP mission item was found.
         ///
         /// - Parameter atIndex: The index at which starts the subexecution.
         case started(atIndex: Array<Gutma.Event>.Index)
+
+        /// Stopped state. A stop was found.
         ///
-        ///
+        /// - Parameters:
+        ///  - atIndex: The index where the subexecution stopped.
+        ///  - startedAtIndex:The index where the subexecution started.
         case stopped(atIndex: Array<Gutma.Event>.Index, startedAtIndex: Array<Gutma.Event>.Index)
+
+        /// Paused state. A pause was found.
+        ///
+        /// - Parameters:
+        ///  - atIndex: The index where the subexecution paused.
+        ///  - startedAtIndex:The index where the subexecution started.
+        case paused(atIndex: Array<Gutma.Event>.Index, startedAtIndex: Array<Gutma.Event>.Index)
 
         /// Constructs the state machine in an uninitialized state.
         init() {
@@ -408,6 +416,21 @@ private extension Gutma.FlightLogging {
         /// - Parameter atIndex: The index at which starts the subexecution.
         mutating func start(atIndex index: Array<Gutma.Event>.Index) {
             self = .started(atIndex: index)
+        }
+
+        /// Transitions the state machine to the paused state, if possible.
+        ///
+        /// It is possible to transition to the paused state only if the state machine is in
+        /// the started state.
+        ///
+        /// - Parameter atIndex: The index at which stops the subexecution.
+        mutating func pause(atIndex index: Array<Gutma.Event>.Index) {
+            switch self {
+            case let .started(atIndex: startIndex):
+                self = .paused(atIndex: index, startedAtIndex: startIndex)
+            default:
+                break
+            }
         }
 
         /// Transitions the state machine to the stopped state, if possible.
@@ -428,7 +451,7 @@ private extension Gutma.FlightLogging {
         /// Whether the state machine has started, i.e. is not in an uninitialized state.
         var isInitialized: Bool {
             switch self {
-            case .started, .stopped:
+            case .started, .paused, .stopped:
                 return true
             default:
                 return false
@@ -478,21 +501,10 @@ private extension Gutma.FlightLogging {
                 state.start(atIndex: index)
             }
 
-            // reaching an ending step like pause or stop
+            // reaching an ending step
             if event.isEndingStep {
-                switch state {
-                case .notStarted:
-                    // do nothing. can't consider subexecution
-                    break
-                case let .started(atIndex: startIndex):
-                    // if already started, then treat the current index as a stop
+                if case let .started(atIndex: startIndex) = state {
                     subexecutionIndices.append((startIndex, index))
-                    state.reset()
-
-                case let .stopped(atIndex: stoppedIndex, startedAtIndex: startIndex):
-                    // if already stopped (with a last WP), then consider `stoppedIndex` as stop
-                    // and not the current index
-                    subexecutionIndices.append((startIndex, stoppedIndex))
                     state.reset()
                 }
                 continue
@@ -502,10 +514,11 @@ private extension Gutma.FlightLogging {
                 if event.missionItem.map({ Int($0) }) == firstWPIndex {
                     // override with first WP index
                     state.start(atIndex: index)
-                }
-                if event.missionItem.map({ Int($0) }) == lastWPIndex {
+                } else if event.missionItem.map({ Int($0) }) == lastWPIndex,
+                          case let .started(atIndex: startIndex) = state {
                     // when finding a last WP index mark as the end of the subexecution
-                    state.stop(atIndex: index)
+                    subexecutionIndices.append((startIndex, index))
+                    state.reset()
                 }
             }
         }
@@ -595,15 +608,27 @@ private extension Gutma.FlightLogging {
     /// - Returns: the total number of photos,
     /// `nil` otherwise.
     func flightPlanPhotoCount(_ flightPlan: FlightPlanModel) -> Int {
-        let starts = flightPlanStartTimestamps(flightPlan)
-        let ends = flightPlanEndTimestamps(flightPlan)
-        guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
-            return 0
+        let photoEventsByCustomId = events?.filter {
+            $0.eventInfo == GutmaConstants.eventInfoPhoto
+            && $0.customId == flightPlan.uuid
         }
-        return zip(starts, ends).reduce(0, { sum, pair in
-            let photoCount = photoCountInRange(start: pair.0, end: pair.1)
-            return sum + photoCount
-        })
+
+        if photoEventsByCustomId?.isEmpty == false {
+            let total = (photoEventsByCustomId?.filter { $0.mediaEvent == GutmaConstants.eventMediaTypeTaken }.count ?? 0)
+                        - (photoEventsByCustomId?.filter {$0.mediaEvent == GutmaConstants.eventMediaTypeDeleted }.count ?? 0)
+            return max(total, 0)
+        } else {
+            // Keep compatibility with old executions that does not have customId on photo events
+            let starts = flightPlanStartTimestamps(flightPlan)
+            let ends = flightPlanEndTimestamps(flightPlan)
+            guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
+                return 0
+            }
+            return zip(starts, ends).reduce(0, { sum, pair in
+                let photoCount = photoCountInRange(start: pair.0, end: pair.1)
+                return sum + photoCount
+            })
+        }
     }
 
     /// Calculates the number of videos taken during a FP execution.
@@ -719,6 +744,13 @@ private extension Gutma.FlightLogging {
               }
         let itemsOfTimestampRange = items[firstItemIndex..<lastItemIndex]
         return Array(itemsOfTimestampRange)
+    }
+
+    func items(startingFrom timestamp: TimeInterval) -> [Gutma.FlightLogging.Item] {
+        guard let items = flightLoggingItems,
+              let timestampindex = valueIndex(forKey: .timestamp)
+        else { return [] }
+        return items.filter { $0[timestampindex] >= timestamp }
     }
 
     /// Calculates the number of photos taken in a range of time.
@@ -851,10 +883,10 @@ private extension Gutma.FlightLogging {
 
 extension Gutma.Event {
     var isEndingStep: Bool {
-        step == GutmaConstants.eventStepPause || step == GutmaConstants.eventStepStop
+        step == GutmaConstants.eventStepStop
     }
 
     var isStartingStep: Bool {
-        step == GutmaConstants.eventStepStart || step == GutmaConstants.eventStepResume
+        step == GutmaConstants.eventStepStart
     }
 }

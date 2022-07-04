@@ -42,6 +42,8 @@ public class FlightPlanFlights: NSManagedObject {
                                       flightplanUuid: flightplanUuid,
                                       flightUuid: flightUuid,
                                       dateExecutionFlight: dateExecutionFlight,
+                                      ofFlight: nil,
+                                      ofFlightPlan: nil,
                                       isLocalDeleted: isLocalDeleted,
                                       synchroStatus: SynchroStatus(status: synchroStatus),
                                       synchroError: SynchroError(error: synchroError),
@@ -49,12 +51,19 @@ public class FlightPlanFlights: NSManagedObject {
                                       latestLocalModificationDate: latestLocalModificationDate)
     }
 
+    func modelWithFlightAndFlightPlan() -> FlightPlanFlightsModel {
+        var modelResult = model()
+        modelResult.ofFlight = ofFlight?.model()
+        modelResult.ofFlightPlan = ofFlightPlan?.model()
+        return modelResult
+    }
+
     func update(fromFPlanFlightsModel fPlanFlights: FlightPlanFlightsModel, withFlightPlan: FlightPlan, withFlight: Flight) {
         ofFlight = withFlight
         ofFlightPlan = withFlightPlan
 
         apcId = fPlanFlights.apcId
-        cloudId = Int64(fPlanFlights.cloudId)
+        cloudId = fPlanFlights.cloudId > 0 ? Int64(fPlanFlights.cloudId) : cloudId
         flightplanUuid = fPlanFlights.flightplanUuid
         flightUuid = fPlanFlights.flightUuid
         dateExecutionFlight = fPlanFlights.dateExecutionFlight

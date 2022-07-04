@@ -69,10 +69,35 @@ public enum ButtonsDisplay: Equatable {
     }
 }
 
+public enum StreamElement: Equatable {
+    case none
+    case waypoint(point: CGPoint, altitude: Double)
+    case poi(point: CGPoint, altitude: Double)
+    case user(point: CGPoint)
+
+    public static func == (lhs: StreamElement, rhs: StreamElement) -> Bool {
+        switch (lhs, rhs) {
+        case (.none, .none):
+            return true
+        case (.waypoint(let pointLhs, let altitudeLhs), .waypoint(let pointRhs, let altitudeRhs)):
+            return pointLhs == pointRhs && altitudeLhs == altitudeRhs
+        case (.poi(let pointLhs, let altitudeLhs), .poi(let pointRhs, let altitudeRhs)):
+            return pointLhs == pointRhs && altitudeLhs == altitudeRhs
+        case (.user(let pointLhs), .user(let pointRhs)):
+            return pointLhs == pointRhs
+        default:
+            return false
+        }
+    }
+}
+
 protocol TouchAndFlyPanelViewModel: AnyObject {
     // Display on map publisher
     var displayOnMapPublisher: AnyPublisher<DisplayOnMap, Never> { get }
+    // Buttons display publisher
     var buttonsDisplayPublisher: AnyPublisher<ButtonsDisplay, Never> { get }
+    // Stream element publisher
+    var streamElementPublisher: AnyPublisher<StreamElement, Never> { get }
 }
 
 class TouchAndFlyPanelViewModelImpl {
@@ -83,6 +108,11 @@ class TouchAndFlyPanelViewModelImpl {
     var displayOnMap = CurrentValueSubject<DisplayOnMap, Never>(.nothing)
     var displayOnMapPublisher: AnyPublisher<DisplayOnMap, Never> {
         displayOnMap.eraseToAnyPublisher()
+    }
+
+    var streamElement = CurrentValueSubject<StreamElement, Never>(.none)
+    var streamElementPublisher: AnyPublisher<StreamElement, Never> {
+        streamElement.eraseToAnyPublisher()
     }
 
     var buttonsDisplay = CurrentValueSubject<ButtonsDisplay, Never>(ButtonsDisplay.standard(playEnabled: false,
@@ -113,6 +143,8 @@ class TouchAndFlyPanelViewModelImpl {
 
         listenStatusDrone()
         listenTarget()
+        listenStream()
+        listenUser()
     }
 
     public func showStream() {
@@ -132,25 +164,42 @@ class TouchAndFlyPanelViewModelImpl {
         service.runningStatePublisher
             .removeDuplicates()
             .combineLatest(service.targetPublisher)
-            .sink { [unowned self] runningState, target in
-                setButtonsDisplay(runningState: runningState, target: target)
-                setProgressView(runningState: runningState, target: target)
+            .sink { [weak self] runningState, target in
+                self?.setButtonsDisplay(runningState: runningState, target: target)
+                self?.setProgressView(runningState: runningState, target: target)
             }
             .store(in: &cancellables)
 
         service.runningStatePublisher
-            .sink { [unowned self] runningState in
-                setMessageDrone(runningState: runningState)
+            .sink { [weak self] runningState in
+                self?.setMessageDrone(runningState: runningState)
             }
             .store(in: &cancellables)
+    }
 
+    private func listenStream() {
+        service.streamElementPublisher
+            .removeDuplicates()
+            .sink { [weak self] streamElement in
+                self?.streamElement.value = streamElement
+            }
+            .store(in: &cancellables)
     }
 
     private func listenTarget() {
         service.targetPublisher
-            .sink { [unowned self] target in
-                setDashboard(target: target)
-                setValueSettingRuler(target)
+            .sink { [weak self] target in
+                self?.setDashboard(target: target)
+                self?.setValueSettingRuler(target)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func listenUser() {
+        service.targetPublisher
+            .sink { [weak self] target in
+                self?.setDashboard(target: target)
+                self?.setValueSettingRuler(target)
             }
             .store(in: &cancellables)
     }
@@ -255,6 +304,32 @@ class TouchAndFlyPanelViewModelImpl {
             progressViewDisplay = .standard
         case .blocked:
             progressViewDisplay = .standard
+        }
+    }
+
+    /// Update the location of the poi or waypoint
+    ///
+    /// - Parameters:
+    ///    - location: the new location
+    ///    - type: the type
+    ///    - altitude: the altitude
+    func update(location: CLLocationCoordinate2D, type: TouchStreamView.TypeView, altitude: Double? = nil) {
+        switch type {
+        case .waypoint:
+            service.setWayPoint(location, altitude: altitude?.rounded())
+        case .poi:
+            service.setPoi(location, altitude: altitude?.rounded())
+        }
+    }
+
+    /// Update the position of the poi or waypoint
+    ///
+    /// - Parameters:
+    ///    - point: the new point
+    ///    - type: the type
+    func update(point: CGPoint, type: TouchStreamView.TypeView) {
+        if let location = service.setLocation(point: point) {
+            update(location: location.coordinate, type: type, altitude: location.altitude)
         }
     }
 }

@@ -153,7 +153,6 @@ final class CameraShutterButtonViewModel: DroneStateViewModel<CameraShutterButto
     // MARK: - Private Enums
     private enum Constants {
         static let countDownInterval: TimeInterval = 1.0
-        static let timerBeforeRestartRecord: Int = 5
     }
 
     // MARK: - Init

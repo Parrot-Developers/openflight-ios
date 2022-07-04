@@ -115,11 +115,8 @@ final class BehaviourModeViewModel: BarButtonViewModel<BehaviourModeButtonState>
     /// - Parameters:
     ///    - new behaviour mode
     override func update(mode: BarItemMode) {
-        guard let mode = mode as? SettingsBehavioursMode else {
-            return
-        }
-        let behavioursViewModel = BehavioursViewModel()
-        behavioursViewModel.switchBehavioursMode(mode: mode)
+        guard let mode = mode as? SettingsBehavioursMode else { return }
+        Services.hub.presetService.switchBehavioursMode(mode: mode)
     }
 
     override func update(subMode: BarItemSubMode) { }

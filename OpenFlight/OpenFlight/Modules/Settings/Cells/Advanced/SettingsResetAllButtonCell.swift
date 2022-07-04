@@ -43,6 +43,12 @@ final class SettingsResetAllButtonCell: MainTableViewCell, NibReusable {
     // MARK: - Internal Properties
     weak var delegate: SettingsResetAllButtonCellDelegate?
 
+    // MARK: - Enums
+    private enum Constants {
+        static let cornerRadius: CGFloat = 22.0
+        static let regularCornerRadius: CGFloat = 33.0
+    }
+
     // MARK: - Internal Funcs
     /// Configure cell.
     ///
@@ -51,7 +57,9 @@ final class SettingsResetAllButtonCell: MainTableViewCell, NibReusable {
     ///    - isEnabled: whether reset button is enabled
     func configureCell(title: String, isEnabled: Bool) {
         resetButton.setup(title: title, style: ActionButtonStyle.default2)
-        resetButton.roundCornered()
+        resetButton.layer.cornerRadius = isRegularSizeClass
+            ? Constants.regularCornerRadius
+            : Constants.cornerRadius
         resetButton.isEnabled = isEnabled
     }
 }

@@ -28,9 +28,13 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Settings content sub class dedicated to camera settings.
 final class SettingsCameraViewController: SettingsContentViewController {
+
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,12 +65,15 @@ private extension SettingsCameraViewController {
     func setupViewModel() {
         // Setup view model.
         // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
-        viewModel = SettingsCameraViewModel(flightPlanCameraSettingsHandler: Services.hub.flightPlan.cameraSettingsHandler)
-        viewModel?.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
+        viewModel = SettingsCameraViewModel(flightPlanCameraSettingsHandler: Services.hub.flightPlan.cameraSettingsHandler,
+                                            currentDroneHolder: Services.hub.currentDroneHolder)
+        guard let viewModel = viewModel as? SettingsCameraViewModel else { return }
 
-        // Inital data source update.
-        updateDataSource()
+        viewModel.notifyChangePublisher
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.updateDataSource()
+            }
+            .store(in: &cancellables)
     }
 }

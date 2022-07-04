@@ -29,54 +29,20 @@
 
 import GroundSdk
 import SwiftProtobuf
-
-// MARK: - HelloWorldMissionState
-/// The states for `HelloWorldMissionViewModel`
-final class HelloWorldMissionState: ViewModelState, Copying, EquatableState {
-    // MARK: - Private Properties
-    fileprivate(set) var missionState: MissionState = .unavailable
-    fileprivate(set) var lastMessageReceived: AirSdkMissionMessageReceived?
-    fileprivate(set) var messageReceivedCount = 0
-
-    // MARK: - Init
-    required init() {}
-
-    /// Init the mission states.
-    ///
-    /// - Parameters:
-    ///   - missionState: The mission state
-    ///   - lastMessageReceived: The last message receive
-    ///   - messageReceivedCount: The count of messages received
-    init(missionState: MissionState,
-         lastMessageReceived: AirSdkMissionMessageReceived?,
-         messageReceivedCount: Int) {
-        self.missionState = missionState
-        self.lastMessageReceived = lastMessageReceived
-        self.messageReceivedCount = messageReceivedCount
-    }
-
-    // MARK: - EquatableState
-    func isEqual(to other: HelloWorldMissionState) -> Bool {
-        return self.missionState == other.missionState
-            && self.lastMessageReceived == other.lastMessageReceived
-            && self.messageReceivedCount == other.messageReceivedCount
-    }
-
-    // MARK: - Copying
-    func copy() -> HelloWorldMissionState {
-        return HelloWorldMissionState(missionState: self.missionState,
-                                      lastMessageReceived: self.lastMessageReceived,
-                                      messageReceivedCount: self.messageReceivedCount
-        )
-    }
-}
+import Combine
 
 // MARK: - HelloWorldMissionViewModel
 /// The view model that handles Hello World AirSdk mission.
-final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
+final class HelloWorldMissionViewModel {
     typealias Command = Parrot_Missions_Samples_Hello_Airsdk_Messages_Command
     typealias Event = Parrot_Missions_Samples_Hello_Airsdk_Messages_Event
     typealias Empty = Google_Protobuf_Empty
+
+    @Published private(set) var missionState: MissionState = .unavailable
+    @Published private(set) var lastMessageReceived: AirSdkMissionMessageReceived?
+    @Published private(set) var messageReceivedCount = 1
+    @Published private(set) var depthMean: Float = 0.0
+    @Published private(set) var isSayingHello: Bool = true
 
     // MARK: - Private Properties
     private var airSdkManager = Services.hub.drone.airsdkMissionsManager
@@ -86,9 +52,7 @@ final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
     private var messageUidGenerator = AirSdkMissionMessageToSend.UidGenerator(0)
 
     // MARK: - Init
-    override init() {
-        super.init()
-
+    init() {
         listenMission()
     }
 
@@ -111,14 +75,19 @@ final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
     /// Sends a AirSdk message to the drone.
     func sendMessage() {
         var helloCommand = Command()
-        helloCommand.id = .say(Empty())
 
-        guard let payload = try? helloCommand.serializedData() else { return }
+        helloCommand.id = isSayingHello ? .hold(Empty()) : .say(Empty())
+        send(command: helloCommand)
+    }
+
+    func send(command: Command) {
+        guard let payload = try? command.serializedData() else { return }
 
         let helloWorldMessage = AirSdkMissionMessageToSend(mission: helloWorldMissionSignature,
                                                            payload: payload,
                                                            messageUidGenerator: &messageUidGenerator)
         update(messageReceivedCount: 0)
+        update(isSayingHello: !isSayingHello)
         airSdkManager.sendMessage(message: helloWorldMessage)
     }
 
@@ -127,14 +96,14 @@ final class HelloWorldMissionViewModel: BaseViewModel<HelloWorldMissionState> {
     /// - Returns: A potential message to display.
     func messageToDisplay() -> String? {
         let randomMessage = HelloWorldMessageToDisplay.randomMessage()
-        let messageCount = state.value.messageReceivedCount
+        let messageCount = messageReceivedCount
 
         return messageCount == 0 ? nil : randomMessage
     }
 
     /// Triggers an action for a state.
     func toggleState() {
-        switch state.value.missionState {
+        switch missionState {
         case .active:
             sendMessage()
         case .idle:
@@ -211,8 +180,18 @@ private extension HelloWorldMissionViewModel {
     ///     - lastMessageReceived: The AirSdk message received from the drone
     func treat(lastMessageReceived: AirSdkMissionMessageReceived) {
         do {
-            let decodeInfo = try Event(serializedData: lastMessageReceived.payload)
-            update(messageReceivedCount: Int(decodeInfo.count))
+            let helloEvent = try Event(serializedData: lastMessageReceived.payload)
+            switch helloEvent.id {
+            case .depthMean(let depth):
+                update(depthMean: depth)
+
+            case .count(let count):
+                update(messageReceivedCount: Int(count))
+
+            default:
+                break
+            }
+
         } catch {
             // Nothing to do.
         }
@@ -226,9 +205,7 @@ private extension HelloWorldMissionViewModel {
     /// - Parameters:
     ///     - missionState: The mission state
     func update(missionState: MissionState) {
-        let copy = self.state.value.copy()
-        copy.missionState = missionState
-        self.state.set(copy)
+        self.missionState = missionState
     }
 
     /// Updates the state.
@@ -236,9 +213,7 @@ private extension HelloWorldMissionViewModel {
     /// - Parameters:
     ///     - lastMessageReceived: The last message received
     func update(lastMessageReceived: AirSdkMissionMessageReceived?) {
-        let copy = self.state.value.copy()
-        copy.lastMessageReceived = lastMessageReceived
-        self.state.set(copy)
+        self.lastMessageReceived = lastMessageReceived
     }
 
     /// Updates the state.
@@ -246,8 +221,14 @@ private extension HelloWorldMissionViewModel {
     /// - Parameters:
     ///     - messageReceivedCount: The messages received count
     func update(messageReceivedCount: Int) {
-        let copy = self.state.value.copy()
-        copy.messageReceivedCount = messageReceivedCount
-        self.state.set(copy)
+        self.messageReceivedCount = messageReceivedCount
+    }
+
+    func update(depthMean: Float) {
+        self.depthMean = depthMean
+    }
+
+    func update(isSayingHello: Bool) {
+        self.isSayingHello = isSayingHello
     }
 }

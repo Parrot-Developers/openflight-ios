@@ -52,6 +52,7 @@ public struct FlightModel {
     public var distance: Double
     public var duration: Double
     public var gutmaFile: Data?
+    public var thumbnail: ThumbnailModel?
     ///  Url to upload Gutma File
     public var parrotCloudUploadUrl: String?
 
@@ -74,12 +75,6 @@ public struct FlightModel {
     public var fileSynchroStatus: Int16?
     ///  fileSynchroDate: Date of synchro file
     public var fileSynchroDate: Date?
-    ///  Contains the Date of the last external synchro
-    public var externalSynchroDate: Date?
-    ///  externalSynchroStatus contains:
-    ///     - 0 Not yet synchronized
-    ///     - 1 Synchronized
-    public var externalSynchroStatus: Int16?
 
     // MARK: - Public init
     public init(apcId: String,
@@ -97,6 +92,7 @@ public struct FlightModel {
                 distance: Double,
                 duration: Double,
                 gutmaFile: Data?,
+                thumbnail: ThumbnailModel?,
                 parrotCloudUploadUrl: String?,
                 isLocalDeleted: Bool,
                 synchroStatus: SynchroStatus?,
@@ -104,9 +100,7 @@ public struct FlightModel {
                 latestSynchroStatusDate: Date?,
                 latestLocalModificationDate: Date?,
                 fileSynchroStatus: Int16?,
-                fileSynchroDate: Date?,
-                externalSynchroStatus: Int16,
-                externalSynchroDate: Date?) {
+                fileSynchroDate: Date?) {
         /// User's Id
         self.apcId = apcId
         /// Academy
@@ -126,6 +120,7 @@ public struct FlightModel {
         self.duration = duration
         self.gutmaFile = gutmaFile
         self.parrotCloudUploadUrl = parrotCloudUploadUrl
+        self.thumbnail = thumbnail
         /// Synchronization
         self.isLocalDeleted = isLocalDeleted
         self.synchroStatus = synchroStatus
@@ -134,8 +129,6 @@ public struct FlightModel {
         self.latestLocalModificationDate = latestLocalModificationDate
         self.fileSynchroStatus = fileSynchroStatus
         self.fileSynchroDate = fileSynchroDate
-        self.externalSynchroStatus = externalSynchroStatus
-        self.externalSynchroDate = externalSynchroDate
     }
 }
 
@@ -162,6 +155,7 @@ extension FlightModel {
                   distance: 0,
                   duration: 0,
                   gutmaFile: nil,
+                  thumbnail: nil,
                   parrotCloudUploadUrl: nil,
                   isLocalDeleted: false,
                   synchroStatus: nil,
@@ -169,9 +163,7 @@ extension FlightModel {
                   latestSynchroStatusDate: nil,
                   latestLocalModificationDate: nil,
                   fileSynchroStatus: nil,
-                  fileSynchroDate: nil,
-                  externalSynchroStatus: 0,
-                  externalSynchroDate: nil)
+                  fileSynchroDate: nil)
     }
 
     public init(apcId: String,
@@ -201,6 +193,7 @@ extension FlightModel {
                   distance: distance,
                   duration: duration,
                   gutmaFile: gutmaFile,
+                  thumbnail: nil,
                   parrotCloudUploadUrl: nil,
                   isLocalDeleted: false,
                   synchroStatus: nil,
@@ -208,8 +201,6 @@ extension FlightModel {
                   latestSynchroStatusDate: nil,
                   latestLocalModificationDate: nil,
                   fileSynchroStatus: nil,
-                  fileSynchroDate: nil,
-                  externalSynchroStatus: 0,
-                  externalSynchroDate: nil)
+                  fileSynchroDate: nil)
     }
 }

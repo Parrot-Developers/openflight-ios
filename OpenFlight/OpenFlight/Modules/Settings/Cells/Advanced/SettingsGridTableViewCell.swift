@@ -29,6 +29,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Manages drone gesture and display.
 class SettingsGridActionView: UIView {
@@ -43,19 +44,8 @@ class SettingsGridActionView: UIView {
     // MARK: - Private Properties
     private var dashedLinePath = UIBezierPath()
     private var droneHalfWidth: CGFloat = 0.0
-    private var maxAltitude: Double {
-        return viewModel.state.value.maxAltitude
-    }
-    private var maxDistance: Double {
-        return viewModel.state.value.maxDistance
-    }
-    private var minAltitude: Double {
-        return viewModel.state.value.minAltitude
-    }
-    private var minDistance: Double {
-        return viewModel.state.value.minDistance
-    }
-    private var viewModel = GeofenceViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    private var viewModel = GeofenceViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
 
     var isEnabled: Bool = false {
         didSet {
@@ -123,17 +113,24 @@ class SettingsGridActionView: UIView {
 
     // MARK: - Internal Funcs
     /// Updates view.
-    func updateView() {
+    func updateView(altitude: Double,
+                    maxAltitude: Double,
+                    minAltitude: Double,
+                    distance: Double,
+                    maxDistance: Double,
+                    minDistance: Double,
+                    isGeofenceActivated: Bool) {
         // Convert meters in points.
-        let altitudePercent = SettingsGridView.reverseExponentialLike(value: viewModel.state.value.altitude,
+        let altitudePercent = SettingsGridView.reverseExponentialLike(value: altitude,
                                                                       max: maxAltitude,
                                                                       min: minAltitude)
         let posY = Double(bounds.height) - ((altitudePercent / Values.oneHundred) * Double(bounds.height))
-        let distancePercent = SettingsGridView.reverseExponentialLike(value: viewModel.state.value.distance,
+
+        let distancePercent = SettingsGridView.reverseExponentialLike(value: distance,
                                                                       max: maxDistance,
                                                                       min: minDistance)
         let posX = (distancePercent / Values.oneHundred) * Double(bounds.width - droneHalfWidth)
-        enableView(isEnabled: viewModel.state.value.isGeofenceActivated)
+        enableView(isEnabled: isGeofenceActivated)
         updateDroneLocation(CGPoint(x: posX, y: posY))
     }
 }
@@ -151,10 +148,28 @@ private extension SettingsGridActionView {
 
     /// Listens the view model.
     func listenViewModel() {
-        viewModel.state.valueChanged = { [weak self] _ in
-            self?.updateView()
-        }
-        updateView()
+        viewModel.$altitude.removeDuplicates()
+            .combineLatest(viewModel.$isGeofenceActivated.removeDuplicates(),
+                           viewModel.$distance.removeDuplicates(),
+                           viewModel.$minDistance.removeDuplicates())
+            .combineLatest(viewModel.$maxDistance.removeDuplicates(),
+                           viewModel.$minAltitude.removeDuplicates(),
+                           viewModel.$maxAltitude.removeDuplicates())
+        // We use receive(on: ) to ensure that the cell has his correct size before updating the view
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] (arg0, maxDistance, minAltitude, maxAltitude) in
+                let (altitude, isGeofenceActivated, distance, minDistance) = arg0
+                guard let self = self else { return }
+                self.updateView(altitude: altitude,
+                                maxAltitude: maxAltitude,
+                                minAltitude: minAltitude,
+                                distance: distance,
+                                maxDistance: maxDistance,
+                                minDistance: minDistance,
+                                isGeofenceActivated: isGeofenceActivated)
+            }
+            .store(in: &cancellables)
+
         showViews()
     }
 
@@ -222,21 +237,21 @@ private extension SettingsGridActionView {
         let altitudePercent: Double = Double(revertPosition) / (Double(bounds.height) / Values.oneHundred)
         let distancePercent: Double = Double(location.x) / (Double(bounds.width - droneHalfWidth) / Values.oneHundred)
         let altitude = SettingsGridView.computeExponentialLike(value: altitudePercent,
-                                                               max: maxAltitude,
-                                                               min: minAltitude)
+                                                               max: viewModel.maxAltitude,
+                                                               min: viewModel.minAltitude)
         let distance = SettingsGridView.computeExponentialLike(value: distancePercent,
-                                                               max: maxDistance,
-                                                               min: minDistance)
+                                                               max: viewModel.maxDistance,
+                                                               min: viewModel.minDistance)
         heightLabel.text = UnitHelper.stringDistanceWithDouble(altitude)
         distanceLabel.text = UnitHelper.stringDistanceWithDouble(distance)
 
         // Update userImage visibility regarding drone position.
         var xDelta: CGFloat
+        var xDeltaHeightLabel: CGFloat
         var yDelta: CGFloat
         let halfDroneImageSize = CGSize(width: pointImage.frame.width / 2.0,
                                         height: pointImage.frame.height / 2.0)
         // Computes distance label position.
-        var checkXDroneImage = false
         var checkYDroneImage = false
         var distanceAlignment: NSTextAlignment = .left
         if positionView.frame.width > userImage.frame.origin.x +
@@ -244,10 +259,11 @@ private extension SettingsGridActionView {
             distanceLabel.textWidth() +
             2 * Constants.margin {
             xDelta = distanceLabel.textWidth() + Constants.margin
+            xDeltaHeightLabel = Constants.margin
         } else {
             distanceAlignment = .right
-            xDelta = -Constants.margin
-            checkXDroneImage = true
+            xDelta = -halfDroneImageSize.width
+            xDeltaHeightLabel = positionView.frame.size.width - xDelta
         }
 
         // Computes height label position.
@@ -258,10 +274,6 @@ private extension SettingsGridActionView {
         } else {
             yDelta = Constants.labelSize.height
             checkYDroneImage = true
-        }
-
-        if checkXDroneImage && positionView.frame.width >= halfDroneImageSize.width {
-            yDelta = Constants.labelSize.height + halfDroneImageSize.height
         }
 
         if checkYDroneImage && positionView.frame.height >= halfDroneImageSize.height {
@@ -275,7 +287,7 @@ private extension SettingsGridActionView {
                                      height: distanceLabel.frame.height)
         distanceLabel.textAlignment = distanceAlignment
 
-        heightLabel.frame = CGRect(x: Constants.margin,
+        heightLabel.frame = CGRect(x: xDeltaHeightLabel,
                                    y: location.y - yDelta,
                                    width: Constants.labelSize.width,
                                    height: Constants.labelSize.height)

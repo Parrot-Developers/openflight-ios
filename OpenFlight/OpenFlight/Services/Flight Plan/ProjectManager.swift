@@ -89,6 +89,8 @@ enum ProjectManagerError: Error {
 }
 
 public protocol ProjectManager {
+    /// Maximum of projects to get for each loading
+    var numberOfProjectsPerPage: Int { get }
 
     /// Current project publisher
     var currentProjectPublisher: AnyPublisher<ProjectModel?, Never> { get }
@@ -109,18 +111,70 @@ public protocol ProjectManager {
     /// Current project
     var currentProject: ProjectModel? { get }
 
+    /// Whether the current project has some executions.
+    var hasCurrentProjectExecutions: Bool { get }
+
     /// Whether the current project has just been created.
-    var isCurrentProjectBranNew: Bool { get set }
+    var isCurrentProjectBrandNew: Bool { get set }
 
     /// Loads Projects.
-    /// - Returns: the created project
+    ///
+    /// - Parameters:
+    ///     - type: project type to specified
+    /// - Returns: list of projects
     func loadProjects(type: ProjectType?) -> [ProjectModel]
+
+    /// Loads Projects.
+    ///
+    /// - Parameters:
+    ///    - type: project type to specified
+    ///    - offset: offset start
+    ///    - limit: maximum number of project to get
+    /// - Returns: list of projects
+    func loadProjects(type: ProjectType?, offset: Int, limit: Int) -> [ProjectModel]
+
+    /// Loads Projects.
+    ///
+    /// - Parameters:
+    ///    - type: project type to specified
+    ///    - limit: maximum number of project to get
+    /// - Returns: list of projects
+    func loadProjects(type: ProjectType?, limit: Int) -> [ProjectModel]
 
     /// Loads executed projects, ordered by last execution date desc
     func loadExecutedProjects() -> [ProjectModel]
 
+    /// Loads executed projects, ordered by last execution date desc
+    ///
+    /// - Parameters:
+    ///    - offset: offset start
+    ///    - limit: maximum number of project to get
+    /// - Returns: list of projects
+    func loadExecutedProjects(offset: Int, limit: Int, withType: ProjectType?) -> [ProjectModel]
+
+    /// Loads executed projects, ordered by last execution date desc
+    ///
+    /// - Parameters:
+    ///    - limit: maximum number of project to get
+    /// - Returns: list of projects
+    func loadExecutedProjects(limit: Int, withType: ProjectType?) -> [ProjectModel]
+
     /// Loads all projects
     func loadAllProjects() -> [ProjectModel]
+
+    /// Get count of all projects
+    func getAllProjectsCount() -> Int
+
+    /// Get count of all projects with a specific type
+    /// - Parameters:
+    ///     - withType: type of project to specidified
+    func getProjectsCount(withType: ProjectType) -> Int
+
+    /// Get count of all executed projects with a specific type
+    /// - Parameters:
+    ///     - withType: type of project to specidified
+    /// - Returns: Count of projects with matching type
+    func getExecutedProjectsCount(withType: ProjectType?) -> Int
 
     /// Creates new Project.
     ///
@@ -147,25 +201,35 @@ public protocol ProjectManager {
     /// - Returns: The executions list.
     func executions(for project: ProjectModel) -> [FlightPlanModel]
 
-    /// Get the last flight plan used for a specific project
+    /// Returns the project's pending execution (if any).
+    /// An execution is pending if and only if:
+    ///    - it is the latest execution of the project AND
+    ///    - it has not been completed (state is `.stopped` or `.flying`)
+    ///
+    /// - Parameter project: the project
+    /// - Returns: the latest pending execution (if any)
+    func pendingExecution(for project: ProjectModel) -> FlightPlanModel?
+
+    /// Get the editable's flight plan used for a specific project
     ///
     /// - Parameters:
     ///     - project:project to consider
-    /// - Returns: the last flight plan used or nil if there 's no flight plan in this project
-    func lastFlightPlan(for project: ProjectModel) -> FlightPlanModel?
+    /// - Returns: the editable's flight plan used or nil if there 's no flight plan in this project
+    func editableFlightPlan(for project: ProjectModel) -> FlightPlanModel?
 
     /// Deletes a flight plan.
     ///
     /// - Parameters:
     ///     - project: project to delete
-    func delete(project: ProjectModel)
+    ///     - completion: closure called on completion
+    func delete(project: ProjectModel, completion: ((Bool) -> Void)?)
 
     /// Duplicates Flight Plan.
     ///
     /// - Parameters:
     ///     - project: project to duplicate
-    @discardableResult
-    func duplicate(project: ProjectModel) -> ProjectModel
+    ///     - completion: closure called on completion
+    func duplicate(project: ProjectModel, completion: ((ProjectModel?) -> Void)?)
 
     /// Loads last opened project (if exists).
     ///
@@ -178,19 +242,22 @@ public protocol ProjectManager {
     /// - Parameters:
     ///    - project: the project
     ///    - title: the new title
-    func rename(_ project: ProjectModel, title: String)
+    ///    - completion: closure called on completion
+    func rename(_ project: ProjectModel, title: String, completion: ((ProjectModel) -> Void)?)
 
     /// Sets up selcted project as last used.
     ///
     /// - Parameters:
     ///     - project: project model
-    func setAsLastUsed(_ project: ProjectModel) -> ProjectModel
+    ///     - completion: closure called on completion
+    func setAsLastUsed(_ project: ProjectModel, completion: ((ProjectModel?) -> Void)?)
 
     /// Sets up project as current.
     ///
     /// - Parameters:
     ///     - project: project model
-    func setCurrent(_ project: ProjectModel)
+    ///     - completion: closure called on completion
+    func setCurrent(_ project: ProjectModel, completion: (() -> Void)?)
 
     /// Clears the current project
     func clearCurrentProject()
@@ -276,6 +343,7 @@ public class ProjectManagerImpl {
     private enum Constants {
         public static let defaultFlightPlanVersion: Int = 1
     }
+    public var numberOfProjectsPerPage: Int = 40
 
     private let flightPlanTypeStore: FlightPlanTypeStore
     private let flightPlanRepo: FlightPlanRepository
@@ -301,7 +369,7 @@ public class ProjectManagerImpl {
         return startEditionSubject.eraseToAnyPublisher()
     }
 
-    public var isCurrentProjectBranNew: Bool = false
+    public var isCurrentProjectBrandNew: Bool = false
 
     // MARK: - Private Properties
     private var currentProjectSubject = CurrentValueSubject<ProjectModel?, Never>(nil)
@@ -360,6 +428,14 @@ extension ProjectManagerImpl: ProjectManager {
         }
     }
 
+    public var hasCurrentProjectExecutions: Bool {
+        // Ensure Project Manager has a current project.
+        guard let project = currentProject else { return false }
+        // Check if project has executed flight plans.
+        // TODO: In this specific case, it should be more efficient to perform a DB 'Select Count' instead of fetching all project's executions.
+        return !executedFlightPlans(for: project).isEmpty
+    }
+
     public func loadAllProjects() -> [ProjectModel] {
         loadProjects(type: nil)
     }
@@ -395,12 +471,13 @@ extension ProjectManagerImpl: ProjectManager {
                 }
 
                 var flightPlan = newFlightPlan
-
                 flightPlan = MavlinkToFlightPlanParser
                     .generateFlightPlanFromMavlinkStandard(url: url,
                                                            flightPlan: flightPlan) ?? flightPlan
-                flightPlan.dataSetting?.readOnly = true
-                flightPlan.dataSetting?.mavlinkDataFile = try? Data(contentsOf: url)
+                var dataSetting = flightPlan.dataSetting
+                dataSetting?.readOnly = true
+                dataSetting?.mavlinkDataFile = try? Data(contentsOf: url)
+                flightPlan.dataSetting = dataSetting
                 self.flightPlanRepo.saveOrUpdateFlightPlan(flightPlan,
                                                            byUserUpdate: true,
                                                            toSynchro: true,
@@ -427,70 +504,127 @@ extension ProjectManagerImpl: ProjectManager {
         executions(for: project, excludeFlyingFlightPlan: false)
     }
 
-    public func lastFlightPlan(for project: ProjectModel) -> FlightPlanModel? {
-        flightPlans(for: project).first
+    public func pendingExecution(for project: ProjectModel) -> FlightPlanModel? {
+        let latestExecution = persistenceProject
+            .getExecutedFlightPlans(ofProject: project)
+            .sorted { $0.lastUpdate > $1.lastUpdate }
+            .first
+
+        // Latest execution is pending only if its state is `.stopped` or `.flying`.
+        guard latestExecution?.state == .stopped || latestExecution?.state == .flying else { return nil }
+
+        return latestExecution
+    }
+
+    public func editableFlightPlan(for project: ProjectModel) -> FlightPlanModel? {
+        flightPlans(for: project).first { $0.state == .editable }
     }
 
     public func loadProjects(type: ProjectType?) -> [ProjectModel] {
-        if let type = type {
-            return persistenceProject.getProjects(withType: type.rawValue)
-        } else {
-            return persistenceProject.getAllProjects()
-        }
+        persistenceProject.getProjectsWithEditable(withType: type?.rawValue)
+    }
+
+    public func loadProjects(type: ProjectType?, offset: Int, limit: Int) -> [ProjectModel] {
+        persistenceProject.getProjectsWithEditable(offset: offset, limit: limit, withType: type?.rawValue)
+    }
+
+    public func loadProjects(type: ProjectType?, limit: Int) -> [ProjectModel] {
+        persistenceProject.getProjectsWithEditable(offset: 0, limit: limit, withType: type?.rawValue)
     }
 
     public func loadExecutedProjects() -> [ProjectModel] {
         persistenceProject.getExecutedProjectsWithFlightPlans()
     }
 
-    public func delete(project: ProjectModel) {
+    public func loadExecutedProjects(offset: Int, limit: Int, withType: ProjectType?) -> [ProjectModel] {
+        persistenceProject.getExecutedProjectsWithFlightPlans(offset: offset, limit: limit, withType: withType)
+    }
+
+    public func loadExecutedProjects(limit: Int, withType: ProjectType?) -> [ProjectModel] {
+        persistenceProject.getExecutedProjectsWithFlightPlans(offset: 0, limit: limit, withType: withType)
+    }
+
+    public func getProjectsCount(withType: ProjectType) -> Int {
+        persistenceProject.getProjectsCount(withType: withType.rawValue)
+    }
+
+    public func getExecutedProjectsCount(withType: ProjectType?) -> Int {
+        persistenceProject.getExecutedProjectsCount(withType: withType?.rawValue)
+    }
+
+    public func getAllProjectsCount() -> Int {
+        persistenceProject.getAllProjectsCount()
+    }
+
+    public func delete(project: ProjectModel, completion: ((_ success: Bool) -> Void)?) {
         ULog.i(.tag, "Deleting project '\(project.uuid)' '\(project.title ?? "")'")
         for flightPlan in flightPlans(for: project) {
             // There are side effects to manage (delete mavlink,...), let the manager do the job
             flightPlanManager.delete(flightPlan: flightPlan)
         }
-        persistenceProject.deleteOrFlagToDeleteProject(withUuid: project.uuid)
-        if project.uuid == currentProject?.uuid {
-            resetLoadedProject()
-            loadLastProject(type: project.type)
+        persistenceProject.deleteOrFlagToDeleteProjects(withUuids: [project.uuid]) { [unowned self] success in
+            if success && project.uuid == currentProject?.uuid {
+                ULog.i(.tag, "delete project \(project.uuid)")
+                resetLoadedProject()
+                loadLastOpenedProject(type: project.type)
+            } else {
+                ULog.e(.tag, "delete failed for project \(project.uuid)")
+            }
+            completion?(success)
         }
     }
 
-    public func rename(_ project: ProjectModel, title: String) {
+    public func rename(_ project: ProjectModel, title: String, completion: ((ProjectModel) -> Void)?) {
         // Ensure the new name is different from the previous one.
-        guard project.title != title else { return }
+        guard project.title != title else {
+            completion?(project)
+            return
+        }
         // Generate an unique title.
         // If the new title is already used by another project,
         // use the same rule than for a project creation (adding ' ({index})' suffix).
         let newTitle = renamedProjectTitle(for: title, of: project)
-        ULog.i(.tag, "Rename project '\(project.uuid)' from '\(project.title ?? "")' to '\(newTitle)' (expected: \(title)")
         var project = project
+        let logStr = "project '\(project.uuid)' from '\(project.title ?? "")' to '\(newTitle)' (expected: \(title)"
         // Update the title and save the project.
         project.title = newTitle
-        persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true)
-        // Rename the customTitle of the project's editable FP.
-        if var flightPlan = lastFlightPlan(for: project),
-           flightPlan.state == .editable {
-            flightPlan.customTitle = newTitle
-            flightPlanRepo.saveOrUpdateFlightPlan(flightPlan, byUserUpdate: true, toSynchro: true)
-            editionService.setupFlightPlan(flightPlan)
-        }
-        // Update the current project
-        if project.uuid == currentProject?.uuid {
-            currentProject?.title = newTitle
+        persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true) { [unowned self] success in
+            if success {
+                ULog.i(.tag, "Rename project \(logStr)")
+                // Rename the customTitle of the project's editable FP.
+                if var flightPlan = editableFlightPlan(for: project),
+                   flightPlan.customTitle != newTitle {
+                    flightPlan.customTitle = newTitle
+                    flightPlanRepo.saveOrUpdateFlightPlan(flightPlan, byUserUpdate: true, toSynchro: true,
+                                                          withFileUploadNeeded: false) { [unowned self] success in
+                        if success {
+                            ULog.e(.tag, "Rename project update for flight plan \(flightPlan.uuid)")
+                            editionService.setupFlightPlan(flightPlan)
+                        } else {
+                            ULog.e(.tag, "Rename project update failed for flight plan \(flightPlan.uuid)")
+                        }
+                    }
+                }
+                // Update the current project
+                if project.uuid == currentProject?.uuid {
+                    currentProject?.title = newTitle
+                }
+            } else {
+                ULog.e(.tag, "Rename failed project \(logStr)")
+            }
+            completion?(project)
         }
     }
 
-    @discardableResult
-    public func duplicate(project: ProjectModel) -> ProjectModel {
+    public func duplicate(project: ProjectModel, completion: ((ProjectModel?) -> Void)?) {
         let duplicatedProjectID = UUID().uuidString
         var duplicatedFlightPlans: [FlightPlanModel] = []
 
         // Generate the duplicated project's title.
         let title = nextDuplicatedProjectTitle(for: project)
 
-        // Get the last project's FP (a project must always contains at least one FP) to duplicate it.
-        if let flightPlan = lastFlightPlan(for: project) {
+        // Get the editable's FP (a project must always contains at least one FP) to duplicate it.
+        if let flightPlan = editableFlightPlan(for: project) {
             var duplicatedFlightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan,
                                                                        save: false)
             duplicatedFlightPlan.customTitle = title
@@ -504,35 +638,72 @@ extension ProjectManagerImpl: ProjectManager {
                                              uuid: duplicatedProjectID,
                                              title: title)
 
-        persistenceProject.saveOrUpdateProject(duplicatedProject, byUserUpdate: true, toSynchro: true)
-        flightPlanRepo.saveOrUpdateFlightPlans(duplicatedFlightPlans, byUserUpdate: true, toSynchro: true)
-        currentProject = duplicatedProject
-        // A duplicated project is treated as 'brand new' project.
-        isCurrentProjectBranNew = true
-        ULog.i(.tag, "Duplicate project '\(project.uuid)' '\(project.title ?? "")' -> '\(duplicatedProject.uuid)'."
-               + " Duplicated flightPlans: " + duplicatedFlightPlans.map({ "'\($0.uuid)'" }).joined(separator: ", "))
-        return duplicatedProject
+        let dispatchGroup = DispatchGroup()
+        var didSaveProject = false
+        var didSaveFlightPlans = false
+
+        dispatchGroup.enter()
+        persistenceProject.saveOrUpdateProject(duplicatedProject, byUserUpdate: true, toSynchro: true) { success in
+            didSaveProject = success
+            dispatchGroup.leave()
+        }
+
+        dispatchGroup.enter()
+        flightPlanRepo.saveOrUpdateFlightPlans(duplicatedFlightPlans, byUserUpdate: true, toSynchro: true, withFileUploadNeeded: true) { success in
+            didSaveFlightPlans = success
+            dispatchGroup.leave()
+        }
+
+        dispatchGroup.notify(queue: .main) { [unowned self] in
+            if didSaveProject && didSaveFlightPlans {
+                currentProject = duplicatedProject
+                // A duplicated project is treated as 'brand new' project.
+                isCurrentProjectBrandNew = true
+                ULog.i(.tag, "Duplicate project '\(project.uuid)' '\(project.title ?? "")' -> '\(duplicatedProject.uuid)'."
+                       + " Duplicated flightPlans: " + duplicatedFlightPlans.map({ "'\($0.uuid)'" }).joined(separator: ", "))
+                completion?(duplicatedProject)
+            } else {
+                ULog.e(.tag, "Duplicate project failed: Couldn't create project \(project.uuid)"
+                        + " and associated flightPlan \(duplicatedFlightPlans.map({ "'\($0.uuid)'" }).joined(separator: ", "))")
+                completion?(nil)
+            }
+        }
     }
 
-    public func setCurrent(_ project: ProjectModel) {
-        currentProject = setAsLastUsed(project)
-        // Reset the flag informing about the project creation.
-        isCurrentProjectBranNew = false
+    public func setCurrent(_ project: ProjectModel, completion: (() -> Void)?) {
+        setAsLastUsed(project) { [unowned self] project in
+            guard let project = project else {
+                completion?()
+                return
+            }
+            currentProject = project
+            // Reset the flag informing about the project creation.
+            isCurrentProjectBrandNew = false
+            completion?()
+        }
     }
 
     public func setLastOpenedProjectAsCurrent(type: ProjectType) {
-        currentProject = loadProjects(type: type).sorted(by: { $0.lastOpened ?? $0.lastUpdated > $1.lastOpened ?? $1.lastUpdated }).first
+        currentProject = loadProjects(type: type)
+            .sorted(by: { $0.lastOpened ?? $0.lastUpdated > $1.lastOpened ?? $1.lastUpdated })
+            .first
         // Reset the flag informing about the project creation.
-        isCurrentProjectBranNew = false
+        isCurrentProjectBrandNew = false
     }
 
-    public func setAsLastUsed(_ project: ProjectModel) -> ProjectModel {
+    public func setAsLastUsed(_ project: ProjectModel, completion: ((_ project: ProjectModel?) -> Void)?) {
         // Save date in file.
         var newProject = project
         newProject.lastUpdated = Date()
         // Save Flight Plan.
-        persistenceProject.saveOrUpdateProject(newProject, byUserUpdate: true, toSynchro: true)
-        return newProject
+        persistenceProject.saveOrUpdateProject(newProject, byUserUpdate: true, toSynchro: true) { success in
+            if success {
+                ULog.i(.tag, "setAsLastUsed project \(project.uuid)")
+            } else {
+                ULog.e(.tag, "setAsLastUsed failed project \(project.uuid)")
+            }
+            completion?(success ? newProject : nil)
+        }
     }
 
     public func project(for flightPlan: FlightPlanModel) -> ProjectModel? {
@@ -542,7 +713,7 @@ extension ProjectManagerImpl: ProjectManager {
     public func clearCurrentProject() {
         currentProject = nil
         // Reset the flag informing about the project creation.
-        isCurrentProjectBranNew = false
+        isCurrentProjectBrandNew = false
     }
 
     public func loadEverythingAndOpen(flightPlan: FlightPlanModel) {
@@ -579,7 +750,7 @@ extension ProjectManagerImpl: ProjectManager {
         currentMissionManager.set(provider: mPovider)
         currentMissionManager.set(mode: mMode)
         currentProject = project
-        isCurrentProjectBranNew = isBrandNew
+        isCurrentProjectBrandNew = isBrandNew
         mMode.stateMachine?.open(flightPlan: flightPlan)
         if autoStart {
             mMode.stateMachine?.start()
@@ -592,7 +763,7 @@ extension ProjectManagerImpl: ProjectManager {
     }
 
     public func loadEverythingAndOpen(project: ProjectModel, isBrandNew: Bool) {
-        guard let flightPlan = lastFlightPlan(for: project) else {
+        guard let flightPlan = editableFlightPlan(for: project) else {
             ULog.i(.tag, "No Flight Plan found for project '\(project.uuid)' '\(project.title ?? "")'")
             return
         }
@@ -684,6 +855,7 @@ private extension ProjectManagerImpl {
         // Generate the title according the current projects stored.
         // If a project with the same name already exists, add a suffix with the correct index.
         let title = newProjectTitle(for: title ?? flightPlanProvider.defaultProjectName)
+        let captureMode = flightPlanProvider.defaultCaptureMode
 
         let dataSetting = FlightPlanDataSetting(product: FlightPlanConstants.defaultDroneModel,
                                                 settings: [],
@@ -693,7 +865,8 @@ private extension ProjectManagerImpl {
                                                 takeoffActions: [],
                                                 pois: [],
                                                 wayPoints: [],
-                                                disablePhotoSignature: false)
+                                                disablePhotoSignature: false,
+                                                captureMode: captureMode)
 
         let flightPlan = FlightPlanModel(apcId: userService.currentUser.apcId,
                                          type: flightPlanProvider.typeKey,
@@ -747,6 +920,7 @@ private extension ProjectManagerImpl {
 
         dispatchGroup.notify(queue: .main) { [unowned self] in
             if didSaveProject && didSaveFlightPlan {
+                ULog.i(.tag, "newProjectAndFlightPlan: create project \(project.uuid) and associated flightPlan \(flightPlan.uuid)")
                 completion(project, flightPlan)
             } else {
                 ULog.e(.tag, "newProjectAndFlightPlan: Couldn't create project \(project.uuid) and associated flightPlan \(flightPlan.uuid)")
@@ -764,6 +938,11 @@ private extension ProjectManagerImpl {
 
                 if userEvent == .didLogout {
                     resetLoadedProject()
+                } else if case .didLogin = userEvent,
+                          currentProject == nil,
+                          let flightPlanProvider = currentMissionManager.mode.flightPlanProvider {
+                    // User just logged in, load latest opened project if no active one.
+                    loadLastOpenedProject(type: flightPlanProvider.projectType)
                 }
             }
             .store(in: &cancellables)
@@ -807,13 +986,16 @@ private extension ProjectManagerImpl {
         editionService.resetFlightPlan()
     }
 
-    func loadLastProject(type: ProjectType) {
-        guard let newProject = loadProjects(type: type)
-                .sorted(by: { $0.lastOpened ?? $0.lastUpdated > $1.lastOpened ?? $1.lastUpdated })
-                .first,
-              let flightPlan = lastFlightPlan(for: newProject) else { return }
-        ULog.i(.tag, "Opening flightPlan '\(flightPlan.uuid)' of project '\(newProject.uuid)' '\(newProject.title ?? "")'")
-        setCurrent(newProject)
+    /// Loads latest opened project of a specific type.
+    ///
+    /// - Parameter type: the type of the latest opened project to load
+    func loadLastOpenedProject(type: ProjectType) {
+        setLastOpenedProjectAsCurrent(type: type)
+
+        guard let project = currentProject,
+              let flightPlan = editableFlightPlan(for: project) else { return }
+
+        ULog.i(.tag, "Opening flightPlan '\(flightPlan.uuid)' of project '\(project.uuid)' '\(project.title ?? "")'")
         currentMissionManager.mode.stateMachine?.open(flightPlan: flightPlan)
     }
 
@@ -901,11 +1083,11 @@ private extension ProjectManagerImpl {
 
     /// Refresh all projects summary
     func refreshAllProjectsSummary() {
-        let allProjects = persistenceProject.getAllProjects()
-        let totalFlightPlan = allProjects.filter { $0.isSimpleFlightPlan }.count
-        let totalPgy = allProjects.filter { !$0.isSimpleFlightPlan }.count
+        let allProjects = persistenceProject.getAllProjectsCount()
+        let totalFlightPlan = persistenceProject.getProjectsCount(withType: ProjectType.classic.rawValue)
+        let totalPgy = persistenceProject.getProjectsCount(withType: ProjectType.pgy.rawValue)
 
-        allProjectSummarySubject.value = AllProjectsSummary(numberOfProjects: allProjects.count,
+        allProjectSummarySubject.value = AllProjectsSummary(numberOfProjects: allProjects,
                                                             totalFlightPlan: totalFlightPlan,
                                                             totalPgy: totalPgy)
     }
@@ -1011,7 +1193,8 @@ private extension String {
     func duplicatedProjectIndex(for projectName: String) -> Int? {
         // 1 - Check if the string match the duplicated project name pattern.
         // 2 - Get the last match (should have just one).
-        guard let result = try? search(regexPattern: RexgexPattern.duplicatedProjectIndex(for: projectName)),
+        guard let result = try? search(regexPattern: RexgexPattern.duplicatedProjectIndex(for: projectName),
+                                       isCaseInsensitive: true),
               let match = result.matches.last else {
                   // It's not a title formatted as expected.
                   return nil
@@ -1039,7 +1222,8 @@ private extension String {
     func newProjectTitleIndex(for name: String) -> Int? {
         // 1 - Check if the string match the new project name pattern.
         // 2 - Get the last match (should have just one).
-        guard let result = try? search(regexPattern: RexgexPattern.newProjectTitle(for: name)),
+        guard let result = try? search(regexPattern: RexgexPattern.newProjectTitle(for: name),
+                                       isCaseInsensitive: true),
               let match = result.matches.last else {
                   // It's not a title formatted as a new project name.
                   return nil

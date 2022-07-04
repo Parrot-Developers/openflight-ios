@@ -29,174 +29,29 @@
 
 import UIKit
 import GroundSdk
-import SwiftyUserDefaults
 import Combine
 
-/// State for `RemoteDetailsButtonsViewModel`.
-final class RemoteDetailsButtonsState: DevicesConnectionState {
-    // MARK: - Internal Properties
-    fileprivate(set) var droneName: String = Style.dash
-    fileprivate(set) var needCalibration: Bool = false
-    fileprivate(set) var wifiStrength: WifiStrength = WifiStrength.offline
-    fileprivate(set) var softwareVersion: String = Style.dash
-    fileprivate(set) var idealVersion: String = Style.dash
-    fileprivate(set) var updateState: UpdateState = .upToDate
-    fileprivate(set) var needDownload: Bool = false
-
-    private var isVersionUnknown: Bool { softwareVersion == Style.dash }
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - droneConnectionState: drone connection state
-    ///    - remoteControlConnectionState: remote control connection state
-    ///    - droneName: current drone name
-    ///    - needCalibration: check if remote need calibration
-    ///    - wifiStrength: wifi signal
-    ///    - softwareVersion: software version
-    ///    - idealVersion: ideal target software version
-    ///    - updateState: remote update state
-    ///    - needDownload: check if ideal firmware needs to be downloaded
-    init(droneConnectionState: DeviceConnectionState?,
-         remoteControlConnectionState: DeviceConnectionState?,
-         droneName: String,
-         needCalibration: Bool,
-         wifiStrength: WifiStrength,
-         softwareVersion: String,
-         idealVersion: String,
-         updateState: UpdateState,
-         needDownload: Bool) {
-        super.init(droneConnectionState: droneConnectionState,
-                   remoteControlConnectionState: remoteControlConnectionState)
-
-        self.droneName = droneName
-        self.needCalibration = needCalibration
-        self.wifiStrength = wifiStrength
-        self.softwareVersion = softwareVersion
-        self.idealVersion = idealVersion
-        self.updateState = updateState
-        self.needDownload = needDownload
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DevicesConnectionState) -> Bool {
-        guard let other = other as? RemoteDetailsButtonsState else { return false }
-
-        return super.isEqual(to: other)
-            && self.droneName == other.droneName
-            && self.needCalibration == other.needCalibration
-            && self.wifiStrength == other.wifiStrength
-            && self.softwareVersion == other.softwareVersion
-            && self.idealVersion == other.idealVersion
-            && self.updateState == other.updateState
-            && self.needDownload == other.needDownload
-    }
-
-    override func copy() -> RemoteDetailsButtonsState {
-        let copy = RemoteDetailsButtonsState(droneConnectionState: self.droneConnectionState,
-                                             remoteControlConnectionState: self.remoteControlConnectionState,
-                                             droneName: self.droneName,
-                                             needCalibration: self.needCalibration,
-                                             wifiStrength: self.wifiStrength,
-                                             softwareVersion: self.softwareVersion,
-                                             idealVersion: self.idealVersion,
-                                             updateState: self.updateState,
-                                             needDownload: self.needDownload)
-        return copy
-    }
-}
-
-// MARK: - Internal Properties
-/// Provides Helpers for button state.
-extension RemoteDetailsButtonsState {
-    /// Returns a model for remote calibration device view.
-    var calibrationModel: DeviceDetailsButtonModel {
-        let isRemoteConnected = remoteControlConnectionState?.isConnected() == true
-        let backgroundColor: ColorName
-        let subtitle: String
-
-        if !isRemoteConnected {
-            backgroundColor = .white
-            subtitle = Style.dash
-        } else {
-            backgroundColor = needCalibration ? .errorColor : .white
-            subtitle = needCalibration ? L10n.remoteCalibrationRequired : L10n.droneDetailsCalibrationOk
-        }
-        let titleColor: ColorName = needCalibration ? .white : .defaultTextColor
-        let subtitleColor: ColorName = needCalibration ? .white : (isRemoteConnected ? .highlightColor : .defaultTextColor)
-
-        return DeviceDetailsButtonModel(mainImage: Asset.Remote.icRemoteController.image,
-                                        title: L10n.remoteDetailsCalibration,
-                                        subtitle: subtitle,
-                                        backgroundColor: backgroundColor,
-                                        mainImageTintColor: titleColor,
-                                        titleColor: titleColor,
-                                        subtitleColor: subtitleColor)
-    }
-
-    /// Returns a model for drone status linked to remote connection state.
-    var droneStatusModel: DeviceDetailsButtonModel {
-        let isRemoteConnected = remoteControlConnectionState?.isConnected() == true
-        let isDroneConnected = droneConnectionState?.isConnected() == true
-        if isRemoteConnected {
-            let backgroundColor: ColorName = isDroneConnected ? .white : .warningColor
-            let titleColor: ColorName = isDroneConnected ? .defaultTextColor : .white
-            let subtitleColor: ColorName = isDroneConnected ? .highlightColor : .white
-            return DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
-                                            title: L10n.remoteDetailsConnectedDrone,
-                                            subtitle: isDroneConnected ? droneName : L10n.pairingLookingForDrone,
-                                            backgroundColor: backgroundColor,
-                                            mainImageTintColor: titleColor,
-                                            titleColor: titleColor,
-                                            subtitleColor: subtitleColor)
-        } else {
-            return DeviceDetailsButtonModel(mainImage: Asset.Remote.icSdCardUsb.image,
-                                            title: L10n.remoteDetailsConnectedDrone,
-                                            subtitle: Style.dash,
-                                            backgroundColor: .white,
-                                            subtitleColor: .defaultTextColor80)
-        }
-    }
-
-    /// Returns a model for remote software information view.
-    var softwareModel: DeviceDetailsButtonModel {
-        let isRemoteConnected = remoteControlConnectionState?.isConnected() == true
-        let isReadyForUpdate = updateState.isAvailable && isRemoteConnected
-        let canShowAvailableUpdate = needDownload || isReadyForUpdate
-
-        let subtitle = canShowAvailableUpdate
-                        ? String(format: "%@%@%@", softwareVersion, Style.arrow, idealVersion)
-                        : isRemoteConnected ? softwareVersion : Style.dash
-        let titleColor: ColorName = canShowAvailableUpdate ? .white : .defaultTextColor
-        let subImage = !isRemoteConnected || canShowAvailableUpdate || isVersionUnknown
-                        ? nil
-                        : Asset.Common.Checks.icCheckedSmall.image
-        let backgroundColor: ColorName = updateState == .required && isRemoteConnected
-                                         ? .errorColor
-                                         : canShowAvailableUpdate ? .warningColor : .white
-
-        return DeviceDetailsButtonModel(mainImage: Asset.Remote.icRemoteFirmware.image,
-                                        title: L10n.remoteDetailsSoftware,
-                                        subImage: subImage,
-                                        subtitle: subtitle,
-                                        backgroundColor: backgroundColor,
-                                        mainImageTintColor: titleColor,
-                                        titleColor: titleColor,
-                                        subtitleColor: titleColor)
-    }
-}
-
 /// View Model for Remote details buttons screen.
-final class RemoteDetailsButtonsViewModel: DevicesStateViewModel<RemoteDetailsButtonsState> {
+final class RemoteDetailsButtonsViewModel {
     // MARK: - Internal Properties
+
+    @Published private(set) var droneName: String = Style.dash
+    @Published private(set) var needCalibration: Bool = false
+    @Published private(set) var wifiStrength: WifiStrength = WifiStrength.offline
+    @Published private(set) var softwareVersion: String = Style.dash
+    @Published private(set) var idealVersion: String = Style.dash
+    @Published private(set) var updateState: UpdateState = .upToDate
+    @Published private(set) var needDownload: Bool = false
+
+    private var isVersionUnknown: AnyPublisher<Bool, Never> {
+        $softwareVersion
+            .map { $0 == Style.dash }
+            .eraseToAnyPublisher()
+    }
+
     /// Returns true if the remote doesn't have enough battery for the update.
     var isBatteryLevelTooLow: Bool {
-        let updater = remoteControl?.getPeripheral(Peripherals.updater)
+        let updater = currentRemoteControlHolder.remoteControl?.getPeripheral(Peripherals.updater)
         return updater?.updateUnavailabilityReasons.contains(.notEnoughBattery) == true
     }
 
@@ -207,92 +62,202 @@ final class RemoteDetailsButtonsViewModel: DevicesStateViewModel<RemoteDetailsBu
     private let groundSdk = GroundSdk()
     private var updaterRef: Ref<Updater>?
     private var systemInfoRef: Ref<SystemInfo>?
+
+    private var connectedDroneHolder: ConnectedDroneHolder
+    private var currentRemoteControlHolder: CurrentRemoteControlHolder
+    private var connectedRemoteControlHolder: ConnectedRemoteControlHolder
+    private var updateService: UpdateService
+
     /// Combine cancellables.
     private var cancellables = Set<AnyCancellable>()
-    /// Update service.
-    private unowned var updateService: UpdateService
 
-    // MARK: - Init
-    override init() {
-        // TODO injection
-        updateService = Services.hub.update
-
-        super.init()
+    init(connectedDroneHoler: ConnectedDroneHolder,
+         currentRemoteControlHolder: CurrentRemoteControlHolder,
+         connectedRemoteControlHolder: ConnectedRemoteControlHolder,
+         updateService: UpdateService) {
+        self.connectedDroneHolder = connectedDroneHoler
+        self.currentRemoteControlHolder = currentRemoteControlHolder
+        self.connectedRemoteControlHolder = connectedRemoteControlHolder
+        self.updateService = updateService
 
         listenUpdateService()
-
         queryRemoteUpdate()
-    }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
+        connectedDroneHoler.dronePublisher
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenDroneName(drone)
+                self.listenNetworkControl(drone)
+            }
+            .store(in: &cancellables)
 
-        listenDroneName(drone)
-        listenNetworkControl(drone)
-    }
-
-    override func listenRemoteControl(remoteControl: RemoteControl) {
-        super.listenRemoteControl(remoteControl: remoteControl)
-
-        listenMagnetometer(remoteControl)
-        listenRemoteUpdate(remoteControl)
-        listenSystemInfo(remoteControl)
+        currentRemoteControlHolder.remoteControlPublisher
+            .sink { [weak self] remoteControl in
+                guard let self = self else { return }
+                self.listenMagnetometer(remoteControl)
+                self.listenRemoteUpdate(remoteControl)
+                self.listenSystemInfo(remoteControl)
+            }
+            .store(in: &cancellables)
     }
 
     /// Check if the drone is currently flying.
     func isDroneFlying() -> Bool {
-        return drone?.isStateFlying == true
+        return connectedDroneHolder.drone?.isStateFlying == true
+    }
+
+    var softwareButtonViewEnabled: AnyPublisher<Bool, Never> {
+        connectedRemoteControlHolder.remoteControlPublisher
+            .removeDuplicates()
+            .combineLatest($needDownload)
+            .map { (remoteControl, needDownload) in
+                return self.updateState.isAvailable && remoteControl?.isConnected == true || needDownload
+            }
+            .eraseToAnyPublisher()
+    }
+
+    var droneStatusViewEnabled: AnyPublisher<Bool, Never> {
+        connectedRemoteControlHolder.remoteControlPublisher
+            .removeDuplicates()
+            .map { remoteControl in
+                return remoteControl?.isConnected == true
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Returns a model for remote calibration device view.
+    var calibrationModel: AnyPublisher<DeviceDetailsButtonModel, Never> {
+        connectedRemoteControlHolder.remoteControlPublisher
+            .removeDuplicates()
+            .combineLatest($needCalibration.removeDuplicates())
+            .map { (remoteControl, needCalibration) in
+                var backgroundColor: ColorName
+                var subtitle: String
+
+                if !(remoteControl?.isConnected == true) {
+                    backgroundColor = .white
+                    subtitle = Style.dash
+                } else {
+                    backgroundColor = needCalibration ? .errorColor : .white
+                    subtitle = needCalibration ? L10n.remoteCalibrationRequired : L10n.droneDetailsCalibrationOk
+                }
+                let titleColor: ColorName = needCalibration ? .white : .defaultTextColor
+                let subtitleColor: ColorName = needCalibration ? .white : (remoteControl?.isConnected == true ? .highlightColor : .defaultTextColor)
+
+                return DeviceDetailsButtonModel(mainImage: Asset.Remote.icRemoteController.image,
+                                                title: L10n.remoteDetailsCalibration,
+                                                subtitle: subtitle,
+                                                backgroundColor: backgroundColor,
+                                                mainImageTintColor: titleColor,
+                                                titleColor: titleColor,
+                                                subtitleColor: subtitleColor)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Returns a model for drone status linked to remote connection state.
+    var droneStatusModel: AnyPublisher<DeviceDetailsButtonModel, Never> {
+        connectedRemoteControlHolder.remoteControlPublisher
+            .removeDuplicates()
+            .combineLatest(connectedDroneHolder.dronePublisher.removeDuplicates(),
+                           $droneName.removeDuplicates())
+            .map { (remoteControl, drone, droneName) in
+                if remoteControl?.isConnected == true {
+                    let backgroundColor: ColorName = drone?.isConnected == true ? .white : .warningColor
+                    let titleColor: ColorName = drone?.isConnected == true ? .defaultTextColor : .white
+                    let subtitleColor: ColorName = drone?.isConnected == true ? .highlightColor : .white
+                    return DeviceDetailsButtonModel(mainImage: Asset.Drone.iconDrone.image,
+                                                    title: L10n.remoteDetailsConnectedDrone,
+                                                    subtitle: drone?.isConnected == true ? droneName : L10n.pairingLookingForDrone,
+                                                    backgroundColor: backgroundColor,
+                                                    mainImageTintColor: titleColor,
+                                                    titleColor: titleColor,
+                                                    subtitleColor: subtitleColor)
+                } else {
+                    return DeviceDetailsButtonModel(mainImage: Asset.Remote.icSdCardUsb.image,
+                                                    title: L10n.remoteDetailsConnectedDrone,
+                                                    subtitle: Style.dash,
+                                                    backgroundColor: .white,
+                                                    subtitleColor: .defaultTextColor80)
+                }
+            }
+            .eraseToAnyPublisher()
+    }
+
+    /// Returns a model for remote software information view.
+    var softwareModel: AnyPublisher<DeviceDetailsButtonModel, Never> {
+        connectedRemoteControlHolder.remoteControlPublisher
+            .removeDuplicates()
+            .combineLatest($needDownload.removeDuplicates(),
+                           isVersionUnknown.removeDuplicates())
+            .map { (remoteControl, needDownload, isVersionUnknown) in
+                let isReadyForUpdate = self.updateState.isAvailable && remoteControl?.isConnected == true
+                let canShowAvailableUpdate = needDownload || isReadyForUpdate
+                let subtitle = canShowAvailableUpdate
+                ? String(format: "%@%@%@", self.softwareVersion, Style.arrow, self.idealVersion)
+                : remoteControl?.isConnected == true ? self.softwareVersion : Style.dash
+                let titleColor: ColorName = canShowAvailableUpdate ? .white : .defaultTextColor
+                let subImage = !(remoteControl?.isConnected == true) || canShowAvailableUpdate
+                || isVersionUnknown ? nil : Asset.Common.Checks.icCheckedSmall.image
+                let backgroundColor: ColorName = self.updateState == .required && remoteControl?.isConnected == true
+                                                 ? .errorColor
+                                                 : canShowAvailableUpdate ? .warningColor : .white
+
+                return DeviceDetailsButtonModel(mainImage: Asset.Remote.icRemoteFirmware.image,
+                                                title: L10n.remoteDetailsSoftware,
+                                                subImage: subImage,
+                                                subtitle: subtitle,
+                                                backgroundColor: backgroundColor,
+                                                mainImageTintColor: titleColor,
+                                                titleColor: titleColor,
+                                                subtitleColor: titleColor)
+            }
+            .eraseToAnyPublisher()
     }
 }
 
 // MARK: - Private Funcs
 private extension RemoteDetailsButtonsViewModel {
     /// Starts watcher for drone name.
-    func listenDroneName(_ drone: Drone) {
-        droneNameRef = drone.getName(observer: { [weak self] name in
-            let copy = self?.state.value.copy()
-            copy?.droneName = name ?? Style.dash
-            self?.state.set(copy)
+    func listenDroneName(_ drone: Drone?) {
+        droneNameRef = drone?.getName(observer: { [weak self] name in
+            guard let self = self else { return }
+            self.droneName = name ?? Style.dash
         })
     }
 
     /// Starts watcher for drone network control.
-    func listenNetworkControl(_ drone: Drone) {
-        networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] networkControl in
-            let copy = self?.state.value.copy()
-            copy?.wifiStrength = networkControl?.wifiStrength ?? WifiStrength.offline
-            self?.state.set(copy)
+    func listenNetworkControl(_ drone: Drone?) {
+        networkControlRef = drone?.getPeripheral(Peripherals.networkControl) { [weak self] networkControl in
+            guard let self = self else { return }
+            self.wifiStrength = networkControl?.wifiStrength ?? WifiStrength.offline
         }
     }
 
     /// Starts watcher for remote update.
-    func listenRemoteUpdate(_ remoteControl: RemoteControl) {
-        updaterRef = remoteControl.getPeripheral(Peripherals.updater) { [weak self] updater in
+    func listenRemoteUpdate(_ remoteControl: RemoteControl?) {
+        updaterRef = remoteControl?.getPeripheral(Peripherals.updater) { [weak self] updater in
+            guard let self = self else { return }
             if let updater = updater {
-                let copy = self?.state.value.copy()
-                copy?.needDownload = !updater.downloadableFirmwares.isEmpty
-                copy?.idealVersion = updater.idealVersion?.description ?? ""
-                self?.state.set(copy)
+                self.needDownload = !updater.downloadableFirmwares.isEmpty
+                self.idealVersion = updater.idealVersion?.description ?? ""
             }
         }
     }
 
     /// Starts watcher for remote service info.
-    func listenSystemInfo(_ remoteControl: RemoteControl) {
-        systemInfoRef = remoteControl.getPeripheral(Peripherals.systemInfo) { [weak self] systemInfo in
-            let copy = self?.state.value.copy()
-            copy?.softwareVersion = systemInfo?.firmwareVersion ?? Style.dash
-            self?.state.set(copy)
+    func listenSystemInfo(_ remoteControl: RemoteControl?) {
+        systemInfoRef = remoteControl?.getPeripheral(Peripherals.systemInfo) { [weak self] systemInfo in
+            guard let self = self else { return }
+            self.softwareVersion = systemInfo?.firmwareVersion ?? Style.dash
         }
     }
 
     /// Starts watcher for remote Magnetometer.
-    func listenMagnetometer(_ remoteControl: RemoteControl) {
-        magnetometerRef = remoteControl.getPeripheral(Peripherals.magnetometer) { [weak self] magnetometer in
-            let copy = self?.state.value.copy()
-            copy?.needCalibration = magnetometer?.calibrationState == .required
-            self?.state.set(copy)
+    func listenMagnetometer(_ remoteControl: RemoteControl?) {
+        magnetometerRef = remoteControl?.getPeripheral(Peripherals.magnetometer) { [weak self] magnetometer in
+            guard let self = self else { return }
+            self.needCalibration = magnetometer?.calibrationState == .required
         }
     }
 
@@ -300,13 +265,10 @@ private extension RemoteDetailsButtonsViewModel {
     func listenUpdateService() {
         updateService.remoteUpdatePublisher
             .removeDuplicates()
-            .sink { [unowned self] in
-                guard let updateState = $0 else {
-                    return
-                }
-                let copy = state.value.copy()
-                copy.updateState = updateState
-                state.set(copy)
+            .sink { [weak self] in
+                guard let self = self else { return }
+                guard let updateState = $0 else { return }
+                self.updateState = updateState
             }
             .store(in: &cancellables)
     }

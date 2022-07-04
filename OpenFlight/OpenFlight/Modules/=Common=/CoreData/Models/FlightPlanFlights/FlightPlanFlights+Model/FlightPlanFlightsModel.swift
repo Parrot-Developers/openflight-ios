@@ -41,6 +41,10 @@ public struct FlightPlanFlightsModel {
     public var flightUuid: String
     public var dateExecutionFlight: Date
 
+    // MARK: __ Local
+    public var ofFlight: FlightModel?
+    public var ofFlightPlan: FlightPlanModel?
+
     // MARK: __ Synchronization
     ///  Boolean to know if it delete locally but needs to be deleted on server
     public var isLocalDeleted: Bool
@@ -59,6 +63,8 @@ public struct FlightPlanFlightsModel {
                 flightplanUuid: String,
                 flightUuid: String,
                 dateExecutionFlight: Date,
+                ofFlight: FlightModel?,
+                ofFlightPlan: FlightPlanModel?,
                 isLocalDeleted: Bool,
                 synchroStatus: SynchroStatus?,
                 synchroError: SynchroError?,
@@ -71,6 +77,9 @@ public struct FlightPlanFlightsModel {
         self.flightplanUuid = flightplanUuid
         self.flightUuid = flightUuid
         self.dateExecutionFlight = dateExecutionFlight
+        // Local
+        self.ofFlight = ofFlight
+        self.ofFlightPlan = ofFlightPlan
         // Synchronization
         self.isLocalDeleted = isLocalDeleted
         self.synchroStatus = synchroStatus
@@ -90,10 +99,28 @@ extension FlightPlanFlightsModel {
                   flightplanUuid: flightplanUuid,
                   flightUuid: flightUuid,
                   dateExecutionFlight: dateExecutionFlight,
+                  ofFlight: nil,
+                  ofFlightPlan: nil,
                   isLocalDeleted: false,
                   synchroStatus: .notSync,
                   synchroError: .noError,
                   latestSynchroStatusDate: nil,
                   latestLocalModificationDate: nil)
+    }
+}
+
+/// Extension for Equatable conformance.
+extension FlightPlanFlightsModel: Equatable {
+    public static func == (lhs: FlightPlanFlightsModel, rhs: FlightPlanFlightsModel) -> Bool {
+        lhs.apcId == rhs.apcId
+        && lhs.cloudId == rhs.cloudId
+        && lhs.flightplanUuid == rhs.flightplanUuid
+        && lhs.flightUuid == rhs.flightUuid
+        && lhs.dateExecutionFlight == rhs.dateExecutionFlight
+        && lhs.isLocalDeleted == rhs.isLocalDeleted
+        && lhs.synchroStatus == rhs.synchroStatus
+        && lhs.synchroError == rhs.synchroError
+        && lhs.latestSynchroStatusDate == rhs.latestSynchroStatusDate
+        && lhs.latestLocalModificationDate == rhs.latestLocalModificationDate
     }
 }

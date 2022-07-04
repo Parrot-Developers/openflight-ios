@@ -50,8 +50,10 @@ open class DashboardCoordinator: Coordinator {
                                                     projectManager: services.flightPlan.projectManager,
                                                     cloudSynchroWatcher: services.cloudSynchroWatcher,
                                                     projectManagerUiProvider: services.ui.projectManagerUiProvider,
+                                                    dashboardUiProvider: services.ui.dashboardUiProvider,
                                                     flightService: services.flight.service)
-        let viewController = DashboardViewController.instantiate(coordinator: self, viewModel: dashboardViewModel)
+        let viewController = DashboardViewController.instantiate(coordinator: self,
+                                                                 viewModel: dashboardViewModel)
         // Prevents not fullscreen presentation style since iOS 13.
         viewController.modalPresentationStyle = .fullScreen
         navigationController = NavigationController(rootViewController: viewController)
@@ -91,7 +93,7 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
 
     /// Starts remote details screen.
     func startRemoteInformation() {
-        let remoteCoordinator = RemoteCoordinator()
+        let remoteCoordinator = RemoteCoordinator(services: services)
         remoteCoordinator.parentCoordinator = self
         remoteCoordinator.start()
         present(childCoordinator: remoteCoordinator)
@@ -187,6 +189,14 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     /// - Parameters:
     ///     - completion: completion when dismiss is completed
     func dismissDashboard(completion: (() -> Void)? = nil) {
+
+        // When coming back to the HUD, if there is no active flight plan,
+        // we must restore the last used mission
+        // (and don't keep the one potentially opened by the dashboard's project manager).
+        if services.flightPlan.activeFlightPlanWatcher.activeFlightPlan == nil {
+            services.currentMissionManager.restoreLatestHudSelection()
+        }
+
         clearNavigationStack()
         dismissCoordinatorWithAnimator(transitionSubtype: .fromRight, completion: completion)
     }

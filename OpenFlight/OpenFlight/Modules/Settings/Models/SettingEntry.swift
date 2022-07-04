@@ -212,8 +212,8 @@ class SettingEntry: Equatable {
             segments = setting.allValues.map({ SettingsSegment(title: $0.localized, disabled: false, image: $0.image) })
             selectedIndex = setting.selectedIndex
             isBool = false
-        } // DroneSettingModel.
-        else if let viewModel = setting as? DroneSettingModel {
+        } // DroneSettingModel | DriSettingModel.
+        else if let viewModel = setting as? DroneSettingModelProtocol {
             selectedIndex = viewModel.selectedIndex
             segments = viewModel.allValues.map { mode in
                 let isModeSupported = viewModel.supportedValues.contains(where: { mode.key == $0.key })
@@ -244,8 +244,8 @@ class SettingEntry: Equatable {
         else if let setting = setting as? SettingEnum.Type,
                 (0...setting.allValues.count - 1).contains(settingIndex) {
             Defaults[key: setting.defaultKey] = setting.allValues[settingIndex].rawValue
-        } // DroneSettingModel.
-        else if let setting = setting as? DroneSettingModel,
+        } // DroneSettingModel | DriSettingModel.
+        else if let setting = setting as? DroneSettingModelProtocol,
                 (0...setting.allValues.count - 1).contains(settingIndex) {
             setting.onSelect?(setting.allValues[settingIndex])
         }

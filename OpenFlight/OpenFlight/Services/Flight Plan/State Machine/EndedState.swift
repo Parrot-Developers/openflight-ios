@@ -47,9 +47,8 @@ open class EndedState: GKState {
     }
 
     open override func didEnter(from previousState: GKState?) {
-        if completed {
-            flightPlan = flightPlanManager.update(flightplan: flightPlan, with: .completed)
-        }
+        // When entering in the `EndedState`, Flight Plan should be set to `.stopped` state instead of staying `.flying`
+        flightPlan = flightPlanManager.update(flightplan: flightPlan, with: completed ? .completed : .stopped)
         delegate?.flightPlanEnded(flightPlan: flightPlan, completed: completed)
     }
 

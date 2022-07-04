@@ -33,7 +33,7 @@ import GroundSdk
 extension Camera2EvCompensation: BarItemMode, RulerDisplayable, Sortable {
     // MARK: - BarItemMode
     public var title: String {
-        return String(format: "%@ %@", shortTitle, L10n.unitEv)
+        return String(format: "%@%@", shortTitle, L10n.unitEv)
     }
 
     var shortTitle: String {

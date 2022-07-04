@@ -32,6 +32,41 @@ import GroundSdk
 /// Utility extension for `Drone` Return Home Piloting Interface.
 public extension Drone {
     // MARK: - Public Properties
+
+    /// Whether drone is force landing.
+    var isForceLanding: Bool {
+        guard let alarms = getInstrument(Instruments.alarms),
+              let flyingIndicators = getInstrument(Instruments.flyingIndicators) else {
+            return false
+        }
+
+        // Check temperature force landing.
+        let isDroneEmergencyLanding = flyingIndicators.state == .emergencyLanding
+        let isTemperatureCritical = alarms.level(.batteryTooHot) == .critical ||
+        alarms.level(.batteryTooCold) == .critical
+
+        if isDroneEmergencyLanding && isTemperatureCritical {
+            return true
+        }
+
+        // Check low battery force landing.
+        let isDroneFlying = flyingIndicators.state == .flying
+        let isAutolandingAlarmOn = alarms.level(.automaticLandingBatteryIssue) == .critical &&
+        alarms.automaticLandingDelay == 0
+
+        if (isDroneFlying || isDroneEmergencyLanding) && isAutolandingAlarmOn {
+            return true
+        }
+
+        // Check iced propeller force landing.
+        if alarms.level(.icingLevel) == .critical {
+            return true
+        }
+
+        // No active force landing.
+        return false
+    }
+
     /// Returns true if drone is Returning Home.
     var isReturningHome: Bool {
         let rth = getPilotingItf(PilotingItfs.returnHome)

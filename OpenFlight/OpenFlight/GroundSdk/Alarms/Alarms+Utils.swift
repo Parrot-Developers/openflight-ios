@@ -31,6 +31,24 @@ import GroundSdk
 
 /// Utility extension for `Alarms`.
 extension Alarms {
+    /// Checks if a specific alarm is on in alarms.
+    ///
+    /// - Parameter kind: the kind of alarm to check
+    /// - Returns: `true` if the alarm is on in alarms, `false` otherwise
+    func isOn(_ kind: Alarm.Kind) -> Bool {
+        getAlarm(kind: kind).hasError
+    }
+
+    /// Returns the level of a specific alarm.
+    ///
+    /// - Parameter kind: the kind of alarm
+    /// - Returns: the level of the alarm
+    func level(_ kind: Alarm.Kind) -> Alarm.Level {
+        getAlarm(kind: kind).level
+    }
+
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove function.
     /// Computes current conditions alerts.
     ///
     /// - Parameters:
@@ -48,11 +66,7 @@ extension Alarms {
 
         if drone.getInstrument(Instruments.gps)?.fixed == false,
             drone.isStateFlying {
-            if drone.currentCamera?.isGpsLapseStarted == true {
-                alerts.append(HUDBannerCriticalAlertType.noGpsLapse)
-            } else {
-                alerts.append(HUDBannerCriticalAlertType.noGps)
-            }
+            alerts.append(HUDBannerCriticalAlertType.noGps)
         }
 
         if getAlarm(kind: .magnetometerPertubation).hasError {
@@ -74,6 +88,8 @@ extension Alarms {
         return alerts
     }
 
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove function.
     /// Computes current obstacle avoidance alerts.
     ///
     /// - Parameters:
@@ -136,6 +152,8 @@ extension Alarms {
         return alerts
     }
 
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove function.
     /// Computes current Imu saturation alerts.
     ///
     /// - Parameters:
@@ -156,6 +174,8 @@ extension Alarms {
         }
     }
 
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove function.
     /// Computes current motor alerts.
     ///
     /// - Parameters:
@@ -172,6 +192,8 @@ extension Alarms {
         }
     }
 
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove function.
     /// Computes current geofence alert.
     ///
     /// - Returns: current geofence alert if any

@@ -351,13 +351,10 @@ extension GalleryImageViewController: UICollectionViewDataSource, UICollectionVi
         cell.model = GalleryMediaFullScreenCellModel(url: viewModel?.mediaBrowsingViewModel.mediaUrls[urlIndex],
                                                      isAdditionalPanoramaCell: hasAdditionalPanoramaGenerationImage && indexPath.item == 0,
                                                      panoramaGenerationState: media?.panoramaGenerationState ?? .none,
-                                                     hasShowImmersivePanoramaButton: (media?.canShowImmersivePanorama ?? false) && indexPath.item == 0)
+                                                     hasShowImmersivePanoramaButton: (media?.canShowImmersivePanorama ?? false) && indexPath.item == 0,
+                                                     galleryMediaViewModel: viewModel)
 
         return cell
-    }
-
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        (cell as? GalleryMediaFullScreenCollectionViewCell)?.centerZoomableView(animated: false)
     }
 }
 

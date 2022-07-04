@@ -55,7 +55,9 @@ extension String {
 
     /// Returns the result of a regex search.
     ///
-    /// - Parameter regexPattern: the regex pattern
+    /// - Parameters:
+    ///   - regexPattern: the regex pattern
+    ///   - isCaseInsensitive: whether the search is case sensitive.
     /// - Returns: the `RegexResult` of the search
     /// - Throws: an error if the regular expression can't be created
     ///
@@ -75,9 +77,10 @@ extension String {
     /// Full Match:  (C) 2022 Parrot Drones SAS
     /// Captured Groups: ["2022", "Drones"]
     /// ````
-    func search(regexPattern: String) throws -> RegexResult {
+    func search(regexPattern: String, isCaseInsensitive: Bool = false) throws -> RegexResult {
         // Create the regex with the pattern.
-        let regex = try NSRegularExpression(pattern: regexPattern, options: [])
+        let regex = try NSRegularExpression(pattern: regexPattern,
+                                            options: isCaseInsensitive ? [.caseInsensitive] : [])
         // Get the range of the complete string.
         let range = NSRange(startIndex..., in: self)
         // Serach matches.

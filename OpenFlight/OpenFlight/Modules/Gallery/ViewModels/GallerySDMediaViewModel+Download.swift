@@ -53,6 +53,7 @@ extension GallerySDMediaViewModel {
             mediaResources: MediaUtils.convertMediaResourcesToResourceList(mediaItem: mediaItem,
                                                                            resources: resources,
                                                                            onlyDownloadable: true),
+            type: DownloadType.preview,
             destination: .directory(path: imgUrl.path),
             observer: { [weak self] mediaDownloader in
                 guard let downloadStatus = mediaDownloader?.status else { return }

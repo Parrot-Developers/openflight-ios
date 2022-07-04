@@ -47,11 +47,12 @@ extension AGSGeometry {
             envelopeBuilder.setZMin(envelopeBuilder.zMin + altitudeOffset, zMax: envelopeBuilder.zMax + altitudeOffset)
         }
         var envelope = envelopeBuilder.extent
-        if envelope.width < ArcGISStyle.minEnvelopeWidth || envelope.height < ArcGISStyle.minEnvelopeWidth {
+        if envelope.width < ArcGISStyle.minEnvelopeWidth || envelope.height < ArcGISStyle.minEnvelopeHeight {
             // minimal envelope, workaround for display issue with small flights
             envelope = AGSEnvelope(center: envelope.center,
-                                   width: ArcGISStyle.minEnvelopeWidth,
-                                   height: ArcGISStyle.minEnvelopeWidth)
+                                   width: max(envelope.width, ArcGISStyle.minEnvelopeWidth),
+                                   height: max(envelope.height, ArcGISStyle.minEnvelopeHeight),
+                                   depth: envelope.depth)
         }
         return envelope
     }

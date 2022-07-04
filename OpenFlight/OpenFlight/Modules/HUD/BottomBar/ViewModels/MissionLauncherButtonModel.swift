@@ -67,7 +67,7 @@ class MissionLauncherButtonModel {
         // Hide mission button when we coming from another view than Dashboard
         navigationStackService.stackPublisher
             .sink { [unowned self] in
-                isHidden = $0.count > 1
+                isHidden = !$0.isEmpty
             }
             .store(in: &cancellables)
     }

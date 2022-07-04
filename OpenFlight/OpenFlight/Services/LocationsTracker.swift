@@ -292,7 +292,6 @@ extension LocationsTrackerImpl: LocationsTracker {
         return returnHomeLocationSubject.value
     }
 
-
     var userLocation: OrientedLocation {
         if let location = userLocationSubject.value {
             return OrientedLocation(coordinates: Location3D(coordinate: location.coordinate,

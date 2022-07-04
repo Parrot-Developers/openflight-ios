@@ -44,6 +44,7 @@ public protocol FlightPlanCameraSettingsHandler: AnyObject {
 private struct CameraSettings: Codable {
     let cameraMode: Camera2Mode?
     let photoMode: Camera2PhotoMode?
+    let autorecord: Camera2AutoRecordMode?
     let resolution: Camera2RecordingResolution
     let framerate: Camera2RecordingFramerate
     let whiteBalance: Camera2WhiteBalanceMode
@@ -96,6 +97,9 @@ class FlightPlanCameraSettingsHandlerImpl {
     /// Project manager
     private let projectManager: ProjectManager
 
+    /// Camera config watcher
+    private let cameraConfigWatcher: CameraConfigWatcher
+
     /// UserDefaults storage for camera settings during flight plan
     private var storedSettings: CameraSettings? {
         get {
@@ -114,25 +118,30 @@ class FlightPlanCameraSettingsHandlerImpl {
     ///   - activeFlightPlanWatcher: the active flight plan watcher
     ///   - currentDroneHolder: the current drone holder
     ///   - projectManager: the project manager
+    ///   - cameraConfigWatcher: the camera configuration watcher
     init(activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher,
          currentDroneHolder: CurrentDroneHolder,
-         projectManager: ProjectManager) {
+         projectManager: ProjectManager,
+         cameraConfigWatcher: CameraConfigWatcher) {
         droneHolder = currentDroneHolder
         self.projectManager = projectManager
-        activeFlightPlanWatcher.activeFlightPlanPublisher
-            .combineLatest(activeFlightPlanWatcher.activatingFlightPlanPublisher)
-            .sink { [unowned self] (activeFlightPlan, activatingFlightPlan) in
-                ULog.d(.tag, "FP update: Active: \(activeFlightPlan?.uuid ?? "nil") / Activing: \(activatingFlightPlan?.uuid ?? "nil")")
-                if let flightPlan = activatingFlightPlan {
+        self.cameraConfigWatcher = cameraConfigWatcher
+        activeFlightPlanWatcher.activeFlightPlanStatePublisher
+            .sink { [unowned self] in
+                switch $0 {
+                case .none:
+                    ULog.d(.tag, "No Active Flight Plan")
+                    // Restore user settings when there's no activating or active flight plan
+                    handleNoActiveFlightPlan()
+                case .activating(let flightPlan):
+                    ULog.d(.tag, "Activating Flight Plan: '\(flightPlan.uuid)'")
                     // Save user settings
                     // and send the FP camera settings when the FP is activating
                     handleActivatingFlightPlan(flightPlan)
-                } else if let activeFlightPlan = activeFlightPlan {
-                    handleActiveFlightPlan(activeFlightPlan)
-                } else {
-                    // Restore user settings when there's no activating or active flight plan
-                    handleNoActiveFlightPlan()
-                }
+                case .active(let flightPlan):
+                    ULog.d(.tag, "Active Flight Plan: '\(flightPlan.uuid)'")
+                    handleActiveFlightPlan(flightPlan)
+               }
             }
             .store(in: &cancellables)
     }
@@ -164,23 +173,20 @@ private extension FlightPlanCameraSettingsHandlerImpl {
 
     /// Manage when there's an activating flight plan
     func handleActivatingFlightPlan(_ flightPlan: FlightPlanModel) {
-        switch state {
-        case .unknown:
-            updateState(with: .activatingFlightPlan)
-        case .activatingFlightPlan, .activeFlightPlan:
+        // Ensure there is no activation ongoing.
+        guard state != .activatingFlightPlan else {
             ULog.d(.tag, "handleActivatingFlightPlan: Do nothing. Current state \(state)")
             return
-        case .noActiveFlightPlan:
-            // Flight Plan activation is performed in two steps (OA config is handled by ObstacleAvoidanceMonitor).
-            // 1 - Configure Media Meta Data.
-            // 2 - Configure Camera.
-            setMediaMetadata(flightPlan)
-            saveCameraSettings()
-            if let dataSetting = flightPlan.dataSetting {
-                sendFlightPlanCameraSettingsToDrone(dataSetting)
-            }
-            updateState(with: .activatingFlightPlan)
         }
+        // Flight Plan activation is performed in two steps (OA config is handled by ObstacleAvoidanceMonitor).
+        // 1 - Configure Media Meta Data.
+        // 2 - Configure Camera.
+        setMediaMetadata(flightPlan)
+        saveCameraSettings()
+        if let dataSetting = flightPlan.dataSetting {
+            sendFlightPlanCameraSettingsToDrone(dataSetting)
+        }
+        updateState(with: .activatingFlightPlan)
     }
 
     func handleActiveFlightPlan(_ flightPlan: FlightPlanModel) {
@@ -208,6 +214,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
     /// Save the current camera settings
     func saveCameraSettings() {
         guard let config = droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?.config,
+              let autorecord = config[Camera2Params.autoRecordMode]?.value,
               let framerate = config[Camera2Params.videoRecordingFramerate]?.value,
               let resolution = config[Camera2Params.videoRecordingResolution]?.value,
               let whiteBalance = config[Camera2Params.whiteBalanceMode]?.value,
@@ -222,6 +229,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         let gpslapseInterval = config[Camera2Params.photoGpslapseInterval]?.value
         let settings = CameraSettings(cameraMode: cameraMode,
                                       photoMode: photoMode,
+                                      autorecord: autorecord,
                                       resolution: resolution,
                                       framerate: framerate,
                                       whiteBalance: whiteBalance,
@@ -253,6 +261,9 @@ private extension FlightPlanCameraSettingsHandlerImpl {
             photoMode = .gpsLapse
         }
 
+        // autorecord is always disabled during a flightplan
+        let autorecord: Camera2AutoRecordMode = .disabled
+
         // timelapse value in seconds
         let timelapseInterval = flightPlanData.timeLapseCycle.map { Double($0) / 1000 }
 
@@ -272,6 +283,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
 
         let settings = CameraSettings(cameraMode: cameraMode,
                                       photoMode: photoMode,
+                                      autorecord: autorecord,
                                       resolution: flightPlanData.resolution,
                                       framerate: flightPlanData.framerate,
                                       whiteBalance: flightPlanData.whiteBalanceMode,
@@ -291,7 +303,11 @@ private extension FlightPlanCameraSettingsHandlerImpl {
     func restoreSavedCameraSettings() {
         guard let settings = storedSettings else { return }
         ULog.i(.tag, "Restoring settings \(settings)")
+        // Telling the `CameraConfigWatcher` that the saved camera configuration is restoring.
+        cameraConfigWatcher.restoringSavedCameraSettings()
+        // Update the camera configuration.
         setCameraSettings(settings, shouldChangeCameraMode: true)
+        // Clear the locally stored settings
         storedSettings = nil
     }
 
@@ -304,6 +320,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         let editor = camera.config.edit(fromScratch: true)
         editor.applyValueNotForced(Camera2Params.mode, settings.cameraMode)
         editor.applyValueNotForced(Camera2Params.photoMode, settings.photoMode)
+        editor.applyValueNotForced(Camera2Params.autoRecordMode, settings.autorecord)
         editor.applyValueNotForced(Camera2Params.videoRecordingFramerate, settings.framerate)
         editor.applyValueNotForced(Camera2Params.videoRecordingResolution, settings.resolution)
         editor.applyValueNotForced(Camera2Params.whiteBalanceMode, settings.whiteBalance)

@@ -86,18 +86,14 @@ internal extension GalleryMediaCollectionViewCell {
     ///
     /// - Parameters:
     ///    - media: Gallery Media
-    ///    - mediaStore: Media Store
     ///    - index: image index
     ///    - delegate: Gallery Media Cell Delegate
     ///    - selected: Selected state
     func setup(media: GalleryMedia,
-               mediaStore: MediaStore?,
                index: Int,
                delegate: GalleryMediaCellDelegate?,
                selected: Bool = false) {
-        setupViewModel(media: media,
-                       mediaStore: mediaStore,
-                       index: index)
+        setupViewModel(media: media, index: index)
         setupView(media: media,
                   delegate: delegate,
                   selected: selected)
@@ -107,14 +103,9 @@ internal extension GalleryMediaCollectionViewCell {
     ///
     /// - Parameters:
     ///    - media: Gallery Media
-    ///    - mediaStore: Media Store
     ///    - index: image index
-    func setupViewModel(media: GalleryMedia,
-                        mediaStore: MediaStore?,
-                        index: Int) {
-        viewModel = GalleryMediaThumbnailViewModel(media: media,
-                                                   mediaStore: mediaStore,
-                                                   index: index)
+    func setupViewModel(media: GalleryMedia, index: Int) {
+        viewModel = GalleryMediaThumbnailViewModel(media: media, index: index)
         viewModel?.getThumbnail { [weak self] image in
             self?.thumbnailImageView.image = image
         }

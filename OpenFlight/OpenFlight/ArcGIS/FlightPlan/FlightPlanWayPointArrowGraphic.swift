@@ -36,6 +36,8 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
     private(set) var wayPoint: WayPoint?
     /// Target point of interest, if any.
     private(set) var poiPoint: PoiPoint?
+    /// Whether the associated poi is selected or not.
+    public var poiIsSelected: Bool = false
 
     /// Symbols
     private var arrow: AGSPictureMarkerSymbol?
@@ -49,12 +51,15 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
     // MARK: - Private Enums
     private enum Constants {
         static let selectedColor: UIColor = ColorName.greenSpring.color
-        static let arrowSizeHeight: CGFloat = 15.0
-        static let arrowSizeWidth: CGFloat = 20.0
-        static let outlineWidth: CGFloat = 2.0
+        static let borderColor: UIColor = UIColor(red: 167.0/255.0, green: 167.0/255.0, blue: 167.0/255.0, alpha: 1.0)
+        static let arrowSizeHeight: CGFloat = 26.0
+        static let arrowSizeWidth: CGFloat = 25.0
+        static let selectedArrowSizeHeight: CGFloat = 29.0
+        static let selectedArrowSizeWidth: CGFloat = 30.0
         static let outlineColor: UIColor = ColorName.white.color
-        static let arrowOffset: CGFloat = 36.0
-        static let selectionCircleSize: CGFloat = arrowOffset * 2.0 + arrowSizeHeight / 2.0
+        static let arrowOffset: CGFloat = 33.0
+        static let selectedArrowOffset: CGFloat = 41.0
+        static let selectionCircleSize: CGFloat = 150.0
         static let yawEditionTolerance: Double = 30.0
     }
 
@@ -107,11 +112,39 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
     /// Refresh position and color of the arrow.
     private func refreshArrow() {
         let innerColor = FlightPlanWayPointArrowGraphic.innerColor(poiIndex: poiIndex,
-                                                                   isSelected: isSelected)
-        let triangleView = TriangleView(frame: CGRect(x: 0, y: 0, width: Constants.arrowSizeWidth,
-                                                      height: Constants.arrowSizeHeight), color: innerColor)
-        arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
-        arrow?.offsetY = Constants.arrowOffset
+                                                                       isSelected: poiIsSelected)
+
+        if isSelected {
+            if poiPoint != nil {
+                let triangleView = TriangleView(frame: CGRect(x: 0, y: 0,
+                                                              width: !poiIsSelected ? Constants.selectedArrowSizeWidth : Constants.arrowSizeWidth,
+                                                              height: !poiIsSelected ? Constants.selectedArrowSizeHeight : Constants.arrowSizeHeight),
+                                                color: !poiIsSelected ? innerColor : Constants.selectedColor,
+                                                externalColor: !poiIsSelected ? Constants.borderColor : Constants.outlineColor,
+                                                selected: !poiIsSelected)
+
+                arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
+                arrow?.offsetY = !poiIsSelected ? Constants.selectedArrowOffset :  Constants.arrowOffset
+            } else {
+                let triangleView = TriangleView(frame: CGRect(x: 0, y: 0,
+                                                              width: Constants.selectedArrowSizeWidth,
+                                                              height: Constants.selectedArrowSizeHeight),
+                                                color: Constants.selectedColor,
+                                                externalColor: Constants.outlineColor,
+                                                selected: true)
+                arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
+                arrow?.offsetY = Constants.selectedArrowOffset
+            }
+        } else {
+            let triangleView = TriangleView(frame: CGRect(x: 0, y: 0, width: Constants.arrowSizeWidth,
+                                                          height: Constants.arrowSizeHeight),
+                                            color: poiPoint != nil ? innerColor : Constants.outlineColor,
+                                            externalColor: poiPoint != nil ? Constants.outlineColor : Constants.borderColor, selected: false)
+
+            arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
+            arrow?.offsetY = Constants.arrowOffset
+        }
+
         arrow?.angle = FlightPlanGraphic.Constants.rotationFactor * Float(wayPoint?.yaw ?? 0.0)
         arrow?.angleAlignment = .map
         self.symbol = getSymbol()
@@ -135,6 +168,7 @@ extension FlightPlanWayPointArrowGraphic {
     /// - Parameters:
     ///    - poiPointGraphic: point of interest's graphic
     func addPoiPoint(_ poiPointGraphic: FlightPlanPoiPointGraphic) {
+        poiIsSelected = true
         poiPoint = poiPointGraphic.poiPoint
         attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiPointGraphic.poiIndex
         refreshOrientation()
@@ -199,13 +233,13 @@ private extension FlightPlanWayPointArrowGraphic {
 // Generate a triangle view to add to waypoint
 public class TriangleView: UIView {
     private var color: UIColor = .white
-    private var externalColor: UIColor = .white
-    private var borderSize: CGFloat = 2.0
+    private var externalColor: UIColor = .gray
+    private var selected: Bool = false
 
-    public init(frame: CGRect, color: UIColor, externalColor: UIColor = .white, borderSize: CGFloat = 2.0) {
+    public init(frame: CGRect, color: UIColor, externalColor: UIColor = .gray, selected: Bool = false) {
         self.color = color
         self.externalColor = externalColor
-        self.borderSize = borderSize
+        self.selected = selected
         super.init(frame: frame)
     }
 
@@ -214,19 +248,56 @@ public class TriangleView: UIView {
     }
 
     override public func draw(_ rect: CGRect) {
-        let drawSize = CGSize(width: rect.width, height: rect.height)
-        let trianglePath = UIBezierPath()
-        trianglePath.move(to: CGPoint(x: drawSize.width / 2, y: borderSize))
-        trianglePath.addLine(to: CGPoint(x: borderSize, y: drawSize.height - borderSize))
-        trianglePath.addLine(to: CGPoint(x: drawSize.width - borderSize,
-                                         y: drawSize.height - borderSize))
+        if !selected {
+            // internal shape
+            let shape = UIBezierPath()
+            shape.move(to: CGPoint(x: 12.78, y: 0))
+            shape.addLine(to: CGPoint(x: 25.55, y: 24.33))
+            shape.addLine(to: CGPoint(x: 22.85, y: 23.06))
+            shape.addCurve(to: CGPoint(x: 12.77, y: 20.81), controlPoint1: CGPoint(x: 19.79, y: 21.61), controlPoint2: CGPoint(x: 16.37, y: 20.81))
+            shape.addCurve(to: CGPoint(x: 2.7, y: 23.05), controlPoint1: CGPoint(x: 9.17, y: 20.81), controlPoint2: CGPoint(x: 5.75, y: 21.61))
+            shape.addLine(to: CGPoint(x: 0, y: 24.32))
+            shape.addLine(to: CGPoint(x: 12.78, y: 0))
+            shape.close()
+            color.setFill()
+            shape.fill()
+            // external shape (border)
+            shape.move(to: CGPoint(x: 2.27, y: 22.15))
+            shape.addCurve(to: CGPoint(x: 3.73, y: 21.52), controlPoint1: CGPoint(x: 2.75, y: 21.92), controlPoint2: CGPoint(x: 3.24, y: 21.71))
+            shape.addCurve(to: CGPoint(x: 12.77, y: 19.81), controlPoint1: CGPoint(x: 6.53, y: 20.41), controlPoint2: CGPoint(x: 9.58, y: 19.81))
+            shape.addCurve(to: CGPoint(x: 21.81, y: 21.52), controlPoint1: CGPoint(x: 15.96, y: 19.81), controlPoint2: CGPoint(x: 19.01, y: 20.41))
+            shape.addCurve(to: CGPoint(x: 23.27, y: 22.15), controlPoint1: CGPoint(x: 22.31, y: 21.71), controlPoint2: CGPoint(x: 22.79, y: 21.93))
+            shape.addLine(to: CGPoint(x: 12.77, y: 2.15))
+            shape.addLine(to: CGPoint(x: 2.27, y: 22.15))
+            shape.close()
+            externalColor.setFill()
+            shape.fill()
+        } else {
 
-        trianglePath.lineWidth = borderSize
-        trianglePath.close()
-        color.setFill()
-        externalColor.setStroke()
-        trianglePath.stroke()
-        trianglePath.fill()
+            let shape = UIBezierPath()
+            shape.move(to: CGPoint(x: 15.75, y: 0.84))
+            shape.addLine(to: CGPoint(x: 30.73, y: 29.74))
+            shape.addLine(to: CGPoint(x: 28, y: 28.51))
+            shape.addCurve(to: CGPoint(x: 15.75, y: 25.79), controlPoint1: CGPoint(x: 24.34, y: 26.84), controlPoint2: CGPoint(x: 20.01, y: 25.79))
+            shape.addCurve(to: CGPoint(x: 3.52, y: 28.5), controlPoint1: CGPoint(x: 11.26, y: 25.79), controlPoint2: CGPoint(x: 7.3, y: 26.69))
+            shape.addLine(to: CGPoint(x: 0.73, y: 29.84))
+            shape.addLine(to: CGPoint(x: 15.75, y: 0.84))
+            shape.close()
+            color.setFill()
+            shape.fill()
+            shape.move(to: CGPoint(x: 3.08, y: 27.56))
+            shape.addCurve(to: CGPoint(x: 4.6, y: 26.88), controlPoint1: CGPoint(x: 3.58, y: 27.32), controlPoint2: CGPoint(x: 4.09, y: 27.09))
+            shape.addCurve(to: CGPoint(x: 15.75, y: 24.75), controlPoint1: CGPoint(x: 8.06, y: 25.45), controlPoint2: CGPoint(x: 11.71, y: 24.75))
+            shape.addCurve(to: CGPoint(x: 26.94, y: 26.93), controlPoint1: CGPoint(x: 19.6, y: 24.75), controlPoint2: CGPoint(x: 23.5, y: 25.58))
+            shape.addCurve(to: CGPoint(x: 28.43, y: 27.56), controlPoint1: CGPoint(x: 27.44, y: 27.13), controlPoint2: CGPoint(x: 27.94, y: 27.34))
+            shape.addLine(to: CGPoint(x: 15.75, y: 3.09))
+            shape.addLine(to: CGPoint(x: 3.08, y: 27.56))
+            shape.close()
+
+            externalColor.setFill()
+            shape.fill()
+
+        }
     }
 
     func asImage() -> UIImage {

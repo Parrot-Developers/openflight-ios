@@ -58,6 +58,13 @@ final class MissionControls: NSObject {
     }
 
     // MARK: - Internal Funcs
+
+    /// Sets up UI.
+    func setupUI() {
+        widthConstraint.constant = panelWidth
+        leadingConstraint.constant = -panelWidth
+    }
+
     /// Show mission launcher view controller with given viewModel.
     func showMissionLauncher(completion: ((Bool) -> Void)? = nil) {
         missionLauncherDisplayed = true
@@ -69,14 +76,20 @@ final class MissionControls: NSObject {
         missionLauncherDisplayed = false
         updateConstraints()
     }
+}
 
+private extension MissionControls {
     /// Updates panel constraint for showing/hiding.
     ///
     /// - Parameter animated: whether changes need to be animated
     func updateConstraints(animated: Bool = true) {
-        widthConstraint.constant = panelWidth
-        leadingConstraint.constant = missionLauncherDisplayed ? 0 : -panelWidth
-        guard animated else { return }
-        UIView.animate { self.missionLauncherView.superview?.layoutIfNeeded() }
+        // Right panel content refresh is also triggered by mission manager `mode` publisher update,
+        // so we need to dispatch show/hide constraint animation in order to avoid unwanted panel
+        // content animation.
+        DispatchQueue.main.async {
+            self.leadingConstraint.constant = self.missionLauncherDisplayed ? 0 : -self.panelWidth
+            guard animated else { return }
+            UIView.animate { self.missionLauncherView.superview?.layoutIfNeeded() }
+        }
     }
 }

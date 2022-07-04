@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -24,11 +24,15 @@
                                 <rect key="frame" x="0.0" y="0.0" width="323" height="39"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="Key" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wv5-ZQ-TNg">
-                                        <rect key="frame" x="0.0" y="0.0" width="282" height="39"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="39" height="39"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <nil key="textColor"/>
                                         <color key="highlightedColor" name="default_text_color"/>
                                     </label>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5mT-5z-6p9">
+                                        <rect key="frame" x="42" y="0.0" width="240" height="39"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </view>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="Value" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u0n-Oj-BxY">
                                         <rect key="frame" x="285" y="0.0" width="38" height="39"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
@@ -39,28 +43,46 @@
                             </stackView>
                         </subviews>
                     </stackView>
-                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" image="icRightArrow" translatesAutoresizingMaskIntoConstraints="NO" id="wNG-Iz-NRe">
-                        <rect key="frame" x="352" y="5" width="6" height="10"/>
-                        <color key="tintColor" name="default_text_color"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="6" id="hah-KQ-exE"/>
-                            <constraint firstAttribute="width" secondItem="wNG-Iz-NRe" secondAttribute="height" multiplier="3:5" id="sjY-XH-VLB"/>
-                        </constraints>
-                    </imageView>
+                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EBH-4l-sp0">
+                        <rect key="frame" x="339" y="0.0" width="19" height="39"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zax-dP-Jc2">
+                                <rect key="frame" x="0.0" y="0.0" width="19" height="39"/>
+                                <subviews>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" image="icRightArrow" translatesAutoresizingMaskIntoConstraints="NO" id="wNG-Iz-NRe">
+                                        <rect key="frame" x="13" y="-0.5" width="6" height="10"/>
+                                        <color key="tintColor" name="default_text_color"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="6" id="hah-KQ-exE"/>
+                                            <constraint firstAttribute="width" secondItem="wNG-Iz-NRe" secondAttribute="height" multiplier="3:5" id="sjY-XH-VLB"/>
+                                        </constraints>
+                                    </imageView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="19" id="5Un-kM-cPv"/>
+                                    <constraint firstItem="wNG-Iz-NRe" firstAttribute="centerY" secondItem="zax-dP-Jc2" secondAttribute="centerY" constant="-15" id="DII-cL-T7p"/>
+                                    <constraint firstAttribute="trailing" secondItem="wNG-Iz-NRe" secondAttribute="trailing" id="mhw-vU-xai"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                    </stackView>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstAttribute="trailingMargin" secondItem="wNG-Iz-NRe" secondAttribute="trailing" id="5Ro-0z-Wsh"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="EBH-4l-sp0" secondAttribute="trailing" id="3Jq-Ya-279"/>
+                    <constraint firstItem="EBH-4l-sp0" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="C0G-EU-yf4"/>
                     <constraint firstAttribute="bottomMargin" secondItem="TFv-Yf-Bpj" secondAttribute="bottom" id="J4n-7d-L7k"/>
+                    <constraint firstItem="EBH-4l-sp0" firstAttribute="leading" secondItem="TFv-Yf-Bpj" secondAttribute="trailing" id="Kwz-iy-LuI"/>
                     <constraint firstItem="TFv-Yf-Bpj" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="Mce-W3-MiH"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="EBH-4l-sp0" secondAttribute="bottom" id="Msv-5c-vcP"/>
                     <constraint firstItem="TFv-Yf-Bpj" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="U0j-hM-MbH"/>
-                    <constraint firstItem="wNG-Iz-NRe" firstAttribute="leading" secondItem="TFv-Yf-Bpj" secondAttribute="trailing" constant="13" id="XPL-eh-UpE"/>
-                    <constraint firstItem="wNG-Iz-NRe" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" constant="-15" id="dTR-KM-6TY"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
-                <outlet property="arrowImage" destination="wNG-Iz-NRe" id="HLe-Wd-JSu"/>
+                <outlet property="arrowStackView" destination="EBH-4l-sp0" id="aJB-7c-v69"/>
+                <outlet property="arrowView" destination="zax-dP-Jc2" id="Ctj-Qa-G6W"/>
                 <outlet property="settingsKey" destination="wv5-ZQ-TNg" id="d5A-EB-H7i"/>
                 <outlet property="settingsValue" destination="u0n-Oj-BxY" id="af5-IM-zL2"/>
             </connections>

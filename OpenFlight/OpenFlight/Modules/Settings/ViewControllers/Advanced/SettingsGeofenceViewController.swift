@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Settings content sub class dedicated to Geofence settings.
 
@@ -40,6 +41,7 @@ final class SettingsGeofenceViewController: SettingsContentViewController {
         - view.directionalLayoutMargins.bottom
         - view.directionalLayoutMargins.top
     }
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -106,12 +108,15 @@ private extension SettingsGeofenceViewController {
     /// Sets up view model.
     func setupViewModel() {
         // Setup view model.
-        geofenceViewModel = GeofenceViewModel()
-        geofenceViewModel?.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-        // Inital data source update.
-        updateDataSource(GeofenceState())
+        geofenceViewModel = GeofenceViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
+        guard let geofenceViewModel = geofenceViewModel else { return }
+
+        geofenceViewModel.notifyChangePublisher
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.updateDataSource()
+            }
+            .store(in: &cancellables)
     }
 
     /// Configure Grid Mode Cell.

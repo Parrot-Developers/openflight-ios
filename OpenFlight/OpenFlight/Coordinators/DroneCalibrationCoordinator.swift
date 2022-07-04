@@ -117,7 +117,7 @@ extension DroneCalibrationCoordinator {
 
     /// Starts remote details coordinator.
     func startRemoteInformation() {
-        let remoteCoordinator = RemoteCoordinator()
+        let remoteCoordinator = RemoteCoordinator(services: services)
         remoteCoordinator.parentCoordinator = self
         remoteCoordinator.start()
         present(childCoordinator: remoteCoordinator)

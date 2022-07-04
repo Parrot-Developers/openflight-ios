@@ -30,18 +30,18 @@
 import UIKit
 
 // MARK: - Public Enums
-/// Split mode between stream and secondary view in HUD.
+/// Split mode between primary and secondary views in HUD.
 public enum SplitScreenMode {
-    /// View is split between stream and secondary view.
-    case splited
+    /// View is split between primary and secondary views.
+    case split
+    /// Primary view is displayed fullscreen.
+    case primary
     /// Secondary view is displayed fullscreen.
     case secondary
-    /// Stream is displayed fullscreen.
-    case stream
 
     // Preset value for SplitScreenMode.
     static var preset: SplitScreenMode {
-        return .splited
+        return .split
     }
 }
 

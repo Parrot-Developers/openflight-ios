@@ -73,7 +73,7 @@ public final class FlightDetailsCoordinator: Coordinator {
     func dismissDetails(completion: (() -> Void)? = nil) {
         // Update the navigation stack
         uiServices.navigationStack.removeLast()
-        dismissCoordinatorWithAnimator(completion: completion)
+        dismissModallyCoordinatorWithAnimator(completion: completion)
     }
 
     /// Shows delete flight confirmation popup.

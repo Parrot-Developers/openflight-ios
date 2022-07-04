@@ -242,7 +242,7 @@ private extension MyFlightsViewController {
                 controller = flightPlanViewController
             } else {
                 // Initial case
-                let newViewController = StoryboardScene.FlightPlansDashboardList.flightPlansListViewController.instantiate()
+                let newViewController = StoryboardScene.FlightPlansDashboardList.flightPlanDashboardListViewController.instantiate()
                 // TODO: wrong injection
                 newViewController.setupViewModel(with: FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
                                                                                 flightPlanTypeStore: Services.hub.flightPlan.typeStore,

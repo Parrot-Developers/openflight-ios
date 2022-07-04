@@ -215,6 +215,9 @@ private extension GlobalUserStorageViewModel {
             if let oldAvailableSpace = self.oldRemovableStorageAvailableSpace,
                 removableUserStorage.availableSpace > oldAvailableSpace {
                 self.removeInsufficientStorageSpaceError()
+            } else if removableUserStorage.physicalState == .noMedia {
+                // also remove storage space error if storage was removed
+                self.removeInsufficientStorageSpaceError()
             }
 
             self.oldRemovableStorageAvailableSpace = removableUserStorage.availableSpace

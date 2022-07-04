@@ -34,8 +34,10 @@ import Foundation
 extension DateFormatter {
 
     // MARK: - Public Enums
-    public enum Constants {
-        public static let classicDateFormat: String = "yyyy-MM-dd HH:mm:ss"
+
+    private enum Constants {
+        static let apiDateFormat: String = "yyyy-MM-dd HH:mm:ss"
+        static let commonDateFormat: String = "yyyy.MM.dd HH'h'mm"
     }
 
     // MARK: - Public Funcs
@@ -64,12 +66,12 @@ extension DateFormatter {
         return dateFormatter
     }
 
-    public var iso8601: DateFormatter {
-        .customFormat("yyyy-MM-dd'T'HH:mm:ss.ZZZZZ")
+    public static var commonFormatter: DateFormatter {
+        .customFormat(Constants.commonDateFormat)
     }
 
     public static let apiDateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter.customFormat(DateFormatter.Constants.classicDateFormat)
+        let dateFormatter = DateFormatter.customFormat(Constants.apiDateFormat)
         dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         return dateFormatter

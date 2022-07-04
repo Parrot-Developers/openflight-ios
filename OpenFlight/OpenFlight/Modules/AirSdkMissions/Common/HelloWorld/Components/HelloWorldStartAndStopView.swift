@@ -43,16 +43,6 @@ class HelloWorldStartAndStopView: UIView, NibOwnerLoadable {
     @IBOutlet private weak var startAndStopButton: UIButton!
     @IBOutlet private weak var containerView: UIView!
 
-    // MARK: - Private Properties
-    private var currentState: HellowWorldStartAndStopState = .active
-
-    // MARK: - Private Enums
-    /// Exhaustive states for `HelloWorldStartAndStopView`.
-    private enum HellowWorldStartAndStopState {
-        case waiting
-        case active
-    }
-
     // MARK: - Internal Properties
     weak var delegate: HelloWorldStartAndStopViewDelegate?
 
@@ -76,30 +66,24 @@ extension HelloWorldStartAndStopView {
     ///
     /// - Parameters:
     ///   - state: The current Hello World state
-    ///   - didReceiveMessage: A boolean to indicate if we received a message from the drone
-    func update(with state: MissionState,
-                didReceiveMessage: Bool) {
+    ///   - isSayingHello: If the drone is saying hello
+    func update(with state: MissionState, isSayingHello: Bool) {
         switch state {
         case .active:
-            currentState = didReceiveMessage ? .active : .waiting
-            switch currentState {
-            case .active:
+            if isSayingHello {
                 startAndStopButton.setImage(Asset.Common.Icons.stop.image, for: .normal)
                 containerView.backgroundColor = ColorName.errorColor.color
-            case .waiting:
+            } else {
                 startAndStopButton.setImage(Asset.Common.Icons.play.image, for: .normal)
                 containerView.backgroundColor = ColorName.highlightColor.color
             }
         case .idle, .activating:
-            currentState = .waiting
             startAndStopButton.setImage(Asset.Common.Icons.play.image, for: .normal)
             containerView.backgroundColor = ColorName.highlightColor.color
         case .unavailable:
-            currentState = .waiting
             startAndStopButton.setImage(Asset.Common.Icons.icUndo.image, for: .normal)
             containerView.backgroundColor = ColorName.warningColor.color
         case .unloaded:
-            currentState = .waiting
             startAndStopButton.setImage(Asset.Common.Icons.icUndo.image, for: .normal)
             containerView.backgroundColor = ColorName.warningColor.color
         }

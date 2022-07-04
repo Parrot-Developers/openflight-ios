@@ -34,8 +34,10 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     // MARK: - Private Properties
     private var mainLabel: AGSPictureMarkerSymbol?
     private var diamondSymbol: AGSPictureMarkerSymbol?
+    private var touchAreaCircle: AGSSimpleMarkerSymbol
 
     public static let poiSelected = ImageAsset(name: "poi_selected").image
+    public static let poiBlackAndWhite = ImageAsset(name: "poi_black_and_white").image
 
     private static let colors: [UIImage] = [ImageAsset(name: "poi_light_blue").image,
                                             ImageAsset(name: "poi_green").image,
@@ -62,6 +64,8 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
 
     // MARK: - Private Enums
     private enum Constants {
+        static let touchAreaCircleSize: CGFloat = 60.0
+        static let touchAreaColor: UIColor = ColorName.clear.color
         static let outlineColor: UIColor = ColorName.white.color
         static let selectedColor: UIColor = ColorName.highlightColor.color
         static let diamondSize: CGFloat = 54.0
@@ -81,6 +85,9 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     public init(poiPoint: PoiPoint, index: Int, heading: Double) {
 
         self.heading = Int(heading)
+        touchAreaCircle = AGSSimpleMarkerSymbol(style: .circle,
+                                                color: Constants.touchAreaColor,
+                                                size: Constants.touchAreaCircleSize)
         let newIndex = index % FlightPlanPoiPointGraphic.colors.count
         diamondSymbol = AGSPictureMarkerSymbol(image: FlightPlanPoiPointGraphic.colors[newIndex])
 
@@ -108,7 +115,10 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     /// - Parameters:
     ///    - location: point of interest's location
     public init(location: Location3D) {
-        diamondSymbol = AGSPictureMarkerSymbol(image: FlightPlanPoiPointGraphic.poiSelected)
+        touchAreaCircle = AGSSimpleMarkerSymbol(style: .circle,
+                                                color: Constants.touchAreaColor,
+                                                size: Constants.touchAreaCircleSize)
+        diamondSymbol = AGSPictureMarkerSymbol(image: FlightPlanPoiPointGraphic.poiBlackAndWhite)
 
         // add altitude
         var array = [AGSSymbol]()
@@ -155,8 +165,12 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     /// - Parameters:
     ///     - altitude: altitude to display
     private func refreshText(altitude: String) {
+        var textColor = Constants.textColor
+        if (attributes[AGSConstants.poiPointAttributeKey] != nil) == true {
+            textColor = .white
+        }
         let altitudeImage = FlightPlanPointGraphic.imageWith(name: altitude,
-                            textColor: Constants.textColor,
+                            textColor: textColor,
                             fontSize: Constants.fontSize,
                             size: CGSize(width: Constants.diamondSize, height: Constants.diamondSize))
 
@@ -170,6 +184,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
     /// - Returns: symbol
     private func getSymbol() -> AGSCompositeSymbol {
         var array = [AGSSymbol]()
+        array.append(touchAreaCircle)
         if let diamondSymbol = diamondSymbol {
             array.append(diamondSymbol)
         }
@@ -203,8 +218,10 @@ public extension FlightPlanPoiPointGraphic {
     /// Updates point of interest.
     ///
     /// - Parameters:
-    ///    - point: new point to apply
-    func update(with point: AGSPoint) {
-        geometry = point
+    ///    - location: new location to apply
+    func update(location: Location3D) {
+        geometry = location.agsPoint
+        refreshText(altitude: location.formattedAltitude)
+        self.symbol = getSymbol()
     }
 }

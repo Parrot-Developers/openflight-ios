@@ -97,8 +97,12 @@ public class GpslapseRestartServiceImpl {
         // to trigger gpslapse restart process if required
         cameraConfigWatcher.willApplyConfigPublisher
             .sink { [unowned self ] editor in
-                // check if gpslapse is ongoing
-                // and if configuration changes require restarting gpslapse
+                // Check if the following conditions are met to restart a gpsLapse:
+                //    • Drone's camera is accessible
+                //    • A gpslapse is ongoing
+                //    • There is NO Flight Plan execution running
+                //    • A gpslapse restart is not already asked
+                //    • The camera config to apply doesn't come from a restore after an FP stop
                 guard let camera = connectedDroneHolder.drone?.currentCamera,
                       cameraPhotoCaptureService.state.canStop,
                       camera.config[Camera2Params.mode]?.value == .photo,
@@ -106,7 +110,8 @@ public class GpslapseRestartServiceImpl {
                       editor[Camera2Params.mode]?.value == .photo,
                       editor[Camera2Params.photoMode]?.value == .gpsLapse,
                       requireRestart(config: camera.config, editor: editor),
-                      activeFlightPlanWatcher.activeFlightPlan == nil,
+                      case .none = activeFlightPlanWatcher.activeFlightPlanState,
+                      !cameraConfigWatcher.isRestoringSavedCameraSettings,
                       restartState == .none
                 else { return }
 

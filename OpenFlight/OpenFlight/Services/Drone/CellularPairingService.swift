@@ -80,7 +80,6 @@ class CellularPairingServiceImpl: CellularPairingService {
     private let connectedDroneHolder: ConnectedDroneHolder
     private let cellularService: CellularService
     private var pairingAction: PairingAction = .pairUser
-    private var isFirstPairing: Bool = true
     private var processErrorSubscription: AnyCancellable?
 
     /// Retry Pairing timer
@@ -154,12 +153,31 @@ class CellularPairingServiceImpl: CellularPairingService {
             .store(in: &cancellables)
 
         userService.userEventPublisher
-            .removeDuplicates()
-            .combineLatest(cellularService.isCellularAvailablePublisher.removeDuplicates(),
-                           connectedDroneHolder.dronePublisher.removeDuplicates(),
-                           userService.currentUserPublisher.map { $0.isAnonymous }.removeDuplicates())
-            .sink { [weak self] (event, isCellularAvailable, drone, isAnonymous) in
-                guard let self = self else { return }
+            .sink { [unowned self] event in
+                guard cellularService.isCellularAvailable else {
+                    ULog.i(.tag, "Cellular unavailable")
+                    return
+                }
+                guard connectedDroneHolder.drone != nil else {
+                    ULog.i(.tag, "Drone not connected")
+                    return
+                }
+
+                switch event {
+                case .didLogin, .didLogout, .didChangePrivateMode:
+                    ULog.i(.tag, "Event received \(event)")
+                    startPairingProcessRequest(with: nil)
+
+                default:
+                    ULog.i(.tag, "Default case")
+                    return
+                }
+            }
+            .store(in: &cancellables)
+
+        cellularService.isCellularAvailablePublisher.removeDuplicates()
+            .combineLatest(connectedDroneHolder.dronePublisher.removeDuplicates())
+            .sink { [unowned self] (isCellularAvailable, drone) in
                 guard isCellularAvailable else {
                     ULog.i(.tag, "Cellular unavailable")
                     return
@@ -168,19 +186,10 @@ class CellularPairingServiceImpl: CellularPairingService {
                     ULog.i(.tag, "Drone not connected")
                     return
                 }
-                if isAnonymous {
-                    ULog.i(.tag, "Anonymous will start pairing process")
-                    self.startPairingProcessRequest(with: nil)
-                } else {
-                    switch event {
-                    case .didLogin, .didLogout:
-                            ULog.i(.tag, "Switch account")
-                        self.startPairingProcessRequest(with: nil)
 
-                    default:
-                        return
-                    }
-                }
+                ULog.i(.tag, "Will start pairing process")
+                startPairingProcessRequest(with: nil)
+
             }
             .store(in: &cancellables)
     }
@@ -418,8 +427,8 @@ private extension CellularPairingServiceImpl {
     func signChallenge(with challenge: String?) {
         ULog.i(.tag, "signChallenge with challenge \(challenge ?? "")")
         guard let chalEncoded = challenge,
-              let secureElement = currentDroneHolder.drone.getPeripheral(Peripherals.secureElement),
-              currentDroneHolder.drone.isConnected == true else {
+              let secureElement = connectedDroneHolder.drone?.getPeripheral(Peripherals.secureElement),
+              connectedDroneHolder.drone?.isConnected == true else {
                   updateProcessError(error: .unableToConnect)
                   return
               }
@@ -460,8 +469,13 @@ private extension CellularPairingServiceImpl {
                     updateProcessError(error: .serverError)
 
                 case .success:
+                    guard let uid = connectedDroneHolder.drone?.uid else {
+                        updateProcessError(error: .unableToConnect)
+                        return
+                    }
+
                     updateProcessStep(step: .associationRequestSuccess)
-                    addToPairedListDroneUid(currentDroneHolder.drone.uid)
+                    addToPairedListDroneUid(uid)
                     updateGsdkUserAccount()
                 }
             }
@@ -515,9 +529,13 @@ private extension CellularPairingServiceImpl {
             return
         }
 
+        guard let uid = connectedDroneHolder.drone?.uid else {
+            updateUnpairDroneStatus(with: .forgetError(context: .details))
+            return
+        }
+
         // Get the list of paired drone.
         academyApiService.performPairedDroneListRequest { pairedDroneList in
-            let uid = self.currentDroneHolder.drone.uid
 
             // Academy calls are asynchronous update should be done on main thread
             DispatchQueue.main.async {
@@ -624,25 +642,22 @@ extension CellularPairingServiceImpl {
 
     /// Starts watcher for Secure Element.
     func listenSecureElement(_ drone: Drone) {
-        secureElementRef = drone.getPeripheral(Peripherals.secureElement) { [weak self] _ in
-            self?.updateSecureElementState()
+        secureElementRef = drone.getPeripheral(Peripherals.secureElement) { [unowned self] secureElement in
+            updateSecureElementState(secureElement: secureElement)
         }
-        updateSecureElementState()
     }
 
     /// Drone's SecureElement state Handler
     ///
     ///  - Note:
     ///     This handler is called when state is updated after the drone tried to sign the challenge.
-    func updateSecureElementState() {
+    func updateSecureElementState(secureElement: SecureElement?) {
         guard pairingProcessStepSubject.value == .challengeRequestSuccess
                 || pairingProcessStepSubject.value == .processing else {
                     return
                 }
 
-        guard let state = connectedDroneHolder.drone?.getPeripheral(Peripherals.secureElement)?.challengeRequestState else {
-            return
-        }
+        guard let state = secureElement?.challengeRequestState else { return }
 
         switch state {
         case .processing:

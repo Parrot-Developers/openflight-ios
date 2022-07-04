@@ -115,6 +115,8 @@ struct GalleryMedia: Equatable {
     var downloadState: GalleryMediaDownloadState?
     var size: UInt64
     var date: Date
+    var flightDate: Date?
+    var bootDate: Date?
     var url: URL?
     var urls: [URL]?
     var formattedSize: String {
@@ -173,6 +175,8 @@ struct GalleryMedia: Equatable {
             && lhs.downloadState == rhs.downloadState
             && lhs.size == rhs.size
             && lhs.date == rhs.date
+            && lhs.flightDate == rhs.flightDate
+            && lhs.bootDate == rhs.bootDate
             && lhs.url == rhs.url
             && lhs.urls == rhs.urls
             && lhs.mediaResources?.count == rhs.mediaResources?.count
@@ -219,20 +223,21 @@ struct GalleryMedia: Equatable {
         }
     }
 
-    var displayTitle: String? {
-        let customTitle = mainMediaItem?.customTitle?
+    var title: String {
+        guard let customTitle = customTitle else {
+            return (flightDate ?? date).commonFormattedString
+        }
+
+        return customTitle
             .replacingOccurrences(of: "(", with: "")
             .replacingOccurrences(of: ")", with: "")
-
-        return customTitle?.isEmpty ?? true
-            ? date.formattedString(dateStyle: .long, timeStyle: .short)
-            : customTitle
     }
 
-    var cellTitle: String? {
-        guard var title = customTitle,
-              let range = title.range(of: " - ", options: [.backwards], range: nil, locale: nil) else { return nil }
-        title = title.replacingCharacters(in: range, with: "\n")
+    var cellTitle: String {
+        if let range = title.range(of: " - ", options: [.backwards], range: nil, locale: nil) {
+            return title.replacingCharacters(in: range, with: "\n")
+        }
+
         return title
     }
 

@@ -29,10 +29,14 @@
 
 import SwiftyUserDefaults
 import GroundSdk
+import Combine
 
 /// Interface settings view model.
 
-final class InterfaceViewModel: BaseViewModel<DeviceConnectionState>, SettingsViewModelProtocol {
+final class InterfaceViewModel: SettingsViewModelProtocol {
+
+    private(set) var resetSettingPublisher = CurrentValueSubject<Void, Never>(())
+
     /// SettingsViewModelProtocol implementation, but unused here.
     var infoHandler: ((SettingMode.Type) -> Void)?
 
@@ -48,7 +52,7 @@ final class InterfaceViewModel: BaseViewModel<DeviceConnectionState>, SettingsVi
     func resetSettings() {
         Defaults.userMiniMapTypeSetting = InterfacePreset.miniMapType.rawValue
         Defaults.userMeasurementSetting = InterfacePreset.measurementSystem.rawValue
-        notifyChange()
+        resetSettingPublisher.send()
     }
 
     var isUpdating: Bool? {

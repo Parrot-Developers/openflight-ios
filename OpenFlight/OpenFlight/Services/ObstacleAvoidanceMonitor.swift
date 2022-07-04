@@ -174,7 +174,14 @@ private extension ObstacleAvoidanceMonitorImpl {
     /// Change the OA mode of the drone if needed
     /// - Parameter mode: the mode to apply
     func setToDrone(mode: ObstacleAvoidanceMode) {
-        guard let oaPeripheral = oaPeripheral, oaPeripheral.mode.preferredValue != mode else { return }
+        guard let oaPeripheral = oaPeripheral else {
+            ULog.e(.tag, "setToDrone, oaPeripheral is undefined")
+            return
+        }
+        guard oaPeripheral.mode.preferredValue != mode else {
+            ULog.e(.tag, "setToDrone, mode is unchanged: \(mode.description)")
+            return
+        }
         ULog.i(.tag, "Applying OA mode to drone: \(mode), was \(oaPeripheral.mode.preferredValue)")
         oaPeripheral.mode.preferredValue = mode
     }
@@ -208,6 +215,8 @@ private extension ObstacleAvoidanceMonitorImpl {
         if appliedModeSubject.value != modeToApply {
             ULog.i(.tag, "Saving applied mode \(modeToApply)")
             appliedModeSubject.value = modeToApply
+        } else {
+            ULog.e(.tag, "applyRelevantMode, value unchanged: \(modeToApply)")
         }
     }
 }

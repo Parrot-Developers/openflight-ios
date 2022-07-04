@@ -31,6 +31,16 @@ import Foundation
 import Combine
 import GroundSdk
 
+/// Enum describing the possible Active Flight Plan states.
+public enum ActiveFlightPlanState {
+    /// No flight plan is currently active or activating.
+    case none
+    /// Flight Plan is activating.
+    case activating(FlightPlanModel)
+    /// Flight Plan is active.
+    case active(FlightPlanModel)
+}
+
 /// Watches flight plan activation and exposes the active flight plan if any
 ///
 /// When publishing any new value, the matching property should already expose this new value (didSet behavior).
@@ -40,8 +50,10 @@ public protocol ActiveFlightPlanExecutionWatcher: AnyObject {
     var activeFlightPlan: FlightPlanModel? { get }
     /// Publisher for the active flight plan
     var activeFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> { get }
-    /// Publisher for an activating flight plan
-    var activatingFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> { get }
+    /// Publisher for the active flight plan state.
+    var activeFlightPlanStatePublisher: AnyPublisher<ActiveFlightPlanState, Never> { get }
+    /// Active flight plan state.
+    var activeFlightPlanState: ActiveFlightPlanState { get }
     /// Publisher to expose whether a flight plan with time or GPS lapse is being executed
     var hasActiveFlightPlanWithTimeOrGpsLapsePublisher: AnyPublisher<Bool, Never> { get }
     /// Whether a flight plan with time or GPS lapse is being executed
@@ -66,6 +78,11 @@ public protocol ActiveFlightPlanExecutionWatcher: AnyObject {
     ///
     /// - Parameter flightPlan: the flight plan
     func flightPlanDidStop(_ flightPlan: FlightPlanModel)
+
+    /// The component responsible for keeping the running flight plan up to date should let this watcher know when an execution is updated.
+    ///
+    /// - Parameter flightPlan: the flight plan
+    func flightPlanDidUpdate(_ flightPlan: FlightPlanModel?)
 }
 
 /// Implementation for ActiveFlightPlanExecutionWatcher
@@ -74,8 +91,10 @@ public class ActiveFlightPlanExecutionWatcherImpl {
     private unowned var flightPlanRepository: FlightPlanRepository
     /// Subject holding active flight plan's id if any
     private var activeFlightPlanUuidSubject = CurrentValueSubject<String?, Never>(nil)
-    /// Subject holding activating flight plan if any
-    private var activatingFlightPlanUuidSubject = CurrentValueSubject<String?, Never>(nil)
+    /// Subject holding the active flight plan state.
+    var activeFlightPlanStateSubject = CurrentValueSubject<ActiveFlightPlanState, Never>(.none)
+    /// Running Flight Plan
+    private var runningFlightPlan: FlightPlanModel?
 
     // MARK: init
 
@@ -97,14 +116,23 @@ private extension ULogTag {
 // MARK: Private functions
 private extension ActiveFlightPlanExecutionWatcherImpl {
 
-    /// Fetch the flight plan for an uuid
-    /// - Parameter uuid: the flight plan's uuid
+    /// Returns the flight plan for an uuid
+    /// - Parameters:
+    ///    - uuid: the flight plan's uuid
+    ///    - forceDataBaseFetching: whether the data base fetching is needed
     /// - Returns: the matching flight plan if any
-    func flightPlanFor(uuid: String) -> FlightPlanModel? {
-        if let flightPlan = flightPlanRepository.getFlightPlan(withUuid: uuid) {
-            return flightPlan
+    ///
+    /// - Description: If not asked via `forceDataBaseFetching`, the local flight plan, if exists, updated by the Run Manager,
+    ///                is used instead of fetching the Data Base.
+    func flightPlanFor(uuid: String, forceDataBaseFetching: Bool = false) -> FlightPlanModel? {
+        // Get the FP from the Data Base when one of the following conditions is met:
+        //     • Either a "Force Data Base Fetching" is requested,
+        //     • Or the uuid is not the same than the current local `runningFlightPlan`.
+        if forceDataBaseFetching
+            || runningFlightPlan?.uuid != uuid {
+            runningFlightPlan = flightPlanRepository.getFlightPlan(withUuid: uuid)
         }
-        return nil
+        return runningFlightPlan
     }
 
     func isInTimeOrGpsLapse(_ flightPlan: FlightPlanModel?) -> Bool {
@@ -139,13 +167,12 @@ extension ActiveFlightPlanExecutionWatcherImpl: ActiveFlightPlanExecutionWatcher
             .eraseToAnyPublisher()
     }
 
-    public var activatingFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> {
-        activatingFlightPlanUuidSubject.map({ [unowned self] in
-            if let uuid = $0 {
-               return flightPlanFor(uuid: uuid)
-            }
-            return nil
-        }).eraseToAnyPublisher()
+    public var activeFlightPlanStatePublisher: AnyPublisher<ActiveFlightPlanState, Never> {
+        activeFlightPlanStateSubject.eraseToAnyPublisher()
+    }
+
+    public var activeFlightPlanState: ActiveFlightPlanState {
+        activeFlightPlanStateSubject.value
     }
 
     public var hasActiveFlightPlanWithTimeOrGpsLapsePublisher: AnyPublisher<Bool, Never> {
@@ -163,24 +190,32 @@ extension ActiveFlightPlanExecutionWatcherImpl: ActiveFlightPlanExecutionWatcher
 
     public func flightPlanWillBeActivated(_ flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Flight plan will be activated '\(flightPlan.uuid)'")
-        activatingFlightPlanUuidSubject.value = flightPlan.uuid
+        // When a flight plan will be activated, we must reset the current active one if needed.
+        activeFlightPlanStateSubject.value = .activating(flightPlan)
     }
 
     public func flightPlanActivationFailed(_ flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Flight plan activation failed '\(flightPlan.uuid)'")
-        activatingFlightPlanUuidSubject.value = nil
+        activeFlightPlanStateSubject.value = .none
     }
 
     public func flightPlanActivationSucceeded(_ flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Flight plan is active '\(flightPlan.uuid)'")
         activeFlightPlanUuidSubject.value = flightPlan.uuid
-        activatingFlightPlanUuidSubject.value = nil
+        activeFlightPlanStateSubject.value = .active(flightPlan)
     }
 
     public func flightPlanDidStop(_ flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Flight plan did finish '\(flightPlan.uuid)'")
         activeFlightPlanUuidSubject.value = nil
-        // The 'activating FP' must also be resetted to prevent to be stuck in activating state.
-        activatingFlightPlanUuidSubject.value = nil
+        activeFlightPlanStateSubject.value = .none
+        runningFlightPlan = nil
     }
+
+    public func flightPlanDidUpdate(_ flightPlan: FlightPlanModel?) {
+        ULog.i(.tag, "Flight plan did update '\(flightPlan?.uuid ?? "")'")
+        runningFlightPlan = flightPlan
+    }
+
+
 }

@@ -80,6 +80,10 @@ public enum HUDCriticalAlertType: Comparable {
     case insufficientStorageSpeed
     case sdCardNotDetected
     case sdCardNeedsFormat
+    case droneAndVehicleGpsKo
+    case droneGpsKo
+    case vehicleGpsKo
+    case droneTooFar(Float)
 
     var isSensorAlarm: Bool {
         switch self {
@@ -112,6 +116,10 @@ public enum HUDCriticalAlertType: Comparable {
         case .insufficientStorageSpeed:     return 14
         case .sdCardNeedsFormat:            return 15
         case .sdCardNotDetected:            return 16
+        case .droneAndVehicleGpsKo:         return 17
+        case .droneGpsKo:                   return 18
+        case .vehicleGpsKo:                 return 19
+        case .droneTooFar:                  return 20
         }
     }
 
@@ -213,6 +221,14 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.alertNoSdcardErrorTitle
         case .sdCardNeedsFormat:
             return L10n.alertSdcardFormatErrorTitle
+        case .droneAndVehicleGpsKo:
+            return L10n.takeoffAlertDroneControllerGpsUnavailableTitle
+        case .droneGpsKo:
+            return L10n.takeoffAlertDroneGpsUnavailableTitle
+        case .vehicleGpsKo:
+            return L10n.takeoffAlertControllerGpsUnavailableTitle
+        case .droneTooFar:
+            return L10n.takeoffAlertDroneTooFarTitle
         }
     }
 
@@ -235,6 +251,10 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .sdCardNotDetected,
              .sdCardNeedsFormat:
             return Asset.Common.Icons.icSdCardErrorSmall.image
+        case .droneAndVehicleGpsKo,
+                .droneGpsKo,
+                .vehicleGpsKo:
+            return Asset.Drone.icSatellite.image
         default:
             return nil
         }
@@ -255,7 +275,10 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .insufficientStorageSpace,
              .insufficientStorageSpeed,
              .sdCardNotDetected,
-             .sdCardNeedsFormat:
+             .sdCardNeedsFormat,
+             .droneAndVehicleGpsKo,
+             .droneGpsKo,
+             .vehicleGpsKo:
             return .white
         default:
             return nil
@@ -318,6 +341,14 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .sdCardNotDetected,
              .sdCardNeedsFormat:
             return Asset.Common.Icons.icSdCardError.image
+        case .droneAndVehicleGpsKo:
+            return Asset.Alertes.TakeOff.icGpsDroneKoRemoteKo.image
+        case .droneGpsKo:
+            return Asset.Alertes.TakeOff.icGpsDroneKoRemoteOk.image
+        case .vehicleGpsKo:
+            return Asset.Alertes.TakeOff.icGpsDroneOkRemoteKo.image
+        case .droneTooFar:
+            return Asset.Alertes.TakeOff.icDroneTooFar.image
         }
     }
 
@@ -355,6 +386,12 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.alertNoSdcardErrorDesc
         case .sdCardNeedsFormat:
             return L10n.alertSdcardFormatErrorDesc
+        case .droneAndVehicleGpsKo,
+                .droneGpsKo,
+                .vehicleGpsKo:
+            return L10n.takeoffAlertGpsUnavailableDescription
+        case .droneTooFar(let maxDistance):
+            return L10n.takeoffAlertDroneTooFarDescription(UnitHelper.stringDistanceWithDouble(Double(maxDistance)))
        }
     }
 
@@ -408,7 +445,11 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .sensorFailure,
              .batteryLevel,
              .highTemperature,
-             .lowTemperature:
+             .lowTemperature,
+             .droneAndVehicleGpsKo,
+             .droneGpsKo,
+             .vehicleGpsKo,
+             .droneTooFar:
             return .warningColor
         case .droneInclination,
              .updateOngoing,

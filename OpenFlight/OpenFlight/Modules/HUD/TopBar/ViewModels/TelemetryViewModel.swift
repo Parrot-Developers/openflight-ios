@@ -59,9 +59,6 @@ final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
     private var speedometerRef: Ref<Speedometer>?
     private var altimeterRef: Ref<Altimeter>?
     private var userLocationManager: LocationManager
-    private var liveTelemetryWatcher: LiveTelemetryWatcher? = Services.hub.liveTelemetryWatcher
-    private var cancellables = Set<AnyCancellable>()
-    @Published private(set) var liveTlmState: LiveTelemetryState?
 
     /// Returns current distance to user location,
     /// `nil` if drone's gps and/or user location is unavailable.
@@ -108,7 +105,6 @@ final class TelemetryViewModel: DroneWatcherViewModel<TelemetryState> {
         state.value.altitude.valueChanged = altitudeDidChange
         state.value.distance.valueChanged = distanceDidChange
         listenUserLocation()
-        listenLiveTelemetry()
     }
 
     // MARK: - Override Funcs
@@ -157,19 +153,6 @@ private extension TelemetryViewModel {
         userLocationManager.onLocationUpdate = { [unowned self] in
             computeDistance()
         }
-    }
-
-    /// Starts watcher for live telemetry.
-    func listenLiveTelemetry() {
-        guard let liveTelemetryWatcher = liveTelemetryWatcher else {
-            return
-        }
-
-        liveTelemetryWatcher.liveTelemetryStatePublisher
-            .sink { [unowned self] in
-                liveTlmState = $0
-            }
-            .store(in: &cancellables)
     }
 
     /// Computes current speed and updates TelemetryState accordingly.

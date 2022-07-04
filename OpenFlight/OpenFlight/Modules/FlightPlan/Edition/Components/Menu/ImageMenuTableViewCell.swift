@@ -47,7 +47,7 @@ struct ImageMenuCellProvider {
         self.timeLapseCycle = dataSettings.timeLapseCycle
         self.whiteBalanceModeTitle = dataSettings.whiteBalanceMode.title
         self.resolutionTitle = dataSettings.resolution.title
-        self.framerateTitle = dataSettings.framerate.title
+        self.framerateTitle = dataSettings.framerate.fpsTitle
         self.photoResolutionTitle = dataSettings.photoResolution.title
         self.exposureTitle = dataSettings.exposure.title
     }

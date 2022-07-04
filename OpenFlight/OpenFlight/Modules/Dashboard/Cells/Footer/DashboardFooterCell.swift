@@ -34,6 +34,8 @@ import Reusable
 protocol DashboardFooterCellDelegate: AnyObject {
     /// Starts parrot debug screen from dashboard.
     func startParrotDebugScreen()
+    /// Right button action.
+    func rightButtonAction()
 }
 
 /// Custom View used for the footer of the Dashboard.
@@ -46,6 +48,8 @@ final class DashboardFooterCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var controllerTitleLabel: UILabel!
     @IBOutlet private weak var droneTitleLabel: UILabel!
     @IBOutlet private weak var versionsView: UIView!
+    @IBOutlet private weak var rightButtonLabel: UILabel!
+    @IBOutlet private weak var rightButton: UIButton!
 
     // MARK: - Internal Properties
     weak var delegate: DashboardFooterCellDelegate?
@@ -66,9 +70,10 @@ final class DashboardFooterCell: UICollectionViewCell, NibReusable {
     ///
     /// - Parameters:
     ///     - state: State for `DashboardFooterViewModel`.
-    func setup(state: DashboardFooterState) {
+    func setup(state: DashboardFooterState, dashboardUiProvider: DashboardUiProvider) {
         droneVersionLabel.text = state.droneVersionNumber
         controllerVersionLabel.text = state.remoteVersionNumber
+        rightButtonLabel.text = dashboardUiProvider.rightButtonLabel
     }
 }
 
@@ -87,5 +92,9 @@ private extension DashboardFooterCell {
         if AppUtils.isDebugScreenAuthorized {
             delegate?.startParrotDebugScreen()
         }
+    }
+
+    @IBAction func termsOfUseButtonTouchUpInside() {
+        delegate?.rightButtonAction()
     }
 }

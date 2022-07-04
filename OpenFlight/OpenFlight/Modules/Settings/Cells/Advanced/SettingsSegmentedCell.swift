@@ -36,7 +36,7 @@ protocol SettingsSegmentedCellDelegate: AnyObject {
 }
 
 /// Settings Segmented Cell.
-final class SettingsSegmentedCell: MainTableViewCell, NibReusable {
+class SettingsSegmentedCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var bgView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
@@ -58,6 +58,16 @@ final class SettingsSegmentedCell: MainTableViewCell, NibReusable {
         super.awakeFromNib()
 
         initView()
+    }
+
+    /// Initializes view.
+    func initView() {
+        subtitleView.layer.cornerRadius = Style.largeCornerRadius
+        segmentControl.delegate = self
+        infoTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(infoLabelTouchedUpInside(sender:)))
+        if let infoTapGestureRecognizer = infoTapGestureRecognizer {
+            infoLabel.addGestureRecognizer(infoTapGestureRecognizer)
+        }
     }
 
     // MARK: - Internal Funcs
@@ -123,20 +133,6 @@ final class SettingsSegmentedCell: MainTableViewCell, NibReusable {
         bgView.backgroundColor = shouldShow
             ? ColorName.white.color
             : .clear
-    }
-}
-
-// MARK: - Private
-private extension SettingsSegmentedCell {
-
-    /// Initializes view.
-    func initView() {
-        subtitleView.layer.cornerRadius = Style.largeCornerRadius
-        segmentControl.delegate = self
-        infoTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(infoLabelTouchedUpInside(sender:)))
-        if let infoTapGestureRecognizer = infoTapGestureRecognizer {
-            infoLabel.addGestureRecognizer(infoTapGestureRecognizer)
-        }
     }
 }
 

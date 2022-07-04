@@ -39,9 +39,9 @@ public enum TrajectoryState {
         case .none:
             return ColorName.white.color
         case .interrupted:
-            return ColorName.warningColor.color
+            return ColorName.warningColor60.color
         case .completed:
-            return ColorName.flightCompletedColor.color
+            return ColorName.flightCompletedColor60.color
         }
     }
 }

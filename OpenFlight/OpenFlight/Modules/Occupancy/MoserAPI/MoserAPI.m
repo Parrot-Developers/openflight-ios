@@ -94,8 +94,9 @@
 
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++, mbuf_frame_it++, mframe_it++) {
-            // set to NA value if too far
-            if (*mbuf_frame_it > MOSER_DISPARITY_MAX) {
+            if (*mbuf_frame_it == MOSER_DISPARITY_SKY) {
+                *mframe_it = 0; // SKY
+            } else if (*mbuf_frame_it > MOSER_DISPARITY_MAX) {
                 *mframe_it = -1; // NA
             } else {
                 // divide by 2.f for Q7.1 conversion

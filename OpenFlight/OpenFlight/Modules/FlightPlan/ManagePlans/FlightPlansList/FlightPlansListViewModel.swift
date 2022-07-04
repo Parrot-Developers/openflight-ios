@@ -123,6 +123,12 @@ protocol FlightPlansListViewModelUIInput {
     /// Return number of flight plan available
     func projectsCount() -> Int
 
+    /// Check for IndexPath to get more flights
+    func shouldGetMoreProjects(fromIndexPath indexPath: IndexPath)
+
+    /// Get more projects to display
+    @discardableResult func getMoreProjects() -> Bool
+
     /// Return corresponding Header provider to display it on Header
     func headerCellProvider() -> [FlightPlanListHeaderCellProvider]
 
@@ -131,6 +137,12 @@ protocol FlightPlansListViewModelUIInput {
     /// - Parameters:
     ///     - index: index of selected flight plan
     func openProject(at index: Int)
+
+    /// Get selected project index
+    ///
+    /// - Parameters:
+    ///     - forSelectedProject: the selected project
+    func getProjectIndex(forSelectedProject: ProjectModel?) -> Int?
 }
 
 /// Protocol allow to communicate from Parent ViewModel to Child ViewModel
@@ -166,7 +178,6 @@ final class FlightPlansListViewModel {
     // MARK: - Private variables
     @Published private var uuid: String?
     private var filteredProjects = CurrentValueSubject<[ProjectModel], Never>([])
-    private var allProjects = CurrentValueSubject<[ProjectModel], Never>([])
     private var headerProvider: [FlightPlanListHeaderCellProvider] = []
     private(set) var displayMode: FlightPlansListDisplayMode = .compact
     private weak var delegate: FlightPlansListViewModelDelegate?
@@ -206,7 +217,7 @@ final class FlightPlansListViewModel {
         if displayMode == .compact {
             return manager.loadProjects(type: Services.hub.currentMissionManager.mode.flightPlanProvider?.projectType)
         } else {
-            return manager.loadExecutedProjects()
+            return manager.loadExecutedProjects(offset: 0, limit: manager.numberOfProjectsPerPage, withType: nil)
         }
     }
 
@@ -219,33 +230,37 @@ final class FlightPlansListViewModel {
     }
 
     /// Construct array of `FlightPlanListHeaderCellProvider` from given array of `ProjectModel`
+    // TODO: Filter header for projects should not be based on a any flight plan's type
     private func buildHeader(_ projects: [ProjectModel]) {
-        headerProvider = projects
-            // Return array of `FlightPlanListHeaderCellProvider`
-            .reduce([FlightPlanListHeaderCellProvider](), { result, value in
-                // Updating cell provider if existing
-                let flightStoreProvider = flightPlanType(forType: manager.lastFlightPlan(for: value)?.type)
-                if let provider = result.first(where: { $0.missionType == flightStoreProvider?.missionProvider.mission.name }) {
-                    var otherProvider = provider
-                    otherProvider.count = provider.count + 1
-                    var otherResult = result
-                    otherResult.removeAll { $0.missionType == provider.missionType }
-                    otherResult.append(otherProvider)
-                    return otherResult
-                }
+        var headerCellProviders = [FlightPlanListHeaderCellProvider]()
+        let classicCount = manager.getExecutedProjectsCount(withType: .classic)
+        let pgyCount = manager.getExecutedProjectsCount(withType: .pgy)
 
-                // Creat new cell provider
-                let provider = FlightPlanListHeaderCellProvider(
-                    uuid: value.uuid,
-                    count: 1,
-                    missionType: flightStoreProvider?.missionProvider.mission.name,
-                    logo: flightStoreProvider?.missionProvider.mission.icon,
-                    isSelected: value.uuid == selectedHeaderUuid
-                )
-                var otherResult = result
-                otherResult.append(provider)
-                return otherResult
-            })
+        if classicCount != 0 {
+            let defaultFlightPlanType = getDefaultFlightPlanType()
+            let provider = FlightPlanListHeaderCellProvider(
+                uuid: ProjectType.classic.rawValue,
+                count: classicCount,
+                missionType: defaultFlightPlanType?.missionProvider.mission.name,
+                logo: defaultFlightPlanType?.missionProvider.mission.icon,
+                isSelected: false
+            )
+            headerCellProviders.append(provider)
+        }
+
+        if pgyCount != 0 {
+            let pgyFlightPlanType = getPgyFlightPlanType()
+            let provider = FlightPlanListHeaderCellProvider(
+                uuid: ProjectType.pgy.rawValue,
+                count: pgyCount,
+                missionType: pgyFlightPlanType?.missionProvider.mission.name,
+                logo: pgyFlightPlanType?.missionProvider.mission.icon,
+                isSelected: false
+            )
+            headerCellProviders.append(provider)
+        }
+
+        headerProvider = headerCellProviders
     }
 
     private func isSelected(uuid: String) -> Bool {
@@ -284,7 +299,7 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
     }
 
     func indexOfProject(_ project: ProjectModel) -> Int {
-        allProjects.value.firstIndex(where: { project.uuid == $0.uuid }) ?? 0
+        filteredProjects.value.firstIndex(where: { project.uuid == $0.uuid }) ?? 0
     }
 
     @discardableResult
@@ -312,7 +327,7 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         let projects = loadAllProjects()
         switch displayMode {
         case .dashboard:
-            allProjects.value = projects
+            filteredProjects.value = projects
             buildHeader(projects)
             updateFilteredProjects()
         case .compact:
@@ -333,16 +348,61 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         filteredProjects.value.count
     }
 
-    func updateFilteredProjects() {
-        if selectedHeaderUuid != nil,
-           let provider = headerProvider.first(where: { $0.uuid == selectedHeaderUuid }) {
-            filteredProjects.value = allProjects.value.filter {
-                                let type = flightPlanType(forType: manager.lastFlightPlan(for: $0)?.type)
-                                return provider.missionType == type?.missionProvider.mission.name
-                            }
-        } else {
-            filteredProjects.value = allProjects.value
+    func getProjectIndex(forSelectedProject: ProjectModel?) -> Int? {
+        guard let forSelectedProject = forSelectedProject else {
+            return nil
         }
+
+        if let index = filteredProjects.value.firstIndex(where: { $0.uuid == forSelectedProject.uuid }) {
+            return index
+        } else {
+            while getMoreProjects() {
+                if let index = filteredProjects.value.firstIndex(where: { $0.uuid == forSelectedProject.uuid }) {
+                    return index
+                }
+            }
+        }
+
+        return nil
+    }
+
+    func shouldGetMoreProjects(fromIndexPath indexPath: IndexPath) {
+        if indexPath.row == projectsCount() - 1 {
+            getMoreProjects()
+        }
+    }
+
+    @discardableResult
+    func getMoreProjects() -> Bool {
+        let projectsCount = projectsCount()
+        var type: ProjectType?
+        if selectedHeaderUuid != nil,
+           let provider = headerProvider.first(where: { $0.uuid == selectedHeaderUuid }),
+           let projectType = ProjectType(rawString: provider.uuid) {
+            type = projectType
+        }
+        let allCount = manager.getExecutedProjectsCount(withType: type)
+        guard projectsCount < allCount else {
+            return false
+        }
+        let moreProjects = manager.loadExecutedProjects(offset: projectsCount, limit: manager.numberOfProjectsPerPage, withType: type)
+        if !moreProjects.isEmpty {
+            filteredProjects.value.append(contentsOf: moreProjects)
+        }
+        return true
+    }
+
+    func updateFilteredProjects() {
+        var type: ProjectType?
+        if selectedHeaderUuid != nil,
+           let provider = headerProvider.first(where: { $0.uuid == selectedHeaderUuid }),
+           let projectType = ProjectType(rawString: provider.uuid) {
+            type = projectType
+        }
+
+        filteredProjects.value = manager.loadExecutedProjects(offset: 0,
+                                                              limit: manager.numberOfProjectsPerPage,
+                                                              withType: type)
     }
 
     func headerCellProvider() -> [FlightPlanListHeaderCellProvider] {
@@ -395,5 +455,13 @@ extension FlightPlansListViewModel: FlightPlanListHeaderDelegate {
 private extension FlightPlansListViewModel {
     func flightPlanType(forType type: String?) -> FlightPlanType? {
         return Services.hub.flightPlan.typeStore.typeForKey(type)
+    }
+
+    func getDefaultFlightPlanType() -> FlightPlanType? {
+        return Services.hub.flightPlan.typeStore.typeForKey("default")
+    }
+
+    func getPgyFlightPlanType() -> FlightPlanType? {
+        return Services.hub.flightPlan.typeStore.typeForKey("photogrammetry_simple_grid")
     }
 }

@@ -31,13 +31,14 @@ import UIKit
 import Reusable
 import Combine
 
-final class ProjectNameTextField: UITextField {
+final class ProjectNameTextField: MainTextField {
     enum Constants {
         static let iconWidth = 12.0
+        static let iconPadding = 10.0
     }
     override func rightViewRect(forBounds bounds: CGRect) -> CGRect {
         let width = Constants.iconWidth
-        return CGRect(origin: CGPoint(x: bounds.maxX - width, y: bounds.midY - width * 0.5),
+        return CGRect(origin: CGPoint(x: bounds.maxX - width - Constants.iconPadding, y: bounds.midY - width * 0.5),
                       size: CGSize(width: width, height: width))
     }
 }

@@ -100,6 +100,13 @@ public protocol FlightRepository: AnyObject {
     /// - Returns: Count of all Flights
     func getAllFlightsCount() -> Int
 
+    /// Get flights from a specific offset and number of flights
+    /// - Parameters:
+    ///    - offset: offset start in all flights
+    ///    - limit: maximum number of flights to get
+    /// - Returns: list of FlightModels
+    func getFlights(offset: Int, limit: Int) -> [FlightModel]
+
     /// Get all FlightModels from all Flights in CoreData
     /// - Returns:  List of FlightModels
     func getAllFlights() -> [FlightModel]
@@ -116,7 +123,7 @@ public protocol FlightRepository: AnyObject {
     /// - Returns: List of FlightModels
     func getAllFlightsToBeDeleted() -> [FlightModel]
 
-    /// Get all FlightModels to be synchronize with Skyward
+    /// Get all FlightModels to be synchronize with external
     /// - Returns: List of FlightModels
     func getAllFlightsToExternalSync() -> [FlightModel]
 
@@ -189,7 +196,7 @@ extension CoreDataServiceImpl: FlightRepository {
         var modifDate: Date?
         var isNewFlight = false
 
-        performAndSave({ [unowned self] _ in
+        performAndSave({ [unowned self] context in
             var flightObj: Flight?
             if let existingFlight = getFlightCD(withUuid: flightModel.uuid) {
                 flightObj = existingFlight
@@ -205,6 +212,12 @@ extension CoreDataServiceImpl: FlightRepository {
 
             var flightModel = flightModel
 
+            // gutmaFile attribut is mandatory to save or update Flight object in core data
+            // so make sure to update properly since FlightModel's gutmaFile can be nil (ex: Flight.modelLite)
+            if flightModel.gutmaFile == nil {
+                flightModel.gutmaFile = flight.gutmaFile
+            }
+
             if byUserUpdate {
                 modifDate = Date()
                 flightModel.latestLocalModificationDate = modifDate
@@ -212,7 +225,14 @@ extension CoreDataServiceImpl: FlightRepository {
                     withFileUploadNeeded {
                     flightModel.synchroStatus = .notSync
                 }
-           }
+            }
+
+            // Sets thumbnail of the Flight if it exists
+            var thumbnail: Thumbnail?
+            if let flightThumbnail = flightModel.thumbnail {
+                thumbnail = self.getThumbnailCD(withUuid: flightThumbnail.uuid) ?? Thumbnail(context: context)
+                thumbnail?.update(fromThumbnailModel: flightThumbnail, withFlight: flight)
+            }
 
             let logMessage = """
                 ✈️⬇️ saveOrUpdateFlight: \(flight), \
@@ -221,7 +241,7 @@ extension CoreDataServiceImpl: FlightRepository {
                 """
             ULog.d(.dataModelTag, logMessage)
 
-            flight.update(fromFlightModel: flightModel)
+            flight.update(fromFlightModel: flightModel, withThumbnail: thumbnail)
 
             return true
         }, { [unowned self] result in
@@ -296,6 +316,10 @@ extension CoreDataServiceImpl: FlightRepository {
 
     public func getAllFlightsCount() -> Int {
         return getAllFlightsCountCD(toBeDeleted: false)
+    }
+
+    public func getFlights(offset: Int, limit: Int) -> [FlightModel] {
+        return getFlightsCD(offset: offset, limit: limit, toBeDeleted: false).map({ $0.model() })
     }
 
     public func getAllFlights() -> [FlightModel] {
@@ -390,7 +414,7 @@ extension CoreDataServiceImpl: FlightRepository {
 
             // Remove related Thumbnail
             if let relatedThumbnail = getThumbnail(withFlightUuid: uuid) {
-                deleteOrFlagToDeleteThumbnail(withUuid: relatedThumbnail.uuid)
+                deleteOrFlagToDeleteThumbnails(withUuids: [relatedThumbnail.uuid], completion: nil)
                 flightObject.thumbnail = nil
             }
 
@@ -521,6 +545,30 @@ internal extension CoreDataServiceImpl {
         } else {
             fetchRequest.predicate = apcIdPredicate
         }
+
+        let desc1 = NSSortDescriptor.init(key: "startTime", ascending: false)
+        fetchRequest.sortDescriptors = [desc1]
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getFlightsCD(offset: Int, limit: Int, toBeDeleted: Bool?) -> [Flight] {
+        let fetchRequest = Flight.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            fetchRequest.predicate = compoundPredicates
+        } else {
+            fetchRequest.predicate = apcIdPredicate
+        }
+
+        fetchRequest.fetchOffset = offset >= 0 ? offset : 0
+        fetchRequest.fetchLimit = limit >= 0 ? limit : 0
 
         let desc1 = NSSortDescriptor.init(key: "startTime", ascending: false)
         fetchRequest.sortDescriptors = [desc1]

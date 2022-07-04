@@ -44,9 +44,15 @@ final class DroneDetailsViewController: UIViewController {
     private var buttonsViewController: DroneDetailsButtonsViewController?
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsViewController {
+    static func instantiate(coordinator: DroneCoordinator,
+                            deviceViewController: DroneDetailsDeviceViewController,
+                            informationViewController: DroneDetailsInformationsViewController,
+                            buttonsViewController: DroneDetailsButtonsViewController) -> DroneDetailsViewController {
         let viewController = StoryboardScene.DroneDetails.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.deviceViewController = deviceViewController
+        viewController.informationViewController = informationViewController
+        viewController.buttonsViewController = buttonsViewController
 
         return viewController
     }
@@ -56,7 +62,6 @@ final class DroneDetailsViewController: UIViewController {
         super.viewDidLoad()
 
         initView()
-        setupOrientationObserver()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -71,10 +76,6 @@ final class DroneDetailsViewController: UIViewController {
 
     override var prefersStatusBarHidden: Bool {
         return true
-    }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -96,21 +97,8 @@ private extension DroneDetailsViewController {
         updateStackView()
     }
 
-    /// Sets up observer for orientation change.
-    func setupOrientationObserver() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateStackView),
-                                               name: UIDevice.orientationDidChangeNotification,
-                                               object: nil)
-    }
-
     /// Sets up view controllers.
     func setupViewControllers() {
-        guard let strongCoordinator = coordinator else { return }
-
-        buttonsViewController = DroneDetailsButtonsViewController.instantiate(coordinator: strongCoordinator)
-        deviceViewController = DroneDetailsDeviceViewController.instantiate(coordinator: strongCoordinator)
-        informationViewController = DroneDetailsInformationsViewController.instantiate(coordinator: strongCoordinator)
         [buttonsViewController, deviceViewController, informationViewController].forEach { viewController in
             guard let strongViewController = viewController else { return }
             addChild(strongViewController)
@@ -118,7 +106,7 @@ private extension DroneDetailsViewController {
     }
 
     /// Updates stack view.
-    @objc func updateStackView() {
+    func updateStackView() {
         guard let infoView = informationViewController?.view,
               let buttonView = buttonsViewController?.view,
               let deviceView = deviceViewController?.view else {

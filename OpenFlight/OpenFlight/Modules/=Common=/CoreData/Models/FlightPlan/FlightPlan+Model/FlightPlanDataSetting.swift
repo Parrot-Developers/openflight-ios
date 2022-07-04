@@ -64,12 +64,16 @@ public enum FlightPlanCaptureMode: String, CaseIterable {
 }
 
 /// Class representing a Data Setting saved on disk.
-public final class FlightPlanDataSetting: Codable {
+public struct FlightPlanDataSetting: Codable {
     // MARK: - Public Properties
     public var polygonPoints: [PolygonPoint] = []
     public var settings: [FlightPlanLightSetting] = []
     public var obstacleAvoidanceActivated: Bool = true
-    public var mavlinkDataFile: Data?
+    public var mavlinkDataFile: Data? {
+        didSet {
+            updateMavlinkCommands()
+        }
+    }
     public var takeoffActions: [Action]
     public var pois: [PoiPoint]
     public var wayPoints: [WayPoint]
@@ -77,7 +81,7 @@ public final class FlightPlanDataSetting: Codable {
     public var shouldContinue: Bool = false
     public var lastPointRth: Bool = true
     public var disconnectionRth: Bool = true
-    public var captureMode: String?
+    public var captureMode: String = FlightPlanCaptureMode.defaultValue.rawValue
     public var captureSettings: [String: String]?
     public var disablePhotoSignature: Bool = false
     public var freeSettings = [String: String]()
@@ -89,19 +93,7 @@ public final class FlightPlanDataSetting: Codable {
     /// Identifier of first media resource captured after the drone has passed the `lastMissionItemExecuted`.
     public var recoveryResourceId: String?
     /// Mavlink
-    private var _mavlinkCommands: [MavlinkStandard.MavlinkCommand]?
-    public var mavlinkCommands: [MavlinkStandard.MavlinkCommand]? {
-        if let commands = _mavlinkCommands {
-            return commands
-        }
-        guard let data = mavlinkDataFile,
-              let str = String(data: data, encoding: .utf8),
-              let commands = try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: str) else {
-            return nil
-        }
-        _mavlinkCommands = commands
-        return commands
-    }
+    public private(set) var mavlinkCommands: [MavlinkStandard.MavlinkCommand]?
 
     // MARK: - Internal Properties
 
@@ -128,9 +120,9 @@ public final class FlightPlanDataSetting: Codable {
             guard let latitude = droneLatitude,
                   let longitude = droneLongitude,
                   let altitude = droneAltitude,
-                  let horizontalAccuracy = droneLocaltionHorizontalAccuracy,
-                  let verticalAccuracy = droneLocaltionVerticalAccuracy,
-                  let timestamp = droneLocaltionTimestamp
+                  let horizontalAccuracy = droneLocationHorizontalAccuracy,
+                  let verticalAccuracy = droneLocationVerticalAccuracy,
+                  let timestamp = droneLocationTimestamp
             else { return nil }
 
             return CLLocation(coordinate: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
@@ -143,9 +135,9 @@ public final class FlightPlanDataSetting: Codable {
             droneLatitude = newValue?.coordinate.latitude
             droneLongitude = newValue?.coordinate.longitude
             droneAltitude = newValue?.altitude
-            droneLocaltionHorizontalAccuracy = newValue?.horizontalAccuracy
-            droneLocaltionVerticalAccuracy = newValue?.verticalAccuracy
-            droneLocaltionTimestamp = newValue?.timestamp
+            droneLocationHorizontalAccuracy = newValue?.horizontalAccuracy
+            droneLocationVerticalAccuracy = newValue?.verticalAccuracy
+            droneLocationTimestamp = newValue?.timestamp
         }
     }
 
@@ -177,9 +169,9 @@ public final class FlightPlanDataSetting: Codable {
     private var droneLatitude: Double?
     private var droneLongitude: Double?
     private var droneAltitude: Double?
-    private var droneLocaltionHorizontalAccuracy: Double?
-    private var droneLocaltionVerticalAccuracy: Double?
-    private var droneLocaltionTimestamp: Date?
+    private var droneLocationHorizontalAccuracy: Double?
+    private var droneLocationVerticalAccuracy: Double?
+    private var droneLocationTimestamp: Date?
 
     // MARK: - Private Enums
     private enum CodingKeys: String, CodingKey {
@@ -217,9 +209,9 @@ public final class FlightPlanDataSetting: Codable {
         case droneLatitude
         case droneLongitude
         case droneAltitude
-        case droneLocaltionHorizontalAccuracy
-        case droneLocaltionVerticalAccuracy
-        case droneLocaltionTimestamp
+        case droneLocationHorizontalAccuracy = "droneLocaltionHorizontalAccuracy"
+        case droneLocationVerticalAccuracy = "droneLocaltionVerticalAccuracy"
+        case droneLocationTimestamp = "droneLocaltionTimestamp"
     }
 
     // MARK: - Init
@@ -233,6 +225,7 @@ public final class FlightPlanDataSetting: Codable {
     ///    - polygonPoints: list of polygon points
     ///    - disablePhotoSignature: whether to disable photo siganture during the
     ///    flight plan
+    ///    - captureMode: the capture mode of flight plan
     ///    - pgyProjectId: the pgy project ID.
     ///    - uploadAttemptCount: the number of pgy pics upload attempts.
     ///    - lastUploadAttempt: the last pgy upload attempt date.
@@ -249,6 +242,7 @@ public final class FlightPlanDataSetting: Codable {
                 pois: [PoiPoint] = [],
                 wayPoints: [WayPoint] = [],
                 disablePhotoSignature: Bool,
+                captureMode: FlightPlanCaptureMode,
                 pgyProjectId: Int64? = nil,
                 uploadAttemptCount: Int16? = nil,
                 lastUploadAttempt: Date? = nil,
@@ -264,6 +258,7 @@ public final class FlightPlanDataSetting: Codable {
         self.polygonPoints = polygonPoints ?? []
         self.mavlinkDataFile = mavlinkDataFile
         self.disablePhotoSignature = disablePhotoSignature
+        self.captureMode = captureMode.rawValue
         self.pgyProjectId = pgyProjectId
         self.uploadAttemptCount = uploadAttemptCount
         self.lastUploadAttempt = lastUploadAttempt
@@ -272,6 +267,20 @@ public final class FlightPlanDataSetting: Codable {
 
         // Set Flight Plan object relations.
         self.setRelations()
+        updateMavlinkCommands()
+    }
+
+    public init(captureMode: FlightPlanCaptureMode) {
+        self.init(product: Drone.Model.anafi2,
+                  settings: [],
+                  freeSettings: [:],
+                  polygonPoints: [],
+                  mavlinkDataFile: nil,
+                  takeoffActions: [],
+                  pois: [],
+                  wayPoints: [],
+                  disablePhotoSignature: false,
+                  captureMode: captureMode)
     }
 
     public init(from decoder: Decoder) throws {
@@ -282,7 +291,7 @@ public final class FlightPlanDataSetting: Codable {
         self.productId = try container.decode(Int.self, forKey: .productId)
         self.settings = try container.decode([FlightPlanLightSetting].self, forKey: .settings)
         self.polygonPoints = try container.decode([PolygonPoint].self, forKey: .polygonPoints)
-        self.captureMode = (try? container.decode(String.self, forKey: .captureMode)) ?? FlightPlanCaptureMode.defaultValue.rawValue
+        self.captureMode = try container.decode(String.self, forKey: .captureMode)
         // Allow non-containing fpExecutions files for old format support.
 
         // Optional properties.
@@ -292,9 +301,9 @@ public final class FlightPlanDataSetting: Codable {
         self.droneLatitude = try? container.decode(Double.self, forKey: .droneLatitude)
         self.droneLongitude = try? container.decode(Double.self, forKey: .droneLongitude)
         self.droneAltitude = try? container.decode(Double.self, forKey: .droneAltitude)
-        self.droneLocaltionHorizontalAccuracy = try? container.decode(Double.self, forKey: .droneLocaltionHorizontalAccuracy)
-        self.droneLocaltionVerticalAccuracy = try? container.decode(Double.self, forKey: .droneLocaltionVerticalAccuracy)
-        self.droneLocaltionTimestamp = try? container.decode(Date.self, forKey: .droneLocaltionTimestamp)
+        self.droneLocationHorizontalAccuracy = try? container.decode(Double.self, forKey: .droneLocationHorizontalAccuracy)
+        self.droneLocationVerticalAccuracy = try? container.decode(Double.self, forKey: .droneLocationVerticalAccuracy)
+        self.droneLocationTimestamp = try? container.decode(Date.self, forKey: .droneLocationTimestamp)
         self.obstacleAvoidanceActivated = (try? container.decode(Bool.self, forKey: .obstacleAvoidanceActivated)) ?? true
         self.mavlinkDataFile = try? container.decode(Data.self, forKey: .mavlinkDataFile)
         self.disablePhotoSignature = try container.decode(Bool.self, forKey: .disablePhotoSignature)
@@ -314,6 +323,7 @@ public final class FlightPlanDataSetting: Codable {
         self.wayPoints = try container.decode([WayPoint].self, forKey: .wayPoints)
         // Set Flight Plan object relations.
         self.setRelations()
+        updateMavlinkCommands()
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -330,9 +340,9 @@ public final class FlightPlanDataSetting: Codable {
         try container.encode(droneLatitude, forKey: .droneLatitude)
         try container.encode(droneLongitude, forKey: .droneLongitude)
         try container.encode(droneAltitude, forKey: .droneAltitude)
-        try container.encode(droneLocaltionHorizontalAccuracy, forKey: .droneLocaltionHorizontalAccuracy)
-        try container.encode(droneLocaltionVerticalAccuracy, forKey: .droneLocaltionVerticalAccuracy)
-        try container.encode(droneLocaltionTimestamp, forKey: .droneLocaltionTimestamp)
+        try container.encode(droneLocationHorizontalAccuracy, forKey: .droneLocationHorizontalAccuracy)
+        try container.encode(droneLocationVerticalAccuracy, forKey: .droneLocationVerticalAccuracy)
+        try container.encode(droneLocationTimestamp, forKey: .droneLocationTimestamp)
         try container.encode(obstacleAvoidanceActivated, forKey: .obstacleAvoidanceActivated)
         try container.encode(mavlinkDataFile, forKey: .mavlinkDataFile)
         try container.encode(disablePhotoSignature, forKey: .disablePhotoSignature)
@@ -350,47 +360,20 @@ public final class FlightPlanDataSetting: Codable {
         try container.encode(recoveryResourceId, forKey: .recoveryResourceId)
     }
 
-    public func copy() -> FlightPlanDataSetting {
-        let copy = FlightPlanDataSetting(product: product,
-                                         settings: settings,
-                                         freeSettings: freeSettings,
-                                         polygonPoints: polygonPoints,
-                                         mavlinkDataFile: mavlinkDataFile,
-                                         takeoffActions: takeoffActions,
-                                         pois: pois,
-                                         wayPoints: wayPoints,
-                                         disablePhotoSignature: disablePhotoSignature,
-                                         pgyProjectId: pgyProjectId,
-                                         uploadAttemptCount: uploadAttemptCount,
-                                         lastUploadAttempt: lastUploadAttempt,
-                                         lastDroneLocation: lastDroneLocation,
-                                         recoveryResourceId: recoveryResourceId)
-        copy.isBuckled = isBuckled
-        copy.shouldContinue = shouldContinue
-        copy.lastPointRth = lastPointRth
-        copy.disconnectionRth = disconnectionRth
-        copy.captureMode = captureMode
-        copy.captureSettings = captureSettings
-        copy.captureModeEnum = captureModeEnum
-        copy.resolution = resolution
-        copy.whiteBalanceMode = whiteBalanceMode
-        copy.framerate = framerate
-        copy.photoResolution = photoResolution
-        copy.exposure = exposure
-        copy.timeLapseCycle = timeLapseCycle
-        copy.gpsLapseDistance = gpsLapseDistance
-        copy.obstacleAvoidanceActivated = obstacleAvoidanceActivated
-        copy.settings = settings
-        copy.freeSettings = freeSettings
-        copy.disablePhotoSignature = disablePhotoSignature
-        copy._mavlinkCommands = _mavlinkCommands
-        copy.coordinate = coordinate
-        copy.pgyProjectId = pgyProjectId
-        copy.uploadAttemptCount = uploadAttemptCount
-        copy.lastUploadAttempt = lastUploadAttempt
-        copy.lastDroneLocation = lastDroneLocation
-        copy.recoveryResourceId = recoveryResourceId
-        return copy
+    /// Creates a deep copy of flight plan data settings.
+    public func copy() -> FlightPlanDataSetting? {
+        FlightPlanDataSetting.instantiate(with: toJSONString())
+    }
+
+    /// Updates the `mavlinkCommands` field using `mavlinkDataFile`.
+    private mutating func updateMavlinkCommands() {
+        if let data = mavlinkDataFile,
+           let str = String(data: data, encoding: .utf8),
+           let commands = try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: str) {
+            self.mavlinkCommands = commands
+        } else {
+            self.mavlinkCommands = nil
+        }
     }
 }
 
@@ -412,10 +395,71 @@ public extension FlightPlanDataSetting {
     }
 }
 
-/// Log helper
-/// Displays the number of way points and pois in the Logs.
+/// Extension for Equatable conformance.
+extension FlightPlanDataSetting: Equatable {
+    public static func == (lhs: FlightPlanDataSetting, rhs: FlightPlanDataSetting) -> Bool {
+        lhs.productId == rhs.productId
+        && lhs.productName == rhs.productName
+        && lhs.settings == rhs.settings
+        && lhs.freeSettings == rhs.freeSettings
+        && lhs.polygonPoints == rhs.polygonPoints
+        && lhs.mavlinkDataFile == rhs.mavlinkDataFile
+        && lhs.pois == rhs.pois
+        && lhs.wayPoints == rhs.wayPoints
+        && lhs.disablePhotoSignature == rhs.disablePhotoSignature
+        && lhs.captureMode == rhs.captureMode
+        && lhs.shouldContinue == rhs.shouldContinue
+        && lhs.longitude == rhs.longitude
+        && lhs.latitude == rhs.latitude
+        && lhs.droneLatitude == rhs.droneLatitude
+        && lhs.droneLongitude == rhs.droneLongitude
+        && lhs.droneAltitude == rhs.droneAltitude
+        && lhs.droneLocationHorizontalAccuracy == rhs.droneLocationHorizontalAccuracy
+        && lhs.droneLocationVerticalAccuracy == rhs.droneLocationVerticalAccuracy
+        && lhs.droneLocationTimestamp == rhs.droneLocationTimestamp
+        && lhs.obstacleAvoidanceActivated == rhs.obstacleAvoidanceActivated
+        && lhs.captureSettings == rhs.captureSettings
+        && lhs.notPropagatedSettings == rhs.notPropagatedSettings
+        && lhs.lastPointRth == rhs.lastPointRth
+        && lhs.disconnectionRth == rhs.disconnectionRth
+        && lhs.takeoffActions == rhs.takeoffActions
+        && lhs.pgyProjectId == rhs.pgyProjectId
+        && lhs.uploadAttemptCount == rhs.uploadAttemptCount
+        && lhs.lastUploadAttempt == rhs.lastUploadAttempt
+        && lhs.recoveryResourceId == rhs.recoveryResourceId
+    }
+}
+
+/// Extension for debug description.
 extension FlightPlanDataSetting: CustomStringConvertible {
     public var description: String {
-        return "WP: \(wayPoints.count), POIs: \(pois.count)"
+        "productName: \(productName), "
+        + "productId: \(productId), "
+        + "settings: \(settings), "
+        + "polygonPoints: \(polygonPoints.count), "
+        + "captureMode: \(captureMode), "
+        + "shouldContinue: \(shouldContinue), "
+        + "longitude: \(longitude?.description ?? "-"), "
+        + "latitude: \(latitude?.description ?? "-"), "
+        + "droneLatitude: \(droneLatitude?.description ?? "-"), "
+        + "droneLongitude: \(droneLongitude?.description ?? "-"), "
+        + "droneAltitude: \(droneAltitude?.description ?? "-"), "
+        + "droneLocationHorizontalAccuracy: \(droneLocationHorizontalAccuracy?.description ?? "-"), "
+        + "droneLocationVerticalAccuracy: \(droneLocationVerticalAccuracy?.description ?? "-"), "
+        + "droneLocationTimestamp: \(droneLocationTimestamp?.description ?? "-"), "
+        + "obstacleAvoidanceActivated: \(obstacleAvoidanceActivated), "
+        + "disablePhotoSignature: \(disablePhotoSignature), "
+        + "captureSettings: \(captureSettings?.description ?? "-"), "
+        + "freeSettings: \(freeSettings), "
+        + "notPropagatedSettings: \(notPropagatedSettings), "
+        + "lastPointRth: \(lastPointRth), "
+        + "disconnectionRth: \(disconnectionRth), "
+        + "takeoffActions: \(takeoffActions), "
+        + "pois: \(pois), "
+        + "wayPoints: \(wayPoints), "
+        + "pgyProjectId: \(pgyProjectId?.description ?? "-"), "
+        + "uploadAttemptCount: \(uploadAttemptCount?.description ?? "-"), "
+        + "lastUploadAttempt: \(lastUploadAttempt?.description ?? "-"), "
+        + "recoveryResourceId: \(recoveryResourceId?.description ?? "-")"
     }
 }

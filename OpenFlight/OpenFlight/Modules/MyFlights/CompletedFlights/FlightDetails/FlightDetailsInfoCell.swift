@@ -121,15 +121,10 @@ extension FlightDetailsInfoCell {
         tagHeaderView.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                          radius: Style.smallCornerRadius)
 
-        dateLabel.text = provider.date.formattedString(dateStyle: .medium,
-                                                       timeStyle: .short,
-                                                       showTimePrefix: false)
-        dateLabel.isHidden = provider.date == Date.distantPast
+        dateLabel.text = provider.date
 
         if !provider.flights.isEmpty {
             summaryView.fill(provider: provider.summaryProvider)
-        } else {
-            summaryView.isHidden = true
         }
     }
 
@@ -146,9 +141,7 @@ extension FlightDetailsInfoCell {
         isEditingName = false
 
         // Date
-        dateLabel.text = model.flight.startTime?.formattedString(dateStyle: .medium,
-                                                                 timeStyle: .short,
-                                                                 showTimePrefix: false)
+        dateLabel.text = model.flight.startTime?.commonFormattedString
 
         // Summary
         summaryView.fill(provider: FlightSummaryProvider(flight: model.flight))

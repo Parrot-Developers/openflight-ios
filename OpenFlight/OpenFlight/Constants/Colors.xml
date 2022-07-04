@@ -1,10 +1,12 @@
 <resources>
     <color name="clear">#00000000</color>
+    <color name="battery_progress_color">#3B302Acc</color>
     <color name="default_bgcolor">#f0eee4</color>
     <color name="disabled_bgcolor>">#C5C4C4</color>
     <color name="default_text_color">#27201c</color>
     <color name="default_text_color_20">#27201c33</color>
     <color name="default_text_color_80">#27201ccc</color>
+    <color name="secondary_text_color">#5e5650</color>
     <color name="disabled_text_color">#27201c80</color>
     <color name="disabled_text_color_2>">#6C6B6A</color>
     <color name="shadow_color">#713521</color>
@@ -42,8 +44,10 @@
     <color name="error_color">#e34f45</color>
     <color name="disabled_error_color">#e34f454d</color>
     <color name="warning_color">#ff7145</color>
+    <color name="warning_color60">#ff714599</color>
     <color name="disabled_warning_color">#ff714533</color>
     <color name="flight_completed_color">#00ff8aff</color>
+    <color name="flight_completed_color60">#00ff8a99</color>
     <color name="takeoff_indicator_color">#00ff8a33</color>
     <color name="landing_indicator_color">#ff9b0080</color>
     <color name="yellow_sea">#ffdc02</color>

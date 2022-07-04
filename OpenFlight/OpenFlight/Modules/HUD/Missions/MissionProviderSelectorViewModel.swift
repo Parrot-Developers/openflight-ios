@@ -31,6 +31,10 @@ import Foundation
 import Combine
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "MissionProviderSelectorViewModel")
+}
+
 /// Delegate for mission provider selector VM
 protocol MissionProviderSelectorViewModelDelegate: AnyObject {
 
@@ -41,7 +45,10 @@ protocol MissionProviderSelectorViewModelDelegate: AnyObject {
 
 }
 
-/// View Model for MissionProviderSelectorViewController
+/// View Model for the MissionProviderSelectorViewController.
+///
+/// - Manages the missions launcher menu in the hud.
+/// - Listens to drone status and updates the current active mission.
 public class MissionProviderSelectorViewModel {
 
     private var cancellables = Set<AnyCancellable>()
@@ -92,7 +99,6 @@ public class MissionProviderSelectorViewModel {
 private extension MissionProviderSelectorViewModel {
 
     private func selectMission(withProvider provider: MissionProvider) {
-        currentMissionManager.storeLastHudSelection(provider: provider, mode: provider.mission.defaultMode)
         currentMissionManager.set(provider: provider)
         currentMissionManager.set(mode: provider.mission.defaultMode)
         ensureSelectItem(forProvider: provider)
@@ -114,6 +120,7 @@ private extension MissionProviderSelectorViewModel {
     /// Switch to a presentable mission if the current is not
     func checkIfCurrentMissionIsPresentable() {
         if !missionsManager.isPresentable(currentMissionManager.provider) {
+            ULog.w(.tag, "Current mission is not presentable")
             // then select the default mission
             selectMission(withProvider: missionsStore.defaultMission)
         }
@@ -144,13 +151,20 @@ private extension MissionProviderSelectorViewModel {
                 listenMissionManager(drone: drone)
             }
             .store(in: &cancellables)
-    }
+
+        // Listen current mission manager changes to update the selected mission.
+        currentMissionManager.providerPublisher
+            .sink { [weak self] in self?.ensureSelectItem(forProvider: $0) }
+            .store(in: &cancellables)
+
+     }
 
     /// Listen mission state, and redirect to current one if necessary.
     ///
     /// - Note: it will activate the current mission if there is no redirection.
     func listenMissionState(drone: Drone?) {
         guard let drone = drone else { return }
+        // find the current active mission in the interface
         var missionToPush: MissionItemCellModel?
         for mission in currentItems {
             let priority = mission.provider.mission.defaultMode.missionActivationModel.getPriority()
@@ -168,23 +182,29 @@ private extension MissionProviderSelectorViewModel {
         }
         if let mission = missionToPush {
             if mission.provider.mission.defaultMode.missionActivationModel.getPriority() > .none {
+                // if the drone as an active mission with priority
+                // select this mission on the hud
+                ULog.d(.tag, "Mission to push priority > .none")
                 selectMission(withProvider: mission.provider)
                 delegate?.showBottomBar()
                 Services.hub.ui.hudTopBarService.allowTopBarDisplay()
             } else {
+                // no active priority mission on the drone
+                // search any active mission
                 let missionManager = drone.getPeripheral(Peripherals.missionManager)
                 if let activeMissionResult = missionManager?.missions.filter({ $0.value.state == .active }),
                     !activeMissionResult.isEmpty, let activeMission = activeMissionResult.first {
                     if activeMission.key == DefaultMissionSignature().missionUID {
-                        // Redirection to default menu if the drone is already flying
-                        if drone.getInstrument(Instruments.flyingIndicators)?.state != .landed {
+                        let missionActivationModel = currentMissionManager.provider.mission.defaultMode.missionActivationModel
+                        // start mission if it can be started,
+                        // else redirection to default menu
+                        if missionActivationModel.canStartMission() {
+                            missionActivationModel.startMission()
+                        } else {
                             if let missionItem = currentItems.first(where: { $0.provider.signature.missionUID == DefaultMissionSignature().missionUID }) {
                                 selectMission(withProvider: missionItem.provider)
                             }
-                        } else {
-                            currentMissionManager.provider.mission.defaultMode.missionActivationModel.startMission()
                         }
-
                     }
                 }
             }
@@ -217,6 +237,7 @@ private extension MissionProviderSelectorViewModel {
                 // redirect to current mission activated
                 if let mission = missionManager.missions.first(where: { $0.value.state == .active}) {
                     if let missionItem = currentItems.first(where: { $0.provider.signature.missionUID == mission.value.uid }) {
+                        ULog.d(.tag, "Peripherals.missionManager: Mission uid: '\(mission.value.uid)'")
                         selectMission(withProvider: missionItem.provider)
                     }
                 }

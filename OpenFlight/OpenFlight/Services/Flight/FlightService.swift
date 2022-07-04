@@ -87,10 +87,12 @@ public struct AllFlightsSummary {
 }
 
 public protocol FlightService: AnyObject {
-
+    var numberOfFlightsPerPage: Int { get }
     var allFlightsSummary: AnyPublisher<AllFlightsSummary, Never> { get }
     var flightsDidChangePublisher: AnyPublisher<Void, Never> { get }
     func getAllFlights() -> [FlightModel]
+    func getFlights(offset: Int, limit: Int) -> [FlightModel]
+    func getFlights(limit: Int) -> [FlightModel]
     func getAllFlightsCount() -> Int
     func update(flight: FlightModel, title: String) -> FlightModel
     func delete(flight: FlightModel)
@@ -101,7 +103,7 @@ public protocol FlightService: AnyObject {
     /// Gutma from data. Bypasses cache, don't use except on first retrieval from drone
     /// - Parameter data: gutma's data
     func gutma(data: Data) -> Gutma?
-    func handleFlightsUnknownLocationTitle() async
+    func handleFlightsUnknownLocationTitle(inFlights: [FlightModel]) async
 }
 
 open class FlightServiceImpl {
@@ -112,10 +114,10 @@ open class FlightServiceImpl {
     private var thumbnailsRequests = [String: [((UIImage?) -> Void)]]()
     private var flightsDidChangeSubject = PassthroughSubject<Void, Never>()
     private var allFlightSummarySubject = CurrentValueSubject<AllFlightsSummary, Never>(AllFlightsSummary())
-    private var allFlightsSubject = CurrentValueSubject<[FlightModel], Never>([])
     private var cancellables = Set<AnyCancellable>()
     private var gutmaCache = NSCache<NSString, Gutma>()
     private let flightPlanRunManager: FlightPlanRunManager
+    public var numberOfFlightsPerPage: Int = 100
 
     init(repo: FlightRepository,
          fpFlightRepo: FlightPlanFlightsRepository,
@@ -176,7 +178,7 @@ private extension FlightServiceImpl {
         static let thumbnailSize: CGSize = CGSize(width: 180.0, height: 160.0)
     }
 
-    func computeThumbnail(uuid: String, center: CLLocationCoordinate2D) {
+    func computeThumbnail(forFlight flight: FlightModel, center: CLLocationCoordinate2D) {
 
         let mapSnapshotterOptions = MKMapSnapshotter.Options()
         let region = MKCoordinateRegion(center: center,
@@ -192,13 +194,13 @@ private extension FlightServiceImpl {
             let image = snapshot?.image
             let thumbnail = ThumbnailModel(apcId: currentUser.apcId,
                                            uuid: UUID().uuidString,
-                                           flightUuid: uuid,
+                                           flightUuid: flight.uuid,
                                            thumbnailImage: image)
+            var flight = flight
+            flight.thumbnail = thumbnail
             // Flight's thumbnail is not synced with the Cloud.
             // `latestLocalModificationDate` should not be set
-            thumbnailRepo.saveOrUpdateThumbnail(thumbnail, byUserUpdate: false, toSynchro: false)
-            thumbnailsRequests[uuid]?.forEach { $0(image) }
-            thumbnailsRequests[uuid] = []
+            repo.saveOrUpdateFlight(flight, byUserUpdate: false, toSynchro: false)
         }
     }
 
@@ -252,6 +254,14 @@ extension FlightServiceImpl: FlightService {
         repo.getAllFlightsCount()
     }
 
+    public func getFlights(offset: Int, limit: Int) -> [FlightModel] {
+        repo.getFlights(offset: offset, limit: limit)
+    }
+
+    public func getFlights(limit: Int) -> [FlightModel] {
+        repo.getFlights(offset: 0, limit: limit)
+    }
+
     public func refreshAllFlightsSummary() {
         let allFlight = repo.getAllFlightLites()
         var duration: Double = 0
@@ -301,7 +311,7 @@ extension FlightServiceImpl: FlightService {
     }
 
     public func thumbnail(flight: FlightModel, _ completion: @escaping (UIImage?) -> Void) {
-        if let thumbnail = thumbnailRepo.getThumbnail(withFlightUuid: flight.uuid) {
+        if let thumbnail = flight.thumbnail {
             completion(thumbnail.thumbnailImage)
             return
         }
@@ -309,7 +319,7 @@ extension FlightServiceImpl: FlightService {
         thumbnailsRequests[flight.uuid] = currentRequests + [completion]
         if currentRequests.isEmpty {
             let center = CLLocationCoordinate2D(latitude: flight.startLatitude, longitude: flight.startLongitude)
-            computeThumbnail(uuid: flight.uuid, center: center)
+            computeThumbnail(forFlight: flight, center: center)
         }
     }
 
@@ -343,9 +353,9 @@ extension FlightServiceImpl: FlightService {
         return nil
     }
 
-    public func handleFlightsUnknownLocationTitle() async {
+    public func handleFlightsUnknownLocationTitle(inFlights: [FlightModel]) async {
         var modifiedFlights: [FlightModel] = []
-        let flightsWithUnknownLocation = allFlightsSubject.value.filter({ flight in
+        let flightsWithUnknownLocation = inFlights.filter({ flight in
             let flightTitle = flight.title ?? ""
             return (flightTitle.isEmpty && flight.startLatitude != 0 && flight.startLongitude != 0)
         })

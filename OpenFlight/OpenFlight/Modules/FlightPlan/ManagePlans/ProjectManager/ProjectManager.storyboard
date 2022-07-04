@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -61,7 +60,7 @@
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                 </subviews>
-                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="bottom" secondItem="tGV-o3-DUO" secondAttribute="bottom" id="5jX-96-Vvq"/>
                                                     <constraint firstItem="tGV-o3-DUO" firstAttribute="leading" secondItem="h3H-6w-IsG" secondAttribute="leading" id="7sM-7U-B8F"/>
@@ -113,8 +112,8 @@
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="juS-qz-dQt">
                                                                 <rect key="frame" x="0.0" y="0.0" width="180" height="34.5"/>
                                                                 <subviews>
-                                                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="C8I-qI-vWH" customClass="EditingNameUITextField" customModule="OpenFlight" customModuleProvider="target">
-                                                                        <rect key="frame" x="10" y="8" width="160" height="18.5"/>
+                                                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="C8I-qI-vWH" customClass="ProjectNameTextField" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="10" y="8" width="170" height="18.5"/>
                                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         <color key="tintColor" name="default_text_color"/>
                                                                         <color key="textColor" name="default_text_color"/>
@@ -132,7 +131,7 @@
                                                                 <constraints>
                                                                     <constraint firstItem="C8I-qI-vWH" firstAttribute="leading" secondItem="juS-qz-dQt" secondAttribute="leading" constant="10" id="48x-Ji-u0q"/>
                                                                     <constraint firstItem="C8I-qI-vWH" firstAttribute="top" secondItem="juS-qz-dQt" secondAttribute="top" constant="8" id="ESe-Wm-wgL"/>
-                                                                    <constraint firstAttribute="trailing" secondItem="C8I-qI-vWH" secondAttribute="trailing" constant="10" id="PxF-fo-7Sy"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="C8I-qI-vWH" secondAttribute="trailing" id="PxF-fo-7Sy"/>
                                                                     <constraint firstAttribute="bottom" secondItem="C8I-qI-vWH" secondAttribute="bottom" constant="8" id="tgB-Oc-mkC"/>
                                                                 </constraints>
                                                             </view>
@@ -246,8 +245,5 @@
         <namedColor name="disabled_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
     </resources>
 </document>

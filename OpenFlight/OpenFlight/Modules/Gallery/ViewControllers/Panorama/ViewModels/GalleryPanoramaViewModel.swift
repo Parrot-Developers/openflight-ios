@@ -30,6 +30,10 @@
 import GroundSdk
 import Combine
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "GalleryPanoramaViewModel")
+}
+
 // MARK: - Internal Enums
 /// Stores possible panorama qualities.
 enum PanoramaQuality {
@@ -100,7 +104,8 @@ final class GalleryPanoramaViewModel: NSObject {
     }
     private var isFullProcessComplete: Bool {
         galleryMediaViewModel?.mediaBrowsingViewModel.panoramaGenerationStatus != .success
-            && generationStepModels
+        && galleryMediaViewModel?.mediaBrowsingViewModel.panoramaGenerationStatus != .inactive
+        && generationStepModels
             .filter({ $0.status == .success })
             .count == generationStepModels.count
     }
@@ -123,6 +128,12 @@ final class GalleryPanoramaViewModel: NSObject {
         setupSteps()
         listenToDownload()
         listenToMedia()
+
+        // debug logs
+        $generationStepModels.sink { steps in
+            ULog.i(.tag, "Generation steps: \(steps)")
+        }
+        .store(in: &cancellables)
     }
 
     /// Sets up panorama generation steps according to sourceType/mediaType.
@@ -172,10 +183,12 @@ final class GalleryPanoramaViewModel: NSObject {
 // MARK: - VC Events
 extension GalleryPanoramaViewModel {
     func startProcessAsked() {
+        ULog.i(.tag, "Start")
         activateCurrentStep()
     }
 
     func cancelButtonTapped() {
+        ULog.i(.tag, "Cancel")
         cancelAllProcesses()
         dismiss()
     }
@@ -185,7 +198,8 @@ extension GalleryPanoramaViewModel {
 private extension GalleryPanoramaViewModel {
     func listenToDownload() {
         // Listen to drone's memory download state changes.
-        guard let galleryMediaViewModel = galleryMediaViewModel else { return }
+        guard let galleryMediaViewModel = galleryMediaViewModel,
+        galleryMediaViewModel.sourceType.isDroneSource else { return }
         galleryMediaViewModel.$downloadProgress.compactMap({ $0 })
             .combineLatest(galleryMediaViewModel.$downloadStatus.compactMap({ $0 }))
             .sink { [unowned self] (progress, status) in
@@ -272,6 +286,9 @@ private extension GalleryPanoramaViewModel {
     func dismiss(delay: TimeInterval = Style.shortAnimationDuration) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             self.galleryMediaViewModel?.mediaBrowsingViewModel.didUpdatePanoramaGeneration(.inactive)
+            if let source = self.media?.source {
+                self.galleryMediaViewModel?.refreshMedias(source: source)
+            }
             self.coordinator?.dismissPanoramaGenerationScreen()
             self.generationStepModels.removeAll()
         }
@@ -285,11 +302,16 @@ private extension GalleryPanoramaViewModel {
             return
         }
 
-        if status == .error {
-            // Keep current progress when .failure rises.
-            // Update status and exit.
+        switch status {
+        case .error:
+            ULog.e(.tag, "Panorama download failed")
             updateCurrentStep(with: .failure)
             return
+        case .running:
+            guard generationStepModels[currentStepIndex].status == .failure else { fallthrough }
+            updateCurrentStep(with: .active)
+        default:
+            break
         }
 
         updateGlobalProgress(Float(progress))
@@ -327,6 +349,7 @@ private extension GalleryPanoramaViewModel {
               let mediaUrls = mediaFromDevice.urls,
               let mediaFolderPath = mediaFromDevice.folderPath,
               let mainMediaUrl = mediaFromDevice.url?.lastPathComponent else {
+            ULog.e(.tag, "Failed to start panorama generation: missing preconditions")
             updateCurrentStep(with: .failure)
             return
         }
@@ -374,6 +397,7 @@ private extension GalleryPanoramaViewModel {
     }
 
     func panoramaGenerationCompletion(status: PhotoPanoProcessingStatus) {
+        ULog.i(.tag, "Panorama generation status: \(status)")
         let isSuccess = status == .success
 
         guard isSuccess
@@ -389,7 +413,10 @@ private extension GalleryPanoramaViewModel {
         }
 
         terminatePanoramaGeneration()
-        updateCurrentStep(with: isSuccess ? .success : .failure, activateNextStep: isSuccess)
+        if status != .cancelled {
+            // Do not show the failure status if the process has been cancelled
+            updateCurrentStep(with: isSuccess ? .success : .failure, activateNextStep: isSuccess)
+        }
     }
 
     func terminatePanoramaGeneration() {
@@ -405,6 +432,7 @@ private extension GalleryPanoramaViewModel {
         guard let outputUrl = outputUrl,
               let galleryMediaViewModel = galleryMediaViewModel,
               let mediaItem = media?.mainMediaItem else {
+            ULog.e(.tag, "Failed to start panorama upload: missing preconditions")
             updateCurrentStep(with: .failure)
             return
         }
@@ -423,14 +451,17 @@ private extension GalleryPanoramaViewModel {
         guard isUploadingActiveStep else { return }
 
         guard !progress.isNaN else {
+            ULog.e(.tag, "Panorama upload: invalid progress value")
             updateCurrentStep(with: .failure)
             return
         }
 
         switch status {
         case .complete:
+            ULog.i(.tag, "Panorama upload completed with success")
             updateCurrentStep(with: .success)
         case .error:
+            ULog.e(.tag, "Panorama upload failed")
             updateCurrentStep(with: .failure)
         default:
             updateGlobalProgress(progress)

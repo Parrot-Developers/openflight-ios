@@ -67,6 +67,8 @@ final class SettingValueRulerCollectionViewCell: UICollectionViewCell, NibReusab
         case .speed:
             valueLabel.text = UnitHelper.stringSpeedWithDouble(value,
                                                                spacing: false)
+        case .noUnitInt:
+            valueLabel.text = String(format: "%.0f", value)
         default:
             valueLabel.text = "\(value)" + unit.unit
         }

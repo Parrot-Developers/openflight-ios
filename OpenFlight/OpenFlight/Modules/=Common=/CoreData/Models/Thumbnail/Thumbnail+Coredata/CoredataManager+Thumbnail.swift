@@ -90,11 +90,18 @@ public protocol ThumbnailRepository: AnyObject {
     /// - Returns:  List of ThumbnailModels
     func getAllModifiedThumbnails() -> [ThumbnailModel]
 
+    /// Get thumbnails that are considered odd
+    ///     - thumbnails that has no flight or flight plan associated
+    /// - Parameter completion: the completion closure when finished
+    func getOddThumbnails(_ completion: @escaping (([ThumbnailModel]) -> Void))
+
     // MARK: __ Delete
-    /// Delete Thumbnail if parrotCloudId is 0 (doesn't exist on server)
-    ///  If ParrotCloudId is other than 0, then it is flagged to be deleted later on
-    /// - Parameters uuid: Thumbnail's UUID to delete
-    func deleteOrFlagToDeleteThumbnail(withUuid uuid: String)
+    /// Delete Thumbnail if cloudId is 0 (doesn't exist on server)
+    ///  If cloudId is other than 0, then it is flagged to be deleted later on
+    /// - Parameters
+    ///     - uuids: List of uuid to search
+    ///     - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteOrFlagToDeleteThumbnails(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?)
 
     /// Delete from CoreData the Thumbnail with specified `uuid`.
     /// - Parameters:
@@ -227,22 +234,35 @@ extension CoreDataServiceImpl: ThumbnailRepository {
         return getThumbnailsCD(withQuery: "latestLocalModificationDate != nil").map({ $0.model() })
     }
 
+    public func getOddThumbnails(_ completion: @escaping (([ThumbnailModel]) -> Void)) {
+        getOddThumbnailsCD { thumbnails in
+            let thumbnailModels = thumbnails.compactMap({ $0.model() })
+            DispatchQueue.main.async {
+                completion(thumbnailModels)
+            }
+        }
+    }
+
     // MARK: __ Delete
-    public func deleteOrFlagToDeleteThumbnail(withUuid uuid: String) {
+    public func deleteOrFlagToDeleteThumbnails(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?) {
         var modifDate: Date?
 
         performAndSave({ [unowned self] context in
-            guard let thumbnail = getThumbnailCD(withUuid: uuid) else {
+            let thumbnails = getThumbnailsCD(withUuids: uuids)
+            guard !thumbnails.isEmpty else {
+                completion?(false)
                 return false
             }
 
-            if thumbnail.cloudId == 0 {
-                context.delete(thumbnail)
-            } else {
-                modifDate = Date()
-                thumbnail.latestLocalModificationDate = modifDate
-                thumbnail.isLocalDeleted = true
-            }
+            thumbnails.forEach({
+                if $0.cloudId == 0 {
+                    context.delete($0)
+                } else {
+                    modifDate = Date()
+                    $0.latestLocalModificationDate = modifDate
+                    $0.isLocalDeleted = true
+                }
+            })
 
             return true
         }, { [unowned self] result in
@@ -253,8 +273,11 @@ extension CoreDataServiceImpl: ThumbnailRepository {
                 }
 
                 thumbnailsDidChangeSubject.send()
+                completion?(true)
             case .failure(let error):
-                ULog.e(.dataModelTag, "Error deleteThumbnail(fromThumbnailModel:) with UUID: \(uuid) - error: \(error.localizedDescription)")
+                ULog.e(.dataModelTag,
+                       "Error deleteThumbnail(fromThumbnailModel:) with UUID: \(uuids.joined(separator: ", ")) - error: \(error.localizedDescription)")
+                completion?(false)
             }
         })
     }
@@ -440,5 +463,20 @@ internal extension CoreDataServiceImpl {
 
     func getThumbnailsCD(withQuery query: String) -> [Thumbnail] {
         objects(withQuery: query)
+    }
+
+    func getOddThumbnailsCD(_ completion: @escaping (([Thumbnail]) -> Void)) {
+        let fetchRequest = Thumbnail.fetchRequest()
+
+        let noFlightPredicate = NSPredicate(format: "SUBQUERY(ofFlight, $flight, $flight.thumbnail.uuid == uuid).@count == 0")
+        let noFlightPlanPredicate = NSPredicate(format: "SUBQUERY(ofFlightPlan, $fp, $fp.thumbnail.uuid == uuid).@count == 0")
+        let subPredicateList: [NSPredicate] = [noFlightPlanPredicate, noFlightPredicate]
+
+        fetchRequest.predicate = NSCompoundPredicate.init(type: .and, subpredicates: subPredicateList)
+
+        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: true)
+        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
+
+        return fetch(request: fetchRequest, completion: completion)
     }
 }

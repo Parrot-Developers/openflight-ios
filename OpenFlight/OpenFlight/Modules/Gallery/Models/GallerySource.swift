@@ -115,10 +115,31 @@ enum GallerySourceType: CaseIterable {
             return ""
         }
     }
+
+    var isDroneSource: Bool {
+        switch self {
+        case .droneInternal, .droneSdCard:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+
+/// Extension for debug description.
+extension GallerySourceType: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .droneInternal: return "droneInternal"
+        case .droneSdCard: return "droneSdCard"
+        case .mobileDevice: return "mobileDevice"
+        case .unknown: return "unknown"
+        }
+    }
 }
 
 /// Gallery source model.
-
 struct GallerySource {
     var type: GallerySourceType
     var storageUsed: Double

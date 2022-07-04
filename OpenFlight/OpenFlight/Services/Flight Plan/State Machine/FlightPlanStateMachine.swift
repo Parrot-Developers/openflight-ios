@@ -102,7 +102,7 @@ public protocol FlightPlanStateMachine {
     ///   - flightPlan: the flight plan to update. May be an old version.
     ///   - updateBlock: the block performing the update
     @discardableResult
-    func updateSafely(flightPlan: FlightPlanModel, _ updateBlock: (FlightPlanModel) -> Void) -> FlightPlanModel
+    func updateSafely(flightPlan: FlightPlanModel, _ updateBlock: (FlightPlanModel) -> FlightPlanModel) -> FlightPlanModel
 
     /// Publisher gives the current step of the state machine
     ///
@@ -146,6 +146,15 @@ public protocol FlightPlanStateMachine {
 
     /// When a flight plan finish but the app was disconnected, we should at least update its state
     func handleFinishedOfflineFlightPlan(flightPlan: FlightPlanModel)
+
+    /// Update the Cloud Synchro Watcher.
+    ///
+    /// - Parameter cloudSynchroWatcher: the cloudSynchroWatcher to update
+    ///
+    /// - Note:
+    ///     If the cloud synchro watcher service is not yet instatiated during this service's init,
+    ///     this method can be called to update and configure his watcher.
+    func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?)
 }
 
 open class FlightPlanStateMachineImpl {
@@ -157,6 +166,9 @@ open class FlightPlanStateMachineImpl {
     public let mavlinkSender: MavlinkDroneSender
     public let startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher
     public let edition: FlightPlanEditionService
+    public var cloudSynchroWatcher: CloudSynchroWatcher?
+
+    private var synchroWatcherSubscriber: AnyCancellable?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -168,7 +180,8 @@ open class FlightPlanStateMachineImpl {
                 mavlinkGenerator: MavlinkGenerator,
                 mavlinkSender: MavlinkDroneSender,
                 startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher,
-                edition: FlightPlanEditionService) {
+                edition: FlightPlanEditionService,
+                cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.manager = manager
         self.projectManager = projectManager
         self.runManager = runManager
@@ -181,6 +194,12 @@ open class FlightPlanStateMachineImpl {
             ULog.i(.tag, "Publishing state \($0)")
         }
         .store(in: &cancellables)
+        updateCloudSynchroWatcher(cloudSynchroWatcher)
+    }
+
+    open func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?) {
+        self.cloudSynchroWatcher = cloudSynchroWatcher
+        listenCloudStateUpdates()
     }
 
     open var currentFlightPlan: FlightPlanModel? {
@@ -208,7 +227,7 @@ open class FlightPlanStateMachineImpl {
 
     public func flightPlanRunDidTimeout(flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Timeout '\(flightPlan.uuid)' resetting everything")
-        open(flightPlan: flightPlan)
+        flightPlanRunDidFinish(flightPlan: flightPlan, completed: false)
     }
 
     public func flightPlanRunDidBegin(flightPlan: FlightPlanModel) {
@@ -253,12 +272,13 @@ private extension FlightPlanStateMachineImpl {
                                           edition: edition)
         let resumableState = ResumableState(delegate: self, startAvailabilityWatcher: startAvailabilityWatcher, edition: edition)
         let startedNotFlyingState = StartedNotFlyingState(delegate: self,
+                                                          flightPlanManager: manager,
+                                                          projectManager: projectManager,
                                                           mavlinkGenerator: mavlinkGenerator,
                                                           mavlinkSender: mavlinkSender)
         let startedFlyingState = StartedFlyingState(delegate: self,
                                                     runManager: runManager,
-                                                    flightPlanManager: manager,
-                                                    projectManager: projectManager)
+                                                    flightPlanManager: manager)
         let endState = EndedState(delegate: self, flightPlanManager: manager)
 
         return [idleState,
@@ -308,14 +328,17 @@ private extension FlightPlanStateMachineImpl {
         enter(EditableState.self)
     }
 
-    func propagateUpdatedFlightPlan(_ flightPlan: FlightPlanModel) {
-        ULog.i(.tag, "Propagate updated '\(flightPlan.uuid)' state '\(statePrivate.value)'")
+    func propagateUpdatedFlightPlan(_ flightPlan: FlightPlanModel, propagateToEditionService: Bool = true) {
+        ULog.i(.tag, "Propagate updated '\(flightPlan.uuid)' state '\(statePrivate.value)', propagateToEditionService: \(propagateToEditionService)")
         ULog.d(.tag, "FP propagated: '\(flightPlan)'")
         switch statePrivate.value {
         case .machineStarted, .initialized:
             break
         case .editable(_, startAvailability: let startAvailability):
-            stateMachine.state(forClass: EditableState.self)?.flightPlanWasUpdated(flightPlan)
+            // During editing, to avoid unwanted behavior such as a keyboard dismissal,
+            // we don't want to propagate the updated flight plan to the edition service.
+            stateMachine.state(forClass: EditableState.self)?.flightPlanWasUpdated(flightPlan,
+                                                                                   propagateToEditionService: propagateToEditionService)
             statePrivate.value = .editable(flightPlan, startAvailability: startAvailability)
         case .resumable(_, startAvailability: let startAvailability):
             stateMachine.state(forClass: ResumableState.self)?.flightPlanWasUpdated(flightPlan)
@@ -330,6 +353,24 @@ private extension FlightPlanStateMachineImpl {
             stateMachine.state(forClass: EndedState.self)?.flightPlanWasUpdated(flightPlan)
             statePrivate.value = .end(flightPlan)
         }
+    }
+
+    /// Listen when a Flight Plan has been updated by a server response.
+    func listenCloudStateUpdates() {
+        synchroWatcherSubscriber?.cancel()
+        synchroWatcherSubscriber = cloudSynchroWatcher?.flightPlanCloudStateUpdatedPublisher?
+            .receive(on: RunLoop.main)
+            .sink { [unowned self] in
+                // Ensure the updated FP is the current state machine's one.
+                guard var updatedFlightPlan = currentFlightPlan,
+                      updatedFlightPlan.uuid == $0.uuid else { return }
+                // Update the Cloud sate.
+                updatedFlightPlan.updateCloudState(with: $0)
+                // Propagate it.
+                // The Edition Service is responsible to update the Cloud state on its side.
+                propagateUpdatedFlightPlan(updatedFlightPlan,
+                                           propagateToEditionService: false)
+            }
     }
 }
 
@@ -354,6 +395,14 @@ extension FlightPlanStateMachineImpl: InitializingStateDelegate {
 extension FlightPlanStateMachineImpl: ResumableStateDelegate {
     public func flightPlanIsResumable(_ flightPlan: FlightPlanModel, startAvailability: FlightPlanStartAvailability) {
         ULog.i(.tag, "In resumable state '\(flightPlan.uuid)' with availability \(startAvailability)")
+        if case .unavailable = startAvailability {
+            // FP is unavailable => we do not want to switch to resumable state, as FP can
+            // not be actually resumed yet. Spec is to switch back to editable state.
+            reset()
+            goToEditableState(flightPlan: flightPlan)
+            return
+        }
+
         statePrivate.send(.resumable(flightPlan, startAvailability: startAvailability))
     }
 }
@@ -398,13 +447,22 @@ extension FlightPlanStateMachineImpl: StartedNotFlyingStateDelegate {
 }
 
 extension FlightPlanStateMachineImpl: StartedFlyingStateDelegate {
+    open func flightPlanRunDidUpdate(flightPlan: FlightPlanModel) {
+        ULog.i(.tag, "flightPlanRunDidUpdate for '\(flightPlan.uuid)', lastMissionItemExecuted : \(flightPlan.lastMissionItemExecuted)")
+        statePrivate.send(.flying(flightPlan))
+    }
 }
 
 extension FlightPlanStateMachineImpl: EndedStateDelegate {
     public func flightPlanEnded(flightPlan: FlightPlanModel, completed: Bool) {
         ULog.i(.tag, "Ended '\(flightPlan.uuid)'")
         statePrivate.send(.end(flightPlan))
-        open(flightPlan: flightPlan)
+        // Entering `EndedState` means FP is stopped (not paused).
+        // When stopped, we must load the project's editable FP to be able to start an new exacution.
+        // 1 - Reset state machine.
+        // 2 - Open Editable FP.
+        reset()
+        goToEditableState(flightPlan: flightPlan)
     }
 }
 
@@ -420,29 +478,40 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
             .eraseToAnyPublisher()
     }
 
-    public func updateSafely(flightPlan: FlightPlanModel, _ updateBlock: (FlightPlanModel) -> Void) -> FlightPlanModel {
+    public func updateSafely(flightPlan: FlightPlanModel, _ updateBlock: (FlightPlanModel) -> FlightPlanModel) -> FlightPlanModel {
         ULog.d(.tag, "update safely '\(flightPlan.uuid)'")
+        // If it's not the current FP, get the Core Data version.
         guard flightPlan.uuid == currentFlightPlan?.uuid else {
             let flightPlan = manager.flightPlan(uuid: flightPlan.uuid) ?? flightPlan
-            updateBlock(flightPlan)
-            // /!\ the FP storing in core data is async.
-            // We can get an old non-updated version.
-            return manager.flightPlan(uuid: flightPlan.uuid) ?? flightPlan
+            return  updateBlock(flightPlan)
         }
         let flightPlan = currentFlightPlan ?? flightPlan
-        updateBlock(flightPlan)
-        if let flightPlan = manager.flightPlan(uuid: flightPlan.uuid) {
-            propagateUpdatedFlightPlan(flightPlan)
-            return flightPlan
-        }
-        return flightPlan
+        let updatedFlightPlan = updateBlock(flightPlan)
+        propagateUpdatedFlightPlan(updatedFlightPlan)
+        return updatedFlightPlan
     }
 
     // MARK: - Initializing state
 
     public func open(flightPlan: FlightPlanModel) {
         ULog.i(.tag, "COMMAND: open '\(flightPlan.uuid)'")
+        // Handling opening an FP while an execution is ongoing.
+        if case .flying(let flyingFlightPlan) = statePrivate.value {
+            if flyingFlightPlan.uuid == flightPlan.uuid {
+                // Prevent to open a Flight Plan which is already running.
+                // Resetting it will ask Run Manager to stop and reopen it with an updated FP.
+                ULog.i(.tag, "Trying to open an already running flight plan '\(flightPlan.uuid)'")
+                reset()
+                return
+            } else {
+                // In case of another FP is trying to be opened,
+                // stop the current playing flight plan before opening the new one.
+                stop()
+            }
+        }
+        // In all cases, perform a reset of the state machine to start from a clean state.
         reset()
+        // Ensure we are in a state from we can enter in InitializingState.
         guard stateMachine.canEnterState(InitializingState.self),
               let initialState = stateMachine.state(forClass: InitializingState.self) else { return }
         statePrivate.value = .initialized
@@ -528,6 +597,9 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
             }
             if let startedFlying = currentState as? StartedFlyingState {
                 startedFlying.stop()
+                // `StartedFlyingState.stop()` will stop the FP then reopen/reset it.
+                // We should not continue to prevent overwritting the state with Idle.
+                return
             }
         } else {
             ULog.i(.tag, "COMMAND: reset currentState: 'nil'"
@@ -549,17 +621,29 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
     public func catchUp(flightPlan: FlightPlanModel, lastMissionItemExecuted: Int,
                         recoveryResourceId: String?, runningTime: TimeInterval) {
         ULog.i(.tag, "COMMAND: catchUp on '\(flightPlan.uuid)' last item: \(lastMissionItemExecuted) recoveryResourceId: \(recoveryResourceId ?? "nil")")
+        // If the state machine is already in the correct state (`.flying` the FP catched up),
+        // we just have to update the Run Manager with the up to date information.
         if case let .flying(stateFp) = statePrivate.value, stateFp.uuid == flightPlan.uuid {
             // Run manager should catch up on latest validated waypoint and running time
             updateRun(lastMissionItemExecuted: lastMissionItemExecuted, recoveryResourceId: recoveryResourceId, runningTime: runningTime)
             return
         }
+        // Start by resetting the state machine.
         reset()
+        // Ensure catched FP has valid mavlink commands.
         guard let commands = flightPlan.dataSetting?.mavlinkCommands else {
             ULog.e(.tag, "Can't catchUp '\(flightPlan.uuid)' that doesn't carry its mavlink commands")
             return
         }
-        guard let flyingState = stateMachine.state(forClass: StartedFlyingState.self) else { return }
+        // Create the flying state dedicated to handle the FP execution process.
+        guard let flyingState = stateMachine.state(forClass: StartedFlyingState.self) else {
+            ULog.e(.tag, "Unable to create `StartedFlyingState`")
+            return
+        }
+        // Update the EditionService's current FP.
+        // This allows to update the map with the correct FP.
+        edition.setupFlightPlan(flightPlan)
+        // Setup and enter the flying state.
         flyingState.setup(flightPlan: flightPlan,
                           commands: commands,
                           lastMissionItemExecuted: lastMissionItemExecuted,

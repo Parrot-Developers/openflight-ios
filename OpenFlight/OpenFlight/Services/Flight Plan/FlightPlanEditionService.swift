@@ -84,6 +84,28 @@ public protocol FlightPlanEditionService {
     /// - Returns: new waypoint, nil if index is invalid
     func insertWayPoint(with mapPoint: AGSPoint, at index: Int) -> WayPoint?
 
+    /// Adds a waypoint at the end of the Flight Plan.
+    /// - Parameters:
+    ///   - wayPoint: the waypoint to add to the current FP of the receiver.
+    /// - Returns: the count of waypoints in the flight plan after the addition of the new one
+    @discardableResult
+    func addWaypoint(_ wayPoint: WayPoint) -> Int
+
+    /// Removes waypoint at given index.
+    ///
+    /// - Parameters:
+    ///    - index: waypoint index
+    /// - Returns: removed waypoint, if any
+    @discardableResult
+    func removeWaypoint(at index: Int) -> WayPoint?
+
+    /// Adds a point of interest to the Flight Plan.
+    ///
+    /// - Parameter poiPoint: the point of interest to add.
+    /// - Returns: the count of points of interest in the flight plan after the addition of the new
+    ///   one
+    func addPoiPoint(_ poiPoint: PoiPoint) -> Int
+
     /// Removes point of interest at given index.
     ///
     /// - Parameters:
@@ -113,25 +135,17 @@ public protocol FlightPlanEditionService {
                               resetPolygonPoints: Bool,
                               settings: [FlightPlanLightSetting]?)
 
-    /// Removes waypoint at given index.
-    ///
-    /// - Parameters:
-    ///    - index: waypoint index
-    /// - Returns: removed waypoint, if any
-    @discardableResult
-    func removeWaypoint(at index: Int) -> WayPoint?
-
     /// Change Flight Plan settings.
     ///
     /// - Parameters:
     ///    - settings: new settings
     func updateSettings(_ settings: [FlightPlanLightSetting])
 
-    /// Sets up return to home on last point setting.
+    /// Change Flight Plan settings.
     ///
     /// - Parameters:
-    ///    - lastPointRth: whether drone should land on last waypoint
-    func setLastPointRth(_ lastPointRth: Bool)
+    ///    - settings: new settings
+    func updateDataSetting(_ setting: FlightPlanDataSetting?)
 
     func endEdition(completion: @escaping () -> Void)
 
@@ -167,6 +181,15 @@ public protocol FlightPlanEditionService {
     ///  `modifiedFlightPlan` is used to know if there are some pending changes
     ///  which will be lost when user taps the back button.
     func updateModifiedFlightPlan(with flightPlan: FlightPlanModel?)
+
+    /// Update the Cloud Synchro Watcher.
+    ///
+    /// - Parameter cloudSynchroWatcher: the cloudSynchroWatcher to update
+    ///
+    /// - Note:
+    ///     If the cloud synchro watcher service is not yet instatiated during this service's init,
+    ///     this method can be called to update and configure his watcher.
+    func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?)
 }
 
 public class FlightPlanEditionServiceImpl {
@@ -179,6 +202,9 @@ public class FlightPlanEditionServiceImpl {
     private let currentMissionManager: CurrentMissionManager!
     private let userService: UserService!
     private var projectManager: ProjectManager?
+    private var cloudSynchroWatcher: CloudSynchroWatcher?
+
+    private var synchroWatcherSubscriber: AnyCancellable?
 
     public var settingsChanged: [FlightPlanLightSetting] = []
 
@@ -186,6 +212,8 @@ public class FlightPlanEditionServiceImpl {
     private var initialFlightPlan: FlightPlanModel?
     /// The current modified FP. Updated by each user changes.
     private var modifiedFlightPlan: FlightPlanModel?
+    /// The Flight Plan containing latest Cloud state after a server response.
+    private var cloudUpdatedFlightPlan: FlightPlanModel?
 
     private var currentFlightPlanSubject = CurrentValueSubject<FlightPlanModel?, Never>(nil)
     private var currentFlightPlan: FlightPlanModel? {
@@ -204,26 +232,32 @@ public class FlightPlanEditionServiceImpl {
                 // Save his initial states.
                 updateInitialFlightPlan(with: newValue)
                 updateModifiedFlightPlan(with: newValue)
+                cloudUpdatedFlightPlan = nil
             }
         }
     }
-
-    @Published public var wayPointOrientationEdition = false
 
     init(flightPlanRepo: FlightPlanRepository,
          flightPlanManager: FlightPlanManager,
          typeStore: FlightPlanTypeStore,
          currentMissionManager: CurrentMissionManager,
-         userService: UserService) {
+         userService: UserService,
+         cloudSynchroWatcher: CloudSynchroWatcher?) {
         repo = flightPlanRepo
         self.flightPlanManager = flightPlanManager
         self.typeStore = typeStore
         self.currentMissionManager = currentMissionManager
         self.userService = userService
+        updateCloudSynchroWatcher(cloudSynchroWatcher)
     }
 }
 
 extension FlightPlanEditionServiceImpl {
+
+    public func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?) {
+        self.cloudSynchroWatcher = cloudSynchroWatcher
+        listenCloudStateUpdates()
+    }
 
     public var currentFlightPlanValue: FlightPlanModel? {
         currentFlightPlan
@@ -239,12 +273,11 @@ extension FlightPlanEditionServiceImpl {
     /// - Returns: new waypoint, nil if index is invalid
     public func insertWayPoint(with mapPoint: AGSPoint,
                                at index: Int) -> WayPoint? {
-        guard let flightPlan = currentFlightPlan,
-              let dataSettings = flightPlan.dataSetting,
-              index > 0,
-              index < dataSettings.wayPoints.count,
-              let previousWayPoint = dataSettings.wayPoints.elementAt(index: index - 1),
-              let nextWayPoint = dataSettings.wayPoints.elementAt(index: index) else { return nil }
+        guard var flightPlan = currentFlightPlan,
+              var dataSetting = flightPlan.dataSetting,
+              0 < index, index < dataSetting.wayPoints.endIndex,
+              let previousWayPoint = dataSetting.wayPoints.elementAt(index: index - 1),
+              let nextWayPoint = dataSetting.wayPoints.elementAt(index: index) else { return nil }
 
         let tilt = (previousWayPoint.tilt + nextWayPoint.tilt) / 2.0
 
@@ -252,7 +285,7 @@ extension FlightPlanEditionServiceImpl {
         let wayPoint = WayPoint(coordinate: mapPoint.toCLLocationCoordinate2D(),
                                 altitude: mapPoint.z.rounded(),
                                 speed: nextWayPoint.speed,
-                                shouldContinue: dataSettings.shouldContinue ?? true,
+                                shouldContinue: dataSetting.shouldContinue,
                                 tilt: tilt.rounded())
 
         // Associate waypoints.
@@ -262,12 +295,13 @@ extension FlightPlanEditionServiceImpl {
         wayPoint.nextWayPoint = nextWayPoint
 
         // Insert in array.
-        dataSettings.wayPoints.insert(wayPoint, at: index)
+        dataSetting.wayPoints.insert(wayPoint, at: index)
 
         // Update yaws.
         previousWayPoint.updateYaw()
         nextWayPoint.updateYaw()
         wayPoint.updateYaw()
+        flightPlan.dataSetting = dataSetting
         // Just triggering
         currentFlightPlan = flightPlan
 
@@ -275,70 +309,65 @@ extension FlightPlanEditionServiceImpl {
     }
 
     public func setupFlightPlan(_ flightPlan: FlightPlanModel?) {
+        // Reset the current FP.
+        // It's especially needed when we setup the same project than the previous one (e.g. after an execution).
+        resetFlightPlan()
+        // Set the new FP.
         currentFlightPlan = flightPlan
     }
 
-    public func setLastPointRth(_ lastPointRth: Bool) {
-        let flightplan = currentFlightPlan
-        flightplan?.dataSetting?.lastPointRth = lastPointRth
-        currentFlightPlan = flightplan
-    }
-
-    /// Adds a waypoint at the end of the Flight Plan.
-    func addWaypoint(_ wayPoint: WayPoint) {
-        let flightplan = currentFlightPlan
-        let previous = flightplan?.dataSetting?.wayPoints.last
-        flightplan?.dataSetting?.wayPoints.append(wayPoint)
+    @discardableResult
+    public func addWaypoint(_ wayPoint: WayPoint) -> Int {
+        guard var flightplan = currentFlightPlan,
+              var dataSetting = flightplan.dataSetting else { return 0 }
+        let previous = dataSetting.wayPoints.last
+        dataSetting.wayPoints.append(wayPoint)
         wayPoint.previousWayPoint = previous
         previous?.nextWayPoint = wayPoint
         wayPoint.updateYawAndRelations()
+        flightplan.dataSetting = dataSetting
         currentFlightPlan = flightplan
+        return dataSetting.wayPoints.count
     }
 
-    /// Adds a point of interest to the Flight Plan.
-    func addPoiPoint(_ poiPoint: PoiPoint) {
-        let flightplan = currentFlightPlan
-        flightplan?.dataSetting?.pois.append(poiPoint)
-        currentFlightPlan = flightplan
-    }
-
-    /// Removes waypoint at given index.
-    ///
-    /// - Parameters:
-    ///    - index: waypoint index
-    /// - Returns: removed waypoint, if any
     @discardableResult
     public func removeWaypoint(at index: Int) -> WayPoint? {
-        let flightplan = currentFlightPlan
-        guard
-            let dataSetting = flightplan?.dataSetting,
-            index < dataSetting.wayPoints.count else { return nil }
-        let wayPoint = flightplan?.dataSetting?.wayPoints.remove(at: index)
+        guard var flightplan = currentFlightPlan,
+              var dataSetting = flightplan.dataSetting,
+              index < dataSetting.wayPoints.endIndex else { return nil }
+        let wayPoint = dataSetting.wayPoints.remove(at: index)
         // Update previous and next waypoint yaw.
-        let previous = wayPoint?.previousWayPoint
-        let next = wayPoint?.nextWayPoint
+        let previous = wayPoint.previousWayPoint
+        let next = wayPoint.nextWayPoint
         previous?.nextWayPoint = next
         next?.previousWayPoint = previous
         previous?.updateYaw()
         next?.updateYaw()
+        flightplan.dataSetting = dataSetting
         currentFlightPlan =  flightplan
         return wayPoint
     }
 
-    /// Removes point of interest at given index.
-    ///
-    /// - Parameters:
-    ///    - index: point of interest index
-    /// - Returns: removed point of interest, if any
+    public func addPoiPoint(_ poiPoint: PoiPoint) -> Int {
+        guard var flightplan = currentFlightPlan,
+              var dataSetting = flightplan.dataSetting else {
+                  return 0
+              }
+        dataSetting.pois.append(poiPoint)
+        flightplan.dataSetting = dataSetting
+        currentFlightPlan = flightplan
+        return dataSetting.pois.count
+    }
+
     @discardableResult
     public func removePoiPoint(at index: Int) -> PoiPoint? {
-        let flightplan = currentFlightPlan
-        guard
-            let dataSetting = flightplan?.dataSetting,
-            index < dataSetting.pois.count else {
-            return nil
-        }
-        flightplan?.dataSetting?.wayPoints.forEach {
+        guard var flightplan = currentFlightPlan,
+              var dataSetting = flightplan.dataSetting,
+              index < dataSetting.pois.endIndex else {
+                  return nil
+              }
+
+        dataSetting.wayPoints.forEach {
             guard let poiIndex = $0.poiIndex else { return }
 
             switch poiIndex {
@@ -351,9 +380,10 @@ extension FlightPlanEditionServiceImpl {
                 break
             }
         }
-        let pois = flightplan?.dataSetting?.pois.remove(at: index)
+        let poi = dataSetting.pois.remove(at: index)
+        flightplan.dataSetting = dataSetting
         currentFlightPlan = flightplan
-        return pois
+        return poi
     }
 
     /// Updates capture setting.
@@ -362,12 +392,18 @@ extension FlightPlanEditionServiceImpl {
     ///     - type: setting's type
     ///     - value: setting's value
     public func updateCaptureSetting(type: ClassicFlightPlanSettingType, value: String?) {
-        guard let value = value else { return }
-        let flightPlan = currentFlightPlan
+        guard let value = value,
+              var flightPlan = currentFlightPlan,
+              var dataSetting = flightPlan.dataSetting else {
+                  return
+              }
         // Init captureSettings if needed.
-        if flightPlan?.dataSetting?.captureSettings == nil { flightPlan?.dataSetting?.captureSettings = [:] }
+        if dataSetting.captureSettings == nil {
+            dataSetting.captureSettings = [:]
+        }
         // Save value.
-        flightPlan?.dataSetting?.captureSettings?[type.rawValue] = value
+        dataSetting.captureSettings?[type.rawValue] = value
+        flightPlan.dataSetting = dataSetting
         currentFlightPlan = flightPlan
     }
 
@@ -376,13 +412,14 @@ extension FlightPlanEditionServiceImpl {
     /// - Parameters:
     ///     - points: Polygon points
     public func updatePolygonPoints(points: [AGSPoint]) {
-        guard let flightPlan = currentFlightPlan else { return }
-        flightPlan.updatePolygonPoints(points: points)
-        // Don't trigger currentFlightPlan change because it would loop recursively with the mapVC that is responsible for the points update
+        let polygonPoints: [PolygonPoint] = points.map({
+            return PolygonPoint(coordinate: $0.toCLLocationCoordinate2D())
+        })
+        currentFlightPlan?.dataSetting?.polygonPoints = polygonPoints
     }
 }
 
-extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
+extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     // MARK: - Private Enums
     private enum Constants {
@@ -393,17 +430,19 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
     public func updateFlightPlanType(_ type: String,
                                      resetPolygonPoints: Bool,
                                      settings: [FlightPlanLightSetting]?) {
-        guard var flightPlan = currentFlightPlan else { return }
-        guard flightPlan.type != type else { return }
+        guard var flightPlan = currentFlightPlan,
+              flightPlan.type != type,
+              var dataSetting = flightPlan.dataSetting else { return }
 
         flightPlan.type = type
         if resetPolygonPoints {
-            clear(flightPlan: flightPlan)
+            dataSetting = cleared(flightPlanDataSetting: dataSetting)
         }
         if let lightSettings = settings {
-            flightPlan.dataSetting?.settings = lightSettings
+            dataSetting.settings = lightSettings
         }
-        resetUndoStack()
+        resetUndoStack(to: dataSetting)
+        flightPlan.dataSetting = dataSetting
         currentFlightPlan = flightPlan
     }
 
@@ -439,8 +478,12 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     /// Reset undo stack.
     public func resetUndoStack() {
+        resetUndoStack(to: currentFlightPlan?.dataSetting)
+    }
+
+    private func resetUndoStack(to dataSetting: FlightPlanDataSetting?) {
         undoStack.removeAll()
-        appendUndoStack(with: currentFlightPlan?.dataSetting)
+        appendUndoStack(with: dataSetting)
     }
 
     public func appendCurrentStateToUndoStack() {
@@ -486,32 +529,43 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
     /// - Parameters:
     ///    - settings: new settings
     public func updateSettings(_ settings: [FlightPlanLightSetting]) {
-        guard let flightPlan = currentFlightPlan else { return }
+        guard var flightPlan = currentFlightPlan,
+        var dataSetting = flightPlan.dataSetting else { return }
 
-        if let oldSettings = flightPlan.dataSetting?.settings {
-            let diff = zip(oldSettings, settings)
-                .filter { $0.0 != $0.1 }
-            // use the old setting as flightPlan.dataSteting.settings will contain the updated setting
-                .map { $0.0 }
-            settingsChanged = diff
-        }
-        flightPlan.dataSetting?.settings = settings
+        let diff = zip(dataSetting.settings, settings)
+            .filter { $0.0 != $0.1 }
+        // use the old setting as flightPlan.dataSteting.settings will contain the updated setting
+            .map { $0.0 }
+        settingsChanged = diff
+        dataSetting.settings = settings
+        flightPlan.dataSetting = dataSetting
         currentFlightPlan = flightPlan
         settingsChanged = []
     }
 
+    public func updateDataSetting(_ setting: FlightPlanDataSetting?) {
+        if let dataSetting = setting {
+            currentFlightPlan?.dataSetting = dataSetting
+        }
+    }
+
     public func clearFlightPlan() {
-        let flightPlan = currentFlightPlan
-        clear(flightPlan: flightPlan)
+        guard var flightPlan = currentFlightPlan,
+              let dataSetting = flightPlan.dataSetting else {
+                  return
+              }
+        flightPlan.dataSetting = cleared(flightPlanDataSetting: dataSetting)
         currentFlightPlan = flightPlan
     }
 
-    private func clear(flightPlan: FlightPlanModel?) {
-        flightPlan?.dataSetting?.polygonPoints = []
-        flightPlan?.dataSetting?.wayPoints = []
-        flightPlan?.dataSetting?.pois = []
-        flightPlan?.dataSetting?.mavlinkDataFile = nil
-        flightPlan?.dataSetting?.freeSettings = [:]
+    private func cleared(flightPlanDataSetting: FlightPlanDataSetting) -> FlightPlanDataSetting {
+        var dataSetting = flightPlanDataSetting
+        dataSetting.polygonPoints = []
+        dataSetting.wayPoints = []
+        dataSetting.pois = []
+        dataSetting.mavlinkDataFile = nil
+        dataSetting.freeSettings = [:]
+        return dataSetting
     }
 
     public func resetFlightPlan() {
@@ -521,41 +575,73 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
     }
 
     public func endEdition(completion: @escaping () -> Void) {
-        guard var flightPlan = currentFlightPlan else { return }
+        guard var flightPlan = currentFlightPlan,
+        var dataSetting = flightPlan.dataSetting else { return }
         flightPlan.lastUpdate = Date()
+
+        // If we received some Cloud state updates from the server (e.g. cloudID), apply them to the current FP.
+        if let cloudUpdatedFlightPlan = cloudUpdatedFlightPlan {
+            flightPlan.updateCloudState(with: cloudUpdatedFlightPlan)
+            // Reset it for next use.
+            self.cloudUpdatedFlightPlan = nil
+        }
 
         // clear mavlink data if the data can be generated for this type.
         // mavlink generation is done by FPRunManager > StartedNotFlyingState > MavlinkGenerator
         let type = typeStore.typeForKey(flightPlan.type)
         let canGenerateMavlink = type?.canGenerateMavlink ?? false
         if canGenerateMavlink {
-            flightPlan.dataSetting?.mavlinkDataFile = nil
+            dataSetting.mavlinkDataFile = nil
+            flightPlan.dataSetting = dataSetting
         }
+
+        currentMissionManager.mode.stateMachine?.flightPlanWasEdited(flightPlan: flightPlan)
+        currentFlightPlan = flightPlan
+        repo.saveOrUpdateFlightPlan(flightPlan,
+                                    byUserUpdate: true,
+                                    toSynchro: true,
+                                    withFileUploadNeeded: false)
+        if let projectManager = projectManager, let project = projectManager.project(for: flightPlan) {
+            var project = project
+            projectManager.setAsLastUsed(project) { lastProject in
+                guard let lastProject = lastProject else { return }
+                project = lastProject
+
+                if project.title != flightPlan.customTitle {
+                    projectManager.rename(project, title: flightPlan.customTitle, completion: nil)
+                }
+            }
+        }
+        // Save the FP initial states.
+        // This step will allow to have up to date values when re-entering the edition mode.
+        updateInitialFlightPlan(with: flightPlan)
+        updateModifiedFlightPlan(with: flightPlan)
+
+        // get thumbnail, can take some time to generate thumbnail
+        // check for thumbnail dates to update with the most recent one
         updateThumbnail(flightPlan: flightPlan) { [unowned self] thumbnail in
-            flightPlan.thumbnail = thumbnail
-            ULog.i(.tag, "Updated thumbnail '\(thumbnail.uuid)' of flightPlan '\(flightPlan.uuid)'")
-            currentMissionManager.mode.stateMachine?.flightPlanWasEdited(flightPlan: flightPlan)
-            currentFlightPlan = flightPlan
-            repo.saveOrUpdateFlightPlan(flightPlan,
+            guard var aFlightPlan = repo.getFlightPlan(withUuid: flightPlan.uuid) else {
+                return
+            }
+
+            // only store generated thumbnail if none exists or is the newest one from existing thumbnail
+            if let aFlightPlanThumbnailLastUpdate = aFlightPlan.thumbnail?.lastUpdate,
+               let thumbnailLastUpdate = thumbnail.lastUpdate,
+               aFlightPlanThumbnailLastUpdate >= thumbnailLastUpdate {
+                return
+            }
+
+            aFlightPlan.thumbnail = thumbnail
+            ULog.i(.tag, "Updated thumbnail '\(thumbnail.uuid)' of flightPlan '\(aFlightPlan.uuid)'")
+            repo.saveOrUpdateFlightPlan(aFlightPlan,
                                         byUserUpdate: true,
                                         toSynchro: true,
                                         withFileUploadNeeded: false)
-            if let projectManager = projectManager, let project = projectManager.project(for: flightPlan) {
-                var project = project
-                project = projectManager.setAsLastUsed(project)
-
-                if project.title != flightPlan.customTitle {
-                    try? projectManager.rename(project, title: flightPlan.customTitle)
-                }
-            }
-            // Save the FP initial states.
-            // This step will allow to have up to date values when re-entering the edition mode.
-            updateInitialFlightPlan(with: flightPlan)
-            updateModifiedFlightPlan(with: flightPlan)
-            ULog.i(.tag, "Ended edition of flightPlan '\(flightPlan.uuid)'")
-            completion()
-            resetUndoStack()
         }
+
+        ULog.i(.tag, "Ended edition of flightPlan '\(flightPlan.uuid)'")
+        completion()
+        resetUndoStack()
     }
 
     public func rename(_ flightPlan: FlightPlanModel, title: String) {
@@ -570,17 +656,17 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
                                  gsdSetting: (key: String, value: Int)) {
 
         guard let currentFP = currentFlightPlan,
-              let flightPlan = type.mavLinkType
+              var flightPlan = type.mavLinkType
                 .generateFlightPlanFromMavlink(url: nil,
                                                mavlinkString: String(data: mavlinkData, encoding: .utf8),
                                                flightPlan: currentFP),
-              flightPlan.state == .editable else {
+              flightPlan.state == .editable,
+              var dataSetting = flightPlan.dataSetting else {
                   return
               }
-        flightPlan.dataSetting?.disablePhotoSignature = disablePhotoSignatureSetting
+        dataSetting.disablePhotoSignature = disablePhotoSignatureSetting
         // update the GSD settings
-        if let dataSetting = flightPlan.dataSetting,
-           let currentGsdSettingIndex = dataSetting.settings
+        if let currentGsdSettingIndex = dataSetting.settings
             .firstIndex(where: { $0.key == gsdSetting.key }) {
             var currentGsdSetting = dataSetting.settings[currentGsdSettingIndex]
             currentGsdSetting.currentValue = gsdSetting.value
@@ -592,21 +678,26 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
         }
         // Save Mavlink into the intended Mavlink url if needed.
         if !type.canGenerateMavlink {
-            flightPlan.dataSetting?.mavlinkDataFile = mavlinkData
+            dataSetting.mavlinkDataFile = mavlinkData
         }
 
         // Backup OA settings.
-        flightPlan.dataSetting?.obstacleAvoidanceActivated = currentFP.dataSetting?.obstacleAvoidanceActivated ?? true
+        dataSetting.obstacleAvoidanceActivated = currentFP.dataSetting?.obstacleAvoidanceActivated ?? true
         // Backup capture settings.
         let captureSettings = currentFP.dataSetting?.captureSettings
-        flightPlan.dataSetting?.captureSettings = captureSettings
+        dataSetting.captureSettings = captureSettings
 
         // Update FP data.
+        flightPlan.dataSetting = dataSetting
         currentFlightPlan = flightPlan
     }
 
     public func freeSettingDidChange(key: String, value: String) {
-        currentFlightPlan?.dataSetting?.freeSettings[key] = value
+        guard var flightPlan = currentFlightPlan,
+              var dataSetting = flightPlan.dataSetting else { return }
+        dataSetting.freeSettings[key] = value
+        flightPlan.dataSetting = dataSetting
+        currentFlightPlan = flightPlan
     }
 
     public func updateProjectManager(_ projectManager: ProjectManager) {
@@ -650,6 +741,23 @@ extension  FlightPlanEditionServiceImpl: FlightPlanEditionService {
         }
         flightPlan = flightPlanManager.newFlightPlan(basedOn: updatedFlightPlan,
                                                      save: false)
+    }
+
+    /// Listen when a Flight Plan has been updated by a server response.
+    private func listenCloudStateUpdates() {
+        synchroWatcherSubscriber?.cancel()
+        synchroWatcherSubscriber = cloudSynchroWatcher?.flightPlanCloudStateUpdatedPublisher?
+            .receive(on: RunLoop.main)
+            .sink { [unowned self] in
+                // Ensure the updated FP is the one opened in Edition Service.
+                guard currentFlightPlan?.uuid == $0.uuid else { return }
+                // Save the Cloud state in dedicated local variable.
+                // This will be used during endEditing process.
+                // Updating directly the currentFlightPlan can cause some unexpected
+                // behaviors like removing the keyboard while editing.
+                cloudUpdatedFlightPlan = currentFlightPlan
+                cloudUpdatedFlightPlan?.updateCloudState(with: $0)
+            }
     }
 }
 

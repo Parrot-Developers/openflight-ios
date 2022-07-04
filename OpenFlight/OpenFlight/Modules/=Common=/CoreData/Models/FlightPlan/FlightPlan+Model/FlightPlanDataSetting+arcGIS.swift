@@ -140,7 +140,9 @@ extension FlightPlanDataSetting {
 
     // MARK: - Internal Properties
     /// Returns an array with all lines graphics.
-    var allLinesGraphics: [FlightPlanWayPointLineGraphic] {
+    /// - Parameters:
+    ///     - mapMode: The current map mode
+    func allLinesGraphics() -> [FlightPlanWayPointLineGraphic] {
         return wayPoints
             .enumerated()
             .compactMap { (index, point) in
@@ -166,17 +168,20 @@ extension FlightPlanDataSetting {
     }
 
     /// Returns an array with all flight plan's graphics, except labels.
-    var allLinesAndMarkersGraphics: [FlightPlanGraphic] {
-        return allLinesGraphics
-            + waypointsMarkersGraphics
+    /// - Parameters:
+    ///     - mapMode: The current map mode
+    func allLinesAndMarkersGraphics(mapMode: MapMode) -> [FlightPlanGraphic] {
+        return allLinesGraphics()
             + waypointsArrowGraphics
+            + waypointsMarkersGraphics(mapMode: mapMode)
             + poisMarkersGraphics
     }
 
     /// Returns an array with all flight plan's lines and waypoints.
-    var linesAndWaypointsGraphics: [FlightPlanGraphic] {
-        return allLinesGraphics
-            + waypointsMarkersGraphics
+    /// - Parameters:
+    ///     - mapMode: The current map mode
+    func linesAndWaypointsGraphics(mapMode: MapMode) -> [FlightPlanGraphic] {
+        return allLinesGraphics() + waypointsMarkersGraphics(mapMode: mapMode)
     }
 
     /// Returns a simple `AGSPolyline` with all points.
@@ -187,11 +192,13 @@ extension FlightPlanDataSetting {
 
     // MARK: - Private Properties
     /// Returns an array with waypoints' markers graphics.
-    private var waypointsMarkersGraphics: [FlightPlanWayPointGraphic] {
+    /// - Parameters:
+    ///     - mapMode: The current map mode
+    private func waypointsMarkersGraphics(mapMode: MapMode) -> [FlightPlanWayPointGraphic] {
         return wayPoints
             .enumerated()
             .map { (index, wayPoint) in
-                wayPoint.markerGraphic(index: index)
+                wayPoint.markerGraphic(index: index, isDetail: mapMode == .myFlights)
         }
     }
 
@@ -219,46 +226,6 @@ extension FlightPlanDataSetting {
         guard let totalDistance = estimations.distance else { return [] }
 
         return wayPoints.map { $0.navigateToNextDistance / totalDistance }
-    }
-
-    // MARK: - Public Funcs
-    /// Inserts a waypoint at given index.
-    ///
-    /// - Parameters:
-    ///    - mapPoint: location of the new waypoint
-    ///    - index: index at which waypoint should be inserted
-    /// - Returns: new waypoint, nil if index is invalid
-    func insertWayPoint(with mapPoint: AGSPoint,
-                        at index: Int) -> WayPoint? {
-        guard index > 0,
-              index < wayPoints.count,
-              let previousWayPoint = wayPoints.elementAt(index: index - 1),
-              let nextWayPoint = wayPoints.elementAt(index: index) else { return nil }
-
-        let tilt = (previousWayPoint.tilt + nextWayPoint.tilt) / 2.0
-
-        // Create new waypoint.
-        let wayPoint = WayPoint(coordinate: mapPoint.toCLLocationCoordinate2D(),
-                                altitude: mapPoint.z,
-                                speed: nextWayPoint.speed,
-                                shouldContinue: self.shouldContinue ?? true,
-                                tilt: tilt.rounded())
-
-        // Associate waypoints.
-        previousWayPoint.nextWayPoint = wayPoint
-        nextWayPoint.previousWayPoint = wayPoint
-        wayPoint.previousWayPoint = previousWayPoint
-        wayPoint.nextWayPoint = nextWayPoint
-
-        // Insert in array.
-        self.wayPoints.insert(wayPoint, at: index)
-
-        // Update yaws.
-        previousWayPoint.updateYaw()
-        nextWayPoint.updateYaw()
-        wayPoint.updateYaw()
-
-        return wayPoint
     }
 
     /// Computes current Flight Plan progress with given location and last waypoint index.

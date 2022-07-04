@@ -30,6 +30,7 @@
 import UIKit
 import Reusable
 import GroundSdk
+import Combine
 
 /// Settings choose channel cell.
 final class SettingsChooseChannelCell: MainTableViewCell, NibReusable {
@@ -39,6 +40,7 @@ final class SettingsChooseChannelCell: MainTableViewCell, NibReusable {
 
     // MARK: - Private Properties
     private var viewModel: SettingsNetworkViewModel?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Internal Funcs
     /// Configure cell.
@@ -47,13 +49,38 @@ final class SettingsChooseChannelCell: MainTableViewCell, NibReusable {
     ///     - viewModel: Settings network view model
     func configureCell(viewModel: SettingsNetworkViewModel) {
         self.viewModel = viewModel
-        channelView.channelsOccupations = viewModel.state.value.channelsOccupations
-        channelView.setNeedsDisplay()
-        gridView.channelsOccupations = viewModel.state.value.channelsOccupations
-        gridView.alphaWithEnabledState(viewModel.state.value.channelsOccupationIsEnabled)
-        gridView.currentChannel = viewModel.state.value.currentChannel
-        gridView.currentChannelUpdating = viewModel.state.value.channelUpdating
-        gridView.isUserInteractionEnabled = viewModel.state.value.channelsOccupationIsEnabled
+
+        viewModel.$channelsOccupations.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.channelView.channelsOccupations = $0
+                self.channelView.setNeedsDisplay()
+                self.gridView.channelsOccupations = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$channelsOccupationIsEnabled.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.gridView.alphaWithEnabledState($0)
+                self.gridView.isUserInteractionEnabled = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$currentChannel.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.gridView.currentChannel = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$channelUpdating.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.gridView.currentChannelUpdating = $0
+            }
+            .store(in: &cancellables)
+
         gridView.delegate = self
         gridView.setNeedsDisplay()
     }

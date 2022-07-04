@@ -153,6 +153,8 @@ private extension BottomBarContainerViewController {
 extension BottomBarContainerViewController: BottomBarContainerDelegate {
 
     func showLevelOne<T: BarButtonState>(viewModel: BarButtonViewModel<T>) {
+        guard bottomBarMode != .levelOneOpened || !levelOneViewController.isSameBarDisplayed(viewModel: viewModel) else { return }
+
         bottomBarMode = .levelOneOpened
         switch viewModel {
         case is CameraWidgetViewModel:

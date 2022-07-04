@@ -43,9 +43,15 @@ final class RemoteDetailsViewController: UIViewController {
     private var buttonsViewController: RemoteDetailsButtonsViewController?
 
     // MARK: - Setup
-    static func instantiate(coordinator: RemoteCoordinator) -> RemoteDetailsViewController {
+    static func instantiate(coordinator: RemoteCoordinator,
+                            deviceViewController: RemoteDetailsDeviceViewController,
+                            buttonsViewController: RemoteDetailsButtonsViewController,
+                            informationViewController: RemoteDetailsInformationsViewController) -> RemoteDetailsViewController {
         let viewController = StoryboardScene.RemoteDetails.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.deviceViewController = deviceViewController
+        viewController.informationViewController = informationViewController
+        viewController.buttonsViewController = buttonsViewController
         return viewController
     }
 
@@ -54,7 +60,6 @@ final class RemoteDetailsViewController: UIViewController {
         super.viewDidLoad()
 
         initView()
-        setupOrientationObserver()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -70,17 +75,13 @@ final class RemoteDetailsViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
 }
 
 // MARK: - Actions
 private extension RemoteDetailsViewController {
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
         LogEvent.log(.simpleButton(LogEvent.LogKeyCommonButton.back))
-        coordinator?.dismissChildCoordinator()
+        coordinator?.dismissRemoteInfos()
     }
 }
 
@@ -94,24 +95,8 @@ private extension RemoteDetailsViewController {
         updateStackView()
     }
 
-    /// Sets up observer for orientation change.
-    func setupOrientationObserver() {
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(updateStackView),
-                                               name: UIDevice.orientationDidChangeNotification,
-                                               object: nil)
-    }
-
     /// Sets up view controllers.
     func setupViewControllers() {
-        guard let strongCoordinator = coordinator else { return }
-
-        buttonsViewController = RemoteDetailsButtonsViewController.instantiate(coordinator: strongCoordinator)
-        deviceViewController = RemoteDetailsDeviceViewController.instantiate(coordinator: strongCoordinator)
-
-        let remoteInfosViewModel = RemoteDetailsInformationsViewModel()
-        informationViewController = RemoteDetailsInformationsViewController.instantiate(coordinator: strongCoordinator,
-                                                                                        viewModel: remoteInfosViewModel)
         [buttonsViewController, deviceViewController, informationViewController].forEach { viewController in
             guard let strongViewController = viewController else { return }
             addChild(strongViewController)
@@ -120,7 +105,7 @@ private extension RemoteDetailsViewController {
     }
 
     /// Updates stack view.
-    @objc func updateStackView() {
+    func updateStackView() {
         guard let infoView = informationViewController?.view,
               let buttonView = buttonsViewController?.view,
               let deviceView = deviceViewController?.view else {

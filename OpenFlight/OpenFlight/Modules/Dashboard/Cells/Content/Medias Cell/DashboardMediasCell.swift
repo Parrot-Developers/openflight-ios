@@ -69,7 +69,6 @@ extension DashboardMediasCell: UICollectionViewDataSource {
         }
 
         cell.setup(media: media,
-                   mediaStore: viewModel.mediaStore,
                    index: viewModel.getMediaImageDefaultIndex(media))
 
         return cell

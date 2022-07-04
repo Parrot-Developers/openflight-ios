@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GD6-ss-0eY">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GD6-ss-0eY">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -70,7 +70,7 @@
                                         <rect key="frame" x="0.0" y="268" width="896" height="60"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
-                                            <action selector="passwordEditionButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="fw5-Z0-jMz"/>
+                                            <action selector="batteryButtonTouchedUpInside:" destination="GD6-ss-0eY" eventType="touchUpInside" id="4cD-gW-G9Z"/>
                                         </connections>
                                     </view>
                                 </subviews>
@@ -104,12 +104,12 @@
                         </variation>
                     </view>
                     <connections>
+                        <outlet property="batteryButtonView" destination="sdQ-bX-ago" id="96f-p2-q6p"/>
                         <outlet property="calibrationButtonView" destination="FAu-et-3jF" id="MWf-rv-tFs"/>
                         <outlet property="cellularAccessButtonView" destination="naE-FZ-7Cg" id="qxZ-QL-mPA"/>
                         <outlet property="firmwareUpdateButtonView" destination="vWN-fC-h5d" id="IUv-O4-tFJ"/>
                         <outlet property="mapButtonView" destination="G1H-BN-fL2" id="Y3Z-o3-bL4"/>
                         <outlet property="mapContainerView" destination="M77-Se-NVD" id="sSJ-Xs-720"/>
-                        <outlet property="passwordButtonView" destination="sdQ-bX-ago" id="96f-p2-q6p"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sgx-Wg-MDM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

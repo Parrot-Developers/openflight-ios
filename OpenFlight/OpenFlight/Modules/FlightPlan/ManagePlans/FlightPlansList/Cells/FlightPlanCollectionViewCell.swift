@@ -86,19 +86,19 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     ///     - project: project model
     ///     - isSelected: Whether cell is selected.
     func configureCell(project: ProjectModel, isSelected: Bool) {
-        let lastFlightPlan = project.flightPlans?.first
+        let lastExecution = project.lastExecution
 
-        titleLabel.text = project.title ?? lastFlightPlan?.dataSetting?.coordinate?.coordinatesDescription
-        var date: Date? = project.lastUpdated
-        if let lastFlightExecutionDate = lastFlightPlan?.lastFlightExecutionDate {
+        titleLabel.text = project.title ?? lastExecution?.dataSetting?.coordinate?.coordinatesDescription
+        var date: Date = project.lastUpdated
+        if let lastFlightExecutionDate = lastExecution?.lastFlightExecutionDate {
             date = lastFlightExecutionDate
         }
-        dateLabel.text = date?.shortWithTimeFormattedString()
+        dateLabel.text = date.commonFormattedString
 
-        backgroundImageView.image = lastFlightPlan?.thumbnail?.thumbnailImage ?? UIImage(asset: Asset.MyFlights.projectPlaceHolder)
+        backgroundImageView.image = lastExecution?.thumbnail?.thumbnailImage ?? UIImage(asset: Asset.MyFlights.projectPlaceHolder)
 
         if project.type != FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType,
-           let flightStoreProvider = getFligthPlanType(with: lastFlightPlan?.type) {
+           let flightStoreProvider = getFligthPlanType(with: lastExecution?.type) {
             // Set image for custom Flight Plan types
             typeImage.image = flightStoreProvider.icon
             typeImage.isHidden = false

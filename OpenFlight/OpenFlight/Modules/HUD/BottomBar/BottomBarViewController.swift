@@ -200,6 +200,7 @@ private extension BottomBarViewController {
             .filter { isReturnHomeActive ? $0 is MandatoryBottomBarView : true } ?? []
 
         addMissionViews(views)
+        view.layoutIfNeeded()
     }
 
     /// Add mission views in bottom left view stack.
@@ -300,7 +301,7 @@ private extension BottomBarViewController {
         }
         .store(in: &cancellables)
 
-        landingStates.isReturnHomeActive
+        landingStates.isBasicRthActive
             .removeDuplicates()
             .sink { [unowned self] _ in
                 updateView(for: bottomBarViewModel.state.value.missionMode)

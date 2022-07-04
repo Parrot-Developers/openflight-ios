@@ -107,6 +107,12 @@ public protocol FlightPlanManager {
     /// - Parameter state: state to filter
     func flightPlansForState(_ state: FlightPlanModel.FlightPlanState) -> [FlightPlanModel]
 
+    /// Gets all flight plans according to a specific state
+    /// - Parameters:
+    ///    - state: state to filter
+    ///    - completion: Callback closure on completion
+    func flightPlansForState(_ state: FlightPlanModel.FlightPlanState, completion: @escaping (([FlightPlanModel]) -> Void))
+
     /// Get the last flight date of a flight plan if any
     /// - Parameter flightPlan: flight plan
     func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date?
@@ -120,7 +126,6 @@ public protocol FlightPlanManager {
     ///
     /// - Parameters:
     ///  - flightPlan: the Flight Plan
-    ///  - isShort: whether the formatted string should be short
     /// - Returns: formatted date or dash if formatting failed
     ///
     /// - Description:
@@ -135,8 +140,7 @@ public protocol FlightPlanManager {
     ///
     /// This method searches for the first FlightPlan's Flight and gets its start date (representing the Drone's take-off date).
     ///  If not found, we fallback into the execution's date which represents the moment when the FP has ben launched.
-    func firstFlightFormattedDate(of flightPlan: FlightPlanModel,
-                                  isShort: Bool) -> String
+    func firstFlightFormattedDate(of flightPlan: FlightPlanModel) -> String
 }
 
 private extension ULogTag {
@@ -175,7 +179,9 @@ public class FlightPlanManagerImpl: FlightPlanManager {
     public func newFlightPlan(basedOn flightPlan: FlightPlanModel,
                               save: Bool) -> FlightPlanModel {
         var newFlightPlan = flightPlan
-        newFlightPlan.dataSetting = flightPlan.dataSetting?.copy()
+        if let dataSetting = flightPlan.dataSetting {
+            newFlightPlan.dataSetting = dataSetting.copy()
+        }
         newFlightPlan.uuid = UUID().uuidString
         newFlightPlan.lastUpdate = Date()
         newFlightPlan.state = .editable
@@ -218,7 +224,7 @@ public class FlightPlanManagerImpl: FlightPlanManager {
             pgyProjectRepo.deletePgyProject(withProjectId: flightPlan.pgyProjectId, updateRelatedFlightPlan: false)
         }
         filesManager.deleteMavlink(of: flightPlan)
-        persistenceFlightPlan.deleteOrFlagToDeleteFlightPlan(withUuid: flightPlan.uuid)
+        persistenceFlightPlan.deleteOrFlagToDeleteFlightPlans(withUuids: [flightPlan.uuid], completion: nil)
     }
 
     public func editableFlightPlansFor(projectId: String) -> [FlightPlanModel] {
@@ -227,6 +233,10 @@ public class FlightPlanManagerImpl: FlightPlanManager {
 
     public func flightPlansForState(_ state: FlightPlanModel.FlightPlanState) -> [FlightPlanModel] {
         persistenceFlightPlan.getFlightPlans(byExcludingTypes: ["default"]).filter { $0.state.rawValue == state.rawValue }
+    }
+
+    public func flightPlansForState(_ state: FlightPlanModel.FlightPlanState, completion: @escaping (([FlightPlanModel]) -> Void)) {
+        persistenceFlightPlan.getFlightPlans(withState: state, byExcludingTypes: ["default"], completion: completion)
     }
 
     public func updateWithUploadAttempt(flightplan: FlightPlanModel) -> FlightPlanModel {
@@ -267,6 +277,8 @@ public class FlightPlanManagerImpl: FlightPlanManager {
             return flightPlan
         }
         var newFlightPlan = flightPlan
+        // If flight plan has reached its last waypoint, set his state as `.completed`.
+        if flightPlan.hasReachedLastWayPoint { newFlightPlan.state = .completed }
         newFlightPlan.lastMissionItemExecuted = Int64(lastMissionItemExecuted)
         newFlightPlan.recoveryResourceId = recoveryResourceId
         persistenceFlightPlan.saveOrUpdateFlightPlan(newFlightPlan,
@@ -292,17 +304,12 @@ public class FlightPlanManagerImpl: FlightPlanManager {
         persistenceFlightPlan.firstFlightDate(of: flightPlan)
     }
 
-    public func firstFlightFormattedDate(of flightPlan: FlightPlanModel,
-                                         isShort: Bool) -> String {
+    public func firstFlightFormattedDate(of flightPlan: FlightPlanModel) -> String {
         // If not found, return the execution date.
         guard let flightDate = firstFlightDate(of: flightPlan) else {
-            return flightPlan.formattedDate(isShort: isShort)
+            return flightPlan.formattedDate()
         }
         // Format the date.
-        let formattedDate = isShort
-        ? flightDate.shortFormattedString
-        : flightDate.shortWithTimeFormattedString(showTimePrefix: false)
-        // Return Dash if date can't be formatted.
-        return formattedDate ?? Style.dash
+        return flightDate.commonFormattedString
     }
 }

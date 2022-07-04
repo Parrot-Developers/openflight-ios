@@ -203,20 +203,22 @@ extension CoreDataServiceImpl: PgyProjectRepository {
     }
 
     public func updatePgyProjectToBeDeleted(withProjectId projectId: Int64) {
-        guard let currentContext = currentContext,
-              let pgyProject = getPgyProjectCD(withProjectId: projectId) else {
-                  return
-              }
+        performAndSave({ [unowned self] _ in
+            guard let pgyProject = getPgyProjectCD(withProjectId: projectId) else {
+                return false
+            }
+            pgyProject.isLocalDeleted = true
+            pgyProject.latestLocalModificationDate = Date()
 
-        pgyProject.isLocalDeleted = true
-        let currentDate = Date()
-        pgyProject.latestLocalModificationDate = currentDate
-
-        do {
-            try currentContext.save()
-        } catch let error {
-            ULog.e(.dataModelTag, "Error deletePgyProject with projectId: \(projectId) - error: \(error.localizedDescription)")
-        }
+            return true
+        }, { result in
+            switch result {
+            case .success:
+                ULog.d(.dataModelTag, "updatePgyProjectToBeDeleted with projectId: \(projectId)")
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deletePgyProject with projectId: \(projectId) - error: \(error.localizedDescription)")
+            }
+        })
     }
 
     // MARK: __ Get
@@ -263,8 +265,11 @@ extension CoreDataServiceImpl: PgyProjectRepository {
                 return false
             }
 
-            if updateRelatedFlightPlan, let flightPlan = getFlightPlanCD(withPgyProjectId: projectId)?.model() {
-                flightPlan.dataSetting?.pgyProjectDeleted = true
+            if updateRelatedFlightPlan,
+                var flightPlan = getFlightPlanCD(withPgyProjectId: projectId)?.model() {
+                var dataSetting = flightPlan.dataSetting
+                dataSetting?.pgyProjectDeleted = true
+                flightPlan.dataSetting = dataSetting
                 saveOrUpdateFlightPlan(flightPlan,
                                        byUserUpdate: true,
                                        toSynchro: true,

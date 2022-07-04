@@ -36,7 +36,8 @@ extension MapViewController {
     ///    - point: ags point
     /// - Returns: Boolean indicating if the location is inside the zone
     public func isInside(point: AGSPoint) -> Bool {
-        let screenPoint = sceneView.location(toScreen: point).screenPoint
+        let locationPoint = shouldDisplayMapIn2D ? AGSPoint(x: point.x, y: point.y, spatialReference: .wgs84()) : point
+        let screenPoint = sceneView.location(toScreen: locationPoint).screenPoint
         guard !screenPoint.isOriginPoint else { return false }
 
         let minX = sceneView.bounds.width * MapConstants.mapBorderHorizontal

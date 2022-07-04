@@ -51,6 +51,9 @@ public extension Notification.Name {
     static let alertPanelModeDidChange = NSNotification.Name("alertPanelModeDidChange")
     static let handDetectedAlertModalPresentDidChange = NSNotification.Name("handDetectedAlertModalPresentDidChange")
     static let takeOffRequestedDidChange = NSNotification.Name("takeOffRequestedDidChange")
+    static let removeCustomMissionCalibration = NSNotification.Name("cancelCalibration")
+    static let enableCustomCalibration = NSNotification.Name("enableCalibration")
+    static let customCalibrationExist = NSNotification.Name("customCalibrationExist")
 }
 
 // MARK: - Internal Properties

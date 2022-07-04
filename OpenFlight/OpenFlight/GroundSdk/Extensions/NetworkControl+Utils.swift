@@ -138,6 +138,15 @@ extension NetworkControl {
         return WifiStrength(rawValue: quality ?? WifiStrength.offline.rawValue) ?? .offline
     }
 
+    /// Whether the Wifi quality is insufficient.
+    var isWifiLowAndPerturbed: Bool {
+        guard let quality = linkQuality else { return false }
+        return quality <= Constants.linkQualityThreshold &&
+        currentLink == .wlan
+    }
+
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove property.
     /// Returns current Wifi errors.
     var currentWifiAlerts: [HUDAlertType] {
         if let quality = linkQuality,

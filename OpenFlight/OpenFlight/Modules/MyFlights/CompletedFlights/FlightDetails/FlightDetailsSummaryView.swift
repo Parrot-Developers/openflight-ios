@@ -86,6 +86,7 @@ private extension FlightDetailsSummaryView {
 
     /// Configure Detail's label and icon
     func configurelabel(_ label: UILabel, and icon: UIImageView, with image: UIImage) {
+        label.text = Style.doubledash
         label.makeUp(with: .current, color: .defaultTextColor)
         label.adjustsFontSizeToFitWidth = true
         icon.image = image

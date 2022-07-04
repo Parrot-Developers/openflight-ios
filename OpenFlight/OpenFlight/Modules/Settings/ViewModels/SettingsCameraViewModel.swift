@@ -29,9 +29,22 @@
 
 import GroundSdk
 import SwiftyUserDefaults
+import Combine
 
 /// Behaviours settings view model.
-final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState>, SettingsViewModelProtocol {
+final class SettingsCameraViewModel: SettingsViewModelProtocol {
+    // MARK: - Published Properties
+
+    private(set) var notifyChangePublisher = CurrentValueSubject<Void, Never>(())
+
+    // MARK: - Private Properties
+
+    private var currentDroneHolder: CurrentDroneHolder
+    private var cancellables = Set<AnyCancellable>()
+    private var drone: Drone { currentDroneHolder.drone }
+    private var mainCamera2: MainCamera2?
+    private var antiFlicker: Antiflicker?
+
     // MARK: - Internal Properties
     var infoHandler: ((_ modeType: SettingMode.Type) -> Void)?
 
@@ -65,8 +78,8 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
     }
 
     var isUpdating: Bool? {
-        return drone?.currentCamera?.config.updating == true
-            || drone?.getPeripheral(Peripherals.antiflicker)?.setting.updating == true
+        return drone.currentCamera?.config.updating == true
+            || drone.getPeripheral(Peripherals.antiflicker)?.setting.updating == true
     }
 
     // MARK: - Private Properties
@@ -75,32 +88,29 @@ final class SettingsCameraViewModel: DroneWatcherViewModel<DeviceConnectionState
     private unowned var flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler
 
     // MARK: - init
-    init(flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler) {
+    init(flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler, currentDroneHolder: CurrentDroneHolder) {
         self.flightPlanCameraSettingsHandler = flightPlanCameraSettingsHandler
-        super.init()
-    }
+        self.currentDroneHolder = currentDroneHolder
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] _ in
-            notifyChange()
-        }
-
-        antiFlickerRef = drone.getPeripheral(Peripherals.antiflicker) { [unowned self] _ in
-            notifyChange()
-        }
+        currentDroneHolder.dronePublisher
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenMainCamera2(drone)
+                self.listenAntiFlicher(drone)
+            }
+            .store(in: &cancellables)
     }
 
     func resetSettings() {
-        drone?.getPeripheral(Peripherals.antiflicker)?.setting.mode = CameraPreset.antiflickerMode
+        drone.getPeripheral(Peripherals.antiflicker)?.setting.mode = CameraPreset.antiflickerMode
 
-        if let currentEditor = drone?.currentCamera?.currentEditor {
+        if let currentEditor = drone.currentCamera?.currentEditor {
             currentEditor[Camera2Params.autoRecordMode]?.value = CameraPreset.autoRecord
             currentEditor[Camera2Params.zoomVelocityControlQualityMode]?.value = CameraPreset.velocityQuality
             currentEditor[Camera2Params.videoRecordingCodec]?.value = CameraPreset.videoencoding
             currentEditor[Camera2Params.videoRecordingDynamicRange]?.value = CameraPreset.dynamicHdrRange
             currentEditor[Camera2Params.photoDigitalSignature]?.value = CameraPreset.photoSignature
-            currentEditor.saveSettings(currentConfig: drone?.currentCamera?.config)
+            currentEditor.saveSettings(currentConfig: drone.currentCamera?.config)
         }
 
         Defaults.overexposureSetting = CameraPreset.overexposure.rawValue
@@ -113,8 +123,25 @@ private extension SettingsCameraViewModel {
     ///
     /// - Returns: true if video encoding set on H265, false otherwise.
     func isDynamicRange10Enabled() -> Bool {
-        let currentEditor = drone?.currentCamera?.currentEditor
+        let currentEditor = drone.currentCamera?.currentEditor
         return currentEditor?[Camera2Params.videoRecordingCodec]?.value == .h265
+    }
+
+    /// Listens to camera2 peripheral
+    func listenMainCamera2(_ drone: Drone) {
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] mainCamera2 in
+            guard let self = self else { return }
+            self.mainCamera2 = mainCamera2
+            self.notifyChangePublisher.send()
+        }
+    }
+
+    func listenAntiFlicher(_ drone: Drone) {
+        antiFlickerRef = drone.getPeripheral(Peripherals.antiflicker) { [weak self] antiFlicker in
+            guard let self = self else { return }
+            self.antiFlicker = antiFlicker
+            self.notifyChangePublisher.send()
+        }
     }
 }
 
@@ -122,7 +149,7 @@ private extension SettingsCameraViewModel {
 private extension SettingsCameraViewModel {
     /// Returns antiflicker setting model.
     var antiflickerModel: DroneSettingModel? {
-        let antiFlicker = drone?.getPeripheral(Peripherals.antiflicker)
+        let antiFlicker = drone.getPeripheral(Peripherals.antiflicker)
         guard let supportedModes = antiFlicker?.setting.supportedModes,
             let currentAntiflicker = antiFlicker?.setting.mode else {
                 return nil
@@ -142,14 +169,14 @@ private extension SettingsCameraViewModel {
 
     /// Returns auto record setting model.
     var autoRecordModel: DroneSettingModel? {
-        let autoRecord = drone?.currentCamera?.config[Camera2Params.autoRecordMode]?.value
+        let autoRecord = drone.currentCamera?.config[Camera2Params.autoRecordMode]?.value
         return DroneSettingModel(allValues: Camera2AutoRecordMode.allValues,
                                  supportedValues: Camera2AutoRecordMode.allValues,
                                  currentValue: autoRecord) { [weak self] mode in
                                     guard let mode = mode as? Camera2AutoRecordMode else { return }
 
-                                    let currentEditor = self?.drone?.currentCamera?.currentEditor
-                                    let currentConfig = self?.drone?.currentCamera?.config
+                                    let currentEditor = self?.drone.currentCamera?.currentEditor
+                                    let currentConfig = self?.drone.currentCamera?.config
                                     currentEditor?[Camera2Params.autoRecordMode]?.value = mode
                                     currentEditor?.saveSettings(currentConfig: currentConfig)
         }
@@ -157,7 +184,7 @@ private extension SettingsCameraViewModel {
 
     /// Return video encoding setting model.
     var videoEncodingModel: DroneSettingModel? {
-        let videoEncoding = drone?.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
+        let videoEncoding = drone.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
         let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2VideoCodec.allValues,
                                  supportedValues: Camera2VideoCodec.allValues,
@@ -165,8 +192,8 @@ private extension SettingsCameraViewModel {
                                  forceDisabling: forceDisabling) { [weak self] mode in
             guard let encodingMode = mode as? Camera2VideoCodec else { return }
 
-            let currentEditor = self?.drone?.currentCamera?.currentEditor
-            let currentConfig = self?.drone?.currentCamera?.config
+            let currentEditor = self?.drone.currentCamera?.currentEditor
+            let currentConfig = self?.drone.currentCamera?.config
             currentEditor?[Camera2Params.videoRecordingCodec]?.value = encodingMode
             // If the current video dynamic range is HDR we update the drone value.
             if currentConfig?[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
@@ -183,7 +210,7 @@ private extension SettingsCameraViewModel {
         let currentHdrValue: Camera2DynamicRange
 
         // If the drone have already a HDR value.
-        if let droneHDR = drone?.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value,
+        if let droneHDR = drone.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value,
            droneHDR != .sdr {
             Defaults.highDynamicRangeSetting = droneHDR.rawValue
         }
@@ -194,7 +221,7 @@ private extension SettingsCameraViewModel {
            let defaultsHDR = Camera2DynamicRange(rawValue: defaultsHDRString) {
             currentHdrValue = defaultsHDR
         } else {
-            let videoEncoding = drone?.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
+            let videoEncoding = drone.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
             currentHdrValue = videoEncoding == .h265 ? Camera2DynamicRange.hdr10 : Camera2DynamicRange.hdr8
         }
         let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
@@ -206,11 +233,11 @@ private extension SettingsCameraViewModel {
 
             Defaults.highDynamicRangeSetting = videoRange.rawValue
 
-            let currentConfig = self?.drone?.currentCamera?.config
+            let currentConfig = self?.drone.currentCamera?.config
 
             // If the current video dynamic range is HDR we update the drone value.
             if currentConfig?[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
-                let currentEditor = self?.drone?.currentCamera?.currentEditor
+                let currentEditor = self?.drone.currentCamera?.currentEditor
                 currentEditor?[Camera2Params.videoRecordingDynamicRange]?.value = videoRange
                 currentEditor?.saveSettings(currentConfig: currentConfig)
             }
@@ -219,7 +246,7 @@ private extension SettingsCameraViewModel {
 
     /// Returns photo signature setting model.
     var photoSignatureModel: DroneSettingModel? {
-        let photoSignature = drone?.currentCamera?.config[Camera2Params.photoDigitalSignature]?.value
+        let photoSignature = drone.currentCamera?.config[Camera2Params.photoDigitalSignature]?.value
         let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2DigitalSignature.allValues,
                                  supportedValues: Camera2DigitalSignature.allValues,
@@ -227,8 +254,8 @@ private extension SettingsCameraViewModel {
                                  forceDisabling: forceDisabling) { [weak self] digitalSignature in
                                     guard let digitalSignature = digitalSignature as? Camera2DigitalSignature else { return }
 
-                                    let currentEditor = self?.drone?.currentCamera?.currentEditor
-                                    let currentConfig = self?.drone?.currentCamera?.config
+                                    let currentEditor = self?.drone.currentCamera?.currentEditor
+                                    let currentConfig = self?.drone.currentCamera?.config
                                     currentEditor?[Camera2Params.photoDigitalSignature]?.value = digitalSignature
                                     currentEditor?.saveSettings(currentConfig: currentConfig)
         }

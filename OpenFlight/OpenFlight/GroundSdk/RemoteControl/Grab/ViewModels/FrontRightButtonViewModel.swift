@@ -29,6 +29,11 @@
 
 import GroundSdk
 
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "FrontRightButtonViewModel")
+}
+
 /// ViewModel which manages takeOff or Land remote control button.
 final class FrontRightButtonViewModel: DroneStateViewModel<DeviceConnectionState> {
 
@@ -49,17 +54,25 @@ private extension FrontRightButtonViewModel {
     /// Performs a drone action.
     /// Actions can be TakeOff, Land, HandLand or Hand Launch.
     func performDroneAction() {
-        guard let drone = drone else { return }
+        guard let drone = drone else {
+            ULog.e(.tag, "performDroneAction, no drone")
+            return
+        }
 
         if drone.isStateFlying || drone.isHandLaunchReady {
+            ULog.d(.tag, "performDroneAction, drone is flying or ready to handlaunch")
             takeOffOrLandDrone()
         } else {
             // Notifies that takeOff is requested.
+            ULog.d(.tag, "performDroneAction, notify takeoff request")
             NotificationCenter.default.post(name: .takeOffRequestedDidChange,
                                             object: nil,
                                             userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
             // Checks is there are no critical alerts.
-            guard Services.hub.ui.criticalAlert.canTakeOff else { return }
+            guard Services.hub.ui.criticalAlert.canTakeOff else {
+                ULog.d(.tag, "performDroneAction, criticalAlert.canTakeOff is true ")
+                return
+            }
 
             takeOffOrLandDrone()
         }
@@ -69,14 +82,17 @@ private extension FrontRightButtonViewModel {
     func takeOffOrLandDrone() {
         guard let drone = drone,
               let manualPilotingItf = drone.getPilotingItf(PilotingItfs.manualCopter) else {
+                  ULog.e(.tag, "takeOffOrLandDrone manualPilotingItf or drone is null")
                   return
               }
 
         if !drone.isManualPilotingActive {
             // Deactivates RTH if it is the current pilotingItf.
             if drone.getPilotingItf(PilotingItfs.returnHome)?.state == .active {
+                ULog.d(.tag, "takeOffOrLandDrone deactivate rth")
                 _ = drone.getPilotingItf(PilotingItfs.returnHome)?.deactivate()
             } else {
+                ULog.d(.tag, "takeOffOrLandDrone activate manual")
                 _ = manualPilotingItf.activate()
             }
         }
@@ -84,15 +100,22 @@ private extension FrontRightButtonViewModel {
         switch manualPilotingItf.smartTakeOffLandAction {
         case .thrownTakeOff:
             if Services.hub.drone.handLaunchService.canStart {
+                ULog.d(.tag, "takeOffOrLandDrone execute thrownTakeOff")
                 manualPilotingItf.thrownTakeOff()
             } else {
+                ULog.d(.tag, "takeOffOrLandDrone execute takeOff")
+                Services.hub.drone.handLaunchService.updateTakeOffButtonPressed(true)
                 manualPilotingItf.takeOff()
             }
         case .takeOff:
+            ULog.d(.tag, "takeOffOrLandDrone action is .takeOff")
+            Services.hub.drone.handLaunchService.updateTakeOffButtonPressed(true)
             manualPilotingItf.takeOff()
         case .land:
+            ULog.d(.tag, "takeOffOrLandDrone action is .land")
             manualPilotingItf.land()
         default:
+            ULog.e(.tag, "takeOffOrLandDrone action is other: \(manualPilotingItf.smartTakeOffLandAction.description)")
             break
         }
     }

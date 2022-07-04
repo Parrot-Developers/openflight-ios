@@ -61,6 +61,38 @@ public extension UIView {
                        })
     }
 
+    /// Animates fade in.
+    ///
+    /// - Parameters:
+    ///    - duration: the fade in animation duration
+    ///    - delay: the delay before trigger the fade in animation
+    ///    - fromAlpha: the view's opacity to animate from
+    ///    - toAlpha: the view's opacity to animate to
+    ///    - completion (optional): the completion block
+    func fadeIn(_ duration: TimeInterval = Style.shortAnimationDuration,
+                delay: TimeInterval = 0,
+                from fromAlpha: CGFloat = 0,
+                to toAlpha: CGFloat = 1,
+                completion: ((Bool) -> Void)? = nil) {
+        alpha = fromAlpha
+        UIView.animate(withDuration: duration, delay: delay, options: .curveEaseOut, animations: {
+            self.alpha = toAlpha
+        }, completion: completion)
+    }
+
+    /// Adds a temporary snapshot of currently rendered view and fades it out after some delay.
+    ///
+    /// - Parameter duration: the delay before fading out the snapshot
+    func addTransitionSnapshot(for duration: TimeInterval = Style.shortAnimationDuration) {
+        let snapshot = snapshotView(afterScreenUpdates: false)
+        addSubview(snapshot)
+        UIView.animate(withDuration: Style.fastAnimationDuration, delay: duration, options: .curveEaseOut) {
+            snapshot?.alpha = 0
+        } completion: { _ in
+            snapshot?.removeFromSuperview()
+        }
+    }
+
     /// Animates showing/hiding of the view from one of its edges.
     ///
     /// - Parameters:

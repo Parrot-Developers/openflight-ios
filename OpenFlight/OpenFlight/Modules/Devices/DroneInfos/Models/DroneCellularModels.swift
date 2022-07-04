@@ -113,7 +113,7 @@ extension DetailsCellularStatus {
         case .airplaneMode:
             return L10n.cellularErrorNoInternetMessage
         case .modemStatusOff:
-            return L10n.cellularDetailsInternalError
+            return L10n.cellularModemOffline
         case .noData:
             return L10n.cellularDetailsDataDisabled
         case .cellularConnected:

@@ -80,7 +80,6 @@ final class PairingCell: UICollectionViewCell, NibReusable, DelayedTaskProvider 
     private enum Constants {
         static let remoteNotRecognizedDelay: Double = 10.0
         static let remoteNotRecognizedTaskKey: String = "remoteNotRecognized"
-        static let droneWaitingDelay: Double = 2.0
         static let droneWaitingTaskKey: String = "droneWaiting"
         static let droneNotDetectedDelay: Double = 15.0
         static let droneNotDetectedTaskKey: String = "droneNotDetected"

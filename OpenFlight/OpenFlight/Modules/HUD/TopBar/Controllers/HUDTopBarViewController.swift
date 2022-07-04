@@ -168,11 +168,10 @@ private extension HUDTopBarViewController {
     /// Called when user taps the Dashboard button.
     @IBAction func dashboardButtonTouchedUpInside(_ sender: Any) {
         LogEvent.log(.simpleButton(LogEvent.LogKeyHUDTopBarButton.dashboard))
-        if topBarViewModel.isBackButtonDisplayed {
-            navigationDelegate?.back()
-        } else {
-            navigationDelegate?.openDashboard()
-        }
+        // Depending which view has opened the HUD, we must navigate throw back to display the correct
+        // previous view. The navigation delegate is responsible to show the Dashboard if no view exist
+        // in the navigation stack.
+        navigationDelegate?.back()
     }
 
     /// Called when user taps the settings button.

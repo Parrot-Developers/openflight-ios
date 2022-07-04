@@ -29,93 +29,66 @@
 
 import UIKit
 import GroundSdk
-
-/// State for `RemoteDetailsInformationsViewModel`.
-final class RemoteDetailsInformationsState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    fileprivate(set) var serialNumber: String = Style.dash
-    fileprivate(set) var hardwareVersion: String = Style.dash
-    fileprivate(set) var firmwareVersion: String = Style.dash
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: remote control connection state
-    ///    - serialNumber: remote serial number
-    ///    - hardwareVersion: hardware version
-    ///    - firmwareVersion: firmware version
-    init(connectionState: DeviceState.ConnectionState,
-         serialNumber: String,
-         hardwareVersion: String,
-         firmwareVersion: String
-    ) {
-        super.init(connectionState: connectionState)
-        self.serialNumber = serialNumber
-        self.hardwareVersion = hardwareVersion
-        self.firmwareVersion = firmwareVersion
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? RemoteDetailsInformationsState else { return false }
-
-        return super.isEqual(to: other)
-            && self.serialNumber == other.serialNumber
-            && self.hardwareVersion == other.hardwareVersion
-            && self.firmwareVersion == other.firmwareVersion
-    }
-
-    override func copy() -> RemoteDetailsInformationsState {
-        let copy = RemoteDetailsInformationsState(connectionState: self.connectionState,
-                                                  serialNumber: self.serialNumber,
-                                                  hardwareVersion: self.hardwareVersion,
-                                                  firmwareVersion: self.firmwareVersion)
-        return copy
-    }
-}
+import Combine
 
 /// View Model for system. It is in charge of filling the remote device system infos.
-final class RemoteDetailsInformationsViewModel: RemoteControlStateViewModel<RemoteDetailsInformationsState> {
+final class RemoteDetailsInformationsViewModel {
+
+    // MARK: - Published Properties
+    @Published private(set) var serialNumber: String = Style.dash
+    @Published private(set) var hardwareVersion: String = Style.dash
+    @Published private(set) var firmwareVersion: String = Style.dash
+
     // MARK: - Private Properties
     private var systemInfoRef: Ref<SystemInfo>?
+    private let connectedRemoteControlHolder: ConnectedRemoteControlHolder
+    private let currentRemoteControlHolder: CurrentRemoteControlHolder
+    private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Override Funcs
-    override func listenRemoteControl(remoteControl: RemoteControl) {
-        super.listenRemoteControl(remoteControl: remoteControl)
+    init(connectedRemoteControlHolder: ConnectedRemoteControlHolder, currentRemoteControlHolder: CurrentRemoteControlHolder) {
+        self.connectedRemoteControlHolder = connectedRemoteControlHolder
+        self.currentRemoteControlHolder = currentRemoteControlHolder
 
-        listenRemoteInfos(remoteControl)
+        currentRemoteControlHolder.remoteControlPublisher
+            .sink { [weak self] remoteControl in
+                guard let self = self else { return }
+                self.listenRemoteInfos(remoteControl)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs
     /// Resets the remote to factory state.
     func resetRemote() {
-        _ = remoteControl?.getPeripheral(Peripherals.systemInfo)?.factoryReset()
+        _ = connectedRemoteControlHolder.remoteControl?.getPeripheral(Peripherals.systemInfo)?.factoryReset()
+    }
+
+    var resetButtonEnabled: AnyPublisher<Bool, Never> {
+        connectedRemoteControlHolder.remoteControlPublisher
+            .map { [weak self] remoteControl in
+                guard self != nil else { return false }
+                guard let remoteControl = remoteControl else { return false }
+                return remoteControl.isConnected
+            }
+            .eraseToAnyPublisher()
     }
 }
 
 // MARK: - Private Funcs
 private extension RemoteDetailsInformationsViewModel {
     /// Starts watcher for remote system infos.
-    func listenRemoteInfos(_ remoteControl: RemoteControl) {
-        systemInfoRef = remoteControl.getPeripheral(Peripherals.systemInfo) { [weak self] _ in
-            self?.updateSystemInfos()
+    func listenRemoteInfos(_ remoteControl: RemoteControl?) {
+        systemInfoRef = remoteControl?.getPeripheral(Peripherals.systemInfo) { [weak self] systemInfo in
+            guard let self = self else { return }
+            self.updateSystemInfos(systemInfos: systemInfo)
         }
-        updateSystemInfos()
     }
 
     /// Updates Remote Control system informations.
-    func updateSystemInfos() {
-        guard let systemInfo = remoteControl?.getPeripheral(Peripherals.systemInfo) else { return }
-
-        let copy = state.value.copy()
-        copy.serialNumber = systemInfo.serial
-        copy.hardwareVersion = systemInfo.hardwareVersion
-        copy.firmwareVersion = systemInfo.firmwareVersion
-        state.set(copy)
+    func updateSystemInfos(systemInfos: SystemInfo?) {
+        guard let systemInfos = systemInfos else { return }
+        serialNumber = systemInfos.serial
+        hardwareVersion = systemInfos.hardwareVersion
+        firmwareVersion = systemInfos.firmwareVersion
     }
 }

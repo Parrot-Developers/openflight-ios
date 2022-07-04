@@ -28,7 +28,7 @@
 //    SUCH DAMAGE.
 
 /// Base settings view model protocol.
-protocol SettingsViewModelProtocol: BaseViewModel<DeviceConnectionState> {
+protocol SettingsViewModelProtocol {
     /// Setting entries list.
     var settingEntries: [SettingEntry] { get }
     /// Optional handler to display informations in a dedicated view.
@@ -43,10 +43,6 @@ protocol SettingsViewModelProtocol: BaseViewModel<DeviceConnectionState> {
 
 /// Default implementation.
 extension SettingsViewModelProtocol {
-    /// Helper to update state with default value.
-    func notifyChange() {
-        state.valueChanged?(state.value)
-    }
 
     /// Save settings entries.
     ///
@@ -55,7 +51,6 @@ extension SettingsViewModelProtocol {
     ///     - index: entry index
     func saveSettingsEntry(_ settingEntry: SettingEntry, at index: Int) {
         settingEntry.save(at: index)
-        notifyChange()
     }
 
     func saveSettings() {

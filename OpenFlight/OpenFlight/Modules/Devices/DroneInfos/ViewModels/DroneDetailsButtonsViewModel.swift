@@ -37,8 +37,8 @@ final class DroneDetailsButtonsViewModel {
 
     // MARK: - Published Properties
 
-    /// Drone's flying state.
-    @Published private(set) var flyingState: FlyingIndicatorsState = .landed
+    /// Whether drone is landed and no hand launch is started, `nil` if flying state is unknown (meaning drone is not connected).
+    @Published private var landed: Bool?
     /// Whether a gimbal calibration is needed.
     @Published private(set) var isGimbalCalibrationNeeded: Bool = false
     /// Whether a gimbal front stereo vision calibration is needed.
@@ -57,6 +57,12 @@ final class DroneDetailsButtonsViewModel {
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
     /// Tells if we can display the cellular modal.
     @Published private(set) var mapThumbnail: UIImage? = Asset.MyFlights.poi.image
+    /// Tells the health of the battery
+    @Published private(set) var batteryHealth: String? = Style.dash
+    /// Tells if the battery button is available
+    @Published private(set) var batteryButtonAvailable: Bool = false
+    /// Publishes the color for the battery subtitle
+    @Published private(set) var batterySubtitleColor: ColorName = .defaultTextColor
 
     // MARK: - Private Properties
     private var gpsRef: Ref<Gps>?
@@ -66,6 +72,7 @@ final class DroneDetailsButtonsViewModel {
     private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var connectionStateRef: Ref<DeviceState>?
+    private var batteryRef: Ref<BatteryInfo>?
     private var cancellables = Set<AnyCancellable>()
     private var currentDrone = Services.hub.currentDroneHolder
     private var cellularService = Services.hub.drone.cellularService
@@ -82,6 +89,7 @@ final class DroneDetailsButtonsViewModel {
                 listenMagnetometer(drone)
                 listenFlyingIndicators(drone: drone)
                 listenConnectionState(drone: drone)
+                listenBatteryInfo(drone)
             }
             .store(in: &cancellables)
 
@@ -141,23 +149,8 @@ final class DroneDetailsButtonsViewModel {
 
     /// Tells if calibration button is available.
     var isCalibrationButtonAvailable: AnyPublisher<Bool, Never> {
-        $connectionState
-            .combineLatest($flyingState)
-            .map { (connectionState, flyingState) in
-                return connectionState == .connected
-                    && flyingState != .flying && flyingState != .emergencyLanding
-            }
-            .eraseToAnyPublisher()
-    }
-
-    /// Tells if wifi password button is available.
-    var isPasswordButtonAvailable: AnyPublisher<Bool, Never> {
-        $connectionState
-            .combineLatest($flyingState)
-            .map { (connectionState, flyingState) in
-                return connectionState == .connected
-                    && flyingState != .flying && flyingState != .emergencyLanding
-            }
+        $landed
+            .map { $0 == true }
             .eraseToAnyPublisher()
     }
 
@@ -304,8 +297,14 @@ private extension DroneDetailsButtonsViewModel {
 
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
-            self?.flyingState = flyingIndicators?.state ?? .landed
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
+            guard let flyingIndicators = flyingIndicators else {
+                // flying state in unknown when drone is not connected
+                landed = nil
+                return
+            }
+            landed = (flyingIndicators.state == .landed && flyingIndicators.landedState != .waitingUserAction)
+            || (flyingIndicators.state == .emergency)
         }
     }
 
@@ -321,6 +320,28 @@ private extension DroneDetailsButtonsViewModel {
         frontStereoGimbalRef = drone.getPeripheral(Peripherals.frontStereoGimbal) { [weak self] frontStereoGimbal in
             self?.updateFrontStereoGimbal(frontStereoGimbal: frontStereoGimbal)
         }
+    }
+
+    /// Starts watcher for battery infos
+    func listenBatteryInfo(_ drone: Drone?) {
+        batteryRef = drone?.getInstrument(Instruments.batteryInfo) { [weak self] batteryInfos in
+            guard let self = self else { return }
+            self.updateBatteryInfo(batteryInfos: batteryInfos)
+        }
+    }
+
+    /// Updates battery infos
+    func updateBatteryInfo(batteryInfos: BatteryInfo?) {
+        guard let batteryInfos = batteryInfos,
+             !batteryInfos.cellVoltages.isEmpty else {
+            batteryHealth = Style.dash
+            batterySubtitleColor = .defaultTextColor
+            batteryButtonAvailable = false
+            return
+        }
+        batteryButtonAvailable = true
+        batterySubtitleColor = .highlightColor
+        batteryHealth = batteryInfos.batteryHealth.flatMap { L10n.batteryHealth + ": " + String($0) + "%" }
     }
 
     /// Updates front stereo gimbal calibration state.

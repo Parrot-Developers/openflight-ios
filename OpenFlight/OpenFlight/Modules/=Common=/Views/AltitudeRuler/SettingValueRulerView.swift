@@ -38,6 +38,9 @@ public protocol SettingValueRulerViewDelegate: AnyObject {
     /// - Parameters:
     ///     - value: current value
     func valueDidChange(_ value: Double)
+
+    /// Called when ruler value will change.
+    func valueWillChange()
 }
 
 // MARK: - Public Enums
@@ -311,6 +314,7 @@ private extension SettingValueRulerView {
                                         : .centeredVertically,
                                     animated: true)
     }
+
 }
 
 // MARK: - UICollectionViewDataSource
@@ -351,6 +355,10 @@ extension SettingValueRulerView: UICollectionViewDataSource {
 extension SettingValueRulerView: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         updateValue(indexPath: indexPath)
+    }
+
+    public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        delegate?.valueWillChange()
     }
 
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {

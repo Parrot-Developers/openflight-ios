@@ -31,5 +31,7 @@ message Event {
         bool stereo_close = 2;
         // Drone is moving/steady (ground)
         bool drone_moving = 3;
+        // Mean depth to closest object
+        float depth_mean = 4;
     }
 }

@@ -33,12 +33,13 @@ import ArcGIS
 public final class FlightPlanOriginGraphic: FlightPlanGraphic {
     // MARK: - Private Enums
     private enum Constants {
-        static let width: CGFloat = 30
-        static let height: CGFloat = 35
-        static let offSetY: CGFloat = 13
+        static let width: CGFloat = 29.0
+        static let height: CGFloat = 30.0
+        static let offSetY: CGFloat = 3
+        static let offSetX: CGFloat = 1.5
         static let borderSize: CGFloat = 5.0
         static let defaultColor: UIColor = ColorName.highlightColor.color
-        static let selectedColor: UIColor = ColorName.blueDodger.color
+        static let selectedColor: UIColor = ColorName.white.color
     }
 
     // MARK: - Internal Properties
@@ -48,8 +49,8 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
     private var arrow: AGSPictureMarkerSymbol?
     /// Heading
     private var headingDegrees: Float = 0
-    /// Magic value to fix heading. -1 when overlay type is draped.
-    private var arcgisMagicValueToFixHeading: Float = 1
+    /// Rotation factor to fix heading. -1 when overlay type is draped.
+    private var rotationFactor: Float = 1
 
     // MARK: - Init
     /// Init.
@@ -59,11 +60,11 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
     public init(origin: WayPoint) {
         let triangleView = TriangleView(frame: CGRect(x: 0, y: 0, width: Constants.width,
                                                       height: Constants.height), color: Constants.defaultColor,
-                                                      externalColor: Constants.selectedColor,
-                                                      borderSize: Constants.borderSize)
+                                                      externalColor: Constants.selectedColor)
         arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
         arrow?.angleAlignment = .map
         arrow?.offsetY = Constants.offSetY
+        arrow?.offsetX = Constants.offSetX
         originWayPoint = origin
         super.init(geometry: origin.agsPoint,
                    symbol: arrow,
@@ -84,17 +85,17 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
                 * cos(coordinateNextWayPoint.latitude.toRadians()) * cos(deltaLong)
             let bearing = atan2(xValue, yValue)
             headingDegrees = Float(bearing.toDegrees())
-            arrow?.angle = Float(headingDegrees) * arcgisMagicValueToFixHeading
+            arrow?.angle = Float(headingDegrees) * rotationFactor
         }
     }
 
-    /// Update arcgis magic number to fix display headingn.
-    func update(magicNumber: Float) {
-        arcgisMagicValueToFixHeading = magicNumber
+    /// Updates rotation factor to fix heading display.
+    func update(rotationFactor: Float) {
+        self.rotationFactor = rotationFactor
         orientationCalculation()
     }
 
-    /// Hides arrow symbol
+    /// Hides arrow symbol.
     func hidden(_ value: Bool) {
         if value {
             symbol = nil

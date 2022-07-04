@@ -47,6 +47,7 @@ final class ExecutionsListViewController: UIViewController {
     @IBOutlet private weak var emptyFlightsDecriptionLabel: UILabel!
     @IBOutlet private weak var emptyLabelStack: UIStackView!
     @IBOutlet private weak var titleLabel: UILabel!
+    @IBOutlet private weak var projectTitleLabel: UILabel!
 
     private enum Constant {
         static let height: CGFloat = 80
@@ -145,6 +146,7 @@ final class ExecutionsListViewController: UIViewController {
         emptyLabelStack.isHidden = !flightItems.isEmpty
         tableView.isHidden = flightItems.isEmpty
         titleLabel.text = L10n.flightPlanHistory
+        projectTitleLabel.text = projectModel.title
         tableView.reloadData()
     }
 
@@ -162,9 +164,8 @@ final class ExecutionsListViewController: UIViewController {
 
     /// Reload flights when there is a change
     private func listenExecutionsChange() {
-        // Update the executions list when FPs (added or removed) or Flights (new Gutma available) have changed.
-        flightPlanRepo.flightPlansDidChangePublisher
-            .combineLatest(flightService.flightsDidChangePublisher)
+        // Update the executions list Flights (new Gutma available) have changed.
+        flightService.flightsDidChangePublisher
             .debounce(for: .seconds(1), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.loadAllExecutions()
@@ -183,7 +184,8 @@ extension ExecutionsListViewController {
         topBar.addShadow()
 
         // Labels
-        titleLabel.makeUp(with: .huge, and: .defaultTextColor)
+        projectTitleLabel.makeUp(with: .big, color: .defaultTextColor)
+        titleLabel.makeUp(with: .smallText, color: .defaultTextColor)
         emptyFlightsTitleLabel.makeUp(with: .huge, and: .defaultTextColor)
         emptyFlightsDecriptionLabel.makeUp(with: .large, and: .defaultTextColor)
     }
@@ -194,7 +196,6 @@ extension ExecutionsListViewController {
         backButtonPublisher?.sink { [weak self] in
             guard let self = self else { return }
             self.delegate?.backDisplay()
-            self.topBarService.goBack()
         }
         .store(in: &cancellables)
     }

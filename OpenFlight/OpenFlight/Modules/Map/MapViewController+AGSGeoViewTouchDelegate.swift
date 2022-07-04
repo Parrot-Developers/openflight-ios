@@ -143,4 +143,20 @@ extension MapViewController: AGSGeoViewTouchDelegate {
 
         lastValidPoints = (nil, nil)
     }
+
+    open func geoViewDidCancelTouchDrag(_ geoView: AGSGeoView) {
+        guard let screenPoint = lastValidPoints.screen, let mapPoint = lastValidPoints.map else { return }
+
+        switch currentMapMode {
+        case .flightPlanEdition:
+            flightPlanHandleTouchUp(geoView, didTouchUpAtScreenPoint: screenPoint, mapPoint: mapPoint)
+        case .standard:
+            customControls?.handleCustomMapTouchUp(mapPoint: mapPoint)
+        default:
+            break
+        }
+
+        lastValidPoints = (nil, nil)
+    }
+
 }

@@ -136,6 +136,7 @@ private extension BuildingHeightMenuViewController {
 
         // Keeps the topBar shadow above the tableView
         stackView.bringSubviewToFront(topBarContainer)
+        topbar?.set(projectTitle: viewModel.savedFlightPlan?.customTitle)
         topbar?.set(title: L10n.flightPlanSettingBuildingHeightTitle)
         topbar?.set(backbuttonVisibility: false)
     }
@@ -176,6 +177,11 @@ extension BuildingHeightMenuViewController: EditionSettingsCellModelDelegate {
     }
 
     func updateChoiceSetting(for key: String?, value: Bool) {
+        // nothing to do
+    }
+
+    func isUpdatingSetting(for key: String?, isUpdating: Bool) {
+        // nothing to do
     }
 }
 

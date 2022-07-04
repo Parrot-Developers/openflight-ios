@@ -41,7 +41,6 @@ public final class PairingCoordinator: Coordinator {
 
     // MARK: - Private Properties
     private weak var delegate: PairingCoordinatorDelegate?
-    private var duringOnboarding: Bool = false
 
     // MARK: - Init
     public init(navigationController: NavigationController? = nil,

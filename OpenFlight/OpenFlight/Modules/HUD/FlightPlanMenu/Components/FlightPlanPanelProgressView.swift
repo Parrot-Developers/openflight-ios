@@ -32,7 +32,7 @@ import Reusable
 
 // MARK: Public Structs
 /// Model for Flight Plan panel progress view display.
-public struct FlightPlanPanelProgressModel {
+public struct FlightPlanPanelProgressModel: Equatable {
     var mainText: String
     var mainColor: UIColor
     var subColor: UIColor
@@ -70,6 +70,7 @@ public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
     // MARK: - Public Properties
     public var model: FlightPlanPanelProgressModel = FlightPlanPanelProgressModel() {
         didSet {
+            guard model != oldValue else { return }
             fill(with: model)
         }
     }
@@ -95,7 +96,9 @@ public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
     ///    - extraViews: array of views to add
     public func setExtraViews(_ extraViews: [UIView]) {
         extraViewsStackView.safelyRemoveArrangedSubviews(deactivateConstraint: false)
-        extraViews.forEach { extraViewsStackView.addArrangedSubview($0) }
+        extraViews
+            .filter { $0.frame != .zero }
+            .forEach { extraViewsStackView.addArrangedSubview($0) }
     }
 }
 
@@ -136,7 +139,7 @@ private extension FlightPlanPanelProgressView {
             : Constants.indeterminateProgressViewMinimumWidths.compact
             progressView.startAnimating()
         }
-        progressView.isHidden = model.hasError
+        progressView.animateIsHiddenInStackView(model.hasError || model.progress == 0)
         // ExtraViews' stackView (e.g. photo upload status) should be hidden:
         //  1 - In case of error (e.g. Drone not connected).
         //  2 - If an indeterminate progress view is displayed (e.g. RTH, navigate to starting point).

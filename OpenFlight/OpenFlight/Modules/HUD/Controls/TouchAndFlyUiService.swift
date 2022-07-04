@@ -88,13 +88,20 @@ extension TouchAndFlyUiServiceImpl {
     func start() {
         editing = false
         cancellables = []
+
         service.targetPublisher
-            .combineLatest(locations.droneLocationPublisher)
+            .removeDuplicates()
+            .combineLatest(locations.droneLocationPublisher.removeDuplicates())
             .sink { [weak self] (target, droneOrientedLocation) in
-                guard self?.draggingStartPoint == nil, let droneCoordinates = droneOrientedLocation.coordinates?.coordinate else { return }
-                self?.lastDroneLocation = CLLocation(latitude: droneCoordinates.latitude, longitude: droneCoordinates.longitude)
-                self?.mapViewController?.clearTouchAndFly()
-                self?.display(target: target)
+                guard let self = self, self.draggingStartPoint == nil else { return }
+
+                if let droneCoordinates = droneOrientedLocation.coordinates?.coordinate {
+                    self.lastDroneLocation = CLLocation(latitude: droneCoordinates.latitude, longitude: droneCoordinates.longitude)
+                }
+                if target == .none {
+                    self.mapViewController?.clearTouchAndFly()
+                }
+                self.display(target: target)
             }
             .store(in: &cancellables)
     }
@@ -104,9 +111,8 @@ extension TouchAndFlyUiServiceImpl {
         case .none:
             return
         case .wayPoint(location: let location, altitude: let altitude, _):
-            guard let droneLocation = lastDroneLocation else { return }
             mapViewController?.displayWayPoint(at: Location3D(coordinate: location, altitude: altitude),
-                                                     droneLocation: droneLocation)
+                                                     droneLocation: lastDroneLocation)
         case .poi(location: let location, altitude: let altitude):
             mapViewController?.displayPoiPoint(at: Location3D(coordinate: location, altitude: altitude))
         }
@@ -148,10 +154,10 @@ extension TouchAndFlyUiServiceImpl {
 
         if case .wayPoint = service.target {
             // There is already a WP on map => move it.
-            service.moveWayPoint(to: location)
+            service.moveWayPoint(to: location, altitude: nil)
         } else {
             // No active WP on map => create new WP.
-            service.setWayPoint(location)
+            service.setWayPoint(location, altitude: nil)
         }
     }
 
@@ -161,10 +167,10 @@ extension TouchAndFlyUiServiceImpl {
 
         if case .poi = service.target {
             // There is already a POI on map => move it.
-            service.movePoi(to: location)
+            service.movePoi(to: location, altitude: nil)
         } else {
             // No active POI on map => create new POI.
-            service.setPoi(location)
+            service.setPoi(location, altitude: nil)
         }
     }
 
@@ -190,9 +196,9 @@ extension TouchAndFlyUiServiceImpl {
         case .none:
             break
         case .wayPoint(location: let location, _, _):
-            service.moveWayPoint(to: location)
+            service.moveWayPoint(to: location, altitude: nil)
         case .poi(location: let location, _):
-            service.movePoi(to: location)
+            service.movePoi(to: location, altitude: nil)
         }
     }
 }

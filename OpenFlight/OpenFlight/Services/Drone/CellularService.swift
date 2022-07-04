@@ -1,10 +1,31 @@
+//    Copyright (C) 2022 Parrot Drones SAS
 //
-//  CellularService.swift
-//  OpenFlight
+//    Redistribution and use in source and binary forms, with or without
+//    modification, are permitted provided that the following conditions
+//    are met:
+//    * Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in
+//      the documentation and/or other materials provided with the
+//      distribution.
+//    * Neither the name of the Parrot Company nor the names
+//      of its contributors may be used to endorse or promote products
+//      derived from this software without specific prior written
+//      permission.
 //
-//  Created by Alexandre G on 24/02/2022.
-//  Copyright © 2022 Parrot Drones SAS. All rights reserved.
-//
+//    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+//    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+//    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+//    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+//    PARROT COMPANY BE LIABLE FOR ANY DIRECT, INDIRECT,
+//    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+//    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+//    OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+//    AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+//    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+//    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+//    SUCH DAMAGE.
 
 import Foundation
 import GroundSdk
@@ -18,6 +39,7 @@ protocol CellularService: AnyObject {
     var cellularStatusPublisher: AnyPublisher<DetailsCellularStatus, Never> { get }
     var operatorNamePublisher: AnyPublisher<String?, Never> { get }
     var isCellularAvailablePublisher: AnyPublisher<Bool, Never> { get }
+    var isCellularAvailable: Bool { get }
 }
 
 final class CellularServiceImpl {
@@ -37,30 +59,28 @@ final class CellularServiceImpl {
         self.connectedDroneHolder = connectedDroneHolder
 
         connectedDroneHolder.dronePublisher
-            .compactMap { $0 }
-            .sink { [weak self] drone in
-                guard let self = self else { return }
-                self.listenCellular(drone)
-                self.listenNetworkControl(drone)
+            .sink { [unowned self] drone in
+                listenCellular(drone)
+                listenNetworkControl(drone)
             }
             .store(in: &cancellables)
     }
 
     /// Updates cellular state.
-    func updateCellularStatus(drone: Drone) {
+    func updateCellularStatus(drone: Drone?) {
         var status: DetailsCellularStatus = .noState
         var operatorName = ""
 
-        guard let cellular = drone.getPeripheral(Peripherals.cellular),
-              drone.isConnected == true else {
+        guard let cellular = drone?.getPeripheral(Peripherals.cellular),
+              drone?.isConnected == true else {
                   updateCellularSubject(with: status)
                   return
               }
 
         // Update the current cellular state.
-        let networkControl = drone.getPeripheral(Peripherals.networkControl)
+        let networkControl = drone?.getPeripheral(Peripherals.networkControl)
         let cellularLink = networkControl?.links.first(where: { $0.type == .cellular })
-        let isDronePaired: Bool = drone.isAlreadyPaired == true
+        let isDronePaired: Bool = drone?.isAlreadyPaired == true
 
         if cellularLink?.status == .running,
            isDronePaired {
@@ -104,20 +124,17 @@ final class CellularServiceImpl {
     }
 
     /// Starts watcher for Cellular.
-    func listenCellular(_ drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] cellular in
-            guard let self = self else { return }
-            self.updateCellularStatus(drone: drone)
-            self.updateCellularAvailability(with: cellular)
+    func listenCellular(_ drone: Drone?) {
+        cellularRef = drone?.getPeripheral(Peripherals.cellular) { [unowned self] cellular in
+            updateCellularStatus(drone: drone)
+            updateCellularAvailability(with: cellular)
         }
-        updateCellularStatus(drone: drone)
-        updateCellularAvailability(with: drone.getPeripheral(Peripherals.cellular))
     }
 
     /// Starts watcher for drone network control.
-    func listenNetworkControl(_ drone: Drone) {
-        networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [weak self] _ in
-            self?.updateCellularStatus(drone: drone)
+    func listenNetworkControl(_ drone: Drone?) {
+        networkControlRef = drone?.getPeripheral(Peripherals.networkControl) { [unowned self] _ in
+            updateCellularStatus(drone: drone)
         }
     }
 
@@ -151,4 +168,5 @@ extension CellularServiceImpl: CellularService {
     var cellularStatusPublisher: AnyPublisher<DetailsCellularStatus, Never> { cellularStatusSubject.eraseToAnyPublisher() }
     var operatorNamePublisher: AnyPublisher<String?, Never> { operatorNameSubject.eraseToAnyPublisher() }
     var isCellularAvailablePublisher: AnyPublisher<Bool, Never> { isCellularAvailableSubject.eraseToAnyPublisher() }
+    var isCellularAvailable: Bool { isCellularAvailableSubject.value }
 }

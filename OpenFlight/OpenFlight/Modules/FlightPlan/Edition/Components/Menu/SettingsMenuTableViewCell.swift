@@ -30,12 +30,19 @@
 import UIKit
 import Reusable
 
+enum SettingsMenuArrowVisibility {
+    case visible
+    case invisible
+    case gone
+}
+
 /// Settings menu table view cell.
-final class SettingsMenuTableViewCell: MainTableViewCell, NibReusable {
+final class SettingsMenuTableViewCell: SettingsTableViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var settingsKey: UILabel!
     @IBOutlet private weak var settingsValue: UILabel!
-    @IBOutlet private weak var arrowImage: UIImageView!
+    @IBOutlet private weak var arrowView: UIView!
+    @IBOutlet private weak var arrowStackView: UIStackView!
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -52,7 +59,7 @@ internal extension SettingsMenuTableViewCell {
     ///
     /// - Parameters:
     ///     - setting: flight plan setting
-    func setup(setting: FlightPlanSetting, showArrow: Bool) {
+    func setup(setting: FlightPlanSetting, arrowVisibility: SettingsMenuArrowVisibility) {
         settingsKey.text = setting.shortTitle ?? setting.title
         if let descriptions = setting.valueDescriptions,
            let current = setting.currentValue,
@@ -70,6 +77,18 @@ internal extension SettingsMenuTableViewCell {
         } else {
             settingsValue.textColor = ColorName.defaultTextColor.color
         }
-        arrowImage.isHidden = !showArrow
+
+        switch arrowVisibility {
+        case .visible:
+            arrowView.isHidden = false
+            arrowStackView.isHidden = false
+
+        case .invisible:
+            arrowView.isHidden = false
+            arrowStackView.isHidden = true
+        case .gone:
+            arrowView.isHidden = true
+            arrowStackView.isHidden = false
+        }
     }
 }

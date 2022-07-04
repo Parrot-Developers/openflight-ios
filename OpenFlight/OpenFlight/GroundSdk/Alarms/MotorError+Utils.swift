@@ -31,6 +31,22 @@ import GroundSdk
 
 /// Utility extension for `MotorError`.
 extension MotorError {
+    /// The banner alert corresponding to current motor error.
+    var bannerAlert: BannerAlert? {
+        switch self {
+        case .batteryVoltage, .lipocells:
+            return CriticalBannerAlert.motorCutoutPowerSupply
+        case .temperature:
+            return CriticalBannerAlert.motorCutoutTemperature
+        case .mosfet, .securityMode, .stalled, .other:
+            return CriticalBannerAlert.motorCutout
+        default:
+            return nil
+        }
+    }
+
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove property.
     /// Returns corresponding error for motor error.
     var error: HUDAlertType? {
         switch self {

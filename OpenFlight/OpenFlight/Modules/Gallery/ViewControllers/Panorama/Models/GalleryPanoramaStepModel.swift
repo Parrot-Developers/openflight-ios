@@ -32,7 +32,7 @@ import UIKit
 typealias GalleryPanoramaStepAction = () -> Void
 
 /// Panorama generation step status possible values.
-enum GalleryPanoramaStepStatus {
+enum GalleryPanoramaStepStatus: String {
     case inactive
     case active
     case success
@@ -129,4 +129,44 @@ struct GalleryPanoramaStepModel {
     var stateIcon: AssetImageTypeAlias? { status.icon(step.descModel.icon) }
     var iconColor: ColorName { status.iconColor }
     var textColor: ColorName { status.textColor }
+}
+
+/// Extension for debug description.
+extension GalleryPanoramaStepContent: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .download: return "download"
+        case .generate(let type): return "generate(\(type?.description ?? "nil"))"
+        case .upload(let source): return "upload(\(source?.description ?? "nil"))"
+        }
+    }
+}
+
+/// Extension for debug description.
+extension GalleryPanoramaStepStatus: CustomStringConvertible {
+    public var description: String { rawValue }
+}
+
+/// Extension for debug description.
+extension GalleryPanoramaStepModel: CustomStringConvertible {
+    public var description: String {
+        "step: \(step), status: \(status)"
+    }
+}
+
+/// Extension for debug description.
+extension PhotoPanoProcessingStatus: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .waiting: return "waiting"
+        case .estimating: return "estimating"
+        case .wrapping: return "wrapping"
+        case .cutting: return "cutting"
+        case .blending: return "blending"
+        case .cancelled: return "cancelled"
+        case .failed: return "failed"
+        case .success: return "success"
+        default: return "unknown"
+        }
+    }
 }

@@ -110,6 +110,25 @@
 "common_drone_not_connected" = "Drone not connected";
 "common_not_connected" = "Not connected";
 "common_confirmation" = "Confirmation";
+"common_image" = "Image";
+"common_save" = "Save";
+/**
+ * Español localization.
+*/
+"battery_total_capacity" = "Total Capacity";
+"battery_health" = "State of health";
+"battery_cycles" = "Cycles";
+"battery_temperature" = "Temperature";
+"battery_serial_number" = "Serial number";
+"battery_total_usage_time" = "Total usage time";
+"battery_first_usage" = "First usage";
+"battery_configuration_date" = "Configuration date";
+"battery" = "Battery";
+"battery_information" = "Battery information";
+"battery_cell_1" = "Cell 1";
+"battery_cell_2" = "Cell 2";
+"battery_cell_3" = "Cell 3";
+"battery_voltage" = "Voltage";
 /**
  * Español localization.
 */
@@ -266,6 +285,8 @@
 "alert_motor_cutout" = "Motors hardware issue";
 "alert_motor_cutout_temperature" = "Motors overheating issue";
 "alert_motor_cutout_power_supply" = "Motors power supply issue";
+"alert_propeller_fault" = "Fault on a propeller";
+"alert_autolanding_propeller_fault" = "Autolanding - fault on a propeller";
 "alert_auto_landing" = "Aterrizaje automático";
 "alert_very_low_battery" = "El dron aterrizará enseguida";
 "alert_no_gps_too_dark" = "Flight quality is not optimal – environment is too dark";
@@ -273,7 +294,6 @@
 "alert_no_gps" = "La calidad de vuelo no es óptima - los vuelos autónomos no están disponibles";
 "alert_heading_lock_ko_perturbation_magnetic" = "Magnetic interference - autonomous flights are unavailable";
 "alert_heading_lock_ko_earth_magnetic" = "Earth magnetic field too low - autonomous flights are unavailable";
-"alert_no_gps_gpslapse" = "La calidad de vuelo no es óptima - GPS Lapse no está disponible";
 "alert_too_much_wind" = "Viento fuerte";
 "alert_strong_imu_vibrations" = "Strong vibrations detected . Check that propellers are tightly screwed.";
 "alert_internal_memory_full" = "Internal memory full";
@@ -281,6 +301,7 @@
 "alert_sdcard_too_slow" = "SD too slow";
 "alert_sd_slow" = "SD Slow";
 "alert_sd_error" = "SD Error";
+"alert_internal_memory_error" = "Internal memory error";
 "alert_no_sdcard_error_title" = "No SD card";
 "alert_no_sdcard_error_desc" = "Media will be saved on the drone’s internal memory.";
 "alert_sdcard_format_error_title" = "SD card format error";
@@ -306,6 +327,8 @@
 "alert_imu_vibrations" = "Vibrations detected . Check that propellers are tightly screwed.";
 "alert_target_lost" = "Objeto perdido";
 "alert_gps_ko" = "GPS tracking connection lost";
+"alert_battery_gauge_update_required" = "Battery software update required";
+"alert_battery_identification_failed" = "Battery identification failed";
 "alert_unauthorized_flight_zone" = "You are not allowed to fly here";
 "alert_take_off" = "Despegue";
 "alert_take_off_waypoint" = "Despegue el dron para crear un waypoint";
@@ -362,6 +385,12 @@
 "takeoff_alert_usb_connection_description" = "The drone can not take off while the USB port is connected. Please disconnect it to take off.";
 "takeoff_alert_modem_updating_title" = "Cellular modem intitializing";
 "takeoff_alert_modem_updating_description" = "The drone can not take off while the cellular modem is initializing. Please try again in a few minutes.";
+"takeoff_alert_drone_controller_gps_unavailable_title" = "Drone GPS and controller GPS unavailable";
+"takeoff_alert_drone_gps_unavailable_title" = "Drone GPS unavailable";
+"takeoff_alert_controller_gps_unavailable_title" = "Controller GPS unavailable";
+"takeoff_alert_gps_unavailable_description" = "Vehicle mission can only start if controller GPS and drone GPS are available.";
+"takeoff_alert_drone_too_far_title" = "Drone too far away";
+"takeoff_alert_drone_too_far_description" = "Vehicle mission can only start when the distance between the drone and the controller is less than %@.";
 "takeoff_alert_default_message" = "Take off is unavailable";
 "remote_alert_shutdown_instruction" = "Press and hold the On / Off button to turn off the remote control";
 "remote_alert_shutdown_success" = "The remote control is switched off";
@@ -377,7 +406,7 @@
 "alert_memory_full_description" = "There is not enough storage space in drone’s memory.\n\nPlease remove some files in order to continue.";
 "ophtalmo_stop_land" = "Land the drone to stop the calibration";
 "alert_oa_drone_stuck_title" = "Obstacle avoidance";
-"alert_oa_drone_stuck_subtitle" = "Drone blocked";
+"alert_oa_drone_stuck_subtitle" = "Motion forbidden";
 "alert_oa_drone_stuck_action_text" = "Disable obstacle avoidance";
 /**
  * Español localization.
@@ -391,16 +420,13 @@
 "flight_plan_project" = "Project";
 "flight_plan_project_name" = "Project name";
 "flight_plan_new" = "New";
-"flight_plan_delete_description" = "You are about to delete this %@ locally and on the cloud.
-Do you wish to continue ?";
-"flight_plan_delete" = "Delete %@ ?";
 "flight_plan_duplicate" = "Duplicate";
 "flight_plan_empty_list_title" = "No project for the moment";
 "flight_plan_empty_list_desc" = "Connect to Parrot Cloud to sync all your projects";
 "flight_plan_see_all" = "See all";
 "flight_plan_current" = "Current project";
 "flight_plan_discard_changes_title" = "Unsaved changes";
-"flight_plan_discard_changes_description" = "Closing the project will discard any changes you've made. Do you want to continue?";
+"flight_plan_discard_changes_description" = "Do you want to save the changes you have made to this project ?";
 "flight_plan_open_recent" = "Open recent project";
 "flight_plan_default_title" = "Flight Plan (%d)";
 "flight_plan_alert_error" = "Flight Plan error";
@@ -408,6 +434,7 @@ Do you wish to continue ?";
 "flight_plan_alert_drone_gps_ko" = "Drone's GPS unavailable";
 "flight_plan_alert_drone_magnetometer_ko" = "Magnetic perturbations";
 "flight_plan_alert_insufficient_battery" = "Insufficient battery";
+"flight_plan_alert_unavailable" = "Flight Plan unavailable";
 "flight_plan_alert_insufficient_memory" = "Insufficient space on SD";
 "flight_plan_alert_cannot_take_off" = "Cannot take off";
 "flight_plan_alert_camera_unavailable" = "Camera unavailable";
@@ -457,9 +484,11 @@ Do you wish to continue ?";
 "flight_plan_setting_building_height_description" = "Building's height is unknown\nPlease enter it manually";
 "flight_plan_setting_building_height_action" = "Define";
 "flight_plan_details_resume_flight_button_title" = "Resume flight";
-"flight_plan_history_execution_completed_description" = "Execution completed";
-"flight_plan_history_execution_incomplete_description" = "Execution incomplete";
+"flight_plan_history_execution_completed_description" = "Completed";
+"flight_plan_history_execution_incomplete_at_description" = "Incomplete (%@)";
+"flight_plan_history_execution_not_synchronized" = "Data not available";
 "flight_plan_details_incomplete_description" = "Incomplete";
+"flight_plan_latest_execution" = "Latest execution";
 "flight_plan_details_status_title" = "Status";
 "drone_navigating_to_flight_plan_starting_point" = "Flying to starting point";
 "flight_plan_execution_name" = "Execution";
@@ -628,9 +657,15 @@ Do you wish to continue ?";
 "settings_connection_dri_learn_more" = "Learn more";
 "settings_connection_dri_name" = "DRI";
 "settings_connection_dri_dialog_title" = "Direct Remote Identification (DRI)";
-"settings_connection_dri_dialog_text" = "Direct Remote Identification (DRI) system makes your drone locally broadcast information about itself for regulatory compliance (where applicable). The DRI message is transmitted in real time during the whole duration of the flight, and through an open and documented transmission protocol. When the DRI function is activated, the drone identification number broadcasted is the one displayed below the activation button.
-Some countries may ask you to register this identification number as well as other information. Please check the local legislation of the country in which you fly.";
+"settings_connection_dri_dialog_text" = "The DRI (Direct Remote Identification) option ensures, in real time, the local broadcast of remote pilot (operator registration number) and drone information (such as the serial number) during the flight. The DRI electronic signal is compliant with European drone regulations.\nFor additional information, consult the regulations in force.\nAccording to European drone regulations for open category: check that the DRI function is turned ON during in-flight operation.";
 "settings_connection_direct_connection" = "Direct connection from PC or smartphone";
+"settings_connection_dri_operator_id" = "Operator registration number";
+"settings_connection_dri_operator_placeholder" = "No operator number";
+"settings_connection_drone_serial_id" = "Drone serial number";
+"settings_edit_dri_description" = "Insert your registration number followed by the key associated.";
+"settings_edit_dri_error_operator_id_length" = "Registration number must contain 16 characters.";
+"settings_edit_dri_error_key_length" = "Key must contain 3 characters.";
+"settings_edit_dri_error_invalid_id" = "Invalid registration number or key.";
 "settings_edit_password_title" = "Cambiar contraseña Wi-Fi";
 "settings_edit_password_description" = "Puede cambiar la contraseña Wi-Fi de Anafi.Tenga en cuenta que el drone se desconectará automáticamente.Recuerde la contraseña porque la necesitará para volver a conectarse.";
 "settings_edit_password_warning" = "If you forget the Wi-Fi password, please follow the factory reset procedure to reinitialize the password.";
@@ -701,7 +736,7 @@ Some countries may ask you to register this identification number as well as oth
 "remote_details_reset_title" = "Controller reset";
 "remote_details_reset_description" = "Resetting your controller will erase the list of associated drones. Are you sure you want to continue ?";
 "remote_details_connect_to_a_drone" = "Connect to a drone";
-"remote_details_connected_drone" = "Connected drone";
+"remote_details_connected_drone" = "Drone";
 "remote_calibration_roll_axe" = "X Axis (Roll)";
 "remote_calibration_yaw_axe" = "Z Axis (Yaw)";
 "remote_calibration_pitch_axe" = "Y Axis(pitch)";
@@ -1050,6 +1085,7 @@ Some countries may ask you to register this identification number as well as oth
 "cellular_connection_drone_timeout_error" = "Drone lost connection";
 "cellular_connection_controller_timeout_error" = "Controller lost connection";
 "cellular_connection_controller_invite_error" = "Controller failed to call the drone";
+"cellular_modem_offline" = "Modem offline";
 /**
  * Español localization.
 */

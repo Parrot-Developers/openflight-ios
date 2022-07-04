@@ -102,6 +102,7 @@ private extension CameraPhotoCaptureServiceImpl {
 
         captureRef = camera.getComponent(Camera2Components.photoCapture) { [unowned self] capture in
             guard let captureState = capture?.state else { return }
+            ULog.i(.tag, "Camera capture state: \(captureState)")
             stateSubject.value = captureState
         }
     }

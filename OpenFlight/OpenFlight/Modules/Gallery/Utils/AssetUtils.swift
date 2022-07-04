@@ -54,6 +54,10 @@ final class AssetUtils {
         var customId: String?
         /// The media customtitle (project and execution names).
         var customTitle: String?
+        /// The media flight date.
+        var flightDate: Date?
+        /// The media boot date.
+        var bootDate: Date?
         /// Whether the media is a panorama.
         var isPanorama: Bool = false
         /// The expected resources count for media (if available).
@@ -185,6 +189,8 @@ extension AssetUtils {
         let mediaInfo = AssetUtils.MediaItemResourceInfo(mediaId: media.uid,
                                                          customId: media.customId,
                                                          customTitle: media.customTitle,
+                                                         flightDate: media.flightDate,
+                                                         bootDate: media.bootDate,
                                                          isPanorama: resource.type == .panorama,
                                                          expectedCount: media.expectedCount)
         mediaResourcesInfo[mediaRelativeUrl] = mediaInfo
@@ -469,10 +475,36 @@ private extension AssetUtils {
     ///     - url: The URL of the resource.
     /// - Returns: The Title of the media containing the resource if found.
     func mediaTitleFromUrl(_ url: URL?) -> String? {
-        guard let mediaRelativeUrl = url?.mediaRelativeUrl else {
+        guard let mediaRelativeUrl = url?.mediaRelativeUrl,
+              let customId = mediaResourcesInfo[mediaRelativeUrl]?.customId,
+              !customId.isEmpty else {
             return nil
         }
         return mediaResourcesInfo[mediaRelativeUrl]?.customTitle
+    }
+
+    /// Returns the flight date of the media containing the resource stored at a specified URL.
+    ///
+    /// - Parameters:
+    ///     - url: The URL of the resource.
+    /// - Returns: The flight date of the media containing the resource if found.
+    func mediaFlightDateFromUrl(_ url: URL?) -> Date? {
+        guard let mediaRelativeUrl = url?.mediaRelativeUrl else {
+            return nil
+        }
+        return mediaResourcesInfo[mediaRelativeUrl]?.flightDate
+    }
+
+    /// Returns the boot date of the media containing the resource stored at a specified URL.
+    ///
+    /// - Parameters:
+    ///     - url: The URL of the resource.
+    /// - Returns: The boot date of the media containing the resource if found.
+    func mediaBootDateFromUrl(_ url: URL?) -> Date? {
+        guard let mediaRelativeUrl = url?.mediaRelativeUrl else {
+            return nil
+        }
+        return mediaResourcesInfo[mediaRelativeUrl]?.bootDate
     }
 
     /// Indicates whether a panorama resource is locally stored at a specified URL.
@@ -589,6 +621,8 @@ private extension AssetUtils {
                                         downloadState: .downloaded,
                                         size: mediaSize,
                                         date: mediaDate,
+                                        flightDate: mediaFlightDateFromUrl(mainMediaUrl),
+                                        bootDate: mediaBootDateFromUrl(mainMediaUrl),
                                         url: mainMediaUrl,
                                         urls: sortedUrls)
         return galleryMedia
@@ -624,6 +658,8 @@ private extension AssetUtils {
                              customId: nil,
                              customTitle: "",
                              creationDate: Date(),
+                             bootDate: nil,
+                             flightDate: nil,
                              expectedCount: expectedCount,
                              photoMode: .single,
                              panoramaType: nil,

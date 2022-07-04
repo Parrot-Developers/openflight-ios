@@ -50,6 +50,7 @@ public class Flight: NSManagedObject {
                            distance: distance,
                            duration: duration,
                            gutmaFile: gutmaFile,
+                           thumbnail: thumbnail?.model(),
                            parrotCloudUploadUrl: parrotCloudUploadUrl,
                            isLocalDeleted: isLocalDeleted,
                            synchroStatus: SynchroStatus(status: synchroStatus),
@@ -57,9 +58,7 @@ public class Flight: NSManagedObject {
                            latestSynchroStatusDate: latestSynchroStatusDate,
                            latestLocalModificationDate: latestLocalModificationDate,
                            fileSynchroStatus: fileSynchroStatus,
-                           fileSynchroDate: fileSynchroDate,
-                           externalSynchroStatus: externalSynchroStatus,
-                           externalSynchroDate: externalSynchroDate)
+                           fileSynchroDate: fileSynchroDate)
     }
 
     public func modelLite() -> FlightModel {
@@ -78,6 +77,7 @@ public class Flight: NSManagedObject {
                            distance: distance,
                            duration: duration,
                            gutmaFile: nil,
+                           thumbnail: thumbnail?.model(),
                            parrotCloudUploadUrl: parrotCloudUploadUrl,
                            isLocalDeleted: isLocalDeleted,
                            synchroStatus: SynchroStatus(status: synchroStatus),
@@ -85,16 +85,14 @@ public class Flight: NSManagedObject {
                            latestSynchroStatusDate: latestSynchroStatusDate,
                            latestLocalModificationDate: latestLocalModificationDate,
                            fileSynchroStatus: fileSynchroStatus,
-                           fileSynchroDate: fileSynchroDate,
-                           externalSynchroStatus: externalSynchroStatus,
-                           externalSynchroDate: externalSynchroDate)
+                           fileSynchroDate: fileSynchroDate)
     }
 
     /// Update from flightModel
     /// - Parameters
     ///     - flightModel: specified FlightModel
     ///     - byUserUpdate: Boolean to know if it is updated by user interaction
-    public func update(fromFlightModel flightModel: FlightModel) {
+    public func update(fromFlightModel flightModel: FlightModel, withThumbnail: Thumbnail?) {
         apcId = flightModel.apcId
         title = flightModel.title
         uuid = flightModel.uuid
@@ -108,7 +106,8 @@ public class Flight: NSManagedObject {
         distance = flightModel.distance
         duration = flightModel.duration
         gutmaFile = flightModel.gutmaFile
-        cloudId = Int64(flightModel.cloudId)
+
+        cloudId = flightModel.cloudId > 0 ? Int64(flightModel.cloudId) : cloudId
         isLocalDeleted = flightModel.isLocalDeleted
         parrotCloudUploadUrl = flightModel.parrotCloudUploadUrl
         latestSynchroStatusDate = flightModel.latestSynchroStatusDate
@@ -118,7 +117,7 @@ public class Flight: NSManagedObject {
         synchroError = flightModel.synchroError?.rawValue ?? 0
         fileSynchroDate = flightModel.fileSynchroDate
         fileSynchroStatus = flightModel.fileSynchroStatus ?? 0
-        externalSynchroDate = flightModel.externalSynchroDate
-        externalSynchroStatus = flightModel.externalSynchroStatus ?? 0
+
+        thumbnail = withThumbnail
     }
 }

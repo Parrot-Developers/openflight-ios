@@ -38,7 +38,7 @@ final class DroneDetailsButtonsViewController: UIViewController {
     @IBOutlet private weak var calibrationButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var firmwareUpdateButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var cellularAccessButtonView: DeviceDetailsButtonView!
-    @IBOutlet private weak var passwordButtonView: DeviceDetailsButtonView!
+    @IBOutlet private weak var batteryButtonView: DeviceDetailsButtonView!
 
     // MARK: - Private Properties
     private var mapViewController: MapViewController?
@@ -68,6 +68,7 @@ final class DroneDetailsButtonsViewController: UIViewController {
         initMap()
         bindToViewModel()
     }
+
 }
 
 // MARK: - Actions
@@ -93,9 +94,8 @@ private extension DroneDetailsButtonsViewController {
         coordinator?.displayDroneDetailsCellular()
     }
 
-    @IBAction func passwordEditionButtonTouchedUpInside(_ sender: Any) {
-        logEvent(with: LogEvent.LogKeyDroneDetailsButtons.informations)
-        coordinator?.displayDronePasswordEdition()
+    @IBAction func batteryButtonTouchedUpInside(_ sender: Any) {
+        coordinator?.displayBatteryInfos()
     }
 }
 
@@ -125,9 +125,9 @@ private extension DroneDetailsButtonsViewController {
         cellularAccessButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.iconCellularDatas.image,
                                                                   title: L10n.droneDetailsCellularAccess,
                                                                   subtitle: "")
-        passwordButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.Drone.icDronePassword.image,
-                                                            title: L10n.droneDetailsWifiPassword,
-                                                            subtitle: nil)
+        batteryButtonView.model = DeviceDetailsButtonModel(mainImage: Asset.MyFlights.battery.image,
+                                                           title: L10n.battery,
+                                                           subtitle: "")
     }
 
     /// Binds the views to the view model
@@ -150,19 +150,36 @@ private extension DroneDetailsButtonsViewController {
             }
             .store(in: &cancellables)
 
+        viewModel.$batteryHealth
+            .removeDuplicates()
+            .sink { [weak self] batteryHealth in
+                guard let self = self else { return }
+                self.batteryButtonView.model?.subtitle = batteryHealth
+            }
+            .store(in: &cancellables)
+
+        viewModel.$batteryButtonAvailable
+            .removeDuplicates()
+            .sink { [weak self] isAvailable in
+                guard let self = self else { return }
+                self.batteryButtonView.isEnabled = isAvailable
+                self.batteryButtonView.alphaWithEnabledState(isAvailable)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$batterySubtitleColor
+            .sink { [weak self] color in
+                guard let self = self else { return }
+                self.batteryButtonView.model?.subtitleColor = color
+            }
+            .store(in: &cancellables)
+
         viewModel.$connectionState
             .combineLatest(viewModel.$lastKnownPosition, viewModel.$mapThumbnail)
             .sink { [unowned self] (connectionState, lastKnownPosition, mapThumbnail) in
                 let displayMap = connectionState == .connected && lastKnownPosition != nil
                 mapContainerView.isHidden = !displayMap
                 mapButtonView.model?.mainImage = displayMap ? nil : mapThumbnail
-            }
-            .store(in: &cancellables)
-
-        viewModel.isPasswordButtonAvailable
-            .sink { [unowned self] isPasswordButtonAvailable in
-                passwordButtonView.isEnabled = isPasswordButtonAvailable
-                passwordButtonView.alphaWithEnabledState(isPasswordButtonAvailable)
             }
             .store(in: &cancellables)
 

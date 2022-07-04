@@ -94,6 +94,8 @@ public protocol FlightPlanProvider {
     var createFirstTitle: String { get }
     /// Default project name.
     var defaultProjectName: String { get }
+    /// Default capture mode.
+    var defaultCaptureMode: FlightPlanCaptureMode { get }
     /// Flight Plan type.
     var typeKey: String { get }
     /// Predicate to filter stored Flight Plan, if needed.
@@ -175,6 +177,13 @@ public protocol FlightPlanSettingsProvider {
     ///     - type: The type of flight plan which we want the settings from
     /// - Returns: The settings for the type of flight plan
     func settings(for type: FlightPlanType) -> [FlightPlanSetting]
+
+    /// Returns the type for a specific type of flight plan.
+    ///
+    /// - Parameters:
+    ///     - flightPlan: The flight plan which we want the type from
+    /// - Returns: The type of the flight plan
+    func type(for flightPlan: FlightPlanModel) -> FlightPlanType?
 }
 
 /// `FlightPlanSettingsProvider` utility extension.
@@ -440,6 +449,8 @@ public struct MissionModeConfigurator {
     var isInstallationRequired: Bool
     /// Returns true if the camera shutter button is enabled
     var isCameraShutterButtonEnabled: Bool
+    /// Returns true if the target is on stream
+    var isTargetOnStream: Bool
 
     /// Default struct init, as public.
     public init(key: String,
@@ -453,7 +464,8 @@ public struct MissionModeConfigurator {
                 isTrackingMode: Bool,
                 isAeLockEnabled: Bool,
                 isInstallationRequired: Bool,
-                isCameraShutterButtonEnabled: Bool) {
+                isCameraShutterButtonEnabled: Bool,
+                isTargetOnStream: Bool) {
         self.key = key
         self.name = name
         self.icon = icon
@@ -475,6 +487,7 @@ public struct MissionModeConfigurator {
         self.isAeLockEnabled = isAeLockEnabled
         self.isInstallationRequired = isInstallationRequired
         self.isCameraShutterButtonEnabled = isCameraShutterButtonEnabled
+        self.isTargetOnStream = isTargetOnStream
     }
 }
 
@@ -515,6 +528,8 @@ public struct MissionMode: Equatable {
     var isTrackingMode: Bool
     /// Returns true if this mode supports AE Lock.
     var isAeLockEnabled: Bool
+    /// Returns true if this mode supports touch in stream
+    var isTargetOnStream: Bool
     /// Returns an array of elements to display in the right stack of the bottom bar.
     var bottomBarRightStack: [ImagingStackElement]
     /// State machine
@@ -565,6 +580,7 @@ public struct MissionMode: Equatable {
         self.isAeLockEnabled = configurator.isAeLockEnabled
         self.isInstallationRequired = configurator.isInstallationRequired
         self.isCameraShutterButtonEnabled = configurator.isCameraShutterButtonEnabled
+        self.isTargetOnStream = configurator.isTargetOnStream
     }
 
     // MARK: - Equatable Implementation

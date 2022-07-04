@@ -45,6 +45,11 @@ extension FlightPlanUnavailabilityReason {
             return L10n.flightPlanAlertCannotTakeOff
         case .cameraUnavailable:
             return L10n.flightPlanAlertCameraUnavailable
+        case .insufficientBattery:
+            return L10n.flightPlanAlertInsufficientBattery
+        case .droneInvalidState:
+            // Do not display any error message if drone state is invalid.
+            return ""
         }
     }
 }

@@ -270,9 +270,11 @@ private extension DroneActionViewModel {
             if Services.hub.drone.handLaunchService.canStart {
                 manualPilotingItf.thrownTakeOff()
             } else {
+                Services.hub.drone.handLaunchService.updateTakeOffButtonPressed(true)
                 manualPilotingItf.takeOff()
             }
         case .takeOff:
+            Services.hub.drone.handLaunchService.updateTakeOffButtonPressed(true)
             manualPilotingItf.takeOff()
         case .land:
             manualPilotingItf.land()

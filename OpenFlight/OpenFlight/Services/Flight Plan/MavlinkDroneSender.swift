@@ -95,7 +95,7 @@ private extension MavlinkDroneSenderImpl {
 
                 // Proper cleanup on resolution
                 let localCompletion: (Result<Bool, MavlinkDroneSenderError>) -> Void = {
-                    cleanup()
+                    self.cleanup()
                     uploadCompletion($0)
                 }
                 guard let pilotingItf = pilotingItf else {

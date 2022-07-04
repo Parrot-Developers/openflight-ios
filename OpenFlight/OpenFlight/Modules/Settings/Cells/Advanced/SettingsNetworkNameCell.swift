@@ -67,8 +67,8 @@ final class SettingsNetworkNameCell: MainTableViewCell, NibReusable {
     func configureCell(viewModel: SettingsNetworkViewModel, showInfo: (() -> Void)? = nil) {
         self.showInfo = showInfo
         self.viewModel = viewModel
-        textfield.text = viewModel.state.value.ssidName
-        enableCell(viewModel.state.value.ssidNameIsEnabled)
+        textfield.text = viewModel.ssidName
+        enableCell(viewModel.ssidNameIsEnabled)
     }
 }
 

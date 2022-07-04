@@ -129,4 +129,8 @@ public struct OrientedLocation: Equatable {
     public var validCoordinates: Location3D? {
         return isValid ? coordinates : nil
     }
+
+    public static func == (lhs: OrientedLocation, rhs: OrientedLocation) -> Bool {
+        return lhs.heading == rhs.heading && lhs.coordinates == rhs.coordinates
+    }
 }

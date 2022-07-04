@@ -43,6 +43,9 @@ public protocol HandLaunchService: AnyObject {
     var canStart: Bool { get }
     /// Disables hand launch until drone is landed again on a stable surface.
     func disabledByUser()
+    /// Updates the takeOffButtonPressed value
+    ///  - Parameter buttonPressed: If the button was pressed
+    func updateTakeOffButtonPressed(_ buttonPressed: Bool)
 }
 
 /// Implementation of `HandLaunchService`.
@@ -64,8 +67,17 @@ public class HandLaunchServiceImpl {
             ULog.d(.tag, "Hand launch disabled: \(disabled)")
         }
     }
+    /// Reset pressed button timer
+    private var resetPressedButtonTimer: Timer?
+    /// Whether the take off button has been pressed
+    private var takeOffButtonPressed = false
     /// Combine cancellables.
     private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - Constants
+    enum Constants {
+        static let resetButtonPressedTimer = TimeInterval(10)
+    }
 
     // MARK: init
 
@@ -96,6 +108,7 @@ private extension HandLaunchServiceImpl {
         dronePublisher.sink { [unowned self] in
             listenFlyingIndicators(drone: $0)
             listenManualPiloting(drone: $0)
+            checkConnectionState(drone: $0)
         }
         .store(in: &cancellables)
     }
@@ -105,7 +118,11 @@ private extension HandLaunchServiceImpl {
     /// - Parameters:
     ///    - drone: the current drone.
     func listenFlyingIndicators(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] _ in
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicator in
+            if flyingIndicator?.flyingState == .flying && takeOffButtonPressed || flyingIndicator?.state == .landed {
+                updateTakeOffButtonPressed(false)
+            }
+
             updateDisabledState()
             updateCanStart()
         }
@@ -119,6 +136,16 @@ private extension HandLaunchServiceImpl {
         manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
             updateDisabledState()
             updateCanStart()
+        }
+    }
+
+    /// Checks the connection state.
+    ///
+    /// - Parameters:
+    ///    - drone: the current drone.
+    func checkConnectionState(drone: Drone) {
+        if !drone.isConnected && takeOffButtonPressed {
+            updateTakeOffButtonPressed(false)
         }
     }
 
@@ -138,7 +165,7 @@ private extension HandLaunchServiceImpl {
     /// Updates hand launch sart availability.
     func updateCanStart() {
         let drone = currentDroneHolder.drone
-        canStartSubject.value = !disabled && drone.isHandLaunchAvailable
+        canStartSubject.value = !disabled && drone.isHandLaunchAvailable && !takeOffButtonPressed
     }
 }
 
@@ -152,5 +179,16 @@ extension HandLaunchServiceImpl: HandLaunchService {
     public func disabledByUser() {
         disabled = true
         updateCanStart()
+    }
+
+    public func updateTakeOffButtonPressed(_ buttonPressed: Bool) {
+        resetPressedButtonTimer?.invalidate()
+        resetPressedButtonTimer = nil
+        takeOffButtonPressed = buttonPressed
+        if buttonPressed {
+            resetPressedButtonTimer = Timer.scheduledTimer(withTimeInterval: Constants.resetButtonPressedTimer, repeats: false) { [unowned self] _ in
+                takeOffButtonPressed = false
+            }
+        }
     }
 }

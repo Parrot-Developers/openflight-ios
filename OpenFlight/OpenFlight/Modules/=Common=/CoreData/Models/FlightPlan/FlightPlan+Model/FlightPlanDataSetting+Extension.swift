@@ -57,12 +57,7 @@ extension FlightPlanDataSetting {
     }
 
     public var captureModeEnum: FlightPlanCaptureMode {
-        get {
-            guard let mode = captureMode,
-                  let enumValue = FlightPlanCaptureMode(rawValue: mode) else { return FlightPlanCaptureMode.defaultValue }
-
-            return enumValue
-        }
+        get { FlightPlanCaptureMode(rawValue: captureMode) ?? FlightPlanCaptureMode.defaultValue }
         set { captureMode = newValue.rawValue }
     }
 
@@ -244,7 +239,7 @@ extension FlightPlanDataSetting {
     ///
     /// - Parameters:
     ///    - shouldContinue: whether global continue mode should be activated
-    func setShouldContinue(_ shouldContinue: Bool) {
+    mutating func setShouldContinue(_ shouldContinue: Bool) {
         self.shouldContinue = shouldContinue
         // FIXME: for now, specific continue mode for each segment is not supported.
         self.wayPoints.forEach { $0.shouldContinue = shouldContinue }
@@ -254,7 +249,7 @@ extension FlightPlanDataSetting {
     ///
     /// - Parameters:
     ///    - lastPointRth: whether drone should land on last waypoint
-    public func setLastPointRth(_ lastPointRth: Bool) {
+    public mutating func setLastPointRth(_ lastPointRth: Bool) {
         self.lastPointRth = lastPointRth
     }
 
@@ -262,69 +257,8 @@ extension FlightPlanDataSetting {
     ///
     /// - Parameters:
     ///    - disconnectionRth: whether drone should return to home on disconnection
-    public func setDisconnectionRth(_ disconnectionRth: Bool) {
+    public mutating func setDisconnectionRth(_ disconnectionRth: Bool) {
         self.disconnectionRth = disconnectionRth
-    }
-
-    /// Adds a waypoint at the end of the Flight Plan.
-    func addWaypoint(_ wayPoint: WayPoint) {
-        let previous = wayPoints.last
-        self.wayPoints.append(wayPoint)
-        wayPoint.previousWayPoint = previous
-        previous?.nextWayPoint = wayPoint
-        wayPoint.updateYawAndRelations()
-    }
-
-    /// Adds a point of interest to the Flight Plan.
-    func addPoiPoint(_ poiPoint: PoiPoint) {
-        self.pois.append(poiPoint)
-    }
-
-    /// Removes waypoint at given index.
-    ///
-    /// - Parameters:
-    ///    - index: waypoint index
-    /// - Returns: removed waypoint, if any
-    @discardableResult
-    func removeWaypoint(at index: Int) -> WayPoint? {
-        guard index < self.wayPoints.count else { return nil }
-
-        let wayPoint = self.wayPoints.remove(at: index)
-        // Update previous and next waypoint yaw.
-        let previous = wayPoint.previousWayPoint
-        let next = wayPoint.nextWayPoint
-        previous?.nextWayPoint = next
-        next?.previousWayPoint = previous
-        previous?.updateYaw()
-        next?.updateYaw()
-
-        return wayPoint
-    }
-
-    /// Removes point of interest at given index.
-    ///
-    /// - Parameters:
-    ///    - index: point of interest index
-    /// - Returns: removed point of interest, if any
-    @discardableResult
-    func removePoiPoint(at index: Int) -> PoiPoint? {
-        guard index < self.pois.count else {
-            return nil
-        }
-        wayPoints.forEach {
-            guard let poiIndex = $0.poiIndex else { return }
-
-            switch poiIndex {
-            case index:
-                $0.poiIndex = nil
-                $0.poiPoint = nil
-            case let supIdx where supIdx > index:
-                $0.poiIndex = poiIndex - 1
-            default:
-                break
-            }
-        }
-        return self.pois.remove(at: index)
     }
 
     /// Sets up initial relations between Flight Plan's objects.
@@ -353,7 +287,7 @@ extension FlightPlanDataSetting {
     /// - Parameters:
     ///     - type: setting's type
     ///     - value: setting's value
-    func updateCaptureSetting(type: ClassicFlightPlanSettingType, value: String?) {
+    mutating func updateCaptureSetting(type: ClassicFlightPlanSettingType, value: String?) {
         guard let value = value else { return }
 
         // Init captureSettings if needed.

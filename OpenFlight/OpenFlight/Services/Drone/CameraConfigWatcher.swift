@@ -42,6 +42,12 @@ public protocol CameraConfigWatcher: AnyObject {
     /// Publisher telling whether camera configuration is updating.
     var updatingPublisher: AnyPublisher<Bool, Never> { get }
 
+    /// Whether the saved camera settings are currently restoring.
+    var isRestoringSavedCameraSettings: Bool { get }
+
+    /// Publisher telling whether the saved camera settings are currently restoring.
+    var isRestoringSavedCameraSettingsPublisher: AnyPublisher<Bool, Never> { get }
+
     /// Notifies `CameraConfigWatcher` when a camera configuration will be applied.
     ///
     /// - Parameters:
@@ -53,6 +59,9 @@ public protocol CameraConfigWatcher: AnyObject {
     /// - Parameters:
     ///    - success: `true` if configuration was applied, `false` otherwise
     func didApplyConfig(success: Bool)
+
+    /// Notifies `CameraConfigWatcher` when restoring the default camera configuration.
+    func restoringSavedCameraSettings()
 }
 
 /// Implementation of `CameraConfigWatcher`.
@@ -68,6 +77,8 @@ public class CameraConfigWatcherImpl {
     private var didApplyConfigSubject = PassthroughSubject<Bool, Never>()
     /// Subject telling whether camera configuration is updating.
     private var updatingSubject = CurrentValueSubject<Bool, Never>(false)
+    /// Subject telling whether the saved camera settings are currently restoring.
+    private var isRestoringSavedCameraSettingsSubject = CurrentValueSubject<Bool, Never>(false)
     /// Combine cancellables.
     private var cancellables = Set<AnyCancellable>()
 
@@ -91,6 +102,9 @@ private extension CameraConfigWatcherImpl {
     /// - Parameter dronePublisher: the drone publisher
     func listen(dronePublisher: AnyPublisher<Drone, Never>) {
         dronePublisher.sink { [unowned self] drone in
+            // Reset the state telling whether we are restoring the saved camera settings.
+            isRestoringSavedCameraSettingsSubject.value = false
+            // Start listening Drone's camera.
             listenCamera(drone: drone)
         }
         .store(in: &cancellables)
@@ -120,11 +134,24 @@ extension CameraConfigWatcherImpl: CameraConfigWatcher {
         updatingSubject.eraseToAnyPublisher()
     }
 
+    public var isRestoringSavedCameraSettings: Bool { isRestoringSavedCameraSettingsSubject.value }
+
+    public var isRestoringSavedCameraSettingsPublisher: AnyPublisher<Bool, Never> {
+        isRestoringSavedCameraSettingsSubject.eraseToAnyPublisher()
+    }
+
     public func willApplyConfig(config: Camera2Editor) {
         willApplyConfigSubject.send(config)
     }
 
     public func didApplyConfig(success: Bool) {
+        // Reset `isRestoringSavedCameraSettingsSubject` state when configuration did apply.
+        isRestoringSavedCameraSettingsSubject.value = false
+        // Propagate the state.
         didApplyConfigSubject.send(success)
+    }
+
+    public func restoringSavedCameraSettings() {
+        isRestoringSavedCameraSettingsSubject.value = true
     }
 }

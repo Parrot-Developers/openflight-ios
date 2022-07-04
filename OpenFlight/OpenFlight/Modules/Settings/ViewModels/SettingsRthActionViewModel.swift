@@ -28,57 +28,24 @@
 //    SUCH DAMAGE.
 
 import GroundSdk
-
-/// State for `SettingsRthActionViewModel`.
-final class SettingsRthActionState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    fileprivate(set) var altitude: Double = RthPreset.defaultAltitude
-    fileprivate(set) var maxAltitude: Double = RthPreset.maxAltitude
-    fileprivate(set) var minAltitude: Double = RthPreset.minAltitude
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Inits.
-    ///
-    /// - Parameters:
-    ///     - connectionState: drone connection state
-    ///     - altitude: rth altitude
-    ///     - maxAltitude: rth max altitude
-    ///     - minAltitude: rth min altitude
-    init(connectionState: DeviceState.ConnectionState,
-         altitude: Double,
-         maxAltitude: Double,
-         minAltitude: Double) {
-        super.init(connectionState: connectionState)
-
-        self.altitude = altitude
-        self.maxAltitude = maxAltitude
-        self.minAltitude = minAltitude
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? SettingsRthActionState else { return false }
-
-        return altitude == other.altitude
-            && maxAltitude == other.maxAltitude
-            && minAltitude == other.minAltitude
-    }
-
-    override func copy() -> SettingsRthActionState {
-        return SettingsRthActionState(connectionState: connectionState,
-                                      altitude: altitude,
-                                      maxAltitude: maxAltitude,
-                                      minAltitude: minAltitude)
-    }
-}
+import Combine
 
 /// Return to home action settings view model used to handle Grid cell management.
-final class SettingsRthActionViewModel: DroneStateViewModel<SettingsRthActionState> {
+final class SettingsRthActionViewModel {
+
+    // MARK: - Published Properties
+
+    @Published private(set) var altitude: Double = RthPreset.defaultAltitude
+    @Published private(set) var maxAltitude: Double = RthPreset.maxAltitude
+    @Published private(set) var minAltitude: Double = RthPreset.minAltitude
+
     // MARK: - Private Properties
+
+    private var currentDroneHolder: CurrentDroneHolder
+    private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - Ground SDK references
+
     private var returnHomePilotingRef: Ref<ReturnHomePilotingItf>?
 
     // MARK: - Deinit
@@ -86,11 +53,15 @@ final class SettingsRthActionViewModel: DroneStateViewModel<SettingsRthActionSta
         returnHomePilotingRef = nil
     }
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
+    init(currentDroneHolder: CurrentDroneHolder) {
+        self.currentDroneHolder = currentDroneHolder
 
-        listenReturnHome(drone)
+        currentDroneHolder.dronePublisher
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenReturnHome(drone)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs
@@ -99,7 +70,7 @@ final class SettingsRthActionViewModel: DroneStateViewModel<SettingsRthActionSta
     /// - Parameters:
     ///     - altitude: altitude to save
     func saveRth(altitude: Double) {
-        drone?.getPilotingItf(PilotingItfs.returnHome)?.minAltitude?.value = altitude
+        currentDroneHolder.drone.getPilotingItf(PilotingItfs.returnHome)?.minAltitude?.value = altitude
     }
 }
 
@@ -109,13 +80,11 @@ private extension SettingsRthActionViewModel {
     func listenReturnHome(_ drone: Drone) {
         returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] rth in
             guard let rth = rth,
-                  let minAltitude = rth.minAltitude else { return }
+                  let currentMinAltitude = rth.minAltitude else { return }
 
-            let copy = state.value.copy()
-            copy.altitude = minAltitude.value
-            copy.minAltitude = minAltitude.min
-            copy.maxAltitude = minAltitude.max
-            state.set(copy)
+            altitude = currentMinAltitude.value
+            minAltitude = currentMinAltitude.min
+            maxAltitude = currentMinAltitude.max
         }
     }
 }

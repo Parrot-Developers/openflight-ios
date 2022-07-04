@@ -157,6 +157,7 @@ final class RemoteUpdateViewModel: DevicesStateViewModel<RemoteUpdateState> {
     /// Starts update of the firmware.
     func startUpdate() {
         remoteControl?.getPeripheral(Peripherals.updater)?.updateToLatestFirmware()
+        state.value.currentProgress = 0
     }
 
     /// Cancels the download or the update.
@@ -193,11 +194,12 @@ private extension RemoteUpdateViewModel {
     ///     - remoteControl: current remote
     func listenUpdater(_ remoteControl: RemoteControl) {
         remoteControlUpdaterRef = remoteControl.getPeripheral(Peripherals.updater) { [weak self] updater in
-            guard let updater = updater else { return }
+            guard let self = self,
+                  let updater = updater else { return }
 
-            self?.updateFirmwareVersion(updater)
-            self?.updateCurrentDownload(updater)
-            self?.updateCurrentUpdate(updater)
+            self.updateFirmwareVersion(updater)
+            self.updateCurrentDownload(updater)
+            self.updateCurrentUpdate(updater)
         }
     }
 

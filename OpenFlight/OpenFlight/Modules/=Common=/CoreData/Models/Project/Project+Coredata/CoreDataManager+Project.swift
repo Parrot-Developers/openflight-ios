@@ -70,8 +70,8 @@ public protocol ProjectRepository: AnyObject {
     /// - Parameters:
     ///    - projectModels: List of ProjectModels to save or update
     ///    - byUserUpdate: Boolean if updated by user interaction
-    ///    - toSynchro: Boolean if should be synchro
-    func saveOrUpdateProjects(_ projectModels: [ProjectModel], byUserUpdate: Bool, toSynchro: Bool)
+    ///    - completion: The callback returning the status.
+    func saveOrUpdateProjects(_ projectModels: [ProjectModel], byUserUpdate: Bool, toSynchro: Bool, completion: ((Bool) -> Void)?)
 
     /// Reset CloudId and synchro flag of Project from UUIDs
     /// - Parameter uuids: List of UUIDs to search
@@ -107,9 +107,39 @@ public protocol ProjectRepository: AnyObject {
     /// - Returns List of ProjectModels ordered by descending last execution date
     func getExecutedProjectsWithFlightPlans() -> [ProjectModel]
 
+    /// Get ProjectModels with at least one already executed flight plan
+    /// - Parameters:
+    ///    - offset: offset start in all projects
+    ///    - limit: maximum number of projects to get
+    /// - Returns List of ProjectModels ordered by descending last execution date
+    func getExecutedProjectsWithFlightPlans(offset: Int, limit: Int, withType: ProjectType?) -> [ProjectModel]
+
     /// Get count of all Projects
     /// - Returns: Count of all Projects
     func getAllProjectsCount() -> Int
+
+    /// Get count of Projects with specific type
+    /// - Parameter type: Type of project
+    /// - Returns: Count of projects matching type
+    func getProjectsCount(withType type: String) -> Int
+
+    /// Get count of  executed Projects with specific type
+    /// - Parameter type: Type of project
+    /// - Returns: Count of projects matching type
+    func getExecutedProjectsCount(withType type: String?) -> Int
+
+    /// Get ProjectModels from all Projects with an editable flight plan in CoreData
+    /// - Parameter type: Type of project
+    /// - Returns List of ProjectModels
+    func getProjectsWithEditable(withType type: String?) -> [ProjectModel]
+
+    /// Get ProjectModels from a specific offset and number of flights with an editable flight plan in CoreData
+    /// - Parameters:
+    ///    - offset: offset start
+    ///    - limit: maximum number of projects to get
+    ///    - type: Type of project
+    /// - Returns List of ProjectModels
+    func getProjectsWithEditable(offset: Int, limit: Int, withType type: String?) -> [ProjectModel]
 
     /// Get ProjectModels from all Projects in CoreData
     /// - Returns List of ProjectModels
@@ -122,6 +152,13 @@ public protocol ProjectRepository: AnyObject {
     /// Get all ProjectModels locally modified from Projects in CoreData
     /// - Returns:  List of ProjectModels
     func getAllModifiedProjects() -> [ProjectModel]
+
+    /// Get projects that are considered odd
+    ///     - projects with no editable flight plan
+    ///     - projects with multiple editable flight plan
+    ///     - projects with empty flight plans
+    /// - Parameter completion: the completion closure when finished
+    func getOddProjects(_ completion: @escaping (([ProjectModel]) -> Void))
 
     // MARK: __ __ Get Flight Plans
     /// Get FlightPlanModels of ProjectModel
@@ -136,8 +173,10 @@ public protocol ProjectRepository: AnyObject {
 
     // MARK: __ Delete
     /// Delete Project from UUID
-    /// - Parameter uuid: Project's UUID to search
-    func deleteOrFlagToDeleteProject(withUuid uuid: String)
+    /// - Parameters
+    ///     - uuids: List of project's UUID to remove
+    ///     - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteOrFlagToDeleteProjects(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?)
 
     /// Delete from CoreData the Project with specified `uuid`.
     /// - Parameters:
@@ -248,13 +287,65 @@ extension CoreDataServiceImpl: ProjectRepository {
         saveOrUpdateProject(projectModel, byUserUpdate: byUserUpdate, toSynchro: toSynchro, completion: nil)
     }
 
-    public func saveOrUpdateProjects(_ projectModels: [ProjectModel], byUserUpdate: Bool, toSynchro: Bool) {
-        for projectModel in projectModels {
-            saveOrUpdateProject(projectModel, byUserUpdate: byUserUpdate, toSynchro: false)
-        }
-        if byUserUpdate && toSynchro {
-            self.latestProjectLocalModificationDate.send(Date())
-        }
+    public func saveOrUpdateProjects(_ projectModels: [ProjectModel], byUserUpdate: Bool, toSynchro: Bool, completion: ((Bool) -> Void)?) {
+        var modifDate: Date?
+        var newProjects: [ProjectModel] = []
+
+        let projectUuids = projectModels.compactMap { $0.uuid }
+        performAndSave({ [unowned self] _ in
+            let projects = getProjectsCD(withUuids: projectUuids)
+
+            for var projectModel in projectModels {
+                var isNewProject = false
+
+                var projectObj: Project?
+                if let existingProject = projects.first(where: { $0.uuid == projectModel.uuid }) {
+                    projectObj = existingProject
+                } else if let newProject = insertNewObject(entityName: Project.entityName) as? Project {
+                    projectObj = newProject
+                    isNewProject = true
+                }
+
+                if let project = projectObj {
+                    if byUserUpdate {
+                        modifDate = Date()
+                        projectModel.latestLocalModificationDate = modifDate
+                    }
+                    if isNewProject {
+                        newProjects.append(projectModel)
+                    }
+
+                    let logMessage = """
+                        🗂⬇️ saveOrUpdateProject: \(project), \
+                        byUserUpdate: \(byUserUpdate), toSynchro: \(toSynchro), \
+                        projectModel: \(projectModel)
+                    """
+                    ULog.d(.dataModelTag, logMessage)
+
+                    project.update(fromProjectModel: projectModel)
+                }
+            }
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                if let modifDate = modifDate, toSynchro {
+                    latestProjectLocalModificationDate.send(modifDate)
+                }
+
+                projectsDidChangeSubject.send()
+
+                // Propagate the project addition event.
+                if !newProjects.isEmpty { projectsAddedSubject.send(newProjects) }
+
+                completion?(true)
+            case .failure(let error):
+                let uuids = projectModels.compactMap({ $0.uuid })
+                ULog.e(.dataModelTag, "Error saveOrUpdateProject UUIDs: \(uuids.joined(separator: ", ")) - error: \(error)")
+                completion?(false)
+            }
+        })
     }
 
     public func resetProjectsCloudId(withUuids uuids: [String]) {
@@ -284,7 +375,7 @@ extension CoreDataServiceImpl: ProjectRepository {
     }
 
     public func getProjects(withUuids uuids: [String]) -> [ProjectModel] {
-        return getProjectsCD(withUuids: uuids).map({ $0.model() })
+        return getProjectsCD(withUuids: uuids).map({ $0.modelWithFlightPlan() })
     }
 
     public func getProject(withCloudId cloudId: Int) -> ProjectModel? {
@@ -299,6 +390,22 @@ extension CoreDataServiceImpl: ProjectRepository {
         return getAllProjectsCountCD(toBeDeleted: false)
     }
 
+    public func getProjectsCount(withType type: String) -> Int {
+        return getProjectsCountCD(withType: type, toBeDeleted: false)
+    }
+
+    public func getExecutedProjectsCount(withType type: String?) -> Int {
+        return getExecutedProjectsCountCD(withType: type, toBeDeleted: false)
+    }
+
+    public func getProjectsWithEditable(withType type: String?) -> [ProjectModel] {
+        return getProjectsWithEditableCD(withType: type, toBeDeleted: false).map({ $0.modelWithFlightPlan() })
+    }
+
+    public func getProjectsWithEditable(offset: Int, limit: Int, withType type: String?) -> [ProjectModel] {
+        return getProjectsWithEditableCD(offset: offset, limit: limit, withType: type, toBeDeleted: false).map({ $0.modelWithFlightPlan() })
+    }
+
     public func getAllProjects() -> [ProjectModel] {
         return getAllProjectsCD(toBeDeleted: false).map({ $0.model() })
     }
@@ -308,7 +415,7 @@ extension CoreDataServiceImpl: ProjectRepository {
     }
 
     public func getExecutedProjectsWithFlightPlans() -> [ProjectModel] {
-        return getAllProjectsCD(toBeDeleted: false)
+        return getProjectsWithEditableCD(withType: nil, toBeDeleted: false)
             .filter {
                 $0.flightPlans?.contains(where: {
                     $0.lastMissionItemExecuted > 0 && $0.model().hasReachedFirstWayPoint
@@ -327,8 +434,33 @@ extension CoreDataServiceImpl: ProjectRepository {
             .map { $0.modelWithFlightPlan() }
     }
 
+    public func getExecutedProjectsWithFlightPlans(offset: Int, limit: Int, withType: ProjectType?) -> [ProjectModel] {
+        return getExecutedProjectsCD(offset: offset, limit: limit, withType: withType?.rawValue, toBeDeleted: false)
+            .sorted { project1, project2 in
+                let date1 = project1.flightPlans?
+                    .compactMap { $0.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() }
+                    .max()
+                let date2 = project2.flightPlans?
+                    .compactMap { $0.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() }
+                    .max()
+                guard let date1 = date1 else { return false }
+                guard let date2 = date2 else { return true }
+                return date1 > date2
+            }
+            .map { $0.modelWithFlightPlan() }
+    }
+
     public func getAllModifiedProjects() -> [ProjectModel] {
         return getProjectsCD(withQuery: "latestLocalModificationDate != nil").map({ $0.model() })
+    }
+
+    public func getOddProjects(_ completion: @escaping (([ProjectModel]) -> Void)) {
+        getOddProjectsCD { projects in
+            let projectModels = projects.compactMap({ $0.modelWithFlightPlan() })
+            DispatchQueue.main.async {
+                completion(projectModels)
+            }
+        }
     }
 
     // MARK: __ __ Get Flight Plan
@@ -354,30 +486,38 @@ extension CoreDataServiceImpl: ProjectRepository {
     }
 
     // MARK: __ Delete
-    public func deleteOrFlagToDeleteProject(withUuid uuid: String) {
+    public func deleteOrFlagToDeleteProjects(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?) {
+        guard !uuids.isEmpty else {
+            completion?(true)
+            return
+        }
         var modifDate: Date?
-        var deletedProject: ProjectModel?
+        var deletedProjects: [ProjectModel] = []
 
         performAndSave({ [unowned self] context in
-            guard let project = getProjectCD(withUuid: uuid) else {
+            let projects = getProjectsCD(withUuids: uuids)
+            guard !projects.isEmpty else {
+                completion?(false)
                 return false
             }
 
-            // Check and remove related FlightPlan
-            project.flightPlans?.forEach({
-                deleteOrFlagToDeleteFlightPlan(withUuid: $0.model().uuid)
-            })
-            project.flightPlans = nil
+            projects.forEach({
+                // Check and remove related FlightPlan
+                if let flightPlanUuids = $0.flightPlans?.compactMap({ $0.uuid }) {
+                    deleteOrFlagToDeleteFlightPlans(withUuids: flightPlanUuids, completion: nil)
+                }
+                $0.flightPlans = nil
 
-            // delete only if it exists in CoreData
-            if project.cloudId == 0 {
-                deletedProject = project.model()
-                context.delete(project)
-            } else {
-                modifDate = Date()
-                project.latestLocalModificationDate = modifDate
-                project.isLocalDeleted = true
-            }
+                // delete only if it exists in CoreData
+                if $0.cloudId == 0 {
+                    deletedProjects.append($0.model())
+                    context.delete($0)
+                } else {
+                    modifDate = Date()
+                    $0.latestLocalModificationDate = modifDate
+                    $0.isLocalDeleted = true
+                }
+            })
 
             return true
         }, { [unowned self] result in
@@ -389,11 +529,13 @@ extension CoreDataServiceImpl: ProjectRepository {
 
                 self.projectsDidChangeSubject.send()
                 // Propagate the projects deletion event.
-                if let deletedProject = deletedProject {
-                    projectsRemovedSubject.send([deletedProject])
+                if !deletedProjects.isEmpty {
+                    projectsRemovedSubject.send(deletedProjects)
                 }
+                completion?(true)
             case .failure(let error):
-                ULog.e(.dataModelTag, "Error deleteAndAddToRemoveProject with UUID: \(uuid) - error: \(error.localizedDescription)")
+                ULog.e(.dataModelTag, "Error deleteAndAddToRemoveProject with UUID: \(uuids.joined(separator: ", ")) - error: \(error.localizedDescription)")
+                completion?(false)
             }
         })
     }
@@ -482,40 +624,19 @@ extension CoreDataServiceImpl: ProjectRepository {
 // MARK: - Internal
 internal extension CoreDataServiceImpl {
     func getAllProjectsCountCD(toBeDeleted: Bool?) -> Int {
-        let fetchRequest = Project.fetchRequest()
+        return fetchCount(request: getAllProjectsFetchRequest(toBeDeleted: toBeDeleted))
+    }
 
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+    func getProjectsCountCD(withType type: String, toBeDeleted: Bool?) -> Int {
+        return fetchCount(request: getProjectsFetchRequest(withType: type, toBeDeleted: toBeDeleted))
+    }
 
-        if let toBeDeleted = toBeDeleted {
-            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
-
-            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
-            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
-            fetchRequest.predicate = compoundPredicates
-        } else {
-            fetchRequest.predicate = apcIdPredicate
-        }
-
-        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdated", ascending: false)
-        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
-
-        return fetchCount(request: fetchRequest)
+    func getExecutedProjectsCountCD(withType type: String?, toBeDeleted: Bool?) -> Int {
+        return fetchCount(request: getExecutedProjectsFetchRequest(withType: type, toBeDeleted: toBeDeleted))
     }
 
     func getAllProjectsCD(toBeDeleted: Bool?) -> [Project] {
-        let fetchRequest = Project.fetchRequest()
-
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
-
-        if let toBeDeleted = toBeDeleted {
-            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
-
-            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
-            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
-            fetchRequest.predicate = compoundPredicates
-        } else {
-            fetchRequest.predicate = apcIdPredicate
-        }
+        let fetchRequest = getAllProjectsFetchRequest(toBeDeleted: toBeDeleted)
 
         let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdated", ascending: false)
         fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
@@ -523,24 +644,44 @@ internal extension CoreDataServiceImpl {
         return fetch(request: fetchRequest)
     }
 
+    func getProjectsWithEditableCD(withType type: String?, toBeDeleted: Bool?) -> [Project] {
+        let fetchRequest = getEditableProjectsFetchRequest(withType: type, toBeDeleted: toBeDeleted)
+
+        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdated", ascending: false)
+        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getProjectsWithEditableCD(offset: Int, limit: Int, withType type: String?, toBeDeleted: Bool?) -> [Project] {
+        let fetchRequest = getEditableProjectsFetchRequest(withType: type, toBeDeleted: toBeDeleted)
+
+        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdated", ascending: false)
+        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
+
+        fetchRequest.fetchOffset = max(offset, 0)
+        fetchRequest.fetchLimit = max(limit, 1)
+        // - fetchRequest gets all items if fetchLimit is 0, in order to avoid some misuse of this method that can get all projects
+        // the limit should be limited to 1, use instead an explicit method if it should get all data
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getExecutedProjectsCD(offset: Int, limit: Int, withType type: String?, toBeDeleted: Bool?) -> [Project] {
+        let fetchRequest = getExecutedProjectsFetchRequest(withType: type, toBeDeleted: toBeDeleted)
+
+        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdated", ascending: false)
+        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
+
+        fetchRequest.fetchOffset = offset >= 0 ? offset : 0
+        fetchRequest.fetchLimit = limit >= 1 ? limit : 1
+        // - fetchRequest gets all items if fetchLimit is 0
+
+        return fetch(request: fetchRequest)
+    }
+
     func getProjectsCD(withType type: String, toBeDeleted: Bool?) -> [Project] {
-        let fetchRequest = Project.fetchRequest()
-
-        var subPredicateList: [NSPredicate] = []
-
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
-        subPredicateList.append(apcIdPredicate)
-
-        let typePredicate = NSPredicate(format: "type == %@", type)
-        subPredicateList.append(typePredicate)
-
-        if let toBeDeleted = toBeDeleted {
-            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
-            subPredicateList.append(parrotToBeDeletedPredicate)
-        }
-
-        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
-        fetchRequest.predicate = compoundPredicates
+        let fetchRequest = getProjectsFetchRequest(withType: type, toBeDeleted: toBeDeleted)
 
         let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdated", ascending: false)
         fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
@@ -611,5 +752,118 @@ internal extension CoreDataServiceImpl {
 
     func getProjectsCD(withQuery query: String) -> [Project] {
         objects(withQuery: query)
+    }
+
+    func getOddProjectsCD(_ completion: @escaping (([Project]) -> Void)) {
+        let fetchRequest = Project.fetchRequest()
+
+        let editableState = FlightPlanModel.FlightPlanState.editable.rawValue
+        let emptyEditablePredicate = NSPredicate(format: "SUBQUERY(flightPlans, $fp, $fp.state CONTAINS \"\(editableState)\").@count == 0")
+        let multipleEditablePredicate = NSPredicate(format: "SUBQUERY(flightPlans, $fp, $fp.state CONTAINS \"\(editableState)\").@count > 1")
+        let noFlightPlanPredicate = NSPredicate(format: "flightPlans.@count == 0")
+        let subPredicateList: [NSPredicate] = [emptyEditablePredicate, multipleEditablePredicate, noFlightPlanPredicate]
+
+        fetchRequest.predicate = NSCompoundPredicate.init(type: .or, subpredicates: subPredicateList)
+
+        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdated", ascending: true)
+        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
+
+        return fetch(request: fetchRequest, completion: completion)
+    }
+}
+
+// MARK: - Private
+private extension CoreDataServiceImpl {
+    func getAllProjectsFetchRequest(toBeDeleted: Bool?) -> NSFetchRequest<Project> {
+        let fetchRequest = Project.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+
+            let subPredicateList: [NSPredicate] = [apcIdPredicate, parrotToBeDeletedPredicate]
+            let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+            fetchRequest.predicate = compoundPredicates
+        } else {
+            fetchRequest.predicate = apcIdPredicate
+        }
+
+        return fetchRequest
+    }
+
+    func getProjectsFetchRequest(withType type: String, toBeDeleted: Bool?) -> NSFetchRequest<Project> {
+        let fetchRequest = Project.fetchRequest()
+
+        var subPredicateList: [NSPredicate] = []
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let typePredicate = NSPredicate(format: "type == %@", type)
+        subPredicateList.append(typePredicate)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+            subPredicateList.append(parrotToBeDeletedPredicate)
+        }
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
+
+        return fetchRequest
+    }
+
+    func getExecutedProjectsFetchRequest(withType type: String?, toBeDeleted: Bool?) -> NSFetchRequest<Project> {
+        let fetchRequest = Project.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        var subPredicateList: [NSPredicate] = [apcIdPredicate]
+
+        let editableState = FlightPlanModel.FlightPlanState.editable.rawValue
+        let editablePredicate = NSPredicate(format: "SUBQUERY(flightPlans, $fp, $fp.state CONTAINS \"\(editableState)\").@count > 0")
+        subPredicateList.append(editablePredicate)
+
+        let executedPredicate = NSPredicate(format: "SUBQUERY(flightPlans, $fp, $fp.lastMissionItemExecuted > 0).@count > 0")
+        subPredicateList.append(executedPredicate)
+
+        if let type = type {
+            let typePredicate = NSPredicate(format: "type == %@", type)
+            subPredicateList.append(typePredicate)
+        }
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+            subPredicateList.append(parrotToBeDeletedPredicate)
+        }
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
+
+        return fetchRequest
+    }
+
+    func getEditableProjectsFetchRequest(withType type: String?, toBeDeleted: Bool?) -> NSFetchRequest<Project> {
+        let fetchRequest = Project.fetchRequest()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        var subPredicateList: [NSPredicate] = [apcIdPredicate]
+
+        let editableState = FlightPlanModel.FlightPlanState.editable.rawValue
+        let editablePredicate = NSPredicate(format: "SUBQUERY(flightPlans, $fp, $fp.state CONTAINS \"\(editableState)\").@count > 0")
+        subPredicateList.append(editablePredicate)
+
+        if let type = type {
+            let typePredicate = NSPredicate(format: "type == %@", type)
+            subPredicateList.append(typePredicate)
+        }
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+            subPredicateList.append(parrotToBeDeletedPredicate)
+        }
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
+
+        return fetchRequest
     }
 }

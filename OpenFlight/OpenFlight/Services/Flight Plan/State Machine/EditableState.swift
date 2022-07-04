@@ -73,25 +73,23 @@ open class EditableState: GKState {
     }
 
     public func forceEditable() {
-        guard flightPlan.state != .editable else { return }
-        // there should be only one flightplan in .editable state in one project
-        // otherwise delete it
+        guard flightPlan.state != .editable,
+              let editableFP = flightPlanManager.editableFlightPlansFor(projectId: flightPlan.projectUuid).first
+        else { return }
 
-        // get all flight plans which are part of the flightplan project
-        let editableFPs = flightPlanManager.editableFlightPlansFor(projectId: flightPlan.projectUuid)
-        editableFPs.forEach { (flightplan) in
-            flightPlanManager.delete(flightPlan: flightplan)
+        // Delete, if needed, the previous execution.
+        if mustDelete(flightPlan: flightPlan) {
+            flightPlanManager.delete(flightPlan: flightPlan)
         }
-
-        // duplicate the flightplan to edit it
-        flightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan, save: true)
-        // Reset, if needed, the customTitle to the project title.
-        flightPlan = projectManager.resetExecutionCustomTitle(for: flightPlan)
+        // Update the current FP.
+        flightPlan = editableFP
     }
 
-    open func flightPlanWasUpdated(_ flightPlan: FlightPlanModel) {
+    open func flightPlanWasUpdated(_ flightPlan: FlightPlanModel, propagateToEditionService: Bool) {
         self.flightPlan = flightPlan
-        edition.setupFlightPlan(flightPlan)
+        if propagateToEditionService {
+            edition.setupFlightPlan(flightPlan)
+        }
     }
 
     public override func isValidNextState(_ stateClass: AnyClass) -> Bool {
@@ -101,5 +99,28 @@ open class EditableState: GKState {
 
     public override func willExit(to nextState: GKState) {
         cancellables = []
+    }
+}
+
+// MARK: - Private extension
+private extension EditableState {
+    /// Whether the flight plan must be deleted.
+    ///  - Parameter flightPlan: the flight plan to check
+    ///  - Returns `true` if flight plan must be deleted and `false` otherwise
+    ///
+    ///  - Note: An execution (i.e. a 'non editable' FP) must be deleted if it has been stopped
+    ///          before reaching its first way point.
+    func mustDelete(flightPlan: FlightPlanModel) -> Bool {
+        // If flight plan has reached the first way point, it's a 'valid' execution
+        // and it must not be deleted.
+        guard !flightPlan.hasReachedFirstWayPoint else { return false }
+        // There are some cases where the Drone still continues the execution
+        // even if the app tried to stop it (e.g. opening another project when connection
+        // with drone is lost after the execution started).
+        // In these specific cases, execution must not be deleted to let the possibility
+        // to catch up the running execution after the re-connection.
+        // Ensure the drone is not disconnected the delete the execution which have not
+        // reached the firdt WP.
+        return startAvailabilityWatcher.availabilityForRunning != .unavailable(.droneDisconnected)
     }
 }

@@ -63,7 +63,7 @@ public class Thumbnail: NSManagedObject {
         latestSynchroStatusDate = thumbnailModel.latestSynchroStatusDate
         fileSynchroDate = thumbnailModel.fileSynchroDate
         latestCloudModificationDate = thumbnailModel.latestCloudModificationDate
-        cloudId = Int64(thumbnailModel.cloudId)
+        cloudId = thumbnailModel.cloudId > 0 ? Int64(thumbnailModel.cloudId) : cloudId
         isLocalDeleted = thumbnailModel.isLocalDeleted
         latestLocalModificationDate = thumbnailModel.latestLocalModificationDate
         synchroStatus = thumbnailModel.synchroStatus?.rawValue ?? 0

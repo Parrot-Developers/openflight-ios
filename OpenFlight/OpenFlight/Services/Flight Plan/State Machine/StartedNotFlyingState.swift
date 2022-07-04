@@ -46,6 +46,8 @@ public protocol StartedNotFlyingStateDelegate: AnyObject {
 open class StartedNotFlyingState: GKState {
 
     private weak var delegate: StartedNotFlyingStateDelegate?
+    private let flightPlanManager: FlightPlanManager
+    private let projectManager: ProjectManager
     private let mavlinkGenerator: MavlinkGenerator
     private let mavlinkSender: MavlinkDroneSender
     private var stopped = false
@@ -53,9 +55,13 @@ open class StartedNotFlyingState: GKState {
     var flightPlan: FlightPlanModel!
 
     required public init(delegate: StartedNotFlyingStateDelegate,
+                         flightPlanManager: FlightPlanManager,
+                         projectManager: ProjectManager,
                          mavlinkGenerator: MavlinkGenerator,
                          mavlinkSender: MavlinkDroneSender) {
         self.delegate = delegate
+        self.flightPlanManager = flightPlanManager
+        self.projectManager = projectManager
         self.mavlinkGenerator = mavlinkGenerator
         self.mavlinkSender = mavlinkSender
         super.init()
@@ -63,6 +69,18 @@ open class StartedNotFlyingState: GKState {
 
     open override func didEnter(from previousState: GKState?) {
         stopped = false
+
+        // if flightPlan is editable, we duplicate the editable flight plan to use like execution.
+        if flightPlan.state == .editable {
+            // duplicate the flightplan to use like execution
+            var newFlightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan, save: true)
+            // update the execution customTitle.
+            newFlightPlan = projectManager.updateExecutionCustomTitle(for: newFlightPlan)
+            // `newFlightPlan` is no more the project's editable FP.
+            // It's the new execution, with the updated custom title, which must be considered as `.flying` state.
+            flightPlan = flightPlanManager.update(flightplan: newFlightPlan, with: .flying)
+        }
+
         delegate?.mavlinkGenerationStarted(flightPlan: flightPlan)
         mavlinkGenerator.generateMavlink(for: flightPlan) { [unowned self] in
             guard !stopped else { return }
@@ -70,14 +88,16 @@ open class StartedNotFlyingState: GKState {
             case .success(let result):
                 let flightPlan = result.flightPlan
                 delegate?.mavlinkSendingStarted(flightPlan: flightPlan)
-                mavlinkSender.sendToDevice(result.path, customFlightPlanId: flightPlan.uuid) {
-                    guard !stopped else { return }
+                mavlinkSender.sendToDevice(result.path, customFlightPlanId: flightPlan.uuid) { [weak self] in
+                    guard let self = self,
+                          !self.stopped else {
+                        return
+                    }
                     switch $0 {
                     case .success:
-                        delegate?.handleMavlinkSendingSuccess(flightPlan: flightPlan, commands: result.commands)
+                        self.delegate?.handleMavlinkSendingSuccess(flightPlan: flightPlan, commands: result.commands)
                     case .failure(let error):
-                        guard !stopped else { return }
-                        delegate?.handleMavlinkSendingError(flightPlan: flightPlan, error)
+                        self.delegate?.handleMavlinkSendingError(flightPlan: flightPlan, error)
                     }
                 }
             case .failure(let error):

@@ -49,19 +49,8 @@ enum ActionType: String, Codable {
     case stillCapture = "StillCapture"
 }
 
-/// Class representing a FlightPlan action such as "start photo capture" or "stop video capture".
-
-public final class Action: Codable, Equatable {
-    public static func == (lhs: Action, rhs: Action) -> Bool {
-        return rhs.type == lhs.type
-            && rhs.angle == lhs.angle
-            && rhs.speed == lhs.speed
-            && rhs.delay == lhs.delay
-            && rhs.period == lhs.period
-            && rhs.nbOfPictures == lhs.nbOfPictures
-            && rhs.cameraId == lhs.cameraId
-            && rhs.fps == lhs.fps
-    }
+/// A FlightPlan action such as "start photo capture" or "stop video capture".
+public struct Action: Codable, Equatable {
 
     // MARK: - Public Properties
     var type: ActionType
@@ -70,8 +59,7 @@ public final class Action: Codable, Equatable {
     var delay: Double?
     var period: Double?
     var nbOfPictures: Int?
-    var cameraId: Int?
-    var fps: Int?
+    var captureMode: MavlinkStandard.SetStillCaptureModeCommand.PhotoMode?
 
     var recordingResolution: CameraRecordingResolution? {
         get {
@@ -147,8 +135,6 @@ public final class Action: Codable, Equatable {
         }
     }
 
-    var captureMode: MavlinkStandard.SetStillCaptureModeCommand.PhotoMode?
-
     /// MAVLink command depending on action type.
     var mavlinkCommand: MavlinkStandard.MavlinkCommand {
         switch type {
@@ -195,8 +181,6 @@ public final class Action: Codable, Equatable {
         case period
         case resolution
         case nbOfPictures
-        case cameraId
-        case fps
     }
 
     private enum Constants {
@@ -214,34 +198,51 @@ public final class Action: Codable, Equatable {
     }
 
     // MARK: - Init
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
     ///    - type: action type
-    init(type: ActionType) {
+    ///    - angle: camera tilt angle
+    ///    - speed: angular speed
+    ///    - delay: delay duration
+    ///    - period: photo capture interval
+    ///    - nbOfPictures: number of photo to capture
+    ///    - captureMode: photo capture mode
+    init(type: ActionType,
+         angle: Double? = nil,
+         speed: Double? = nil,
+         delay: Double? = nil,
+         period: Double? = nil,
+         nbOfPictures: Int? = nil,
+         captureMode: MavlinkStandard.SetStillCaptureModeCommand.PhotoMode? = nil) {
         self.type = type
+        self.angle = angle
+        self.delay = delay
+        self.period = period
+        self.nbOfPictures = nbOfPictures
+        self.captureMode = captureMode
     }
 
     /// Init with Mavlink command.
     ///
     /// - Parameters:
     ///    - mavLinkCommand: Mavlink command
-    public convenience init?(mavLinkCommand: MavlinkStandard.MavlinkCommand) {
+    public init?(mavLinkCommand: MavlinkStandard.MavlinkCommand) {
         switch mavLinkCommand {
         case is MavlinkStandard.TakeOffCommand:
             self.init(type: .takeOff)
         case is MavlinkStandard.LandCommand:
             self.init(type: .landing)
         case let command as MavlinkStandard.MountControlCommand:
-            self.init(type: .tilt)
-            self.angle = command.tiltAngle
+            self.init(type: .tilt,
+                      angle: command.tiltAngle)
         case let command as MavlinkStandard.DelayCommand:
-            self.init(type: .delay)
-            self.delay = command.delay
+            self.init(type: .delay,
+                      delay: command.delay)
         case let command as MavlinkStandard.StartPhotoCaptureCommand:
-            self.init(type: .imageStartCapture)
-            self.period = command.interval
-            self.nbOfPictures = command.count
+            self.init(type: .imageStartCapture,
+                      period: command.interval,
+                      nbOfPictures: command.count)
         case is MavlinkStandard.StopPhotoCaptureCommand:
             self.init(type: .imageStopCapture)
         case is MavlinkStandard.StartVideoCaptureCommand:
@@ -249,12 +250,12 @@ public final class Action: Codable, Equatable {
         case is MavlinkStandard.StopVideoCaptureCommand:
             self.init(type: .videoStopCapture)
         case let command as MavlinkStandard.CreatePanoramaCommand:
-            self.init(type: .panorama)
-            self.angle = command.horizontalAngle
-            self.speed = command.horizontalSpeed
+            self.init(type: .panorama,
+                      angle: command.horizontalAngle,
+                      speed: command.horizontalSpeed)
         case let command as MavlinkStandard.SetStillCaptureModeCommand:
-            self.init(type: .stillCapture)
-            self.captureMode = command.mode
+            self.init(type: .stillCapture,
+                      captureMode: command.mode)
         case let command as MavlinkStandard.ReturnToLaunchCommand:
             ULog.w(.tag, "No action for: \(command)")
             return nil
@@ -274,10 +275,7 @@ public final class Action: Codable, Equatable {
     ///
     /// - Returns: An action of type `tilt`
     static func tiltAction(angle: Double, speed: Double) -> Action {
-        let action = Action(type: .tilt)
-        action.angle = angle
-        action.speed = speed
-        return action
+        Action(type: .tilt, angle: angle, speed: speed)
     }
 
     /// Instantiate a new action to delay FlightPlan.
@@ -287,8 +285,17 @@ public final class Action: Codable, Equatable {
     ///
     /// - Returns: An action of type `delay`
     static func delayAction(delay: Double) -> Action {
-        let action = Action(type: .delay)
-        action.delay = delay
-        return action
+        Action(type: .delay, delay: delay)
+    }
+
+    public static func == (lhs: Action, rhs: Action) -> Bool {
+        rhs.type == lhs.type
+        && rhs.angle == lhs.angle
+        && rhs.speed == lhs.speed
+        && rhs.delay == lhs.delay
+        && rhs.period == lhs.period
+        && rhs.nbOfPictures == lhs.nbOfPictures
+        && rhs.captureMode == lhs.captureMode
+        && rhs.resolution == lhs.resolution
     }
 }

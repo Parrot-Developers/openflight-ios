@@ -151,4 +151,12 @@ public final class ProjectManagerCoordinator: Coordinator {
             }
         }
     }
+
+    /// Opens the current loaded project.
+    /// This method returns to the HUD without loading anything.
+    func showCurrentProject() {
+        popToRootCoordinatorWithAnimator(coordinator: self,
+                                         transitionSubtype: .fromRight,
+                                         completion: nil)
+    }
 }

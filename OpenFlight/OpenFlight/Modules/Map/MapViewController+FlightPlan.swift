@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import ArcGIS
+import GroundSdk
 
 /// `MapViewController` extension dedicated to Flight Plan's display.
 public extension MapViewController {
@@ -40,12 +41,12 @@ public extension MapViewController {
     // MARK: - Private Enums
     private enum Constants {
         static let overlayKey: String = "flightPlanOverlayKey"
-        static let flightPlanEnvelopeMarginFactor: Double = 1.4
-        static let sceneViewIdentifyTolerance: Double = 22
+        // Do not follow Arcgis recommandations (22).
+        // Otherwise waypoint orientation is not touchable.
+        static let sceneViewIdentifyTolerance: Double = 0
         static let sceneViewIdentifyMaxResults: Int = 5
         static let defaultPointAltitude: Double = 5.0
         static let defaultWayPointYaw: Double = 0.0
-        static let altitudeDivider: Double = 50.0
     }
 
     // MARK: - Public Funcs
@@ -59,6 +60,7 @@ public extension MapViewController {
         if state.mode?.flightPlanProvider != nil {
             // Reset registration.
             editionCancellable = flightEditionService?.currentFlightPlanPublisher
+                .removeDuplicates()
                 .sink(receiveValue: { [weak self] flightplan in
                     self?.flightPlan = flightplan
                 })
@@ -79,7 +81,6 @@ public extension MapViewController {
                            shouldReloadCamera: Bool = false) {
         // Remove old Flight Plan graphic overlay.
         removeFlightPlanGraphicOverlay()
-
         // Get flight plan provider.
         let provider: FlightPlanProvider?
         if let mission = currentMissionProviderState?.mode {
@@ -106,15 +107,16 @@ public extension MapViewController {
 
         // update heading correction of flight plan origin graphic
         graphics.compactMap { $0 as? FlightPlanOriginGraphic }.first.map {
-            let headingFactor = newOverlay.sceneProperties?.surfacePlacement == .drapedFlat ? arcgisMagicValueToFixHeading : 1
-            $0.update(magicNumber: headingFactor)
+            let rotationFactor = newOverlay.sceneProperties?.surfacePlacement == .drapedFlat ?
+            MapConstants.drapedFlatRotationFactor : MapConstants.defaultRotationFactor
+            $0.update(rotationFactor: rotationFactor)
         }
 
-        // wait for elevation data to be ready before applying an altitude offset
-        // and update the map view point; the cancellable is stored in a dedicated
-        // variable in order to cancel any pending adjustments
+        // apply an altitude offset and update the map view point,
+        // and do it again once map elevation data are loaded;
+        // the cancellable is stored in a dedicated variable in order to cancel any pending adjustments
         adjustAltitudeAndCameraCancellable = viewModel.elevationSource.$elevationLoaded
-            .removeDuplicates()
+            .prepend(true)
             .filter { $0 }
             .sink { [weak self] _ in
                 guard let self = self else { return }
@@ -137,25 +139,55 @@ public extension MapViewController {
     func adjustAltitudeAndCamera(overlay: AGSGraphicsOverlay,
                                  flightPlan: FlightPlanModel,
                                  shouldReloadCamera: Bool) {
+        guard !isMiniMap else { return }
         // get first waypoint
         guard let firstWayPoint = flightPlan.dataSetting?.wayPoints.first?.agsPoint else { return }
 
-        sceneView.scene?.baseSurface?.elevation(for: firstWayPoint) { [weak self] elevation, error in
-            guard error == nil else { return }
+        ULog.d(.mapViewController, "Get elevation for FP at: \(firstWayPoint.x),\(firstWayPoint.y)")
+        firstWpElevationRequest?.cancel()
+        firstWpElevationRequest = sceneView.scene?.baseSurface?.elevation(for: firstWayPoint) { [weak self] elevation, error in
+            guard error == nil else {
+                ULog.w(.mapViewController, "Failed to get elevation for FP: \(String(describing: error))")
+                return
+            }
+            ULog.d(.mapViewController, "Apply altitude offset to FP overlay: \(elevation)")
             overlay.sceneProperties?.altitudeOffset = elevation
             if shouldReloadCamera {
-                self?.reloadCamera(flightPlan: flightPlan, altitudeOffset: elevation)
+                // Animate camera reloading, as only altitude has changed.
+                self?.reloadCamera(flightPlan: flightPlan,
+                                   altitudeOffset: elevation,
+                                   animated: false)
             }
         }
     }
 
-    func reloadCamera(flightPlan: FlightPlanModel, altitudeOffset: Double) {
-        guard let dataSetting = flightPlan.dataSetting
-            else { return }
+    /// Sets current view point based on a given FP model.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: the FP model to base the view point on
+    ///    - altitudeOffset: the altitude offset to apply to view point, if any (nil by default)
+    ///    - animated: whether the view point change should be animated
+    func setViewPoint(for flightPlan: FlightPlanModel, altitudeOffset: Double? = nil, animated: Bool = false) {
+        ULog.d(.mapViewController, "Set view point for FP, altitudeOffset \(altitudeOffset?.description ?? "nil")")
+        guard let dataSetting = flightPlan.dataSetting else { return }
 
         let viewPoint = viewPoint(polyline: dataSetting.polyline,
-                                  altitudeOffset: shouldDisplayMapIn2D ? nil : altitudeOffset)
-        updateViewPoint(viewPoint, animated: false)
+                                  altitudeOffset: altitudeOffset)
+        updateViewPoint(viewPoint, animated: animated)
+    }
+
+    /// Reloads the camera based on a given FP model.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: the FP model to base the camera on
+    ///    - altitudeOffset: the altitude offset to apply to view point, if any (nil by default)
+    ///    - animated: whether the view point change should be animated
+    func reloadCamera(flightPlan: FlightPlanModel, altitudeOffset: Double, animated: Bool) {
+        ULog.d(.mapViewController, "Reload camera for FP, altitudeOffset \(altitudeOffset)")
+        setViewPoint(for: flightPlan,
+                     altitudeOffset: shouldDisplayMapIn2D ? nil : altitudeOffset,
+                     animated: animated)
+
         updateElevationVisibility()
         flightPlanOverlay?.update(heading: flightPlanOverlay?.cameraHeading ?? 0)
         // insert user and drone locations graphics to flight plan overlay
@@ -165,6 +197,7 @@ public extension MapViewController {
 
     /// Remove currently loaded flight plan from display.
     func removeFlightPlanGraphicOverlay() {
+        clearGraphics()
         // remove user and drone locations graphics from flight plan overlay
         flightPlanOverlay?.setUserGraphic(nil)
         flightPlanOverlay?.setDroneGraphic(nil)
@@ -232,7 +265,7 @@ extension MapViewController {
             completion(nil)
             return
         }
-        sceneView?.identify(overlay,
+        sceneView.identify(overlay,
                             screenPoint: screenPoint,
                             tolerance: Constants.sceneViewIdentifyTolerance,
                             returnPopupsOnly: false,
@@ -341,7 +374,7 @@ extension MapViewController {
                 return
         }
 
-        flightPlanOverlay?.updateDraggedGraphicLocation(mapPoint, editor: nil)
+        flightPlanOverlay?.updateDraggedGraphicLocation(mapPoint, editor: nil, isDragging: true)
     }
 
     /// Handles touch up action in Flight Plan edition mode.
@@ -381,13 +414,13 @@ private extension MapViewController {
     /// Disables elevation and displays flight plan in `drapedFlat` mode.
     func disableElevation() {
         flightPlanOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-        sceneView?.scene?.baseSurface?.isEnabled = false
+        sceneView.scene?.baseSurface?.isEnabled = false
     }
 
     /// Enables elevation and displays flight plan in `absolute` mode.
     func enableElevation() {
         flightPlanOverlay?.sceneProperties?.surfacePlacement = .absolute
-        sceneView?.scene?.baseSurface?.isEnabled = true
+        sceneView.scene?.baseSurface?.isEnabled = true
     }
 
     /// Adds a waypoint to Flight Plan.
@@ -395,20 +428,17 @@ private extension MapViewController {
     /// - Parameters:
     ///    - location: waypoint location
     func addWaypoint(atLocation location: AGSPoint) {
-        guard let dataSettings = flightPlan?.dataSetting else {
-            return
-        }
-        let lastWayPoint = dataSettings.wayPoints.last
+        guard let editionService = flightEditionService else { return }
+        let lastWayPoint = editionService.currentFlightPlanValue?.dataSetting?.wayPoints.last
         let wayPoint = WayPoint(coordinate: CLLocationCoordinate2D(latitude: location.y,
                                                                    longitude: location.x),
                                 altitude: lastWayPoint?.altitude,
                                 yaw: Constants.defaultWayPointYaw,
                                 speed: lastWayPoint?.speed,
-                                shouldContinue: dataSettings.shouldContinue ?? true,
+                                shouldContinue: editionService.currentFlightPlanValue?.dataSetting?.shouldContinue ?? true,
                                 tilt: lastWayPoint?.tilt)
 
-        dataSettings.addWaypoint(wayPoint)
-        let index = dataSettings.wayPoints.count - 1
+        let index = editionService.addWaypoint(wayPoint) - 1
         let wayPointGraphic = wayPoint.markerGraphic(index: index)
         wayPointGraphic.update(heading: sceneView.currentViewpointCamera().heading)
         flightPlanOverlay?.graphics.add(wayPointGraphic)
@@ -419,7 +449,7 @@ private extension MapViewController {
                                                           angle: Float(angle))
         flightPlanOverlay?.graphics.add(arrowGraphic)
 
-        if let lineGraphic = dataSettings.lastLineGraphic {
+        if let lineGraphic = editionService.currentFlightPlanValue?.dataSetting?.lastLineGraphic {
             flightPlanOverlay?.graphics.add(lineGraphic)
         }
 
@@ -434,16 +464,12 @@ private extension MapViewController {
     /// - Parameters:
     ///    - location: point of interest location
     func addPoiPoint(atLocation location: AGSPoint) {
-        guard let flightPlan = flightPlan,
-              let dataSettings = flightPlan.dataSetting else {
-            return
-        }
+        guard let editionService = flightEditionService else { return }
         let poi = PoiPoint(coordinate: CLLocationCoordinate2D(latitude: location.y,
                                                               longitude: location.x),
                            altitude: Constants.defaultPointAltitude,
                            color: 0)
-        dataSettings.addPoiPoint(poi)
-        let index = dataSettings.pois.count - 1
+        let index = editionService.addPoiPoint(poi) - 1
         poi.addIndex(index: index)
         let poiGraphic = poi.markerGraphic(index: index)
         poiGraphic.update(heading: sceneView.currentViewpointCamera().heading)
@@ -471,6 +497,10 @@ extension MapViewController: EditionSettingsDelegate {
 
     public func updateChoiceSetting(for key: String?, value: Bool) {
         updateSetting(for: key, value: value == true ? 0 : 1)
+    }
+
+    public func isUpdatingSetting(for key: String?, isUpdating: Bool) {
+        // nothing to do
     }
 
     public func didTapCloseButton() {}

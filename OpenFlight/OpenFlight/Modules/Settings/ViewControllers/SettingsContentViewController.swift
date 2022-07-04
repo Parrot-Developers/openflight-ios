@@ -37,7 +37,7 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
     @IBOutlet internal weak var settingsTableView: UITableView!
 
     // MARK: - Internal Properties
-    var coordinator: SettingsCoordinator?
+    weak var coordinator: SettingsCoordinator?
     var cells: [SettingsCellType] = [] {
         didSet {
             settingsTableView?.reloadData()
@@ -141,6 +141,7 @@ private extension SettingsContentViewController {
         settingsTableView.register(cellType: SettingsGridTableViewCell.self)
         settingsTableView.register(cellType: SettingsCellularDataCell.self)
         settingsTableView.register(cellType: SettingsEndHoveringCell.self)
+        settingsTableView.register(cellType: SettingsDriCell.self)
         settingsTableView.estimatedRowHeight = Layout.buttonIntrinsicHeight(isRegularSizeClass)
         settingsTableView.delaysContentTouches = false
     }
@@ -154,6 +155,8 @@ private extension SettingsContentViewController {
                     return .slider
                 case is BoolSetting, is DefaultsKey<Bool?>, is SettingEnum.Type, is DroneSettingModel:
                     return .segmented
+                case is DriSettingModel:
+                    return .dri
                 case is UIImage:
                     return .title
                 default:

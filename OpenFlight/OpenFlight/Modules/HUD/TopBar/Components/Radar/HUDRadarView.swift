@@ -61,7 +61,6 @@ final class HUDRadarView: UIView, NibOwnerLoadable {
         static let userHeadingChangeAcceptance: Double = 2.0
         static let userOrientedScopeAngle: Double = 135.0 // 3π/4
         static let warningLevelScopeAngle: Double = 45.0 // π/4
-        static let disconnectedColor: UIColor = .white
         static let gradientWidthDivider: CGFloat = 8.0
         static let gradientBorderColor: CGColor = UIColor.white.withAlphaComponent(0).cgColor
         static let gradientCentralColor: CGColor = UIColor.white.cgColor
@@ -115,14 +114,8 @@ private extension HUDRadarView {
         guard let state = state else {
             return
         }
-        if state.droneConnectionState?.isConnected() == true {
-            droneBackgroundView.isHidden = false
-            updateCardinalView(state: state)
-            updateDroneOffset(state: state)
-        } else {
-            updateColor(Constants.disconnectedColor)
-            droneBackgroundView.isHidden = true
-        }
+        updateCardinalView(state: state)
+        updateDroneOffset(state: state)
     }
 
     /// Updates the cardinal view component.
@@ -157,15 +150,21 @@ private extension HUDRadarView {
         droneImageViewCenterConstraint.constant = max(-bounds.width / 2 + margin, min(imageOffset, bounds.width / 2 - margin))
 
         let deltaYawDeg = Double(deltaYaw).toDegrees()
-        switch abs(deltaYawDeg) {
-        case Constants.warningLevelScopeAngle...halfScope:
-            updateColor(AlertLevel.warning.radarColor)
-        case halfScope...:
-            updateColor(AlertLevel.critical.radarColor)
-        default:
-            updateColor(AlertLevel.none.radarColor)
-        }
 
+        let isConnected = state.droneConnectionState?.isConnected() == true
+        droneBackgroundView.alphaWithEnabledState(isConnected)
+        if isConnected {
+            switch abs(deltaYawDeg) {
+            case Constants.warningLevelScopeAngle...halfScope:
+                updateColor(AlertLevel.warning.radarColor)
+            case halfScope...:
+                updateColor(AlertLevel.critical.radarColor)
+            default:
+                updateColor(AlertLevel.none.radarColor)
+            }
+        } else {
+            updateColor(AlertLevel.none.color)
+        }
         leftArrowView.isHidden = deltaYawDeg > Double(-halfScope)
         rightArrowView.isHidden = deltaYawDeg < Double(halfScope)
     }

@@ -40,7 +40,7 @@ enum CameraPreset {
     static let videoencoding: Camera2VideoCodec = .h265
     static let dynamicHdrRange: Camera2DynamicRange = .hdr10
     static let startAudio: Camera2AudioRecordingMode = .drone
-    static let photoSignature: Camera2DigitalSignature = .drone
+    static let photoSignature: Camera2DigitalSignature = .none
 }
 
 /// SDK's AntiflickerMode helpers as SettingMode.

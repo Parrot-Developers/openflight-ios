@@ -44,16 +44,8 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
     @IBOutlet private weak var recordingTimeLabel: UILabel!
     @IBOutlet private weak var remainingRecordTimeLabel: UILabel!
     @IBOutlet private weak var infoImageView: UIImageView!
-    @IBOutlet private weak var stopView: UIView! {
-        didSet {
-            stopView.applyCornerRadius()
-        }
-    }
-    @IBOutlet private weak var centerLabel: UILabel! {
-        didSet {
-            centerLabel.makeUp(with: .large, and: .black)
-        }
-    }
+    @IBOutlet private weak var stopView: UIView!
+    @IBOutlet private weak var centerLabel: UILabel!
     @IBOutlet private weak var shutterButtonProgressView: ShutterButtonProgressView!
     @IBOutlet private weak var circleProgressView: CircleProgressView!
 
@@ -66,7 +58,6 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
 
     // MARK: - Private Properties
     private var isBlinking: Bool = false
-    private var currentProgress: CGFloat = 0.0
     private var photosCount = 0
     private var recordingColor: UIColor {
         isEnabled ? Constants.defaultRecordingColor : Constants.unavailableRecordingColor
@@ -85,11 +76,7 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
         static let defaultRecordingColor = ColorName.errorColor.color
         static let activeRecordingColor = ColorName.errorColor.color.withAlphaComponent(0.5)
         static let unavailableRecordingColor = ColorName.disabledErrorColor.color
-        static let restartRecordingBackgroundColor = ColorName.disabledErrorColor.color
-        static let countDownRestartRecordingColor = ColorName.white.color
         static let countDownLapseColor = ColorName.black.color
-        static let maxCountdown: Float = 5.0
-        static let maxAnimationProgress: Float = 1.0
     }
 
     // MARK: - Override Properties
@@ -126,6 +113,8 @@ private extension CameraShutterButton {
         circleProgressView.borderWidth = Style.largeBorderWidth
         recordingTimeLabel.font = FontStyle.current.font(isRegularSizeClass, monospacedDigits: true)
         remainingRecordTimeLabel.font = FontStyle.caps.font(isRegularSizeClass, monospacedDigits: true)
+        centerLabel.makeUp(with: .large, and: .black)
+        stopView.applyCornerRadius()
     }
 
     /// Updates button with current model.
@@ -225,8 +214,6 @@ private extension CameraShutterButton {
              (.stopped, .gpslapse):
             shutterButtonProgressView.isHidden = true
             applyLapseModeStyle(labelText: nil)
-            model.lapseModeState?.currentProgress = 0.0
-            currentProgress = 0.0
             photosCount = 0
         case (.started, _):
             applyPhotoCaptureTakePhotoStyle()
@@ -397,11 +384,8 @@ private extension CameraShutterButton {
     ///     - state: current timelapse state
     func updateTimeLapseModeProgressView(with state: PhotoLapseState) {
         applyLapseModeInProgressStyle(photosCount: state.photosNumber)
-        guard state.photosNumber > photosCount else {
-            ULog.d(.tag, "State photo number \(state.photosNumber) <= photoCount \(photosCount)")
-            return
-        }
-        ULog.d(.tag, "State photo number \(state.photosNumber) > photoCount \(photosCount)")
+
+        guard photosCount != state.photosNumber else { return }
         photosCount = state.photosNumber
         shutterButtonProgressView.animateProgress(duration: TimeInterval(state.selectedValue) - Style.mediumAnimationDuration)
     }

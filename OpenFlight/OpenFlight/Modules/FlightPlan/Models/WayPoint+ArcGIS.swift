@@ -91,10 +91,12 @@ extension WayPoint {
     ///
     /// - Parameters:
     ///    - index: waypoint's index
+    ///    - isDetail: If the detail execution screen is open
     /// - Returns: computed graphic
-    func markerGraphic(index: Int) -> FlightPlanWayPointGraphic {
+    func markerGraphic(index: Int, isDetail: Bool = false) -> FlightPlanWayPointGraphic {
         return FlightPlanWayPointGraphic(wayPoint: self,
-                                         index: index, heading: 0)
+                                         index: index, heading: 0,
+                                         isDetail: isDetail)
     }
 
     /// Computes arrow graphic for waypoint.

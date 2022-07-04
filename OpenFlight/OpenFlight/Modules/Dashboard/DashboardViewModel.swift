@@ -44,6 +44,7 @@ final class DashboardViewModel {
     var userDeviceViewModel: UserDeviceViewModel!
     var dashboardProjectManagerCellModel: DashboardProjectManagerCellModel!
     var myFlightsCellModel: DashboardMyFlightsCellModel!
+    let dashboardUiProvider: DashboardUiProvider
 
     private let service: VariableAssetsService
     private let projectManager: ProjectManager
@@ -65,11 +66,13 @@ final class DashboardViewModel {
          projectManager: ProjectManager,
          cloudSynchroWatcher: CloudSynchroWatcher?,
          projectManagerUiProvider: ProjectManagerUiProvider,
+         dashboardUiProvider: DashboardUiProvider,
          flightService: FlightService) {
         self.service = service
         self.projectManager = projectManager
         self.cloudSynchroWatcher = cloudSynchroWatcher
         self.projectManagerUiProvider = projectManagerUiProvider
+        self.dashboardUiProvider = dashboardUiProvider
         self.flightService = flightService
     }
 

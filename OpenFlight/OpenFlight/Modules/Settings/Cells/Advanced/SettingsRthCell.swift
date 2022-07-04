@@ -29,6 +29,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Manages return to home gesture and display.
 final class SettingsRthActionView: UIView {
@@ -56,8 +57,9 @@ final class SettingsRthActionView: UIView {
     private var dashedLinePath = UIBezierPath()
     private var pointerHalfWidth: CGFloat = 0.0
     private var minHeight: CGFloat = 0.0
-    private var viewModel: SettingsRthActionViewModel = SettingsRthActionViewModel()
+    private var viewModel: SettingsRthActionViewModel = SettingsRthActionViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
     private var initialCenter: CGPoint = .zero
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -125,11 +127,13 @@ final class SettingsRthActionView: UIView {
 
     // MARK: - Internal Funcs
     /// Updates view.
-    func updateView() {
+    func updateView(minAltitude: Double,
+                    altitude: Double,
+                    maxAltitude: Double) {
         // Convert meters in points.
-        let altitudePercent = SettingsGridView.reverseExponentialLike(value: viewModel.state.value.altitude,
-                                                                      max: viewModel.state.value.maxAltitude,
-                                                                      min: viewModel.state.value.minAltitude)
+        let altitudePercent = SettingsGridView.reverseExponentialLike(value: altitude,
+                                                                      max: maxAltitude,
+                                                                      min: minAltitude)
         let deltaHeight = Double(bounds.height - minHeight)
         let posY = deltaHeight - ((altitudePercent / Values.oneHundred) * deltaHeight)
         // Update display.
@@ -151,10 +155,18 @@ private extension SettingsRthActionView {
 
     /// Listens the view model.
     func listenViewModel() {
-        viewModel.state.valueChanged = { [weak self] _ in
-            self?.updateView()
-        }
-        updateView()
+        viewModel.$maxAltitude.removeDuplicates()
+            .combineLatest(viewModel.$altitude.removeDuplicates(),
+                           viewModel.$minAltitude.removeDuplicates())
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] (maxAltitude, altitude, minAltitude) in
+                guard let self = self else { return }
+                self.updateView(minAltitude: minAltitude,
+                                altitude: altitude,
+                                maxAltitude: maxAltitude)
+            }
+            .store(in: &cancellables)
+
         showViews()
     }
 
@@ -214,8 +226,8 @@ private extension SettingsRthActionView {
         let deltaHeight = Double(bounds.height - minHeight)
         let altitudePercent: Double = Double(revertPosition - minHeight) / (deltaHeight / Values.oneHundred)
         let altitude = SettingsGridView.computeExponentialLike(value: altitudePercent,
-                                                               max: viewModel.state.value.maxAltitude,
-                                                               min: viewModel.state.value.minAltitude)
+                                                               max: viewModel.maxAltitude,
+                                                               min: viewModel.minAltitude)
         infoLabel.text = UnitHelper.stringDistanceWithDouble(Double(altitude))
         infoLabel.frame = CGRect(x: gridXCenter + Constants.margin,
                                  y: (location.y + (revertPosition / 2)) - Constants.labelSize.height / 2,

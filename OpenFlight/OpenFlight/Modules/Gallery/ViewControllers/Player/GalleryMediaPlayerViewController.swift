@@ -214,8 +214,9 @@ final class GalleryMediaPlayerViewController: UIViewController {
         guard let viewModel = viewModel else { return }
         viewModel.$downloadProgress
             .combineLatest(viewModel.$downloadStatus)
-            .sink { [unowned self] (progress, status) in
-                loadingView.setProgress(progress, status: status)
+            .sink { [weak self] (progress, status) in
+                guard let self = self else { return }
+                self.loadingView.setProgress(progress, status: status)
             }
             .store(in: &cancellables)
     }

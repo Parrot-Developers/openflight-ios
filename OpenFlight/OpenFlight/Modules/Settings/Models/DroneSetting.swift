@@ -80,7 +80,7 @@ extension Bool: SettingMode {
 }
 
 /// Dedicated model for drone settings when value changed.
-struct DroneSettingModel {
+struct DroneSettingModel: DroneSettingModelProtocol {
     var allValues: [SettingMode]
     var supportedValues: [SettingMode]
     var currentValue: SettingMode?
@@ -90,4 +90,15 @@ struct DroneSettingModel {
     var selectedIndex: Int {
         return allValues.firstIndex(where: {$0.key == currentValue?.key}) ?? -1
     }
+}
+
+/// Protocol to normalize drone setting mode.
+protocol DroneSettingModelProtocol {
+    var allValues: [SettingMode] { get set }
+    var supportedValues: [SettingMode] { get set }
+    var currentValue: SettingMode? { get set }
+    var isUpdating: Bool { get set }
+    var forceDisabling: Bool { get set }
+    var onSelect: ((SettingMode) -> Void )? { get set }
+    var selectedIndex: Int { get }
 }

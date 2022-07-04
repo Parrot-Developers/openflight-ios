@@ -233,7 +233,7 @@ private class TargetDestination {
         }
 
         var currentVector = simd_float3.zero
-        let expandCoef = Float(1.5)
+        let expandCoef = Occupancy.targetSpacingCoef
         var movePerSegment = speed * expandCoef
         let rotateYAngle = rotationSpeed.y * expandCoef
         let quaternion = simd_quatf(angle: rotateYAngle, axis: simd_float3(0, 1, 0))

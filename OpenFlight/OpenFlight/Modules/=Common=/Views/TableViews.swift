@@ -128,6 +128,18 @@ public class MainTableViewCell: UITableViewCell {
     }
 }
 
+/// A general-purpose tableViewCell container adjusting its margins according to `Layout.mainSpacing` and `Layout.mainPadding`.
+public class SettingsTableViewCell: MainTableViewCell {
+    private func updateMargins() {
+        let margins = Layout.tableViewCellSettingsContentInset(isRegularSizeClass,
+                                                               screenBorders: screenBorders)
+        contentView.layoutMargins = .init(top: enabledMargins.contains(.top) ? margins.top : 0,
+                                          left: enabledMargins.contains(.left) ? margins.left : 0,
+                                          bottom: enabledMargins.contains(.bottom) ? margins.bottom : 0,
+                                          right: enabledMargins.contains(.right) ? margins.right : 0)
+    }
+}
+
 public enum SidePanelSettingType {
     case slider
     case textSegments               // SegmentedControls without picto

@@ -60,4 +60,10 @@ extension ParrotDebugCoordinator {
             dashboardCoordinator.startPhotogrammetryDebug()
         }
     }
+
+    /// Shows custom mission debug screen
+    func showCustomMissionDebug() {
+        let viewController = CustomMissionDebugViewController.instantiate(coordinator: self)
+        presentModal(viewController: viewController)
+    }
 }

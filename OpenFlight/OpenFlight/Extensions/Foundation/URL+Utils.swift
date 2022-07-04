@@ -65,4 +65,9 @@ extension URL {
 
         return urlComponents.url
     }
+
+    /// Whether URL is a directory.
+    var isDirectory: Bool {
+       (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+    }
 }

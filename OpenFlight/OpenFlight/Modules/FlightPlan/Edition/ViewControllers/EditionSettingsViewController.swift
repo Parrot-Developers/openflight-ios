@@ -201,6 +201,7 @@ private extension EditionSettingsViewController {
             title = viewModel.settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
         }
         topbar?.set(title: title)
+        topbar?.set(projectTitle: viewModel.savedFlightPlan?.customTitle)
     }
 }
 
@@ -257,5 +258,9 @@ extension EditionSettingsViewController: EditionSettingsCellModelDelegate {
 
     func updateChoiceSetting(for key: String?, value: Bool) {
         delegate?.updateChoiceSetting(for: key, value: value)
+    }
+
+    func isUpdatingSetting(for key: String?, isUpdating: Bool) {
+        delegate?.isUpdatingSetting(for: key, isUpdating: isUpdating)
     }
 }

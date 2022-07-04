@@ -72,7 +72,7 @@ public class Project: NSManagedObject {
 
     func update(fromProjectModel projectModel: ProjectModel) {
         apcId = projectModel.apcId
-        cloudId = Int64(projectModel.cloudId)
+        cloudId = projectModel.cloudId > 0 ? Int64(projectModel.cloudId) : cloudId
         uuid = projectModel.uuid
         title = projectModel.title
         type = projectModel.type.rawValue

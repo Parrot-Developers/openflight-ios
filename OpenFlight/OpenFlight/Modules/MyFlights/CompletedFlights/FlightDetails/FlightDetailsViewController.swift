@@ -203,18 +203,18 @@ private extension FlightDetailsViewController {
         switch viewModel {
         case .details(let viewModel):
             if let mapViewController = mapController as? MapViewController {
-                mapViewController.displayFlightCourse(flightsPoints: [viewModel.flightPoints],
-                                                      hasAsmlAltitude: viewModel.hasAsmlAltitude,
-                                                      adjustViewPoint: true)
+                mapViewController.displayFlightTrajectories(flightsPoints: [viewModel.flightPoints],
+                                                            hasAsmlAltitude: viewModel.hasAsmlAltitude,
+                                                            adjustViewPoint: true)
             }
         case .execution(let viewModel):
             if let mapViewController = mapController as? MapViewController {
                 mapViewController.flightPlan = viewModel.flightPlan
                 mapViewController.displayFlightPlan(viewModel.flightPlan, shouldReloadCamera: true)
-                mapViewController.displayFlightCourse(flightsPoints: viewModel.flightsPoints,
-                                                      hasAsmlAltitude: viewModel.hasAsmlAltitude,
-                                                      trajectoryState: viewModel.flightPlan.state.trajectoryState,
-                                                      adjustViewPoint: false)
+                mapViewController.displayFlightTrajectories(flightsPoints: viewModel.flightsPoints,
+                                                            hasAsmlAltitude: viewModel.hasAsmlAltitude,
+                                                            trajectoryState: viewModel.flightPlan.state.trajectoryState,
+                                                            adjustViewPoint: false)
             }
         case .none:
             break

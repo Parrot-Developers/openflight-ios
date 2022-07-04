@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Remote details screen which displays informations like serial or hardware version.
 final class RemoteDetailsInformationsViewController: UIViewController {
@@ -39,7 +40,7 @@ final class RemoteDetailsInformationsViewController: UIViewController {
 
     // MARK: - Private Properties
     private var viewModel: RemoteDetailsInformationsViewModel!
-    private weak var coordinator: RemoteCoordinator?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
     /// Instantiate the view controller.
@@ -48,11 +49,8 @@ final class RemoteDetailsInformationsViewController: UIViewController {
     ///     - coordinator: the coordinator
     ///     - viewModel: the view model
     /// - Returns: the newly created controller.
-    static func instantiate(coordinator: RemoteCoordinator,
-                            viewModel: RemoteDetailsInformationsViewModel
-    ) -> RemoteDetailsInformationsViewController {
+    static func instantiate(viewModel: RemoteDetailsInformationsViewModel) -> RemoteDetailsInformationsViewController {
         let viewController = StoryboardScene.RemoteDetailsInformations.initialScene.instantiate()
-        viewController.coordinator = coordinator
         viewController.viewModel = viewModel
         return viewController
     }
@@ -61,8 +59,8 @@ final class RemoteDetailsInformationsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        initView()
-        initViewModel()
+        setupView()
+        setupViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -90,38 +88,47 @@ private extension RemoteDetailsInformationsViewController {
 
 // MARK: - Private Funcs
 private extension RemoteDetailsInformationsViewController {
-    /// Inits the view.
-    func initView() {
-        resetButton.setup(title: L10n.commonReset, style: .default2)
-    }
-
-    /// Inits the remote information view model.
-    func initViewModel() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state)
-        }
-        updateView(viewModel.state.value)
-    }
-
-    /// Updates the view with given state.
-    ///
-    /// - Parameters:
-    ///    - state: current remote information state
-    func updateView(_ state: RemoteDetailsInformationsState) {
-        resetButton.isEnabled = state.isConnected()
-        let resetColor: ColorName = state.isConnected() ? ColorName.defaultTextColor : ColorName.disabledTextColor
-
-        resetButton.makeup(with: .large, color: resetColor)
+    /// Sets up the view.
+    func setupView() {
         resetButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
                                        borderColor: .clear,
                                        radius: Style.largeCornerRadius,
                                        borderWidth: Style.noBorderWidth)
+    }
 
-        serialNumberView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
-                                                         description: state.serialNumber)
-        firmwareVersionView.model = DeviceInformationsModel(title: L10n.remoteDetailsFirmwareVersion,
-                                                            description: state.firmwareVersion)
-        hardwareVersionView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
-                                                            description: state.hardwareVersion)
+    func setupViewModel() {
+        viewModel.resetButtonEnabled
+            .sink { [weak self] isEnabled in
+                guard let self = self else { return }
+                self.resetButton.isEnabled = isEnabled
+                let resetColor: ColorName = isEnabled ? ColorName.defaultTextColor : ColorName.disabledTextColor
+                self.resetButton.setup(title: L10n.commonReset, style: .default2)
+                self.resetButton.makeup(with: .large, color: resetColor)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$serialNumber
+            .removeDuplicates()
+            .sink { [weak self] serialNumber in
+                guard let self = self else { return }
+                self.serialNumberView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber, description: serialNumber)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$firmwareVersion
+            .removeDuplicates()
+            .sink { [weak self] firmwareVersion in
+                guard let self = self else { return }
+                self.firmwareVersionView.model = DeviceInformationsModel(title: L10n.remoteDetailsFirmwareVersion, description: firmwareVersion)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$hardwareVersion
+            .removeDuplicates()
+            .sink { [weak self] hardwareVersion in
+                guard let self = self else { return }
+                self.hardwareVersionView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion, description: hardwareVersion)
+            }
+            .store(in: &cancellables)
     }
 }

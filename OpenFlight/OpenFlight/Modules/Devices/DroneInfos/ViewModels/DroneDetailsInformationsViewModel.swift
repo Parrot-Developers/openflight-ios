@@ -29,87 +29,63 @@
 
 import GroundSdk
 import SwiftyUserDefaults
-
-/// State for `DroneDetailsInformationsViewModel`.
-final class DroneDetailsInformationsState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Drone's serial number.
-    fileprivate(set) var serialNumber: String = Style.dash
-    /// Current drone imei.
-    fileprivate(set) var imei: String = Style.dash
-    /// Hardware version.
-    fileprivate(set) var hardwareVersion: String = Style.dash
-    /// Firmware version.
-    fileprivate(set) var firmwareVersion: String = Style.dash
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - connectionState: drone connection state
-    ///    - imei: drone's IMEI
-    ///    - hardwareVersion: hardware version
-    ///    - serialNumber: drone serial number
-    init(connectionState: DeviceState.ConnectionState,
-         imei: String,
-         hardwareVersion: String,
-         serialNumber: String,
-         firmwareVersion: String) {
-        super.init(connectionState: connectionState)
-
-        self.hardwareVersion = hardwareVersion
-        self.serialNumber = serialNumber
-        self.firmwareVersion = firmwareVersion
-        self.imei = imei
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? DroneDetailsInformationsState else { return false }
-
-        return super.isEqual(to: other)
-            && self.serialNumber == other.serialNumber
-            && self.imei == other.imei
-            && self.hardwareVersion == other.hardwareVersion
-            && self.firmwareVersion == other.firmwareVersion
-    }
-
-    override func copy() -> DroneDetailsInformationsState {
-        let copy = DroneDetailsInformationsState(connectionState: connectionState,
-                                                 imei: imei,
-                                                 hardwareVersion: hardwareVersion,
-                                                 serialNumber: serialNumber,
-                                                 firmwareVersion: firmwareVersion)
-        return copy
-    }
-}
+import Combine
 
 /// View Model for the list of drone's infos in the details screen.
-final class DroneDetailsInformationsViewModel: DroneStateViewModel<DroneDetailsInformationsState> {
+final class DroneDetailsInformationsViewModel {
+
+    // MARK: - Published Properties
+    /// Drone's serial number.
+    @Published private(set) var serialNumber: String = Style.dash
+    /// Current drone imei.
+    @Published private(set) var imei: String = Style.dash
+    /// Hardware version.
+    @Published private(set) var hardwareVersion: String = Style.dash
+    /// Firmware version.
+    @Published private(set) var firmwareVersion: String = Style.dash
+    /// Drone's flying state
+    private var isFlying = CurrentValueSubject<Bool, Never>(false)
+
     // MARK: - Private Properties
+    private let currentDroneHolder: CurrentDroneHolder
+    private let connectedDroneHolder: ConnectedDroneHolder
     private var systemInfoRef: Ref<SystemInfo>?
     private var cellularRef: Ref<Cellular>?
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
+    var resetButtonEnabled: AnyPublisher<Bool, Never> {
+        connectedDroneHolder.dronePublisher
+            .combineLatest(isFlying)
+            .map { [weak self] (drone, isFlying) in
+                guard self != nil else { return false }
+                guard let drone = drone else { return false }
+                return drone.isConnected && !isFlying
+            }
+            .eraseToAnyPublisher()
+    }
 
-        listenDroneInfos(drone)
-        listenCellular(drone)
+    init(currentDroneHolder: CurrentDroneHolder, connectedDroneHolder: ConnectedDroneHolder) {
+        self.currentDroneHolder = currentDroneHolder
+        self.connectedDroneHolder = connectedDroneHolder
+
+        currentDroneHolder.dronePublisher
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenDroneInfos(drone)
+                self.listenCellular(drone)
+                self.listenFlyingState(drone)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs
     /// Resets the drone to factory state.
     func resetDrone() {
-        if let uid = self.drone?.uid {
-            Defaults.dronesListPairingProcessHidden.removeAll(where: { $0 == uid })
-        }
+        let uid = currentDroneHolder.drone.uid
+        Defaults.dronesListPairingProcessHidden.removeAll(where: { $0 == uid })
 
-        _ = drone?.getPeripheral(Peripherals.systemInfo)?.factoryReset()
+        _ = currentDroneHolder.drone.getPeripheral(Peripherals.systemInfo)?.factoryReset()
     }
 }
 
@@ -118,44 +94,49 @@ final class DroneDetailsInformationsViewModel: DroneStateViewModel<DroneDetailsI
 private extension DroneDetailsInformationsViewModel {
     /// Starts watcher for drone system infos.
     func listenDroneInfos(_ drone: Drone) {
-        systemInfoRef = drone.getPeripheral(Peripherals.systemInfo) { [weak self] _ in
-            self?.updateSystemInfo()
+        systemInfoRef = drone.getPeripheral(Peripherals.systemInfo) { [weak self] systemInfo in
+            self?.updateSystemInfo(systemInfo: systemInfo)
         }
-        updateSystemInfo()
     }
 
     /// Starts watcher for drone cellular.
     func listenCellular(_ drone: Drone) {
-        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] _ in
-            self?.updateCellularInfo()
+        cellularRef = drone.getPeripheral(Peripherals.cellular) { [weak self] cellular in
+            self?.updateCellularInfo(cellular: cellular)
         }
-        updateCellularInfo()
+    }
+
+    /// Listen flying indicators instrument.
+    ///
+    /// - Parameter drone: the current drone
+    func listenFlyingState(_ drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicator in
+            guard let flyingIndicator = flyingIndicator?.state else { return }
+            updateFlyingIndicators(flyingIndicatorState: flyingIndicator)
+        }
     }
 }
 
 /// State update functions.
 private extension DroneDetailsInformationsViewModel {
     /// Updates system informations.
-    func updateSystemInfo() {
-        guard let drone = drone else { return }
-        let systemInfo = drone.getPeripheral(Peripherals.systemInfo)
-        let copy = state.value.copy()
-        copy.hardwareVersion = systemInfo?.hardwareVersion ?? Style.dash
-        copy.serialNumber = systemInfo?.serial ?? Style.dash
-        copy.firmwareVersion = hasLastConnectedDrone
+    func updateSystemInfo(systemInfo: SystemInfo?) {
+        hardwareVersion = systemInfo?.hardwareVersion ?? Style.dash
+        serialNumber = systemInfo?.serial ?? Style.dash
+        firmwareVersion = currentDroneHolder.hasLastConnectedDrone
                                 ? systemInfo?.firmwareVersion ?? Style.dash
                                 : Style.dash
-        state.set(copy)
     }
 
     /// Updates cellular info.
-    func updateCellularInfo() {
-        guard let drone = drone else { return }
-        let cellular = drone.getPeripheral(Peripherals.cellular)
-        let copy = state.value.copy()
-        copy.imei = hasLastConnectedDrone
+    func updateCellularInfo(cellular: Cellular?) {
+        imei = currentDroneHolder.hasLastConnectedDrone
                     ? cellular?.imei ?? Style.dash
                     : Style.dash
-        state.set(copy)
+    }
+
+    /// Updates flying state info
+    func updateFlyingIndicators(flyingIndicatorState: FlyingIndicatorsState) {
+        isFlying.value = flyingIndicatorState != .landed
     }
 }

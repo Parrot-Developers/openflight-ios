@@ -30,6 +30,11 @@
 import UIKit
 import Reusable
 import GroundSdk
+import Combine
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "SettingsQuickViewController")
+}
 
 /// This is a specific settings display (collection view) used as shortcuts.
 /// Quick settings will reuse as much a possible setting content and its children logic.
@@ -41,7 +46,9 @@ final class SettingsQuickViewController: UIViewController, StoryboardBased {
 
     // MARK: - Private Properties
     // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
-    private let viewModel = QuickSettingsViewModel(obstacleAvoidanceMonitor: Services.hub.obstacleAvoidanceMonitor)
+    private let viewModel = QuickSettingsViewModel(obstacleAvoidanceMonitor: Services.hub.obstacleAvoidanceMonitor,
+                                                   currentDroneHolder: Services.hub.currentDroneHolder)
+    private var cancellables = Set<AnyCancellable>()
     private var settings: [SettingEntry] = [] {
         didSet {
             guard let indexPath = settingTappedIndexPath else { return }
@@ -92,10 +99,12 @@ private extension SettingsQuickViewController {
     /// Sets up view model.
     func setupViewModel() {
         // watch current drone.
-        viewModel.state.valueChanged = { [weak self] _ in
-            self?.updateCells()
-        }
-        updateCells()
+        viewModel.notifyChangePublisher
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.updateCells()
+            }
+            .store(in: &cancellables)
     }
 
     func setupCollectionViewLayout() {
@@ -142,12 +151,16 @@ extension SettingsQuickViewController: UICollectionViewDataSource {
 
 // MARK: - Settings quick collection view cell delegate
 extension SettingsQuickViewController: SettingsQuickCollectionViewCellDelegate {
+
     func settingsQuickCelldidTap(indexPath: IndexPath) {
         settingTappedIndexPath = indexPath
         let settingEntry = filteredSettings[indexPath.row]
 
-        if let model = settingEntry.segmentModel {
-            viewModel.saveSettingsEntry(settingEntry, at: model.nextIndex)
+        guard let model = settingEntry.segmentModel else {
+            ULog.e(.tag, "settingEntry.segmentModel is undefined")
+            return
         }
+        viewModel.saveSettingsEntry(settingEntry, at: model.nextIndex)
+        updateCells()
     }
 }

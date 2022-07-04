@@ -177,7 +177,6 @@ private extension GalleryVideoViewController {
               }
 
         let thumbnailViewModel = GalleryMediaThumbnailViewModel(media: media,
-                                                                mediaStore: viewModel.mediaStore,
                                                                 index: viewModel.getMediaImageDefaultIndex(media))
 
         thumbnailViewModel.getThumbnail { [weak self] image in

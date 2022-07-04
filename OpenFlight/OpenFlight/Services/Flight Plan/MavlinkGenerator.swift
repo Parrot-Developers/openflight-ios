@@ -71,6 +71,7 @@ public class MavlinkGeneratorImpl {
 extension MavlinkGeneratorImpl: MavlinkGenerator {
 
     public func generateMavlink(for flightPlan: FlightPlanModel, _ completion: @escaping MavlinkGenerationCompletion) {
+        var flightPlan = flightPlan
         // Generate mavlink file from Flight Plan.
         let path = filesManager.defaultUrl(flightPlan: flightPlan).path
         let mainQueueCompletion = { (result: Result<MavlinkGenerationResult, MavlinkGenerationError>) in
@@ -97,7 +98,8 @@ extension MavlinkGeneratorImpl: MavlinkGenerator {
                 ULog.i(.tag, "Found mavlink in data model of '\(flightPlan.uuid)'")
                 do {
                     commands = try MavlinkStandard.MavlinkFiles.parse(mavlinkString: str)
-                    filesManager.writeFile(of: flightPlan)
+                    ULog.i(.tag, "Parsed mavlink of '\(flightPlan.uuid)' with \(commands.count) commands at \(path)")
+                    try filesManager.writeFile(of: flightPlan)
                 } catch {
                     ULog.e(.tag, "Failed to parse existing mavlink in data model for flightPlan"
                            + " '\(flightPlan.uuid)'. Error: \(error)")
@@ -237,9 +239,8 @@ private extension MavlinkGeneratorImpl {
             }
         }
 
-        // Stop capture if capture mode is different from video.
-        // Recording should always continue during rth.
-        if didAddStartCaptureCommand && flightPlan.dataSetting?.captureModeEnum != .video,
+        // Stop capture if started
+        if didAddStartCaptureCommand,
            let endCaptureCommand = flightPlan.dataSetting?.endCaptureCommand {
             commands.append(endCaptureCommand)
             didAddStartCaptureCommand = false
@@ -250,12 +251,6 @@ private extension MavlinkGeneratorImpl {
             // Insert return to launch command if FlightPlan is buckled.
             commands.append(delayReturnToLaunchCommand)
             commands.append(returnToLaunchCommand)
-        }
-
-        // Stop capture if still in progress.
-        if didAddStartCaptureCommand,
-           let endCaptureCommand = flightPlan.dataSetting?.endCaptureCommand {
-            commands.append(endCaptureCommand)
         }
 
         return commands

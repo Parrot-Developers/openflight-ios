@@ -37,6 +37,8 @@ public enum ArcGISStyle {
     static let projectEnvelopeMarginFactor: Double = 1.5
     /// Minimal envelope width, in degrees.
     static let minEnvelopeWidth: Double = 0.0002
+    /// Minimal envelope height, in degrees.
+    static let minEnvelopeHeight = minEnvelopeWidth
 }
 
 /// Define AGS key constants.

@@ -34,17 +34,25 @@ import Combine
 class FlightPlanTopBarViewController: UIViewController {
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet public weak var backButton: UIButton!
+    @IBOutlet private weak var projectTitleLabel: UILabel!
+    @IBOutlet private weak var rightSpacerView: HSpacerView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
     }
+
+    public func set(projectTitle: String?) {
+        projectTitleLabel.text = projectTitle
+    }
+
     public func set(title: String) {
         titleLabel.text = title
     }
 
     public func set(backbuttonVisibility: Bool) {
         backButton.isHidden = !backbuttonVisibility
+        rightSpacerView.isHidden = !backbuttonVisibility
     }
 
     private func setupUI() {
@@ -55,6 +63,7 @@ class FlightPlanTopBarViewController: UIViewController {
         backButton.tintColor = ColorName.defaultTextColor.color
         backButton.setTitle("", for: .normal)
 
-        titleLabel.makeUp(with: .huge, and: .defaultTextColor)
+        projectTitleLabel.makeUp(with: .big, color: .defaultTextColor)
+        titleLabel.makeUp(with: .smallText, color: .defaultTextColor)
     }
 }

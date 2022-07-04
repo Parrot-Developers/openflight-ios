@@ -67,6 +67,7 @@ public enum FlightPlanStartAvailability: Equatable, CustomStringConvertible {
 public protocol FlightPlanStartAvailabilityWatcher {
     var availabilityForRunningPublisher: AnyPublisher<FlightPlanStartAvailability, Never> { get }
     var availabilityForSendingMavlinkPublisher: AnyPublisher<FlightPlanStartAvailability, Never> { get }
+    var availabilityForRunning: FlightPlanStartAvailability { get }
 }
 
 public class FlightPlanStartAvailabilityWatcherImpl {
@@ -164,4 +165,6 @@ extension FlightPlanStartAvailabilityWatcherImpl: FlightPlanStartAvailabilityWat
     public var availabilityForRunningPublisher: AnyPublisher<FlightPlanStartAvailability, Never> {
         availabilityForRunningSubject.eraseToAnyPublisher()
     }
+
+    public var availabilityForRunning: FlightPlanStartAvailability { availabilityForRunningSubject.value }
 }

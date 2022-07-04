@@ -50,6 +50,8 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
 
     var defaultProjectName: String { L10n.defaultFlightPlanProjectName }
 
+    var defaultCaptureMode: FlightPlanCaptureMode { FlightPlanCaptureMode.defaultValue }
+
     var typeKey: String { Constants.defaultType }
 
     var filterPredicate: NSPredicate? {
@@ -60,7 +62,7 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
     }
 
     var settingsProvider: FlightPlanSettingsProvider? {
-        return ClassicFlightPlanSettingsProvider()
+        return ClassicFlightPlanSettingsProvider(edition: Services.hub.flightPlan.edition)
     }
 
     var settingsAlwaysDisplayed: Bool {
@@ -71,9 +73,9 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
     func graphicsWithFlightPlan(_ flightPlan: FlightPlanModel, mapMode: MapMode) -> [FlightPlanGraphic] {
         switch mapMode {
         case .myFlights:
-            return flightPlan.dataSetting?.linesAndWaypointsGraphics ?? []
+            return flightPlan.dataSetting?.linesAndWaypointsGraphics(mapMode: mapMode) ?? []
         default:
-            return flightPlan.dataSetting?.allLinesAndMarkersGraphics ?? []
+            return flightPlan.dataSetting?.allLinesAndMarkersGraphics(mapMode: mapMode) ?? []
         }
     }
 
@@ -377,6 +379,12 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
 
 /// Settings provider for classic Flight Plan.
 final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
+    private let edition: FlightPlanEditionService
+
+    init(edition: FlightPlanEditionService) {
+        self.edition = edition
+    }
+
     // MARK: - Internal Properties
     var currentType: FlightPlanType? {
         return ClassicFlightPlanType.standard
@@ -396,7 +404,7 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
 
     // MARK: - Private Properties
     private var currentFlightPlan: FlightPlanModel? {
-        return Services.hub.flightPlan.edition.currentFlightPlanValue
+        return edition.currentFlightPlanValue
     }
 
     // MARK: - Internal Funcs
@@ -409,7 +417,7 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
     }
 
     func updateSettingValue(for key: String, value: Int) {
-        guard let dataSetting = currentFlightPlan?.dataSetting else { return }
+        guard var dataSetting = currentFlightPlan?.dataSetting else { return }
 
         switch key {
         case ClassicFlightPlanSettingType.gpsLapseDistance.key:
@@ -439,21 +447,24 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
         default:
             break
         }
+        edition.updateDataSetting(dataSetting)
     }
 
     func updateChoiceSetting(for key: String, value: Bool) {
+        guard var dataSetting = currentFlightPlan?.dataSetting else { return }
         switch key {
         case ClassicFlightPlanSettingType.continueMode.key:
-            currentFlightPlan?.dataSetting?.setShouldContinue(value)
+            dataSetting.setShouldContinue(value)
         case ClassicFlightPlanSettingType.lastPointRth.key:
-            currentFlightPlan?.dataSetting?.setLastPointRth(value)
+            dataSetting.setLastPointRth(value)
         case ClassicFlightPlanSettingType.disconnectionRth.key:
-            currentFlightPlan?.dataSetting?.setDisconnectionRth(value)
+            dataSetting.setDisconnectionRth(value)
         case ClassicFlightPlanSettingType.obstacleAvoidance.key:
-            currentFlightPlan?.dataSetting?.obstacleAvoidanceActivated = value
+            dataSetting.obstacleAvoidanceActivated = value
         default:
             break
         }
+        edition.updateDataSetting(dataSetting)
     }
 
     func settings(for flightPlan: FlightPlanModel) -> [FlightPlanSetting] {
@@ -487,6 +498,10 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
 
     func settings(for type: FlightPlanType) -> [FlightPlanSetting] {
         return []
+    }
+
+    func type(for flightPlan: FlightPlanModel) -> FlightPlanType? {
+        return currentType
     }
 }
 
@@ -557,6 +572,10 @@ final class WayPointSettingsProvider: FlightPlanSettingsProvider {
     func settings(for type: FlightPlanType) -> [FlightPlanSetting] {
         return []
     }
+
+    func type(for flightPlan: FlightPlanModel) -> FlightPlanType? {
+        return currentType
+    }
 }
 
 /// Settings provider for classic Flight Plan.
@@ -614,6 +633,10 @@ final class WayPointSegmentSettingsProvider: FlightPlanSettingsProvider {
 
     func settings(for type: FlightPlanType) -> [FlightPlanSetting] {
         return []
+    }
+
+    func type(for flightPlan: FlightPlanModel) -> FlightPlanType? {
+        return currentType
     }
 }
 
@@ -678,6 +701,10 @@ final class PoiPointSettingsProvider: FlightPlanSettingsProvider {
 
     func settings(for type: FlightPlanType) -> [FlightPlanSetting] {
         return []
+    }
+
+    func type(for flightPlan: FlightPlanModel) -> FlightPlanType? {
+        return currentType
     }
 }
 

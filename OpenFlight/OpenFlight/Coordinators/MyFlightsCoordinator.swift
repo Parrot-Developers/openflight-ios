@@ -133,7 +133,7 @@ public final class MyFlightsCoordinator: Coordinator {
                                                     flightPlanServices: flightPlanServices,
                                                     uiServices: uiServices,
                                                     drone: drone)
-        presentCoordinatorWithAnimator(childCoordinator: coordinator, completion: completion)
+        presentModallyCoordinatorWithAnimator(childCoordinator: coordinator, completion: completion)
         uiServices.navigationStack.add(.flightDetails(flight: flight))
     }
 

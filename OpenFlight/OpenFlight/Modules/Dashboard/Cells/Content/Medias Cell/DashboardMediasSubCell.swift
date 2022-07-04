@@ -53,14 +53,9 @@ internal extension DashboardMediasSubCell {
     ///
     /// - Parameters:
     ///    - media: Gallery Media
-    ///    - mediaStore: Media Store
     ///    - index: image index
-    func setup(media: GalleryMedia,
-               mediaStore: MediaStore?,
-               index: Int) {
-        viewModel = GalleryMediaThumbnailViewModel(media: media,
-                                                   mediaStore: mediaStore,
-                                                   index: index)
+    func setup(media: GalleryMedia, index: Int) {
+        viewModel = GalleryMediaThumbnailViewModel(media: media, index: index)
         viewModel?.getThumbnail { [weak self] image in
             self?.thumbnailImageView.image = image
         }

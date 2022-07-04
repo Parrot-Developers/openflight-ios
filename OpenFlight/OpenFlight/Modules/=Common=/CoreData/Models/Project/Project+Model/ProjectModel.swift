@@ -74,6 +74,18 @@ public struct ProjectModel {
         self.type == ProjectType.classic
     }
 
+    public var lastExecution: FlightPlanModel? {
+        guard let flightPlans = flightPlans else { return nil }
+        return flightPlans
+            .filter { $0.state.isExecution }
+            .sorted { $0.lastFlightExecutionDate ?? Date.distantPast > $1.lastFlightExecutionDate ?? Date.distantPast}
+            .first
+    }
+
+    public var editableFlightPlan: FlightPlanModel? {
+        flightPlans?.first { $0.state == .editable }
+    }
+
     // MARK: - Public init
     public init(apcId: String,
                 cloudId: Int,

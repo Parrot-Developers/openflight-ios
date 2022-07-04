@@ -33,11 +33,12 @@ import GroundSdk
 
 // MARK: - GalleryMediaThumbnailViewModel
 /// View model used to get a thumbnail image for a given media.
-final class GalleryMediaThumbnailViewModel: NSObject {
+final class GalleryMediaThumbnailViewModel: DroneWatcherViewModel<DeviceConnectionState> {
     // MARK: - Private Properties
     private var thumbnailReference: Ref<UIImage>?
     private var media: GalleryMedia?
     private var mediaStore: MediaStore?
+    private var mediaStoreRef: Ref<MediaStore>?
     private var index: Int = 0
 
     // MARK: - Init
@@ -45,12 +46,20 @@ final class GalleryMediaThumbnailViewModel: NSObject {
     ///
     /// - Parameters:
     ///    - media: Gallery Media
-    ///    - mediaStore: Media Store
     ///    - index: Media index in the gallery media array image
-    public init(media: GalleryMedia, mediaStore: MediaStore?, index: Int) {
+    public init(media: GalleryMedia, index: Int) {
         self.media = media
-        self.mediaStore = mediaStore
         self.index = index
+    }
+
+    override func listenDrone(drone: Drone) {
+        listenMediaStore(drone: drone)
+    }
+
+    func listenMediaStore(drone: Drone) {
+        mediaStoreRef = drone.getPeripheral(Peripherals.mediaStore) { [unowned self] mediaStore in
+            self.mediaStore = mediaStore
+        }
     }
 
     /// Get thumbnail image from media.
@@ -59,7 +68,8 @@ final class GalleryMediaThumbnailViewModel: NSObject {
     ///    - completion: completion block
     func getThumbnail(completion: @escaping (UIImage?) -> Void) {
         guard let media = media else { return }
-        if let mediaStore = mediaStore,
+        if media.source != .mobileDevice,
+           let mediaStore = mediaStore,
            let mediaResources = media.mediaResources,
            index < mediaResources.count {
             thumbnailReference = mediaStore.newThumbnailDownloader(resource: mediaResources[index]) { image in

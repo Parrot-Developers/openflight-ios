@@ -71,10 +71,16 @@ public class FlightPlan: NSManagedObject {
                                synchroError: SynchroError(error: synchroError))
     }
 
+    func modelWithFlightPlanFlights() -> FlightPlanModel {
+        var modelResult = model()
+        modelResult.flightPlanFlights = flightPlanFlights?.toArray().map({ $0.modelWithFlightAndFlightPlan() })
+        return modelResult
+    }
+
     func update(fromFlightPlanModel flightPlanModel: FlightPlanModel, withProject: Project?, withThumbnail: Thumbnail?) {
         apcId = flightPlanModel.apcId
         type = flightPlanModel.type
-        cloudId = Int64(flightPlanModel.cloudId)
+        cloudId = flightPlanModel.cloudId > 0 ? Int64(flightPlanModel.cloudId) : cloudId
         isLocalDeleted = flightPlanModel.isLocalDeleted
         parrotCloudUploadUrl = flightPlanModel.parrotCloudUploadUrl
         projectUuid = flightPlanModel.projectUuid

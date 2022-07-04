@@ -182,3 +182,10 @@ extension Array where Element == FlightPlanLightSetting {
         }
     }
 }
+
+/// Extension for debug description.
+extension FlightPlanLightSetting: CustomStringConvertible {
+    public var description: String {
+        "\(key): \(currentValue?.description ?? "-") \(longValue?.description ?? "-")"
+    }
+}

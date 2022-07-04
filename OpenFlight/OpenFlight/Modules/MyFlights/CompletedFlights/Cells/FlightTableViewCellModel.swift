@@ -56,9 +56,7 @@ open class FlightTableViewCellModel {
         } else {
             name = L10n.dashboardMyFlightUnknownLocation
         }
-        service.thumbnail(flight: flight) { [weak self] in
-            self?.thumbnail = $0
-        }
+        self.thumbnail = flight.thumbnail?.thumbnailImage
         flightsViewModel?.$selectedFlight
             .sink { [weak self] in
                 self?.isSelected = $0?.uuid == flight.uuid

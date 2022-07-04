@@ -35,9 +35,9 @@ extension Camera2PhotoResolution: BarItemMode, Sortable {
     public var title: String {
         switch self {
         case .res12MegaPixels:
-            return "12 " + L10n.unitMegapixel
+            return "12" + L10n.unitMegapixel
         case .res48MegaPixels:
-            return "48 " + L10n.unitMegapixel
+            return "48" + L10n.unitMegapixel
         }
     }
 

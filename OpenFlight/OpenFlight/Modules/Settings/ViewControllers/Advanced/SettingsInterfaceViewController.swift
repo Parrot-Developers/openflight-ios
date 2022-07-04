@@ -28,9 +28,13 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Settings content sub class dedicated to interface settings.
 final class SettingsInterfaceViewController: SettingsContentViewController {
+
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Overrides Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,10 +65,12 @@ private extension SettingsInterfaceViewController {
     func setupViewModel() {
         // Setup view model.
         viewModel = InterfaceViewModel()
-        viewModel?.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-        // Inital data source update.
-        updateDataSource()
+        guard let viewModel = viewModel as? InterfaceViewModel else { return }
+        viewModel.resetSettingPublisher
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.updateDataSource()
+            }
+            .store(in: &cancellables)
     }
 }

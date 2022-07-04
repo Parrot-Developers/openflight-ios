@@ -143,3 +143,23 @@ extension ThumbnailModel {
                   fileSynchroDate: nil)
     }
 }
+
+/// Extension for Equatable conformance.
+extension ThumbnailModel: Equatable {
+    public static func == (lhs: ThumbnailModel, rhs: ThumbnailModel) -> Bool {
+        lhs.apcId == rhs.apcId
+        && lhs.cloudId == rhs.cloudId
+        && lhs.uuid == rhs.uuid
+        && lhs.latestCloudModificationDate == rhs.latestCloudModificationDate
+        && lhs.lastUpdate == rhs.lastUpdate
+        && lhs.flightUuid == rhs.flightUuid
+        && lhs.thumbnailImage == rhs.thumbnailImage
+        && lhs.isLocalDeleted == rhs.isLocalDeleted
+        && lhs.synchroStatus == rhs.synchroStatus
+        && lhs.synchroError == rhs.synchroError
+        && lhs.latestSynchroStatusDate == rhs.latestSynchroStatusDate
+        && lhs.latestLocalModificationDate == rhs.latestLocalModificationDate
+        && lhs.fileSynchroStatus == rhs.fileSynchroStatus
+        && lhs.fileSynchroDate == rhs.fileSynchroDate
+    }
+}

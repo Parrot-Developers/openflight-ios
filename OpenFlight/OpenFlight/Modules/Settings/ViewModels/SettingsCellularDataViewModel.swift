@@ -30,149 +30,85 @@
 import Foundation
 import GroundSdk
 import SwiftyUserDefaults
-
-/// State for in `SettingsCellularDataViewModel`.
-final class SettingsCellularDataState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    /// Tells if the cellular is available or not.
-    fileprivate(set) var cellularAvailability: SettingsCellularAvailability = .cellularOff
-    /// Whether cellular availability setting is enabled.
-    fileprivate(set) var isCellularAvailabilityEnabled: Bool = true
-    /// Whether cellular availability setting is updating.
-    fileprivate(set) var isCellularAvailabilityUpdating: Bool = false
-    /// Tells if the current network selection is manual or auto.
-    fileprivate(set) var cellularSelectionMode: SettingsCellularSelection = .auto
-    /// Whether cellular network selection setting is enabled.
-    fileprivate(set) var isCellularSelectionModeEnabled: Bool = false
-    /// Tells if the current network selection mode is updating.
-    fileprivate(set) var isCellularSelectionModeUpdating: Bool = false
-    /// Current routing policy.
-    fileprivate(set) var routingPolicy: NetworkControlRoutingPolicy = .automatic
-    /// Whether routing policy setting is updating.
-    fileprivate(set) var isRoutingPolicyUpdating: Bool = false
-    /// Current cellular network url
-    fileprivate(set) var cellularNetworkUrl: String = ""
-    /// Current cellular network username
-    fileprivate(set) var cellularNetworkUsername: String = ""
-    /// Current cellular network password
-    fileprivate(set) var cellularNetworkPassword: String = ""
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///     - connectionState: drone connection state
-    ///     - cellularAvailability: tells if cellular data are enabled
-    ///     - isCellularAvailabilityEnabled: whether cellular availability setting is enabled
-    ///     - isCellularAvailabilityUpdating: whether cellular availability setting is updating
-    ///     - cellularSelectionMode: tells if the network selection is auto or manual
-    ///     - isCellularSelectionModeEnabled: tells if the network selection mode is enabled
-    ///     - isCellularSelectionModeUpdating: tells if the network selection is updating
-    ///     - routingPolicy: routing policy
-    ///     - routingPolicyUpdating: whether routing policy setting is updating
-    init(connectionState: DeviceState.ConnectionState,
-         cellularAvailability: SettingsCellularAvailability,
-         isCellularAvailabilityEnabled: Bool,
-         isCellularAvailabilityUpdating: Bool,
-         cellularSelectionMode: SettingsCellularSelection,
-         isCellularSelectionModeEnabled: Bool,
-         isCellularSelectionModeUpdating: Bool,
-         routingPolicy: NetworkControlRoutingPolicy,
-         isRoutingPolicyUpdating: Bool,
-         cellularNetworkUrl: String,
-         cellularNetworkUsername: String,
-         cellularNetworkPassword: String
-    ) {
-        super.init(connectionState: connectionState)
-
-        self.cellularAvailability = cellularAvailability
-        self.isCellularAvailabilityEnabled = isCellularAvailabilityEnabled
-        self.isCellularAvailabilityUpdating = isCellularAvailabilityUpdating
-        self.cellularSelectionMode = cellularSelectionMode
-        self.isCellularSelectionModeEnabled = isCellularSelectionModeEnabled
-        self.isCellularSelectionModeUpdating = isCellularSelectionModeUpdating
-        self.routingPolicy = routingPolicy
-        self.isRoutingPolicyUpdating = isRoutingPolicyUpdating
-        self.cellularNetworkUrl = cellularNetworkUrl
-        self.cellularNetworkUsername = cellularNetworkUsername
-        self.cellularNetworkPassword = cellularNetworkPassword
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? SettingsCellularDataState else { return false }
-
-        return cellularAvailability == other.cellularAvailability
-            && isCellularAvailabilityEnabled == other.isCellularAvailabilityEnabled
-            && isCellularAvailabilityUpdating == other.isCellularAvailabilityUpdating
-            && cellularSelectionMode == other.cellularSelectionMode
-            && isCellularSelectionModeEnabled == other.isCellularSelectionModeEnabled
-            && isCellularSelectionModeUpdating == other.isCellularSelectionModeUpdating
-            && routingPolicy == other.routingPolicy
-            && isRoutingPolicyUpdating == other.isRoutingPolicyUpdating
-            && cellularNetworkUrl == other.cellularNetworkUrl
-            && cellularNetworkUsername == other.cellularNetworkUsername
-            && cellularNetworkPassword == other.cellularNetworkPassword
-    }
-
-    override func copy() -> SettingsCellularDataState {
-        return SettingsCellularDataState(connectionState: connectionState,
-                                         cellularAvailability: cellularAvailability,
-                                         isCellularAvailabilityEnabled: isCellularAvailabilityEnabled,
-                                         isCellularAvailabilityUpdating: isCellularAvailabilityUpdating,
-                                         cellularSelectionMode: cellularSelectionMode,
-                                         isCellularSelectionModeEnabled: isCellularSelectionModeEnabled,
-                                         isCellularSelectionModeUpdating: isCellularSelectionModeUpdating,
-                                         routingPolicy: routingPolicy,
-                                         isRoutingPolicyUpdating: isRoutingPolicyUpdating,
-                                         cellularNetworkUrl: cellularNetworkUrl,
-                                         cellularNetworkUsername: cellularNetworkUsername,
-                                         cellularNetworkPassword: cellularNetworkPassword)
-    }
-}
+import Combine
 
 /// Cellular data settings view model.
-final class SettingsCellularDataViewModel: DroneStateViewModel<SettingsCellularDataState> {
+final class SettingsCellularDataViewModel {
+
+    // MARK: - Published Properties
+    /// Tells if the current network selection is manual or auto.
+    @Published private(set) var cellularSelectionMode: SettingsCellularSelection = .auto
+    /// Current cellular network url
+    @Published private(set) var cellularNetworkUrl: String = ""
+    /// Current cellular network username
+    @Published private(set) var cellularNetworkUsername: String = ""
+    /// Current cellular network password
+    @Published private(set) var cellularNetworkPassword: String = ""
+
+    private(set) var cellularPublisher = CurrentValueSubject<Cellular?, Never>(nil)
+    private(set) var networkControlPublisher = CurrentValueSubject<NetworkControl?, Never>(nil)
+    private(set) var flyingIndicatorPublisher = CurrentValueSubject<FlyingIndicators?, Never>(nil)
+    private(set) var cellularAccessEntryPublisher = CurrentValueSubject<SettingEntry?, Never>(nil)
+    private(set) var connectionNetworkModeEntryPublisher = CurrentValueSubject<SettingEntry?, Never>(nil)
+    private(set) var connectionNetworkSelectionEntryPublisher = CurrentValueSubject<SettingEntry?, Never>(nil)
+
     // MARK: - Private Properties
+    private var currentDroneHolder: CurrentDroneHolder
+    private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - Ground SDK References
+
     private var cellularRef: Ref<Cellular>?
     private var networkControlRef: Ref<NetworkControl>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
 
-    // MARK: - Internal Properties
-    /// Returns the setting entry for cellular access.
-    var cellularAccessEntry: SettingEntry {
-        return SettingEntry(setting: cellularAvailabilityModel(with: drone?.getPeripheral(Peripherals.cellular)),
-                            title: L10n.droneDetailsCellularAccess,
-                            isEnabled: state.value.isCellularAvailabilityEnabled,
-                            itemLogKey: LogEvent.LogKeyAdvancedSettings.cellularAccess)
-    }
-    /// Returns the setting entry for connection network mode.
-    var connectionNetworkModeEntry: SettingEntry {
-        let isEnabled = state.value.cellularAvailability == .cellularOn
-        return SettingEntry(setting: networkModeModel(with: drone?.getPeripheral(Peripherals.networkControl)),
-                            title: L10n.settingsConnectionNetworkMode,
-                            isEnabled: isEnabled,
-                            itemLogKey: LogEvent.LogKeyAdvancedSettings.networkPreferences)
-    }
-    /// Returns the setting entry for connection network selection.
-    var connectionNetworkSelectionEntry: SettingEntry {
-        return SettingEntry(setting: selectionModel(with: drone?.getPeripheral(Peripherals.cellular)),
-                            title: L10n.settingsConnectionNetworkSelection,
-                            isEnabled: state.value.isCellularSelectionModeEnabled,
-                            itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand)
-    }
+    init(currentDroneHolder: CurrentDroneHolder) {
+        self.currentDroneHolder = currentDroneHolder
 
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
+        currentDroneHolder.dronePublisher
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenCellular(drone)
+                self.listenNetworkControl(drone)
+                self.listenFlyingIndicators(drone)
+            }
+            .store(in: &cancellables)
 
-        listenCellular(drone)
-        listenNetworkControl(drone)
-        listenFlyingIndicators(drone)
+        cellularPublisher
+            .combineLatest(flyingIndicatorPublisher)
+            .sink { [weak self] (cellular, flyingIndicator) in
+                guard let self = self else { return }
+                let cellularAvailabilityEnabled = !(flyingIndicator?.flyingState == .flying
+                                                    && cellular?.cellularAvailability == .cellularOn)
+                self.cellularAccessEntryPublisher.send(SettingEntry(setting: self.cellularAvailabilityModel(with: cellular),
+                                                               title: L10n.droneDetailsCellularAccess,
+                                                               isEnabled: cellularAvailabilityEnabled,
+                                                               itemLogKey: LogEvent.LogKeyAdvancedSettings.cellularAccess))
+            }
+            .store(in: &cancellables)
+
+        cellularPublisher
+            .combineLatest(networkControlPublisher)
+            .sink { [weak self] (cellular, networkControl) in
+                guard let self = self else { return }
+                let isEnabled = cellular?.cellularAvailability == .cellularOn
+                self.connectionNetworkModeEntryPublisher.send(SettingEntry(setting: self.networkModeModel(with: networkControl),
+                                                                           title: L10n.settingsConnectionNetworkMode,
+                                                                           isEnabled: isEnabled,
+                                                                           itemLogKey: LogEvent.LogKeyAdvancedSettings.networkPreferences))
+            }
+            .store(in: &cancellables)
+
+        cellularPublisher
+            .sink { [weak self] cellular in
+                guard let self = self else { return }
+                let cellularSelectionModeEnabled = cellular?.isSimCardInserted == true
+                self.connectionNetworkSelectionEntryPublisher.send(SettingEntry(setting: self.selectionModel(with: cellular),
+                                                                                title: L10n.settingsConnectionNetworkSelection,
+                                                                                isEnabled: cellularSelectionModeEnabled,
+                                                                                itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand))
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Internal Funcs
@@ -185,9 +121,9 @@ final class SettingsCellularDataViewModel: DroneStateViewModel<SettingsCellularD
     func updateAllManualValues(url: String,
                                username: String,
                                password: String) {
-        _ = drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(url: url,
-                                                                                            username: username,
-                                                                                            password: password)
+        _ = currentDroneHolder.drone.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(url: url,
+                                                                                                              username: username,
+                                                                                                              password: password)
     }
 }
 
@@ -197,43 +133,26 @@ private extension SettingsCellularDataViewModel {
     /// Starts watcher for cellular.
     func listenCellular(_ drone: Drone) {
         cellularRef = drone.getPeripheral(Peripherals.cellular) { [unowned self] cellular in
-            let copy = state.value.copy()
-            copy.cellularAvailability = cellular?.cellularAvailability ?? .cellularOff
-            copy.isCellularAvailabilityUpdating = cellular?.mode.updating == true
-            copy.isCellularSelectionModeUpdating = cellular?.apnConfigurationSetting.updating == true
-            copy.cellularSelectionMode = cellular?.apnConfigurationSetting.isManual == true ? .manual : .auto
-            copy.isCellularSelectionModeEnabled = cellular?.isSimCardInserted == true
-            copy.cellularNetworkUrl = cellular?.apnConfigurationSetting.url ?? ""
-            copy.cellularNetworkUsername = cellular?.apnConfigurationSetting.username ?? ""
-            copy.cellularNetworkPassword = cellular?.apnConfigurationSetting.password ?? ""
-            state.set(copy)
-            updateCellularAvailabilityEnabled()
+            cellularSelectionMode = cellular?.apnConfigurationSetting.isManual == true ? .manual : .auto
+            cellularNetworkUrl = cellular?.apnConfigurationSetting.url ?? ""
+            cellularNetworkUsername = cellular?.apnConfigurationSetting.username ?? ""
+            cellularNetworkPassword = cellular?.apnConfigurationSetting.password ?? ""
+            cellularPublisher.send(cellular)
         }
     }
 
     /// Starts watcher for network control.
     func listenNetworkControl(_ drone: Drone) {
         networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [unowned self] networkControl in
-            let copy = state.value.copy()
-            copy.routingPolicy = networkControl?.routingPolicy.policy ?? .automatic
-            copy.isRoutingPolicyUpdating = networkControl?.routingPolicy.updating == true
-            state.set(copy)
+            networkControlPublisher.send(networkControl)
         }
     }
 
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(_ drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] _ in
-            updateCellularAvailabilityEnabled()
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicator in
+            flyingIndicatorPublisher.send(flyingIndicator)
         }
-    }
-
-    /// Updates availability of cellular availability setting.
-    func updateCellularAvailabilityEnabled() {
-        let copy = state.value.copy()
-        copy.isCellularAvailabilityEnabled = !(drone?.isStateFlying ?? false
-                                             && copy.cellularAvailability == .cellularOn)
-        state.set(copy)
     }
 
     /// Updates cellular network selection mode.
@@ -242,11 +161,11 @@ private extension SettingsCellularDataViewModel {
     ///     - selectionMode: the selection mode
     func updateSelectionMode(selectionMode: SettingsCellularSelection) {
         if selectionMode == .manual {
-            _ = drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(url: state.value.cellularNetworkUrl,
-                                                                                                username: state.value.cellularNetworkUsername,
-                                                                                                password: state.value.cellularNetworkPassword)
+            _ = currentDroneHolder.drone.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(url: cellularNetworkUrl,
+                                                                                                                  username: cellularNetworkUsername,
+                                                                                                                  password: cellularNetworkPassword)
         } else {
-            _ = drone?.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToAuto()
+            _ = currentDroneHolder.drone.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToAuto()
         }
     }
 
@@ -256,16 +175,19 @@ private extension SettingsCellularDataViewModel {
     ///     - cellular: current cellular
     /// - Returns: Model for cellular availability setting.
     func cellularAvailabilityModel(with cellular: Cellular?) -> DroneSettingModel {
+        let isCellularAvailabilityUpdating = cellular?.mode.updating == true
+        let cellularAvailability = cellular?.cellularAvailability ?? .cellularOff
+
         return DroneSettingModel(allValues: SettingsCellularAvailability.allValues,
                                  supportedValues: SettingsCellularAvailability.allValues,
-                                 currentValue: state.value.cellularAvailability,
-                                 isUpdating: state.value.isCellularAvailabilityUpdating) { [weak self] mode in
+                                 currentValue: cellularAvailability,
+                                 isUpdating: isCellularAvailabilityUpdating) { [weak self] mode in
             guard let mode = mode as? SettingsCellularAvailability else { return }
 
             switch mode {
             case .cellularOn:
                 cellular?.mode.value = .data
-                guard let uid = self?.drone?.uid,
+                guard let uid = self?.currentDroneHolder.drone.uid,
                       Defaults.dronesListPairingProcessHidden.contains(uid) else {
                     return
                 }
@@ -283,10 +205,13 @@ private extension SettingsCellularDataViewModel {
     ///     - cellular: cellular peripheral
     /// - Returns: A drone setting model.
     func selectionModel(with cellular: Cellular?) -> DroneSettingModel {
+        let cellularSelectionMode: SettingsCellularSelection = cellular?.apnConfigurationSetting.isManual == true ? .manual : .auto
+        let isCellularSelectionModeUpdating = cellular?.apnConfigurationSetting.updating == true
+
         return DroneSettingModel(allValues: SettingsCellularSelection.allValues,
                                  supportedValues: SettingsCellularSelection.allValues,
-                                 currentValue: state.value.cellularSelectionMode,
-                                 isUpdating: state.value.isCellularSelectionModeUpdating) { [weak self] selectionMode in
+                                 currentValue: cellularSelectionMode,
+                                 isUpdating: isCellularSelectionModeUpdating) { [weak self] selectionMode in
             guard let selectionMode = selectionMode as? SettingsCellularSelection else { return }
 
             self?.updateSelectionMode(selectionMode: selectionMode)
@@ -298,10 +223,13 @@ private extension SettingsCellularDataViewModel {
     /// - Parameter networkControl: network control peripheral
     /// - Returns: A drone setting model.
     func networkModeModel(with networkControl: NetworkControl?) -> DroneSettingModel {
+        let routingPolicy = networkControl?.routingPolicy.policy ?? .automatic
+        let isRoutingPolicyUpdating = networkControl?.routingPolicy.updating == true
+
         return DroneSettingModel(allValues: NetworkControlRoutingPolicy.allValues,
                                  supportedValues: NetworkControlRoutingPolicy.allValues,
-                                 currentValue: state.value.routingPolicy,
-                                 isUpdating: state.value.isRoutingPolicyUpdating) { policy in
+                                 currentValue: routingPolicy,
+                                 isUpdating: isRoutingPolicyUpdating) { policy in
             guard let strongPolicy = policy as? NetworkControlRoutingPolicy else { return }
 
             networkControl?.routingPolicy.policy = strongPolicy

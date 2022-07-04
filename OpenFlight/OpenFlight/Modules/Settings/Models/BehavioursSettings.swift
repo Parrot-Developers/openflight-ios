@@ -53,16 +53,16 @@ struct BehavioursPreset {
 // MARK: - Internal Enums
 
 /// Settings Behaviours mode presets.
-enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
+public enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
     case video
     case sport
 
-    static var allValues: [BarItemMode] {
+    public static var allValues: [BarItemMode] {
         return [SettingsBehavioursMode.video,
                 SettingsBehavioursMode.sport]
     }
 
-    var subModes: [BarItemSubMode]? {
+    public var subModes: [BarItemSubMode]? {
         return nil
     }
 
@@ -79,7 +79,7 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
         }
     }
 
-    var title: String {
+    public var title: String {
         switch self {
         case .video:
             return L10n.settingsBehaviourVideo
@@ -88,7 +88,7 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
         }
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .video:
             return Asset.Settings.Advanced.presetFilm.image
@@ -97,7 +97,7 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
         }
     }
 
-    var key: String {
+    public var key: String {
         return rawValue
     }
 
@@ -210,7 +210,7 @@ enum SettingsBehavioursMode: String, BarItemMode, HasPreset {
         }
     }
 
-    var logKey: String {
+    public var logKey: String {
         switch self {
         case .video:
             return LogEvent.LogKeyAdvancedSettings.filmMode

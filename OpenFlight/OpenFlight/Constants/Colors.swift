@@ -18,6 +18,9 @@ public struct ColorName {
   public let rgbaValue: UInt32
   public var color: Color { return Color(named: self) }
 
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#3b302a"></span>
+  /// Alpha: 80% <br/> (0x3b302acc)
+  public static let batteryProgressColor = ColorName(rgbaValue: 0x3b302acc)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#000000"></span>
   /// Alpha: 100% <br/> (0x000000ff)
   public static let black = ColorName(rgbaValue: 0x000000ff)
@@ -84,6 +87,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#00ff8a"></span>
   /// Alpha: 100% <br/> (0x00ff8aff)
   public static let flightCompletedColor = ColorName(rgbaValue: 0x00ff8aff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#00ff8a"></span>
+  /// Alpha: 60% <br/> (0x00ff8a99)
+  public static let flightCompletedColor60 = ColorName(rgbaValue: 0x00ff8a99)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#f8d000"></span>
   /// Alpha: 100% <br/> (0xf8d000ff)
   public static let gold = ColorName(rgbaValue: 0xf8d000ff)
@@ -132,6 +138,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#7d72f9"></span>
   /// Alpha: 100% <br/> (0x7d72f9ff)
   public static let purple = ColorName(rgbaValue: 0x7d72f9ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#5e5650"></span>
+  /// Alpha: 100% <br/> (0x5e5650ff)
+  public static let secondaryTextColor = ColorName(rgbaValue: 0x5e5650ff)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#b9b5ad"></span>
   /// Alpha: 100% <br/> (0xb9b5adff)
   public static let separator = ColorName(rgbaValue: 0xb9b5adff)
@@ -144,6 +153,9 @@ public struct ColorName {
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ff7145"></span>
   /// Alpha: 100% <br/> (0xff7145ff)
   public static let warningColor = ColorName(rgbaValue: 0xff7145ff)
+  /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ff7145"></span>
+  /// Alpha: 60% <br/> (0xff714599)
+  public static let warningColor60 = ColorName(rgbaValue: 0xff714599)
   /// <span style="display:block;width:3em;height:2em;border:1px solid black;background:#ffffff"></span>
   /// Alpha: 100% <br/> (0xffffffff)
   public static let white = ColorName(rgbaValue: 0xffffffff)

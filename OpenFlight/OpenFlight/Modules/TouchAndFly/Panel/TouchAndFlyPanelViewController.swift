@@ -29,9 +29,9 @@
 
 import UIKit
 import Combine
+import CoreLocation
 
-class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModelDelegate,
-                                        UITableViewDelegate, UITableViewDataSource {
+class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
 
     // MARK: - IBOutlet
     // Container buttons
@@ -72,6 +72,7 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
     @IBOutlet private weak var containerStream: UIView!
     private weak var mapViewController: MapViewController?
     private var stopStreamOnSizeEvent = false
+    private var isUpdatingSettingKeys: [String] = []
 
     // MARK: - Private Properties
     private var viewModel: TouchAndFlyPanelViewModelImpl!
@@ -115,12 +116,13 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        registerCell()
         setupTableView()
         setupProgressBar()
         bindViewModel()
         listenToActionWidgets()
-
+        if let touchView = viewModel.splitControls.streamViewController?.touchView {
+            viewModel.splitControls.streamViewController?.view.bringSubviewToFront(touchView)
+        }
         shadowView.addShadow(shadowOffset: CGSize(width: 0, height: -2))
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
@@ -139,15 +141,23 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
         setProgressView(progressViewDisplay: viewModel.progressViewDisplay)
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        if let touchView = viewModel.splitControls.streamViewController?.touchView {
+            viewModel.splitControls.streamViewController?.view.sendSubviewToBack(touchView)
+        }
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if containerStatus == nil {
             containerStatus = .streaming
             startStream()
             self.viewModel.showMap()
-            var frame = containerStream.frame
-            frame.size.height = frame.size.width * Constants.streamRatio
-            containerStream.frame = frame
+            let width = Layout.sidePanelWidth(isRegularSizeClass)
+            let height = Constants.streamRatio * width
+            containerStream.frame.size = .init(width: width, height: height)
             tableView.tableHeaderView = containerStream
         }
     }
@@ -170,26 +180,6 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
         }
     }
 
-    // MARK: - functions to replace stream by map and map by stream
-    private func startStream() {
-        guard stream == nil else { return }
-        let streamVC = HUDCameraStreamingViewController.instantiate()
-        addChild(streamVC)
-
-        containerStream.addWithConstraints(subview: streamVC.view)
-        streamVC.mode = .preview
-        containerStream.addSubview(streamVC.view)
-        streamVC.didMove(toParent: self)
-        containerStream.updateConstraints()
-        stream = streamVC
-    }
-
-    private func stopStream() {
-        containerStream.subviews.first?.removeFromSuperview()
-        stream?.removeFromParent()
-        stream = nil
-    }
-
     func hideStream() {
         containerStream.isHidden = true
     }
@@ -200,12 +190,11 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
 
     /// Show the map in container
     func showMiniMap() {
-        let mapViewControllerVC = MapViewController.instantiate()
+        let mapViewControllerVC = MapViewController.instantiate(isMiniMap: true)
         addChild(mapViewControllerVC)
         containerStream.addWithConstraints(subview: mapViewControllerVC.view)
         mapViewControllerVC.didMove(toParent: self)
         mapViewController = mapViewControllerVC
-        mapViewController?.clearGraphics()
     }
 
     /// Hide the map in container.
@@ -222,11 +211,18 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
             hideMiniMap()
             containerStatus = .streaming
             viewModel.showMap()
+            if let touchView = stream?.touchView {
+                touchView.userInteraction(false)
+            }
         case .streaming:
             stopStream()
             showMiniMap()
             containerStatus = .map
             viewModel.showStream()
+            if let touchView = viewModel.splitControls.streamViewController?.touchView {
+                touchView.userInteraction(true)
+                touchView.delegate = self
+            }
         default:
             break
         }
@@ -239,7 +235,9 @@ class TouchAndFlyPanelViewController: UIViewController, EditionSettingsCellModel
     }
 }
 
-extension TouchAndFlyPanelViewController {
+// MARK: Private extension
+private extension TouchAndFlyPanelViewController {
+
     // MARK: - Funcs
     func bindViewModel() {
         // SECTION BUTTON
@@ -270,8 +268,12 @@ extension TouchAndFlyPanelViewController {
         viewModel.displayOnMapPublisher
             .removeDuplicates()
             .sink { [weak self] _ in
-            self?.tableView.reloadData()
-        }
+                guard let self = self,
+                      self.isUpdatingSettingKeys.isEmpty else {
+                    return
+                }
+                self.tableView.reloadData()
+            }
         .store(in: &cancellables)
 
         // PROGRESS BAR VALUE
@@ -292,6 +294,15 @@ extension TouchAndFlyPanelViewController {
                 self?.setProgressView(progressViewDisplay: progressViewDisplay)
             }
             .store(in: &cancellables)
+
+        viewModel.streamElementPublisher
+            .removeDuplicates()
+            .sink { [weak self] streamElement in
+                if let touchView = self?.viewModel.splitControls.streamViewController?.touchView {
+                    touchView.displayPoint(streamElement: streamElement)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func initView() {
@@ -307,6 +318,26 @@ extension TouchAndFlyPanelViewController {
         .store(in: &cancellables)
     }
 
+    // MARK: - functions to replace stream by map and map by stream
+    private func startStream() {
+        guard stream == nil else { return }
+        let streamVC = HUDCameraStreamingViewController.instantiate()
+        addChild(streamVC)
+
+        containerStream.addWithConstraints(subview: streamVC.view)
+        containerStream.addSubview(streamVC.view)
+        streamVC.didMove(toParent: self)
+        containerStream.updateConstraints()
+        stream = streamVC
+        streamVC.touchView.frame = containerStream.frame
+    }
+
+    private func stopStream() {
+        containerStream.subviews.first?.removeFromSuperview()
+        stream?.removeFromParent()
+        stream = nil
+    }
+
     // MARK: - Action Outlet
     @IBAction func playButtonAction(_ sender: UIButton) {
         viewModel.play()
@@ -316,27 +347,87 @@ extension TouchAndFlyPanelViewController {
         viewModel.stop()
     }
 
-    // MARK: - EditionSettingsCellModelDelegate
-    func updateSettingValue(for key: String?, value: Int) {
-        switch key {
-        case .some(let valueKey):
-            switch valueKey {
-            case TouchAndFlyPanelSettingsKey.speed.rawValue:
-                viewModel.setValueSpeed(value: value)
-            case TouchAndFlyPanelSettingsKey.altitude.rawValue:
-                viewModel.setValueAltitude(value: value)
-            default:
-                break
-            }
-        case .none:
-            break
+    func setupTableView() {
+        tableView.register(cellType: CenteredRulerTableViewCell.self)
+        tableView.estimatedRowHeight = Constants.cellheight
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.makeUp(backgroundColor: .clear)
+        tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+
+    @objc func setUi() {
+        playButton.setup(image: Asset.Common.Icons.play.image, style: .validate)
+        deleteButton.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
+        stopButtonPOI.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
+        constraintButtonStackView.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
+        buttonsStackView.screenBorders = [.bottom]
+        leadingProgressBar.constant = Layout.mainPadding(isRegularSizeClass)
+        trailingProgressBar.constant = Layout.mainPadding(isRegularSizeClass)
+        leadingMessageLabel.constant = Layout.mainPadding(isRegularSizeClass)
+        trailingMessageLabel.constant = Layout.mainPadding(isRegularSizeClass)
+        spacingProgressButtons.constant = 0 // TODO: Should be Layout.mainSpacing(isRegularSizeClass)
+        for label in arrayLabels {
+            label.font = FontStyle.current.font(isRegularSizeClass)
         }
     }
 
-    func updateChoiceSetting(for key: String?, value: Bool) {
-        // nothing to do
+    func setupProgressBar() {
+        let progressBar = LinearProgressBar()
+        progressBar.backgroundColor = UIColor.lightGray.withAlphaComponent(0.5)
+        progressBar.progressBarColor = ColorName.highlightColor.color
+
+        if isRegularSizeClass {
+            progressBar.progressBarHeight = Constants.progressBarHeightIpad
+        } else {
+            progressBar.progressBarHeight = Constants.progressBarHeightIphone
+        }
+        viewLoading.addWithConstraints(subview: progressBar)
+        progressBar.translatesAutoresizingMaskIntoConstraints = false
+        self.loadingProgressBar = progressBar
     }
 
+    func hideAllContainers() {
+        // Hides all container button
+        containerbuttonsPlayDelete.isHidden = true
+        containerButtonsStop.isHidden = true
+    }
+
+    // Buttons
+    func setButtonsStandard(_ playEnabled: Bool, _ deleteEnabled: Bool) {
+        hideAllContainers()
+        containerbuttonsPlayDelete.isHidden = false
+        playButton.isEnabled = playEnabled
+        deleteButton.isEnabled = deleteEnabled
+    }
+
+    func setProgressView(progressViewDisplay: TouchAndFlyPanelViewModelImpl.ProgressViewDisplay) {
+        switch progressViewDisplay {
+        case .standard:
+            containerProgressView.isHidden = true
+            messageStatusDrone.isHidden = false
+            loadingProgressBar.stopAnimating()
+        case .runningWaypoint:
+            containerProgressView.isHidden = false
+            progressViewMessage.text = Constants.progressViewMessageWaypoint
+            viewProgressBar.isHidden = false
+            viewLoading.isHidden = true
+            messageStatusDrone.isHidden = true
+        case .runningPoi:
+            containerProgressView.isHidden = false
+            viewProgressBar.isHidden = true
+            viewLoading.isHidden = false
+            viewLoading.setNeedsLayout()
+            loadingProgressBar.startAnimating()
+            progressViewMessage.text = Constants.progressViewMessagePOI
+            messageStatusDrone.isHidden = true
+        }
+    }
+}
+
+// MARK: - UITableViewDataSource
+extension TouchAndFlyPanelViewController: UITableViewDataSource {
     // MARK: - TableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch viewModel.displayOnMap.value {
@@ -360,85 +451,49 @@ extension TouchAndFlyPanelViewController {
         cell.selectionStyle = .none
         return cell
     }
+}
 
-    private func setupTableView() {
-        tableView.estimatedRowHeight = Constants.cellheight
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.makeUp(backgroundColor: .clear)
-        tableView.separatorStyle = UITableViewCell.SeparatorStyle.none
-        tableView.delegate = self
-        tableView.dataSource = self
+// MARK: - TouchStreamViewDelegate
+extension TouchAndFlyPanelViewController: TouchStreamViewDelegate {
+
+    func update(location: CLLocationCoordinate2D, type: TouchStreamView.TypeView) {
+        viewModel.update(location: location, type: type)
     }
 
-    private func registerCell() {
-        tableView.register(cellType: CenteredRulerTableViewCell.self)
+    func update(point: CGPoint, type: TouchStreamView.TypeView) {
+        viewModel.update(point: point, type: type)
     }
+}
 
-    @objc func setUi() {
-        playButton.setup(image: Asset.Common.Icons.play.image, style: .validate)
-        deleteButton.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
-        stopButtonPOI.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
-        constraintButtonStackView.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
-        buttonsStackView.screenBorders = [.bottom]
-        leadingProgressBar.constant = Layout.mainPadding(isRegularSizeClass)
-        trailingProgressBar.constant = Layout.mainPadding(isRegularSizeClass)
-        leadingMessageLabel.constant = Layout.mainPadding(isRegularSizeClass)
-        trailingMessageLabel.constant = Layout.mainPadding(isRegularSizeClass)
-        spacingProgressButtons.constant = 0 // TODO: Should be Layout.mainSpacing(isRegularSizeClass)
-        for label in arrayLabels {
-            label.font = FontStyle.current.font(isRegularSizeClass)
+// MARK: - EditionSettingsCellModelDelegate
+extension TouchAndFlyPanelViewController: EditionSettingsCellModelDelegate {
+
+    func updateSettingValue(for key: String?, value: Int) {
+        switch key {
+        case .some(let valueKey):
+            switch valueKey {
+            case TouchAndFlyPanelSettingsKey.speed.rawValue:
+                viewModel.setValueSpeed(value: value)
+            case TouchAndFlyPanelSettingsKey.altitude.rawValue:
+                viewModel.setValueAltitude(value: value)
+            default:
+                break
+            }
+        case .none:
+            break
         }
     }
 
-    private func setupProgressBar() {
-        let progressBar = LinearProgressBar()
-        progressBar.backgroundColor = UIColor.lightGray.withAlphaComponent(0.5)
-        progressBar.progressBarColor = ColorName.highlightColor.color
+    func updateChoiceSetting(for key: String?, value: Bool) {
+        // nothing to do
+    }
 
-        if isRegularSizeClass {
-            progressBar.progressBarHeight = Constants.progressBarHeightIpad
+    func isUpdatingSetting(for key: String?, isUpdating: Bool) {
+        guard let key = key else { return }
+        if isUpdating {
+            isUpdatingSettingKeys.append(key)
         } else {
-            progressBar.progressBarHeight = Constants.progressBarHeightIphone
-        }
-        viewLoading.addWithConstraints(subview: progressBar)
-        progressBar.translatesAutoresizingMaskIntoConstraints = false
-        self.loadingProgressBar = progressBar
-    }
-
-    private func hideAllContainers() {
-        // Hides all container button
-        containerbuttonsPlayDelete.isHidden = true
-        containerButtonsStop.isHidden = true
-    }
-
-    // Buttons
-    private func setButtonsStandard(_ playEnabled: Bool, _ deleteEnabled: Bool) {
-        hideAllContainers()
-        containerbuttonsPlayDelete.isHidden = false
-        playButton.isEnabled = playEnabled
-        deleteButton.isEnabled = deleteEnabled
-    }
-
-    private func setProgressView(progressViewDisplay: TouchAndFlyPanelViewModelImpl.ProgressViewDisplay) {
-        switch progressViewDisplay {
-        case .standard:
-            containerProgressView.isHidden = true
-            messageStatusDrone.isHidden = false
-            loadingProgressBar.stopAnimating()
-        case .runningWaypoint:
-            containerProgressView.isHidden = false
-            progressViewMessage.text = Constants.progressViewMessageWaypoint
-            viewProgressBar.isHidden = false
-            viewLoading.isHidden = true
-            messageStatusDrone.isHidden = true
-        case .runningPoi:
-            containerProgressView.isHidden = false
-            viewProgressBar.isHidden = true
-            viewLoading.isHidden = false
-            viewLoading.setNeedsLayout()
-            loadingProgressBar.startAnimating()
-            progressViewMessage.text = Constants.progressViewMessagePOI
-            messageStatusDrone.isHidden = true
+            isUpdatingSettingKeys.removeAll(where: { $0 == key })
         }
     }
 }

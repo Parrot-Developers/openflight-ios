@@ -111,7 +111,7 @@
 					<key>cameraMode</key>
 					<string>recording</string>
 					<key>photoDigitalSignature</key>
-					<string>drone</string>
+					<string>none</string>
 					<key>autoRecordMode</key>
 					<string>recordFlight</string>
 					<key>photoMode</key>
@@ -178,6 +178,11 @@
 				<string>automatic</string>
 				<key>directConnectionMode</key>
 				<string>secure</string>
+			</dict>
+			<key>FlightCameraRecorderController</key>
+			<dict>
+				<key>pipelinesConfiguration</key>
+				<integer>18446744073709551615</integer>
 			</dict>
 		</dict>
 	</dict>

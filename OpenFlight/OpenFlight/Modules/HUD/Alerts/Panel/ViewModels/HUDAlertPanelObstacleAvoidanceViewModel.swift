@@ -41,6 +41,7 @@ public final class HUDAlertPanelObstacleAvoidanceState: DeviceConnectionState, A
     public var icon: UIImage? { Asset.Alertes.ObstacleAvoidance.icOAAlert.image }
     public var animationImages: [UIImage]?
     public var state: AlertPanelCurrentState? = .none
+    /// Used to temporarily disable alert during the same alarm event.
     public var isAlertForceHidden: Bool = false
     public var countdown: Int?
     public var initialCountdown: TimeInterval?
@@ -49,8 +50,8 @@ public final class HUDAlertPanelObstacleAvoidanceState: DeviceConnectionState, A
     public var actionLabelText: String? { L10n.alertOaDroneStuckActionText }
     public var rthAlertType: RthAlertType?
     public var stopViewStyle: StopViewStyle?
-    public var shouldShowAlertPanel: Bool { connectionState == .connected && state == .available }
-    public var hasAnimation: Bool { false }
+    public var shouldShowAlertPanel: Bool { connectionState == .connected && state == .available && !isAlertForceHidden }
+    public var hasAnimation: Bool { true }
     public var hasTextCountdown: Bool { false }
     public var countdownMessage: ((Int) -> String)?
 
@@ -64,23 +65,29 @@ public final class HUDAlertPanelObstacleAvoidanceState: DeviceConnectionState, A
     /// - Parameters:
     ///    - connectionState: drone connection state
     ///    - state: Obstacle avoidance state
+    ///    - isAlertForceHidden: flag used to temporarily disable alert during the same alarm event
     init(connectionState: DeviceState.ConnectionState,
-         state: AlertPanelCurrentState?) {
+         state: AlertPanelCurrentState?,
+         isAlertForceHidden: Bool) {
         super.init(connectionState: connectionState)
 
         self.state = state
+        self.isAlertForceHidden = isAlertForceHidden
     }
 
     // MARK: - Override Funcs
     public override func isEqual(to other: DeviceConnectionState) -> Bool {
         guard let other = other as? HUDAlertPanelObstacleAvoidanceState else { return false }
 
-        return super.isEqual(to: other) && state == other.state
+        return super.isEqual(to: other)
+        && state == other.state
+        && isAlertForceHidden == other.isAlertForceHidden
     }
 
     public override func copy() -> HUDAlertPanelObstacleAvoidanceState {
         return HUDAlertPanelObstacleAvoidanceState(connectionState: self.connectionState,
-                                                   state: self.state)
+                                                   state: self.state,
+                                                   isAlertForceHidden: self.isAlertForceHidden)
     }
 }
 
@@ -116,6 +123,8 @@ private extension HUDAlertPanelObstacleAvoidanceViewModel {
             copy.state = .available
         } else {
             copy.state = .unavailable
+            // re-enable alert for the next alarm event
+            copy.isAlertForceHidden = false
         }
 
         state.set(copy)
@@ -124,10 +133,20 @@ private extension HUDAlertPanelObstacleAvoidanceViewModel {
 
 // MARK: - AlertPanelActionType
 extension HUDAlertPanelObstacleAvoidanceViewModel: AlertPanelActionType {
+    private func toggleAlertForceHidden(_ toggle: Bool) {
+        let copy = state.value.copy()
+        copy.isAlertForceHidden = toggle
+        state.set(copy)
+    }
+
     func startAction() {
         // Disable Obstacle Avoidance when user taps Action button.
         obstacleAvoidanceMonitor.userAsks(mode: .disabled)
+        // Dismiss panel
+        toggleAlertForceHidden(true)
     }
 
-    func cancelAction() { }
+    func cancelAction() {
+        toggleAlertForceHidden(true)
+    }
 }

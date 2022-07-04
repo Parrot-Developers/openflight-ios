@@ -175,17 +175,96 @@ public struct FlightPlanModel {
         self.uploadAttemptCount = uploadAttemptCount ?? 0
         self.lastUploadAttempt = lastUploadAttempt
     }
+}
 
-    /// Update the polygon points for the current flight plan.
-    ///
-    /// - Parameters:
-    ///     - points: Polygon points
-    public func updatePolygonPoints(points: [AGSPoint]) {
-        let polygonPoints: [PolygonPoint] = points.map({
-            return PolygonPoint(coordinate: $0.toCLLocationCoordinate2D())
-        })
+// MARK: - Custom init
+extension FlightPlanModel {
+    public init(apcId: String,
+                uuid: String,
+                type: String,
+                title: String,
+                state: FlightPlanState,
+                projectUuid: String,
+                dataSetting: FlightPlanDataSetting) {
+        self.init(apcId: apcId,
+                  type: type,
+                  uuid: uuid,
+                  version: "1",
+                  customTitle: title,
+                  thumbnailUuid: nil,
+                  projectUuid: projectUuid,
+                  dataStringType: "json",
+                  dataString: dataSetting.toJSONString(),
+                  pgyProjectId: nil,
+                  state: state,
+                  lastMissionItemExecuted: nil,
+                  mediaCount: 0,
+                  uploadedMediaCount: nil,
+                  lastUpdate: Date(),
+                  synchroStatus: .notSync,
+                  fileSynchroStatus: 0,
+                  latestSynchroStatusDate: nil,
+                  cloudId: nil,
+                  parrotCloudUploadUrl: nil,
+                  isLocalDeleted: false,
+                  latestCloudModificationDate: nil,
+                  uploadAttemptCount: nil,
+                  lastUploadAttempt: nil,
+                  thumbnail: nil,
+                  flightPlanFlights: [],
+                  latestLocalModificationDate: Date(),
+                  synchroError: .noError)
+    }
 
-        self.dataSetting?.polygonPoints = polygonPoints
+    public init(from flightPlan: FlightPlanModel, uuid: String, state: FlightPlanState, title: String) {
+        // - Reset data settings
+        var dataSetting = flightPlan.dataSetting
+        dataSetting?.pgyProjectId = 0
+        dataSetting?.uploadAttemptCount = nil
+        dataSetting?.lastUploadAttempt = nil
+        dataSetting?.recoveryResourceId = nil
+        dataSetting?.notPropagatedSettings = [:]
+        dataSetting?.takeoffActions = []
+
+        self.init(apcId: flightPlan.apcId,
+                  type: flightPlan.type,
+                  uuid: uuid,
+                  version: flightPlan.version,
+                  customTitle: title,
+                  thumbnailUuid: nil,
+                  projectUuid: flightPlan.projectUuid,
+                  dataStringType: flightPlan.dataStringType,
+                  dataString: dataSetting?.toJSONString(),
+                  pgyProjectId: flightPlan.pgyProjectId,
+                  state: state,
+                  lastMissionItemExecuted: 0,
+                  mediaCount: 0,
+                  uploadedMediaCount: 0,
+                  lastUpdate: Date(),
+                  synchroStatus: .notSync,
+                  fileSynchroStatus: 0,
+                  fileSynchroDate: nil,
+                  latestSynchroStatusDate: nil,
+                  cloudId: 0,
+                  parrotCloudUploadUrl: nil,
+                  isLocalDeleted: false,
+                  latestCloudModificationDate: nil,
+                  uploadAttemptCount: 0,
+                  lastUploadAttempt: nil,
+                  thumbnail: nil,
+                  flightPlanFlights: [],
+                  latestLocalModificationDate: Date(),
+                  synchroError: .noError)
+
+        self.dataSetting = dataSetting
+
+        if let fpThumbnail = flightPlan.thumbnail {
+            var fpThumbnail = fpThumbnail
+            fpThumbnail.uuid = UUID().uuidString
+            fpThumbnail.flightUuid = nil
+            thumbnailUuid = fpThumbnail.uuid
+            thumbnail = fpThumbnail
+        }
     }
 }
 
@@ -220,24 +299,33 @@ extension FlightPlanModel {
                 return ".unknown"
             }
         }
+
+        public var isExecution: Bool {
+            switch self {
+            case .editable,
+                 .unknown:
+                return false
+            default:
+                return true
+            }
+        }
     }
 
     /// Returns formatted date.
-    ///
-    /// - Parameters:
-    ///     - isShort: result string should be short
     /// - Returns: formatted execution date or dash if formatting failed
-    public func formattedDate(isShort: Bool) -> String {
-        let formattedDate = isShort ?
-            self.flightPlanFlights?.first?.dateExecutionFlight.shortFormattedString:
-            self.flightPlanFlights?.first?.dateExecutionFlight.shortWithTimeFormattedString(showTimePrefix: false)
-        return formattedDate ?? Style.dash
+    public func formattedDate() -> String {
+        let formattedDate = self.flightPlanFlights?.first?.dateExecutionFlight.commonFormattedString
+        return formattedDate ?? L10n.flightPlanHistoryExecutionNotSynchronized
     }
 
     /// Tells if flight Plan should be cleared.
     public func shouldClearFlightPlan() -> Bool {
         return self.dataSetting?.wayPoints.isEmpty == false ||
             self.dataSetting?.pois.isEmpty == false
+    }
+
+    public var lastFlightDate: Date? {
+        flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max()
     }
 }
 
@@ -264,7 +352,7 @@ extension FlightPlanModel {
         return self.dataSetting?.polygonPoints.isEmpty == true && points.isEmpty
     }
 
-    var hasReachedFirstWayPoint: Bool {
+    public var hasReachedFirstWayPoint: Bool {
         guard let commands = dataSetting?.mavlinkCommands else { return lastMissionItemExecuted > 0 }
         guard let firstWayPointIndex = commands.firstIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
         else { return false }
@@ -317,6 +405,21 @@ extension FlightPlanModel {
         return self.flightPlanFlights?.compactMap { $0.dateExecutionFlight }.max()
     }
 
+    /// Update the Flight Plan's Cloud State.
+    ///
+    /// - Parameter flightPlan: the flight plan with updated cloud state
+    mutating func updateCloudState(with flightPlan: FlightPlanModel) {
+        // Ensure it's the correct FP.
+        guard uuid == flightPlan.uuid else { return }
+        // Ensure to have a valid CloudID before overwriting it.
+        cloudId = flightPlan.cloudId > 0 ? flightPlan.cloudId : cloudId
+        latestCloudModificationDate = flightPlan.latestCloudModificationDate
+        synchroError = flightPlan.synchroError
+        synchroStatus = flightPlan.synchroStatus
+        latestSynchroStatusDate = flightPlan.latestSynchroStatusDate
+        latestLocalModificationDate = flightPlan.latestLocalModificationDate
+    }
+
     // MARK: Edition mode
     /// Indicates if a Flight Plan has the same settings than the one passed in parameters.
     ///
@@ -328,8 +431,41 @@ extension FlightPlanModel {
         // Checking title.
         guard customTitle == flightPlan.customTitle else { return false }
         // Checking Data Settings.
-        guard dataSetting?.toJSONString() == flightPlan.dataSetting?.toJSONString() else { return false }
-        // Both FPs' title and DataSettings are the same.
-        return true
+        return dataSetting == flightPlan.dataSetting
+    }
+}
+
+/// Extension for Equatable conformance.
+extension FlightPlanModel: Equatable {
+    public static func == (lhs: FlightPlanModel, rhs: FlightPlanModel) -> Bool {
+        lhs.apcId == rhs.apcId
+        && lhs.type == rhs.type
+        && lhs.uuid == rhs.uuid
+        && lhs.version == rhs.version
+        && lhs.customTitle == rhs.customTitle
+        && lhs.thumbnailUuid == rhs.thumbnailUuid
+        && lhs.projectUuid == rhs.projectUuid
+        && lhs.dataStringType == rhs.dataStringType
+        && lhs.dataSetting == rhs.dataSetting
+        && lhs.pgyProjectId == rhs.pgyProjectId
+        && lhs.state == rhs.state
+        && lhs.lastMissionItemExecuted == rhs.lastMissionItemExecuted
+        && lhs.mediaCount == rhs.mediaCount
+        && lhs.uploadedMediaCount == rhs.uploadedMediaCount
+        && lhs.lastUpdate == rhs.lastUpdate
+        && lhs.synchroStatus == rhs.synchroStatus
+        && lhs.fileSynchroStatus == rhs.fileSynchroStatus
+        && lhs.fileSynchroDate == rhs.fileSynchroDate
+        && lhs.latestSynchroStatusDate == rhs.latestSynchroStatusDate
+        && lhs.cloudId == rhs.cloudId
+        && lhs.parrotCloudUploadUrl == rhs.parrotCloudUploadUrl
+        && lhs.isLocalDeleted == rhs.isLocalDeleted
+        && lhs.latestCloudModificationDate == rhs.latestCloudModificationDate
+        && lhs.uploadAttemptCount == rhs.uploadAttemptCount
+        && lhs.lastUploadAttempt == rhs.lastUploadAttempt
+        && lhs.thumbnail == rhs.thumbnail
+        && lhs.flightPlanFlights == rhs.flightPlanFlights
+        && lhs.latestLocalModificationDate == rhs.latestLocalModificationDate
+        && lhs.synchroError == rhs.synchroError
     }
 }

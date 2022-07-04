@@ -159,7 +159,7 @@ extension FlightPlanUiStateProviderImpl: FlightPlanUiStateProvider {
                                            actionButtonTextColor: state.buttonTextColor,
                                            actionButtonColor: state.buttonColor,
                                            actionButtonCallback: buttonAction(for: flightPlan),
-                                           historyStatusText: state.historyStatusText,
+                                           historyStatusText: state.historyStatusText(for: flightPlan),
                                            historyStatusTextColor: state.historyStatusTextColor)
     }
 
@@ -266,10 +266,10 @@ private extension FlightPlanModel.FlightPlanState {
         }
     }
 
-    var historyStatusText: String? {
+    func historyStatusText(for flightPlan: FlightPlanModel) -> String? {
         switch self {
         case .stopped, .flying:
-            return L10n.flightPlanHistoryExecutionIncompleteDescription
+            return L10n.flightPlanHistoryExecutionIncompleteAtDescription(flightPlan.percentCompleted.asPercent(maximumFractionDigits: 0))
         case .completed:
             return L10n.flightPlanHistoryExecutionCompletedDescription
         // If we falling back here when state = .uploading, we handle it as "completed"

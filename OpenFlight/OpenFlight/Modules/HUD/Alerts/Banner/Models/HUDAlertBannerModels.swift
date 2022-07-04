@@ -27,6 +27,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+// TODO: Remove file.
+
 import UIKit
 
 // MARK: - Internal Enums
@@ -38,13 +41,11 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
     case forceLandingLowBattery
     case forceLandingTemperature
     case wontReachHome
-    case takeoffUnavailable
     case noGpsTooDark
     case noGpsTooHigh
     case noGps
     case headingLockedKoPerturbationMagnetic
     case headingLockedKoEarthMagnetic
-    case noGpsLapse
     case tooMuchWind
     case strongImuVibration
     case sdError
@@ -77,13 +78,11 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
              .forceLandingTemperature,
              .wontReachHome:
             return .autoLanding
-        case .takeoffUnavailable,
-             .needCalibration:
+        case .needCalibration:
             return .takeoff
         case .noGpsTooDark,
              .noGpsTooHigh,
              .noGps,
-             .noGpsLapse,
              .headingLockedKoPerturbationMagnetic,
              .headingLockedKoEarthMagnetic:
             return .conditions
@@ -129,8 +128,6 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertAutoLanding
         case .wontReachHome:
             return L10n.alertReturnHomeWontReachHome
-        case .takeoffUnavailable:
-            return L10n.takeoffAlertDefaultMessage
         case .noGpsTooDark:
             return L10n.alertNoGpsTooDark
         case .noGpsTooHigh:
@@ -141,8 +138,6 @@ public enum HUDBannerCriticalAlertType: String, HUDAlertType {
             return L10n.alertHeadingLockKoPerturbationMagnetic
         case .headingLockedKoEarthMagnetic:
             return L10n.alertHeadingLockKoEarthMagnetic
-        case .noGpsLapse:
-            return L10n.alertNoGpsGpslapse
         case .tooMuchWind:
             return L10n.alertTooMuchWind
         case .strongImuVibration:

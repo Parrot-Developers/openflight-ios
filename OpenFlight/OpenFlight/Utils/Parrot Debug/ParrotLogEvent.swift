@@ -43,6 +43,8 @@ public class LogEvent {
         case screen(_ screenName: String)
         /// App lifecycle event.
         case lifecycle(_ event: String, info: [String: String]? = nil)
+        /// Corrupted data sanitizer event
+        case sanityCheck(_ event: String, info: [String: String]? = nil)
         /// 3rd party integrations event.
         case thirdParty(event: String, party: String, info: [String: String]? = nil)
 
@@ -55,6 +57,8 @@ public class LogEvent {
                 return "SCREEN"
             case .lifecycle:
                 return "LIFECYCLE"
+            case .sanityCheck:
+                return "SANITY_CHECK"
             case .thirdParty:
                 return "3RD_PARTY"
             }
@@ -79,6 +83,8 @@ public class LogEvent {
             message = "EVT:\(event.name);event='\(lifecycleEvent)'" + formatInfo(info)
         case let .button(item, value):
             message = "EVT:\(event.name);name='\(item)';value='\(value)'"
+        case let .sanityCheck(dataSanityEvent, info):
+            message = "EVT:\(event.name);event='\(dataSanityEvent)'" + formatInfo(info)
         case let .thirdParty(event: kind, party: party, info: info):
             message = "EVT:\(event.name);name='\(kind)';value='\(party)'" + formatInfo(info)
         }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -85,17 +85,17 @@
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="USo-da-8tQ">
                                 <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
                                 <subviews>
-                                    <containerView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="p7l-oS-yF8" customClass="SideNavigationBarView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="245" height="20"/>
+                                    <containerView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="245" placeholderIntrinsicHeight="50" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="p7l-oS-yF8">
+                                        <rect key="frame" x="0.0" y="0.0" width="245" height="50"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="20" placeholder="YES" id="tbO-W0-qpC"/>
+                                            <constraint firstAttribute="height" constant="50" id="coo-3M-Rm1"/>
                                         </constraints>
                                         <connections>
                                             <segue destination="x9h-zN-Vn3" kind="embed" identifier="topBarSegue" id="7X9-hV-wxK"/>
                                         </connections>
                                     </containerView>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E4L-K4-ZSC">
-                                        <rect key="frame" x="0.0" y="20" width="245" height="394"/>
+                                        <rect key="frame" x="0.0" y="50" width="245" height="364"/>
                                         <color key="separatorColor" name="disabled_text_color"/>
                                         <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         <connections>
@@ -189,17 +189,17 @@
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="hVN-O5-bcz">
                                 <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
                                 <subviews>
-                                    <containerView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zrP-3I-NIO" customClass="SideNavigationBarView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="245" height="20"/>
+                                    <containerView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="245" placeholderIntrinsicHeight="50" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zrP-3I-NIO">
+                                        <rect key="frame" x="0.0" y="0.0" width="245" height="50"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="20" placeholder="YES" id="ozk-fW-Bmh"/>
+                                            <constraint firstAttribute="height" constant="50" id="o1x-JM-5Y8"/>
                                         </constraints>
                                         <connections>
                                             <segue destination="x9h-zN-Vn3" kind="embed" identifier="topBarSegue" id="hA7-7O-0Ej"/>
                                         </connections>
                                     </containerView>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="none" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="1" sectionFooterHeight="1" contentViewInsetsToSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4Iv-7z-qCO">
-                                        <rect key="frame" x="0.0" y="20" width="245" height="394"/>
+                                        <rect key="frame" x="0.0" y="50" width="245" height="364"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <color key="separatorColor" name="disabled_text_color"/>
                                         <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -319,17 +319,17 @@
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="8EP-J7-7Ws">
                                 <rect key="frame" x="0.0" y="0.0" width="245" height="414"/>
                                 <subviews>
-                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QVa-Ej-4OS" customClass="SideNavigationBarView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="245" height="20"/>
+                                    <containerView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="245" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="QVa-Ej-4OS">
+                                        <rect key="frame" x="0.0" y="0.0" width="245" height="50"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="20" placeholder="YES" id="nRc-Wd-hfz"/>
+                                            <constraint firstAttribute="height" constant="50" id="nF3-Z4-uxj"/>
                                         </constraints>
                                         <connections>
                                             <segue destination="x9h-zN-Vn3" kind="embed" identifier="topBarSegue" id="u4b-wJ-2Mq"/>
                                         </connections>
                                     </containerView>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="90" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Q11-9Q-fqE">
-                                        <rect key="frame" x="0.0" y="20" width="245" height="394"/>
+                                        <rect key="frame" x="0.0" y="50" width="245" height="364"/>
                                         <color key="separatorColor" name="disabled_text_color"/>
                                         <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         <sections/>
@@ -395,57 +395,61 @@
                         <viewControllerLayoutGuide type="bottom" id="sLF-Ql-VeY"/>
                     </layoutGuides>
                     <view key="view" autoresizesSubviews="NO" contentMode="scaleAspectFit" insetsLayoutMarginsFromSafeArea="NO" id="cx1-31-io2">
-                        <rect key="frame" x="0.0" y="0.0" width="245" height="20"/>
+                        <rect key="frame" x="0.0" y="0.0" width="245" height="100"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="F0u-hr-TpJ">
-                                <rect key="frame" x="0.0" y="0.0" width="245" height="20"/>
+                                <rect key="frame" x="0.0" y="7" width="245" height="86"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleAspectFit" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kRi-kC-3yO" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="40" height="86"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" secondItem="kRi-kC-3yO" secondAttribute="height" multiplier="1:1" id="uxl-aB-uAR"/>
+                                            <constraint firstAttribute="width" constant="40" id="NdO-Dh-9ln"/>
                                         </constraints>
                                         <color key="tintColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" image="icCloseMedium"/>
                                     </button>
-                                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="obK-gY-Jvz" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="19.999999999999996" y="0.0" width="52.666666666666657" height="20"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" placeholder="YES" id="CVc-nG-grb"/>
-                                        </constraints>
-                                    </view>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="11" translatesAutoresizingMaskIntoConstraints="NO" id="lGc-2A-fRc">
-                                        <rect key="frame" x="72.666666666666671" y="0.0" width="100.00000000000001" height="20"/>
-                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="DGU-00-PLd">
+                                        <rect key="frame" x="40" y="0.0" width="185" height="86"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Titre projet" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kV2-mG-Gk7">
+                                                <rect key="frame" x="0.0" y="0.0" width="185" height="41.666666666666664"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Titre section" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="11" translatesAutoresizingMaskIntoConstraints="NO" id="lGc-2A-fRc">
+                                                <rect key="frame" x="0.0" y="44.666666666666657" width="185" height="41.333333333333343"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
                                     <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iBo-bD-rSA" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="172.66666666666666" y="0.0" width="72.333333333333343" height="20"/>
+                                        <rect key="frame" x="225" y="0.0" width="20" height="86"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" placeholder="YES" id="Toa-Ks-aPz"/>
+                                            <constraint firstAttribute="width" constant="20" id="JYo-RW-e0N"/>
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <constraints>
-                                    <constraint firstItem="lGc-2A-fRc" firstAttribute="centerX" secondItem="F0u-hr-TpJ" secondAttribute="centerX" id="9Jr-4V-Zie"/>
-                                </constraints>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="F0u-hr-TpJ" firstAttribute="leading" secondItem="cx1-31-io2" secondAttribute="leading" id="785-cT-Pc1"/>
                             <constraint firstAttribute="trailing" secondItem="F0u-hr-TpJ" secondAttribute="trailing" id="DKX-q9-ezv"/>
-                            <constraint firstItem="F0u-hr-TpJ" firstAttribute="top" secondItem="cx1-31-io2" secondAttribute="top" id="Dd7-s9-PYn"/>
-                            <constraint firstAttribute="bottom" secondItem="F0u-hr-TpJ" secondAttribute="bottom" id="dOz-sf-nZE"/>
+                            <constraint firstItem="F0u-hr-TpJ" firstAttribute="top" secondItem="cx1-31-io2" secondAttribute="top" constant="7" id="Dd7-s9-PYn"/>
+                            <constraint firstAttribute="bottom" secondItem="F0u-hr-TpJ" secondAttribute="bottom" constant="7" id="dOz-sf-nZE"/>
                         </constraints>
                     </view>
+                    <size key="freeformSize" width="245" height="100"/>
                     <connections>
                         <outlet property="backButton" destination="kRi-kC-3yO" id="q7E-6R-7Y5"/>
+                        <outlet property="projectTitleLabel" destination="kV2-mG-Gk7" id="Wb5-aO-9P1"/>
+                        <outlet property="rightSpacerView" destination="iBo-bD-rSA" id="Wc4-dv-YW3"/>
                         <outlet property="titleLabel" destination="lGc-2A-fRc" id="LYI-PV-g4f"/>
                     </connections>
                 </viewController>
@@ -455,7 +459,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="hA7-7O-0Ej"/>
+        <segue reference="u4b-wJ-2Mq"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="icCloseMedium" width="17" height="17"/>

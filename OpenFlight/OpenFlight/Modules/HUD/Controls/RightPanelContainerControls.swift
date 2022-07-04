@@ -35,77 +35,77 @@ public class RightPanelContainerControls: NSObject {
     // MARK: - Outlets
     @IBOutlet weak var rightPanelContainerView: UIView!
     @IBOutlet private weak var stackView: UIView!
-    @IBOutlet private weak var rightPanelContainerWidthConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var widthConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var trailingConstraint: NSLayoutConstraint!
     @IBOutlet private var actionWidgetBottomConstraint: NSLayoutConstraint!
 
     public var splitControls: SplitControls?
-
-    // MARK: - Internal Properties
-    let viewModel = RightPanelContainerControlsViewModel()
 
     // MARK: - Private Properties
     // TODO wrong injection
     private var currentMissionManager = Services.hub.currentMissionManager
     private var cancellables = Set<AnyCancellable>()
+    private var panelWidth: CGFloat {
+        Layout.sidePanelWidth(rightPanelContainerView.isRegularSizeClass)
+    }
 
     // MARK: - Internal Funcs
     /// Sets up view model's callback.
     /// Should be called inside viewWillAppear.
     func start() {
-        viewModel.state.valueChanged = { [weak self] state in
-            if state.shouldDisplayRightPanel {
-                self?.showFlightPlanPanel()
-            } else {
-                self?.hideFlightPlanPanel()
-            }
-        }
-        currentMissionManager.modePublisher.sink { [unowned self] mode in
-            if mode.isRightPanelRequired {
-                viewModel.forceHidePanel(false)
-                self.showFlightPlanPanel()
-            }
+        currentMissionManager.modePublisher.sink { [weak self] mode in
+            self?.updateConstraints(show: mode.isRightPanelRequired)
         }
         .store(in: &cancellables)
 
-        setupConstraint()
+        setupUI()
     }
 
     /// Stops view model's callback if needed.
     func stop() {
-        viewModel.state.valueChanged = nil
         cancellables = Set()
     }
+
+    /// Sets up UI.
+    func setupUI() {
+        // Align action widget container with bottom bar level1.
+        let isRegularSizeClass = stackView.isRegularSizeClass
+        actionWidgetBottomConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass) + 2 * Layout.mainPadding(isRegularSizeClass)
+        widthConstraint.constant = panelWidth
+        trailingConstraint.constant = -panelWidth
+        rightPanelContainerView.backgroundColor = ColorName.defaultBgcolor.color
+    }
+
 }
 
 // MARK: - Private Funcs
 private extension RightPanelContainerControls {
-    // Sets up action widget bottom constraint.
-    func setupConstraint() {
-        // Align action widget container with bottom bar level1.
-        let isRegularSizeClass = stackView.isRegularSizeClass
-        actionWidgetBottomConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass) + 2 * Layout.mainPadding(isRegularSizeClass)
+    /// Shows panel.
+    func show() {
+        updateConstraints(show: true)
     }
 
-    /// Shows HUD's flight plan right panel.
-    func showFlightPlanPanel() {
-
-        let isRegularSizeClass = UIViewController().isRegularSizeClass
-        splitControls?.adaptSecondaryContainerTrailing(width: Layout.sidePanelWidth(isRegularSizeClass))
-        rightPanelContainerWidthConstraint.constant = Layout.sidePanelWidth(isRegularSizeClass)
-        // Action widget container does not follow bottom bar level1 and remains at the right bottom.
-        actionWidgetBottomConstraint.isActive = false
-        stackView.layoutIfNeeded()
+    /// Hides panel.
+    func hide() {
+        updateConstraints(show: false)
     }
 
-    /// Hides HUD's flight plan right panel.
-    ///
-    /// - Parameters:
-    ///    - completion: optional completion block
-    func hideFlightPlanPanel(completion: (() -> Void)? = nil) {
-        splitControls?.adaptSecondaryContainerTrailing(width: 0)
-        rightPanelContainerWidthConstraint.constant = 0.0
-        // Action widget follows bottom bar level1 (needs to go up if bottom bar is expanded).
-        actionWidgetBottomConstraint.isActive = true
-        stackView.layoutIfNeeded()
+    /// Updates panel constraint for showing/hiding.
+    func updateConstraints(show: Bool) {
+        if !show {
+            // Add a temporary snapshot of current side panel for a cleaner dismissal animation,
+            // as its content is unconditionnally removed at each `mode` update.
+            rightPanelContainerView.addTransitionSnapshot()
+        }
+
+        // Right panel content refresh is also triggered by mission manager `mode` publisher update,
+        // so we need to dispatch show/hide constraint animation in order to avoid unwanted panel
+        // content animation.
+        DispatchQueue.main.async {
+            // Action widget follows bottom bar level1 (goes up if bottom bar is expanded)
+            // onlly if side panel is not visible.
+            self.actionWidgetBottomConstraint.isActive = !show
+            self.trailingConstraint.constant = show ? 0 : -self.panelWidth
+        }
     }
 }

@@ -31,12 +31,6 @@ import UIKit
 import GroundSdk
 import Combine
 
-// MARK: - Internal Enums
-public enum HUDCameraStreamingMode {
-    case fullscreen
-    case preview
-}
-
 // MARK: - Protocols
 public protocol HUDCameraStreamingViewControllerDelegate: AnyObject {
     /// Called when the stream content zone changes.
@@ -47,12 +41,11 @@ public protocol HUDCameraStreamingViewControllerDelegate: AnyObject {
 public final class HUDCameraStreamingViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var snowView: SnowView!
+    @IBOutlet public weak var touchView: TouchStreamView!
     @IBOutlet private weak var streamView: StreamView!
 
     // MARK: - Internal Properties
     weak var delegate: HUDCameraStreamingViewControllerDelegate?
-    /// Current mode of the streaming view (most layers are removed for preview mode.
-    public var mode: HUDCameraStreamingMode = .fullscreen
 
     // MARK: - Private Properties
     private var contentZone: CGRect = .zero
@@ -93,14 +86,14 @@ public final class HUDCameraStreamingViewController: UIViewController {
     // MARK: - Override Funcs
     public override func viewDidLoad() {
         super.viewDidLoad()
-
-        if !Platform.isSimulator {
-            setupViewModels()
-        }
     }
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        if !Platform.isSimulator {
+            setupViewModels()
+        }
 
         snowView.isHidden = false
         enableMonitoring(streamingEnabled ?? true)
@@ -190,8 +183,22 @@ private extension HUDCameraStreamingViewController {
             } else {
                 clearTracking()
             }
+
+            if $0.isTargetOnStream {
+                setUpTargetOnStream()
+            } else {
+                clearTargetOnStream()
+            }
         }
         .store(in: &cancellables)
+    }
+
+    func setUpTargetOnStream() {
+        view.bringSubviewToFront(touchView)
+    }
+
+    func clearTargetOnStream() {
+        view.sendSubviewToBack(touchView)
     }
 
     /// Sets up tracking view model.
@@ -273,6 +280,7 @@ private extension HUDCameraStreamingViewController {
 
         delegate?.didUpdate(contentZone: frame)
         proposalAndTrackingView?.updateFrame(frame)
+        touchView.update(frame: frame)
         contentZone = frame
     }
 

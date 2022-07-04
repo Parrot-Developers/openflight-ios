@@ -27,6 +27,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+// TODO: Remove file.
+
 import Combine
 import GroundSdk
 
@@ -291,10 +294,6 @@ private extension HUDAlertBannerViewModel {
     /// Updates alerts from takeoff checklist.
     func updateTakeoffAlerts(_ checklist: TakeoffChecklist) {
         alertList.cleanAlerts(withCategories: [.takeoff])
-        if checklist.getAlarm(kind: TakeoffAlarm.Kind.batteryGaugeUpdateRequired).level == .on
-            || checklist.getAlarm(kind: TakeoffAlarm.Kind.batteryIdentification).level == .on {
-            alertList.addAlerts([HUDBannerCriticalAlertType.takeoffUnavailable])
-        }
         if checklist.getAlarm(kind: TakeoffAlarm.Kind.magnetoCalibration).level == .on {
             alertList.addAlerts([HUDBannerCriticalAlertType.needCalibration])
         }

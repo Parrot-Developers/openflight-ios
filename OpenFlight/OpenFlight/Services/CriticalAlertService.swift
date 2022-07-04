@@ -45,6 +45,12 @@ public protocol CriticalAlertService: AnyObject {
     var alertPublisher: AnyPublisher<HUDCriticalAlertType?, Never> { get }
     /// Dismisses the current alert.
     func dismissCurrentAlert()
+    /// Updates a takeoff alert.
+    ///
+    /// - Parameters:
+    ///    - alert: the alert to update
+    ///    - show: whether the alert needs to be shown
+    func updateTakeoffAlert(_ alert: HUDCriticalAlertType, show: Bool)
 }
 
 /// Implementation of `CriticalAlertService`.
@@ -253,5 +259,9 @@ extension CriticalAlertServiceImpl: CriticalAlertService {
         }
 
         alertSubject.value = nil
+    }
+
+    func updateTakeoffAlert(_ alert: HUDCriticalAlertType, show: Bool) {
+        takeoffAlerts.update(alert, shouldAdd: show)
     }
 }

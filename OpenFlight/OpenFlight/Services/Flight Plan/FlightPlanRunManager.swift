@@ -36,7 +36,7 @@ private extension ULogTag {
     static let tag = ULogTag(name: "FPRunManager")
 }
 
-public protocol FlightPlanRunManager {
+public protocol FlightPlanRunManager: AnyObject {
 
     /// Total number of waypoint for the current flightplan
     var totalNumberWayPoint: Int { get }
@@ -52,6 +52,9 @@ public protocol FlightPlanRunManager {
 
     /// Flight Plan run state publisher.
     var statePublisher: AnyPublisher<FlightPlanRunningState, Never> { get }
+
+    /// The Drone is ready to receive commands.
+    var interfaceReadyPublisher: AnyPublisher<Bool, Never> { get }
 
     /// Ran distance publisher
     var distancePublisher: AnyPublisher<Double, Never> { get }
@@ -187,6 +190,8 @@ public class FlightPlanRunManagerImpl {
     private var durationSubject = CurrentValueSubject<TimeInterval, Never>(0.0)
     /// Flight Plan run state.
     private var stateSubject = CurrentValueSubject<FlightPlanRunningState, Never>(.noFlightPlan)
+    /// Flight Plan run state.
+    private var interfaceReadySubject = CurrentValueSubject<Bool, Never>(false)
     /// Current playing Flight Plan.
     private var playingFlightPlanSubject = CurrentValueSubject<FlightPlanModel?, Never>(nil)
 
@@ -282,6 +287,8 @@ private extension FlightPlanRunManagerImpl {
         default:
             playingFlightPlanSubject.value = nil
         }
+        // Update the `activeFlightPlanWatcher` Flight Plan.
+        activeFlightPlanWatcher.flightPlanDidUpdate(playingFlightPlanSubject.value)
     }
 
     func listenConnectionState(drone: Drone) {
@@ -301,13 +308,9 @@ private extension FlightPlanRunManagerImpl {
     func handlePausedFlightPlan(_ flightPlan: FlightPlanModel) {
         // Get an up to date flight plan state.
         let flightPlan = updatedFlightPlan(flightPlan)
-
-        if isFlightCompleted(flightPlan: flightPlan) {
-            // Already completed flightplan so no need to pause
-            handleFlightEnds(flightPlan: flightPlan) // State is updated here
-        } else {
-            updateState(.paused(flightPlan: flightPlan, startAvailability: startAvailability))
-        }
+        // When paused, even during an RTH, we don't want to handle the FP has completed.
+        // This allows to resume the RTH.
+        updateState(.paused(flightPlan: flightPlan, startAvailability: startAvailability))
     }
 
     func handleFlightPlanPilotingActiveState(pilotingItf: FlightPlanPilotingItfs.ApiProtocol) {
@@ -332,8 +335,14 @@ private extension FlightPlanRunManagerImpl {
             // Consistent with the current state = nothing changed
             break
         case .noFlightPlan, .ended:
-            // Should never happen, don't handle
-            break
+            // If a flight plan is stopped during is activation,
+            // the stop is not treated by the Piloting Interface.
+            // As soon as the Piloting Interface becomes active
+            // we ask it to stop then reset the Run Manager state.
+            if case .stopped = wantedState {
+                _ = pilotingItf.stop()
+                reset()
+            }
         }
     }
 
@@ -362,7 +371,14 @@ private extension FlightPlanRunManagerImpl {
                 // Stop asked, and it happened
                 handleFlightEnds(flightPlan: flightPlan) // State is updated here
             }
-        case .activationError, .ended, .noFlightPlan, .paused, .idle:
+        case .paused:
+            // If FP has been previously paused and a new event is received informing that the
+            // piloting interface state changed, check the interface's `isPaused` status to know
+            // wether the FP must be stopped.
+            guard !pilotingItf.isPaused else { return }
+            ULog.d(.tag, "Flight Plan '\(flightPlan.uuid)' stopped after being paused.")
+            handleFlightEnds(flightPlan: flightPlan)
+        case .activationError, .ended, .noFlightPlan, .idle:
             // Consistent with the current state = nothing changed
             break
         }
@@ -372,6 +388,7 @@ private extension FlightPlanRunManagerImpl {
     func listenFlightPlanPiloting(drone: Drone) {
         flightPlanPilotingRef = drone.getPilotingItf(PilotingItfs.flightPlan) { [unowned self] flightPlanPiloting in
             guard let pilotingItf = flightPlanPiloting else { return }
+            interfaceReadySubject.send(pilotingItf.state != .unavailable)
             updateLatestItem(itf: pilotingItf)
             ULog.i(.tag, "PilotingItf changed to '\(pilotingItf.state)', wantedState = '\(wantedState)', runState = '\(stateSubject.value)'")
             switch pilotingItf.state {
@@ -572,7 +589,7 @@ private extension FlightPlanRunManagerImpl {
     /// Updates Flight Plan's completion progress.
     func updateProgress() {
         // Ensure Flight Plan exists and has data settings.
-        guard let dataSetting = flightPlan?.dataSetting else { return }
+        guard var dataSetting = flightPlan?.dataSetting else { return }
         // Check if execution has already passed a Flight Plan way point.
         guard let lastPassedWayPointIndex = lastPassedWayPointIndex else {
             // No way point reached yet.
@@ -586,7 +603,8 @@ private extension FlightPlanRunManagerImpl {
 
         let currentLocation = currentDroneHolder.drone.getInstrument(Instruments.gps)?.lastKnownLocation
         // Update the last known Drone position into the Flight Plan Data Settings.
-        flightPlan?.dataSetting?.lastDroneLocation = currentLocation
+        dataSetting.lastDroneLocation = currentLocation
+        flightPlan?.dataSetting = dataSetting
         let newProgress = dataSetting.completionProgress(with: currentLocation?.agsPoint,
                                                          lastWayPointIndex: lastPassedWayPointIndex)
         if newProgress.rounded(toPlaces: Constants.progressRoundPrecision) <= progressSubject.value {
@@ -695,7 +713,8 @@ private extension FlightPlanRunManagerImpl {
                   interpreter: FlightPlanInterpreter, missionItem: Int, restart: Bool) {
         ULog.i(.tag, "Activate '\(flightPlan.uuid)' with:"
                + " missionItem(\(missionItem))"
-               + " activateAtMissionItemSupported(\(pilotingInterface.activateAtMissionItemSupported))")
+               + " activateAtMissionItemSupported(\(pilotingInterface.activateAtMissionItemSupported))"
+               + " activateAtMissionItemV2Supported(\(pilotingInterface.activateAtMissionItemV2Supported))")
         let disconnectionPolicy: FlightPlanDisconnectionPolicy = flightPlan.dataSetting?.disconnectionRth == false
             ? .continue
             : .returnToHome
@@ -734,6 +753,8 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
     public var navigatingToStartingPointPublisher: AnyPublisher<Bool, Never> { navigatingToStartingPointSubject.eraseToAnyPublisher() }
 
     public var statePublisher: AnyPublisher<FlightPlanRunningState, Never> { stateSubject.eraseToAnyPublisher() }
+
+    public var interfaceReadyPublisher: AnyPublisher<Bool, Never> { interfaceReadySubject.eraseToAnyPublisher() }
 
     public var distancePublisher: AnyPublisher<Double, Never> { distanceSubject.eraseToAnyPublisher() }
 
@@ -813,6 +834,7 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
         ULog.i(.tag, "COMMAND: pause '\(flightPlan?.uuid ?? "")'")
         // Ensure the running timer is stopped (the itf update may not be triggered)
         stopRunningTimer()
+        stopFpConfigTimer()
         guard case .playing = stateSubject.value else {
             ULog.e(.tag, "Cannot pause '\(flightPlan?.uuid ?? "")' with state '\(stateSubject.value)'")
             return
@@ -827,8 +849,9 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
         ULog.i(.tag, "COMMAND: stop '\(flightPlan?.uuid ?? "")'")
         // Ensure the running timer is stopped (the itf update may not be triggered)
         stopRunningTimer()
+        stopFpConfigTimer()
         guard let flightPlan = flightPlan else { return }
-        wantedState = .none
+        wantedState = .stopped
         _ = getPilotingItf()?.stop()
         handleFlightEnds(flightPlan: flightPlan)
     }

@@ -112,6 +112,15 @@ struct Parrot_Missions_Samples_Hello_Airsdk_Messages_Event {
     set {id = .droneMoving(newValue)}
   }
 
+  /// Mean depth to closest object
+  var depthMean: Float {
+    get {
+      if case .depthMean(let v)? = id {return v}
+      return 0
+    }
+    set {id = .depthMean(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_ID: Equatable {
@@ -121,6 +130,8 @@ struct Parrot_Missions_Samples_Hello_Airsdk_Messages_Event {
     case stereoClose(Bool)
     /// Drone is moving/steady (ground)
     case droneMoving(Bool)
+    /// Mean depth to closest object
+    case depthMean(Float)
 
   #if !swift(>=4.1)
     static func ==(lhs: Parrot_Missions_Samples_Hello_Airsdk_Messages_Event.OneOf_ID, rhs: Parrot_Missions_Samples_Hello_Airsdk_Messages_Event.OneOf_ID) -> Bool {
@@ -138,6 +149,10 @@ struct Parrot_Missions_Samples_Hello_Airsdk_Messages_Event {
       }()
       case (.droneMoving, .droneMoving): return {
         guard case .droneMoving(let l) = lhs, case .droneMoving(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.depthMean, .depthMean): return {
+        guard case .depthMean(let l) = lhs, case .depthMean(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -229,6 +244,7 @@ extension Parrot_Missions_Samples_Hello_Airsdk_Messages_Event: SwiftProtobuf.Mes
     1: .same(proto: "count"),
     2: .standard(proto: "stereo_close"),
     3: .standard(proto: "drone_moving"),
+    4: .standard(proto: "depth_mean"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -261,6 +277,14 @@ extension Parrot_Missions_Samples_Hello_Airsdk_Messages_Event: SwiftProtobuf.Mes
           self.id = .droneMoving(v)
         }
       }()
+      case 4: try {
+        var v: Float?
+        try decoder.decodeSingularFloatField(value: &v)
+        if let v = v {
+          if self.id != nil {try decoder.handleConflictingOneOf()}
+          self.id = .depthMean(v)
+        }
+      }()
       default: break
       }
     }
@@ -283,6 +307,10 @@ extension Parrot_Missions_Samples_Hello_Airsdk_Messages_Event: SwiftProtobuf.Mes
     case .droneMoving?: try {
       guard case .droneMoving(let v)? = self.id else { preconditionFailure() }
       try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    }()
+    case .depthMean?: try {
+      guard case .depthMean(let v)? = self.id else { preconditionFailure() }
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 4)
     }()
     case nil: break
     }

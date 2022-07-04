@@ -46,6 +46,7 @@ public protocol FlightPlanRepository: AnyObject {
     ///    - toSynchro: Boolean if should be synchro
     ///    - completion: The callback returning the status.
     ///    - withFileUploadNeeded: Indicates if a file needs to be uploaded.
+    ///    - completion: closure called on completion
     func saveOrUpdateFlightPlan(_ flightPlanModel: FlightPlanModel,
                                 byUserUpdate: Bool,
                                 toSynchro: Bool,
@@ -65,15 +66,19 @@ public protocol FlightPlanRepository: AnyObject {
     func saveOrUpdateFlightPlan(_ flightPlanModel: FlightPlanModel,
                                 byUserUpdate: Bool,
                                 toSynchro: Bool)
-    
+
     /// Save or update FlightPlan into CoreData from list of FlightPlanModel
     /// - Parameters:
     ///    - flightPlanModels: List of FlightPlanModel to save or update
     ///    - byUserUpdate: Boolean if updated by user interaction
     ///    - toSynchro: Boolean if should be synchro
+    ///    - withFileUploadNeeded: Indicates if a file needs to be uploaded.
+    ///    - completion: closure called on completion
     func saveOrUpdateFlightPlans(_ flightPlanModels: [FlightPlanModel],
                                  byUserUpdate: Bool,
-                                 toSynchro: Bool)
+                                 toSynchro: Bool,
+                                 withFileUploadNeeded: Bool,
+                                 completion: ((_ status: Bool) -> Void)?)
 
     /// Reset CloudId and synchro flag of FlightPlans with UUIDs
     /// - Parameter uuids: List of UUIDs to search
@@ -119,6 +124,13 @@ public protocol FlightPlanRepository: AnyObject {
     ///     - List of FlightPlanModels
     func getFlightPlans(withProjectUuid projectUuid: String, withState: FlightPlanModel.FlightPlanState) -> [FlightPlanModel]
 
+    /// Get FlightPlanModels with a specific state by excluding specified types
+    /// - Parameters:
+    ///    - withState: Specified state of flight plan
+    ///    - byExcludingTypes: List of type to be excluded
+    ///    - completion: Callback closure on completion
+    func getFlightPlans(withState: FlightPlanModel.FlightPlanState, byExcludingTypes: [String], completion: @escaping (([FlightPlanModel]) -> Void))
+
     /// Get the last flight date of a FlightPlan if any
     /// - Parameter flightPlanModel: flightPlanModel to search
     /// - Returns:
@@ -150,8 +162,10 @@ public protocol FlightPlanRepository: AnyObject {
 
     // MARK: __ Delete
     /// Delete FlightPlan in CoreData from UUID
-    /// - Parameter uuid: FlightPlan's UUID to remove
-    func deleteOrFlagToDeleteFlightPlan(withUuid uuid: String)
+    /// - Parameters:
+    ///    - uuids: List of flightPlan's UUID to remove
+    ///    - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteOrFlagToDeleteFlightPlans(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?)
 
     /// Delete from CoreData the FlightPlan with specified `uuid`.
     /// - Parameters:
@@ -284,17 +298,94 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                                completion: nil)
     }
 
-    public func saveOrUpdateFlightPlans(_ flightPlanModels: [FlightPlanModel], byUserUpdate: Bool = true, toSynchro: Bool) {
-        for flightPlanModel in flightPlanModels {
-            saveOrUpdateFlightPlan(flightPlanModel,
-                                   byUserUpdate: byUserUpdate,
-                                   toSynchro: toSynchro,
-                                   withFileUploadNeeded: true)
-        }
-        if byUserUpdate && toSynchro {
-            self.latestFlightPlanLocalModificationDate.send(Date())
-            self.latestThumbnailLocalModificationDate.send(Date())
-        }
+    public func saveOrUpdateFlightPlans(_ flightPlanModels: [FlightPlanModel],
+                                        byUserUpdate: Bool = true,
+                                        toSynchro: Bool,
+                                        withFileUploadNeeded: Bool,
+                                        completion: ((Bool) -> Void)?) {
+        var modifDate: Date?
+        var thumbnailModifDate: Date?
+
+        let flightPlanUuids = flightPlanModels.compactMap { $0.uuid }
+        let projectUuids = flightPlanModels.compactMap { $0.projectUuid }
+        let thumbnailUuids = flightPlanModels.compactMap { $0.thumbnail?.uuid }
+
+        performAndSave({ [unowned self] context in
+            let flightPlans = getFlightPlansCD(withUuids: flightPlanUuids)
+            let projects = getProjectsCD(withUuids: projectUuids)
+            let thumbnails = getThumbnailsCD(withUuids: thumbnailUuids)
+
+            for var flightPlanModel in flightPlanModels {
+                var flightPlanObj: FlightPlan?
+
+                if let flightPlan = flightPlans.first(where: { $0.uuid == flightPlanModel.uuid }) {
+                    flightPlanObj = flightPlan
+                } else if let newFlightPlan = insertNewObject(entityName: FlightPlan.entityName) as? FlightPlan {
+                    flightPlanObj = newFlightPlan
+                }
+
+                if let flightPlan = flightPlanObj {
+                    if byUserUpdate {
+                        modifDate = Date()
+                        flightPlanModel.latestLocalModificationDate = modifDate
+                        if flightPlanModel.synchroStatus == .fileUpload ||
+                            withFileUploadNeeded {
+                            flightPlanModel.synchroStatus = .notSync
+                        }
+                    }
+
+                    var project: Project?
+                    if let projectObj = projects.first(where: { $0.uuid == flightPlanModel.projectUuid }) {
+                        project = projectObj
+                    }
+
+                    // Sets thumbnail of the FlightPlan if it exists
+                    var thumbnail: Thumbnail?
+                    if let thumbnailModel = flightPlanModel.thumbnail {
+                        var thumbnailModel = thumbnailModel
+                        if byUserUpdate {
+                            // TODO: Check if thumbnail is not already uploaded to the cloud
+                            thumbnailModifDate = Date()
+                            thumbnailModel.latestLocalModificationDate = thumbnailModifDate
+                            flightPlanModel.synchroStatus = .notSync
+                        }
+                        thumbnail = thumbnails.first(where: { $0.uuid == thumbnailModel.uuid }) ?? Thumbnail(context: context)
+                        thumbnail?.update(fromThumbnailModel: thumbnailModel, withFlight: nil)
+                    }
+
+                    let logMessage = """
+                    🗺⬇️ saveOrUpdateFlightPlan: \(flightPlan), \
+                    byUserUpdate: \(byUserUpdate), toSynchro: \(toSynchro), \
+                    withFileUploadNeeded: \(withFileUploadNeeded) project: \(String(describing: project)), \
+                    thumbnail: \(String(describing: thumbnail)), flightPlanModel: \(flightPlanModel)
+                    """
+                    ULog.d(.dataModelTag, logMessage)
+
+                    flightPlan.update(fromFlightPlanModel: flightPlanModel,
+                                      withProject: project,
+                                      withThumbnail: thumbnail)
+                }
+            }
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                if let modifDate = modifDate, toSynchro {
+                    latestFlightPlanLocalModificationDate.send(modifDate)
+                }
+                if let thumbnailModifDate = thumbnailModifDate, toSynchro {
+                    latestThumbnailLocalModificationDate.send(thumbnailModifDate)
+                }
+
+                ULog.i(.dataModelTag, "🗺⬇️🟢 saveOrUpdateFlightPlan \(flightPlanUuids.joined(separator: ", ")) - Flight Plan stored Locally")
+                flightPlansDidChangeSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error saveOrUpdateFlightPlan with UUID : \(flightPlanUuids.joined(separator: ", ")) - error : \(error)")
+                completion?(false)
+            }
+        })
     }
 
     public func resetFlightPlansCloudId(withUuids uuids: [String]) {
@@ -334,6 +425,15 @@ extension CoreDataServiceImpl: FlightPlanRepository {
     public func getFlightPlans(byExcludingTypes: [String]) -> [FlightPlanModel] {
         return getFlightPlansCD(byExcludingTypes: byExcludingTypes, toBeDeleted: false)
             .map({ $0.model() })
+    }
+
+    public func getFlightPlans(withState: FlightPlanModel.FlightPlanState, byExcludingTypes: [String], completion: @escaping (([FlightPlanModel]) -> Void)) {
+        getFlightPlansCD(withState: withState.rawValue, byExcludingTypes: byExcludingTypes, toBeDeleted: false) { flightPlansCD in
+            let flightPlanModels = flightPlansCD.compactMap({ $0.modelWithFlightPlanFlights() })
+            DispatchQueue.main.async {
+                completion(flightPlanModels)
+            }
+        }
     }
 
     public func getFlightPlan(withPgyProjectId pgyProjectId: Int64) -> FlightPlanModel? {
@@ -382,35 +482,44 @@ extension CoreDataServiceImpl: FlightPlanRepository {
     }
 
     // MARK: __ Delete
-    public func deleteOrFlagToDeleteFlightPlan(withUuid uuid: String) {
+    public func deleteOrFlagToDeleteFlightPlans(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?) {
+        guard !uuids.isEmpty else {
+            completion?(true)
+            return
+        }
         var modifDate: Date?
 
         performAndSave({ [unowned self] context in
-            guard let flightPlan = getFlightPlanCD(withUuid: uuid) else {
+            let flightPlans = getFlightPlansCD(withUuids: uuids)
+            guard !flightPlans.isEmpty else {
+                completion?(false)
                 return false
             }
 
-            // Remove related Thumbnail
-            if let relatedThumbnail = flightPlan.thumbnail {
-                flightPlan.thumbnailUuid = nil
-                flightPlan.thumbnail = nil
-                deleteOrFlagToDeleteThumbnail(withUuid: relatedThumbnail.uuid)
-            }
+            flightPlans.forEach({
+                // Remove related Thumbnail
+                if let relatedThumbnail = $0.thumbnail {
+                    $0.thumbnailUuid = nil
+                    $0.thumbnail = nil
+                    deleteOrFlagToDeleteThumbnails(withUuids: [relatedThumbnail.uuid], completion: nil)
+                }
 
-            flightPlan.flightPlanFlights = nil
+                $0.flightPlanFlights = nil
 
-            if let relatedPgyProject = getPgyProject(withProjectId: flightPlan.pgyProjectId) {
-                updatePgyProjectToBeDeleted(withProjectId: relatedPgyProject.pgyProjectId)
-            }
+                if let relatedPgyProject = getPgyProject(withProjectId: $0.pgyProjectId) {
+                    updatePgyProjectToBeDeleted(withProjectId: relatedPgyProject.pgyProjectId)
+                }
 
-            ULog.d(.dataModelTag, "🗺🗑 deleteOrFlagToDeleteFlightPlan, uuid: \(uuid)")
-            if flightPlan.cloudId == 0 {
-                context.delete(flightPlan)
-            } else {
-                modifDate = Date()
-                flightPlan.latestLocalModificationDate = modifDate
-                flightPlan.isLocalDeleted = true
-            }
+                if $0.cloudId == 0 {
+                    ULog.d(.dataModelTag, "🗺🗑 deleteOrFlagToDeleteFlightPlan, uuid: \(uuids.joined(separator: ", ")) - delete locally -")
+                    context.delete($0)
+                } else {
+                    ULog.d(.dataModelTag, "🗺🗑 deleteOrFlagToDeleteFlightPlan, uuid: \(uuids.joined(separator: ", ")) - flag as LocalDeleted -")
+                    modifDate = Date()
+                    $0.latestLocalModificationDate = modifDate
+                    $0.isLocalDeleted = true
+                }
+            })
 
             return true
         }, { [unowned self] result in
@@ -420,11 +529,13 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                     latestFlightPlanLocalModificationDate.send(modifDate)
                 }
 
-                ULog.d(.dataModelTag, "🗺🗑🟢 deleteOrFlagToDeleteFlightPlan, uuid: \(uuid)")
+                ULog.d(.dataModelTag, "🗺🗑🟢 deleteOrFlagToDeleteFlightPlan, uuid: \(uuids.joined(separator: ", "))")
                 flightPlansDidChangeSubject.send()
+                completion?(true)
             case .failure(let error):
-                ULog.e(.dataModelTag,
-                       "🗺🗑🔴 Error deleteOrFlagToDeleteFlightPlan(fromFlightPlanModel:) with UUID: \(uuid) - error: \(error.localizedDescription)")
+                ULog.e(.dataModelTag, "🗺🗑🔴 Error deleteOrFlagToDeleteFlightPlan(fromFlightPlanModel:) with UUID:"
+                       + "\(uuids.joined(separator: ", ")) - error: \(error.localizedDescription)")
+                completion?(false)
             }
         })
     }
@@ -616,9 +727,35 @@ internal extension CoreDataServiceImpl {
         return fetch(request: fetchRequest)
     }
 
+    func getFlightPlansCD(withState: String, byExcludingTypes: [String], toBeDeleted: Bool?, completion: (([FlightPlan]) -> Void)?) {
+        let fetchRequest = FlightPlan.fetchRequest()
+
+        var subPredicateList = [NSPredicate]()
+
+        let statePredicate = NSPredicate(format: "state == %@", withState)
+        subPredicateList.append(statePredicate)
+
+        for excludingType in byExcludingTypes {
+            let excludingTypePredicate = NSPredicate(format: "type != %@", excludingType)
+            subPredicateList.append(excludingTypePredicate)
+        }
+
+        if let toBeDeleted = toBeDeleted {
+            let toBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+            subPredicateList.append(toBeDeletedPredicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+
+        let lastUpdateSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: false)
+        fetchRequest.sortDescriptors = [lastUpdateSortDesc]
+
+        fetch(request: fetchRequest, completion: completion)
+    }
+
     func getFlightPlansCD(byExcludingTypes excludingTypes: [String], toBeDeleted: Bool?) -> [FlightPlan] {
         guard !excludingTypes.isEmpty else {
-            return getAllFlightPlansCD(toBeDeleted: nil)
+            return getAllFlightPlansCD(toBeDeleted: toBeDeleted)
         }
 
         let fetchRequest = FlightPlan.fetchRequest()

@@ -191,6 +191,7 @@ final class GalleryInternalMediaViewModel: DroneStateViewModel<GalleryInternalMe
     // MARK: - Private Properties
     private var internalRef: Ref<InternalUserStorage>?
     private var mediaListRef: Ref<[MediaItem]>?
+    private var mediaStoreRef: Ref<MediaStore>?
     private var internalMediaListener: Set<GalleryInternalMediaListener> = []
 
     // MARK: - Internal Properties
@@ -226,6 +227,11 @@ final class GalleryInternalMediaViewModel: DroneStateViewModel<GalleryInternalMe
                 listener.didChange(state)
             }
         }
+    }
+
+    /// Resets media list ref.
+    func resetMediaRef() {
+        mediaListRef = nil
     }
 
     // MARK: - Override Funcs
@@ -284,7 +290,7 @@ extension GalleryInternalMediaViewModel {
     func setupDroneListeners(drone: Drone) {
         updateDroneUid(drone: drone)
         listenInternalMemory(drone: drone)
-        loadMediaStore(drone: drone)
+        listenMediaStore(drone: drone)
         loadMedia(drone: drone)
     }
 
@@ -351,12 +357,11 @@ private extension GalleryInternalMediaViewModel {
         }
     }
 
-    /// Load MediaStore from drone.
-    ///
-    /// - Parameters:
-    ///     - drone: current drone
-    func loadMediaStore(drone: Drone) {
-        mediaStore = drone.getPeripheral(Peripherals.mediaStore)
+    /// Starts watcher for media store
+    func listenMediaStore(drone: Drone) {
+        mediaStoreRef = drone.getPeripheral(Peripherals.mediaStore) { [weak self] mediaStore in
+            self?.mediaStore = mediaStore
+        }
     }
 
     /// Load MediaList from mediaStore peripherial.
@@ -437,13 +442,15 @@ private extension GalleryInternalMediaViewModel {
         }
 
         return GalleryMedia(uid: mediaItem.uid,
-                            customTitle: mediaItem.customTitle,
+                            customTitle: mediaItem.customId?.isEmpty != false ? nil : mediaItem.customTitle,
                             source: .droneInternal,
                             mediaItems: mediaItems,
                             type: mediaItem.mediaType,
                             downloadState: downloadState,
                             size: size(for: mediaItems),
                             date: mediaItem.creationDate,
+                            flightDate: mediaItem.flightDate,
+                            bootDate: mediaItem.bootDate,
                             url: nil)
     }
 

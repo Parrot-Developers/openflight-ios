@@ -30,104 +30,128 @@
 import Foundation
 import GroundSdk
 import SwiftyUserDefaults
-
-/// View model used in `SettingsNetworkViewModel`.
-final class SettingsNetworkState: DeviceConnectionState {
-    // MARK: - Internal Properties
-    fileprivate(set) var channelsOccupations: [WifiChannel: Int] = [:]
-    fileprivate(set) var currentChannel: WifiChannel?
-    /// Tells if user is editing 4G or wifi name settings textfield.
-    fileprivate(set) var isEditing: Bool = false
-    fileprivate(set) var ssidName: String?
-    fileprivate(set) var isNotFlying: Bool = false
-    fileprivate(set) var channelSelectionMode: SettingsWifiRange = SettingsNetworkPreset.defaultWifiRange
-    fileprivate(set) var channelUpdating: Bool = false
-    fileprivate(set) var directConnectionMode = SettingsDirectConnection.disabled
-    fileprivate(set) var directConnectionModeUpdating: Bool = false
-    fileprivate(set) var driMode: Bool = false
-    fileprivate(set) var driModeUpdating: Bool = false
-    fileprivate(set) var driId: String?
-
-    // Tells if the wifi channel choice is enabled
-    var channelsIsEnabled: Bool {
-        isConnected() && !channelUpdating
-    }
-
-    // Tells if the channels occupation is enabled
-    var channelsOccupationIsEnabled: Bool {
-        channelsIsEnabled && channelSelectionMode == .manual
-    }
-
-    // Tells if the ssid name cell is enabled
-    var ssidNameIsEnabled: Bool { isNotFlying && isConnected() }
-
-    // MARK: - Init
-    required init() {
-        super.init()
-    }
-
-    override init(connectionState: DeviceState.ConnectionState) {
-        super.init(connectionState: connectionState)
-    }
-
-    // MARK: - Override Funcs
-    override func isEqual(to other: DeviceConnectionState) -> Bool {
-        guard let other = other as? SettingsNetworkState else { return false }
-
-        return isConnected() == other.isConnected() &&
-            currentChannel == other.currentChannel &&
-            ssidName == other.ssidName &&
-            isNotFlying == other.isNotFlying &&
-            isEditing == other.isEditing &&
-            channelUpdating == other.channelUpdating &&
-            directConnectionMode == other.directConnectionMode &&
-            directConnectionModeUpdating == other.directConnectionModeUpdating &&
-            driMode == other.driMode &&
-            driModeUpdating == other.driModeUpdating &&
-            driId == other.driId &&
-            channelSelectionMode == other.channelSelectionMode &&
-            // Compare channelsOccupations arrays.
-            zip(channelsOccupations, other.channelsOccupations)
-            .enumerated()
-            .filter { $1.0 != $1.1 }
-            .map { $0 }
-            .isEmpty
-    }
-
-    override func copy() -> SettingsNetworkState {
-        let copy = SettingsNetworkState(connectionState: connectionState)
-        copy.channelsOccupations = channelsOccupations
-        copy.currentChannel = currentChannel
-        copy.isEditing = isEditing
-        copy.ssidName = ssidName
-        copy.isNotFlying = isNotFlying
-        copy.channelUpdating = channelUpdating
-        copy.directConnectionMode = directConnectionMode
-        copy.directConnectionModeUpdating = directConnectionModeUpdating
-        copy.driMode = driMode
-        copy.driModeUpdating = driModeUpdating
-        copy.driId = driId
-        copy.channelSelectionMode = channelSelectionMode
-        return copy
-    }
-}
+import Combine
 
 /// Network settings view model.
+final class SettingsNetworkViewModel {
+    // MARK: - Published properties
 
-final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> {
+    @Published private(set) var isLoadingDri: Bool = false
+    @Published private(set) var errorMessageDri: String?
+    @Published private(set) var isNotFlying: Bool = false
+    @Published private(set) var channelsOccupations: [WifiChannel: Int] = [:]
+    @Published private(set) var currentChannel: WifiChannel?
+    @Published private(set) var channelUpdating: Bool = false
+    @Published private(set) var isEditing: Bool = false
+    @Published private(set) var channelsIsEnabled = false
+    @Published private(set) var channelsOccupationIsEnabled = false
+    @Published private(set) var ssidNameIsEnabled = false
+
+    private(set) var wifiScannerPublisher = CurrentValueSubject<WifiScanner?, Never>(nil)
+    private(set) var wifiAccessPointPublisher = CurrentValueSubject<WifiAccessPoint?, Never>(nil)
+    private(set) var driPublisher = CurrentValueSubject<Dri?, Never>(nil)
+    private(set) var networkControlPublisher = CurrentValueSubject<NetworkControl?, Never>(nil)
+
     // MARK: - Private Properties
+
+    private var currentDroneHolder: CurrentDroneHolder
+    private var dismissDriAlertSubject = PassthroughSubject<Void, Never>()
+    private var cancellables = Set<AnyCancellable>()
+
+    private(set) var ssidName: String?
+    private var channelSelectionMode: SettingsWifiRange = SettingsNetworkPreset.defaultWifiRange
+    private var directConnectionMode = SettingsDirectConnection.disabled
+    private var directConnectionModeUpdating: Bool = false
+    private var driMode: Bool = false
+    private var driModeUpdating: Bool = false
+    private var driId: String?
+    private var driOperatorId: String?
+    private var driKey: String?
+
+    // MARK: Ground SDK References
+
     private var wifiAccessPointRef: Ref<WifiAccessPoint>?
     private var wifiScannerRef: Ref<WifiScanner>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var networkControlRef: Ref<NetworkControl>?
     private var driRef: Ref<Dri>?
 
-    // MARK: - Internal Properties
+    init(currentDroneHolder: CurrentDroneHolder) {
+        self.currentDroneHolder = currentDroneHolder
+
+        currentDroneHolder.dronePublisher
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+
+                self.listenFlyingIndicators(drone)
+                self.listenWifiScanner(drone)
+                self.listenWifiAccessPoint(drone)
+                self.listenNetworkControl(drone)
+                self.listenDri(drone)
+                self.updateScanning(drone)
+            }
+            .store(in: &cancellables)
+
+        currentDroneHolder.dronePublisher
+            .removeDuplicates()
+            .combineLatest($channelUpdating.removeDuplicates())
+            .sink { [weak self] (drone, channelUpdating) in
+                guard let self = self else { return }
+                self.channelsIsEnabled = drone.isConnected && !channelUpdating
+            }
+            .store(in: &cancellables)
+
+        currentDroneHolder.dronePublisher
+            .combineLatest($isNotFlying.removeDuplicates())
+            .sink { [weak self] (drone, isNotFlying) in
+                guard let self = self else { return }
+                self.ssidNameIsEnabled = isNotFlying && drone.isConnected
+            }
+            .store(in: &cancellables)
+
+        wifiScannerPublisher
+            .combineLatest(wifiAccessPointPublisher)
+            .sink { [weak self] (wifiScanner, wifiAccessPoint) in
+                guard let self = self else { return }
+                self.channelsOccupations = self.updateOccupationRate(wifiAccessPoint: wifiAccessPoint, wifiScanner: wifiScanner) ?? [WifiChannel: Int]()
+            }
+            .store(in: &cancellables)
+
+        $channelsIsEnabled
+            .removeDuplicates()
+            .sink { [weak self] channelsIsEnabled in
+                guard let self = self else { return }
+                self.channelsOccupationIsEnabled = channelsIsEnabled && self.channelSelectionMode == .manual
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - Computed Properties
+
+    var dismissDriAlertPublisher: AnyPublisher<Void, Never> {
+        return dismissDriAlertSubject.eraseToAnyPublisher()
+    }
+
+    var driOperatorFullId: String {
+        guard let operatorId = driOperatorId,
+              let key = driKey
+        else { return L10n.settingsConnectionDriOperatorPlaceholder }
+        return "\(operatorId) \(key)"
+    }
+
+    var driOperatorColor: UIColor {
+        guard driOperatorId != nil,
+              driKey != nil
+        else { return ColorName.disabledTextColor.color }
+        return ColorName.secondaryTextColor.color
+    }
+
     var infoHandler: ((SettingMode.Type) -> Void)?
+    var editionHandler: (() -> Void)?
+
     var settingEntries: [SettingEntry] {
-        let hasChannelsOccupation = state.value.channelsOccupations.isEmpty == false
-        let channelsIsEnabled = state.value.channelsIsEnabled
-        let wifiAccessPoint = drone?.getPeripheral(Peripherals.wifiAccessPoint)
+        let hasChannelsOccupation = channelsOccupations.isEmpty == false
+        let channelsIsEnabled = channelsIsEnabled
         var entries: [SettingEntry] = []
 
         entries = [SettingEntry(setting: SettingsCellType.title,
@@ -136,7 +160,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
                    SettingEntry(setting: SettingsCellType.title,
                                 title: L10n.settingsConnectionWifiLabel),
                    SettingEntry(setting: SettingsCellType.networkName),
-                   SettingEntry(setting: wifiRangeModeModel(wifiAccessPoint: wifiAccessPoint),
+                   SettingEntry(setting: wifiRangeModeModel(wifiAccessPoint: wifiAccessPointPublisher.value),
                                 title: L10n.settingsConnectionWifiChannel,
                                 isEnabled: channelsIsEnabled,
                                 itemLogKey: LogEvent.LogKeyAdvancedSettings.wifiBand)]
@@ -145,21 +169,21 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
             entries.append(SettingEntry(setting: SettingsCellType.wifiChannels))
         }
 
-        guard let networkControl = drone?.getPeripheral(Peripherals.networkControl) else {
+        guard let networkControl = currentDroneHolder.drone.getPeripheral(Peripherals.networkControl) else {
             return entries
         }
 
         entries.append(SettingEntry(setting: directConnectionModel(networkControl: networkControl),
                                     title: L10n.settingsConnectionDirectConnection))
 
-        guard let dri = drone?.getPeripheral(Peripherals.dri) else {
+        guard let dri = currentDroneHolder.drone.getPeripheral(Peripherals.dri) else {
             // do not display dri settings if not supported by the drone
             return entries
         }
 
         var subtitle: String?
-        if let droneId = state.value.driId,
-           state.value.driMode {
+        if let droneId = driId,
+           driMode {
             subtitle = L10n.settingsConnectionDriName
                 + Style.whiteSpace
                 + droneId
@@ -182,24 +206,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
         flyingIndicatorsRef = nil
         networkControlRef = nil
         driRef = nil
-        drone?.getPeripheral(Peripherals.wifiScanner)?.stopScan()
-    }
-
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-
-        listenFlyingIndicators(drone)
-        listenWifiScanner(drone)
-        listenWifiAccessPoint(drone)
-        listenNetworkControl(drone)
-        listenDri(drone)
-    }
-
-    override func droneConnectionStateDidChange() {
-        if state.value.isConnected() && drone?.getPeripheral(Peripherals.wifiScanner)?.scanning == false {
-            drone?.getPeripheral(Peripherals.wifiScanner)?.startScan()
-        }
+        currentDroneHolder.drone.getPeripheral(Peripherals.wifiScanner)?.stopScan()
     }
 
     // MARK: - Internal Funcs
@@ -208,7 +215,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
     /// - Parameters:
     ///     - channel: Wifi channel
     func changeChannel(_ channel: WifiChannel) {
-        let wifiAccessPoint = drone?.getPeripheral(Peripherals.wifiAccessPoint)
+        let wifiAccessPoint = currentDroneHolder.drone.getPeripheral(Peripherals.wifiAccessPoint)
         wifiAccessPoint?.channel.select(channel: channel)
     }
 
@@ -217,7 +224,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
     /// - Parameters:
     ///     - password: new password
     func changePassword(_ password: String) -> Bool {
-        return drone?.getPeripheral(Peripherals.wifiAccessPoint)?.security.secureWithWpa2(password: password) ?? false
+        return currentDroneHolder.drone.getPeripheral(Peripherals.wifiAccessPoint)?.security.secureWithWpa2(password: password) ?? false
     }
 
     /// Change Ssid name.
@@ -225,7 +232,7 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
     /// - Parameters:
     ///     - name: Ssid name
     func changeSsidName(_ name: String) {
-        let wifiAccessPoint = drone?.getPeripheral(Peripherals.wifiAccessPoint)
+        let wifiAccessPoint = currentDroneHolder.drone.getPeripheral(Peripherals.wifiAccessPoint)
         guard wifiAccessPoint?.ssid.value != name else { return }
 
         wifiAccessPoint?.ssid.value = name
@@ -236,32 +243,38 @@ final class SettingsNetworkViewModel: DroneStateViewModel<SettingsNetworkState> 
     /// - Parameters:
     ///     - isEditing: is editing
     func isEditing(_ isEditing: Bool) {
-        let copy = state.value.copy()
-        copy.isEditing = isEditing
-        state.set(copy)
+        self.isEditing = isEditing
     }
 
     /// Reset wifi channel settings to default.
     func resetSettings() {
-        guard state.value.isNotFlying else { return }
+        guard isNotFlying else { return }
 
-        let wifiAccessPoint = drone?.getPeripheral(Peripherals.wifiAccessPoint)
+        let wifiAccessPoint = currentDroneHolder.drone.getPeripheral(Peripherals.wifiAccessPoint)
         wifiAccessPoint?.channel.autoSelect()
 
-        driRef?.value?.mode?.value = SettingsNetworkPreset.defaultDriMode
+        let driMode = currentDroneHolder.drone.getPeripheral(Peripherals.dri)
+        driMode?.mode?.value = SettingsNetworkPreset.defaultDriMode
     }
 }
 
 // MARK: - Private Funcs
 private extension SettingsNetworkViewModel {
+
+    /// Uodates scanning if a drone is conected
+    func updateScanning(_ drone: Drone) {
+        if drone.isConnected && drone.getPeripheral(Peripherals.wifiScanner)?.scanning == false {
+            drone.getPeripheral(Peripherals.wifiScanner)?.startScan()
+        }
+    }
+
     /// Helper to update occupation rate array.
     ///
     /// - Parameters:
     ///     - wifiAccessPoint: WifiAccessPoint used to build occupation rate array
     ///     - drone: current drone
     /// - Returns: Occupation rate array.
-    func updateOccupationRate(wifiAccessPoint: WifiAccessPoint?, drone: Drone) -> [WifiChannel: Int]? {
-        let wifiScanner = drone.getPeripheral(Peripherals.wifiScanner)
+    func updateOccupationRate(wifiAccessPoint: WifiAccessPoint?, wifiScanner: WifiScanner?) -> [WifiChannel: Int]? {
         return wifiAccessPoint?.channel.availableChannels.reduce([WifiChannel: Int](), { (dict, channel) -> [WifiChannel: Int] in
             var dict = dict
             dict[channel] = wifiScanner?.getOccupationRate(forChannel: channel)
@@ -273,38 +286,28 @@ private extension SettingsNetworkViewModel {
     func listenFlyingIndicators(_ drone: Drone) {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
             let flyingState = flyingIndicators?.state ?? .landed
-            let copy = state.value.copy()
-            copy.isNotFlying = flyingState != .flying
-            state.set(copy)
+            isNotFlying = flyingState != .flying
         }
     }
 
     /// Listen wifi scanner.
     func listenWifiScanner(_ drone: Drone) {
-        wifiScannerRef = drone.getPeripheral(Peripherals.wifiScanner) { [unowned self] _ in
-            guard let wifiAccessPoint = drone.getPeripheral(Peripherals.wifiAccessPoint) else {
-                return
-            }
-            let copy = state.value.copy()
-            copy.channelsOccupations = updateOccupationRate(wifiAccessPoint: wifiAccessPoint, drone: drone) ?? [WifiChannel: Int]()
-            state.set(copy)
+        wifiScannerRef = drone.getPeripheral(Peripherals.wifiScanner) { [unowned self] wifiScanner in
+            wifiScannerPublisher.send(wifiScanner)
         }
     }
 
     /// Listen wifi access point.
     func listenWifiAccessPoint(_ drone: Drone) {
         wifiAccessPointRef = drone.getPeripheral(Peripherals.wifiAccessPoint) { [unowned self] wifiAccessPoint in
-            let copy = state.value.copy()
-            copy.channelsOccupations = updateOccupationRate(wifiAccessPoint: wifiAccessPoint, drone: drone) ?? [WifiChannel: Int]()
-            copy.currentChannel = wifiAccessPoint?.channel.channel
-            copy.ssidName = wifiAccessPoint?.ssid.value
-            copy.channelUpdating = wifiAccessPoint?.channel.updating ?? false
+            currentChannel = wifiAccessPoint?.channel.channel
+            ssidName = wifiAccessPoint?.ssid.value
+            channelUpdating = wifiAccessPoint?.channel.updating ?? false
 
             if let selectionMode = wifiAccessPoint?.channel.selectionMode {
-                copy.channelSelectionMode = selectionMode == .manual ? SettingsWifiRange.manual : SettingsWifiRange.auto
+                channelSelectionMode = selectionMode == .manual ? SettingsWifiRange.manual : SettingsWifiRange.auto
             }
-
-            state.set(copy)
+            wifiAccessPointPublisher.send(wifiAccessPoint)
         }
     }
 
@@ -313,10 +316,9 @@ private extension SettingsNetworkViewModel {
     /// - Parameter drone: current drone
     func listenNetworkControl(_ drone: Drone) {
         networkControlRef = drone.getPeripheral(Peripherals.networkControl) { [unowned self] networkControl in
-            let copy = state.value.copy()
-            copy.directConnectionMode = networkControl?.directConnection.mode == .legacy ? .enabled : .disabled
-            copy.directConnectionModeUpdating = networkControl?.directConnection.updating ?? false
-            state.set(copy)
+            directConnectionMode = networkControl?.directConnection.mode == .legacy ? .enabled : .disabled
+            directConnectionModeUpdating = networkControl?.directConnection.updating ?? false
+            networkControlPublisher.send(networkControl)
         }
     }
 
@@ -325,12 +327,34 @@ private extension SettingsNetworkViewModel {
     /// - Parameters:
     ///     - drone: current drone
     func listenDri(_ drone: Drone) {
-        driRef = drone.getPeripheral(Peripherals.dri) { [unowned self] dri in
-            let copy = state.value.copy()
-            copy.driMode = dri?.mode?.value ?? false
-            copy.driModeUpdating = dri?.mode?.updating ?? false
-            copy.driId = dri?.droneId?.id
-            state.set(copy)
+        driRef = drone.getPeripheral(Peripherals.dri) { [weak self] dri in
+            guard let self = self else { return }
+            self.driMode = dri?.mode?.value ?? false
+            self.driModeUpdating = dri?.mode?.updating ?? false
+            self.driId = dri?.droneId?.id
+            self.driOperatorId = dri?.type.type?.driId
+            self.driKey = dri?.type.type?.key
+            switch dri?.type.state {
+            case .updating:
+                self.driPublisher.send(dri)
+            case .failure,
+                 .invalid_operator_id:
+                guard self.isLoadingDri else {
+                    self.driPublisher.send(dri)
+                    return
+                }
+                self.isLoadingDri = false
+                self.errorMessageDri = L10n.settingsEditDriErrorInvalidId
+                self.driPublisher.send(dri)
+            case .configured,
+                 .none:
+                guard self.isLoadingDri else {
+                    self.driPublisher.send(dri)
+                    return
+                }
+                self.dismissDriEdition()
+                self.driPublisher.send(dri)
+            }
         }
     }
 
@@ -347,9 +371,9 @@ private extension SettingsNetworkViewModel {
     func wifiRangeModeModel(wifiAccessPoint: WifiAccessPoint?) -> DroneSettingModel? {
         return DroneSettingModel(allValues: SettingsWifiRange.allValues,
                                  supportedValues: SettingsWifiRange.allValues,
-                                 currentValue: self.state.value.channelSelectionMode,
+                                 currentValue: channelSelectionMode,
                                  isUpdating: wifiAccessPoint?.channel.updating ?? false) { [weak self] _ in
-            guard let mode = self?.state.value.channelSelectionMode else { return }
+            guard let mode = self?.channelSelectionMode else { return }
 
             switch mode {
             case .auto:
@@ -382,8 +406,8 @@ private extension SettingsNetworkViewModel {
     ///
     /// - Parameter dri: DRI drone peripheral
     /// - Returns: setting model for DRI
-    func driModeModel(dri: Dri) -> DroneSettingModel {
-        return DroneSettingModel(allValues: BroadcastDRISettings.allValues,
+    func driModeModel(dri: Dri) -> DriSettingModel {
+        return DriSettingModel(allValues: BroadcastDRISettings.allValues,
                                  supportedValues: BroadcastDRISettings.allValues,
                                  currentValue: dri.mode?.value == true ? BroadcastDRISettings.driOn : BroadcastDRISettings.driOff,
                                  isUpdating: dri.mode?.updating ?? false) { setting in
@@ -391,5 +415,74 @@ private extension SettingsNetworkViewModel {
 
             dri.mode?.value = driSetting == .driOn
         }
+    }
+}
+
+// MARK: - DRI Edition
+extension SettingsNetworkViewModel {
+    /// Dismisses the DRI edition
+    func dismissDriEdition() {
+        isLoadingDri = false
+        errorMessageDri = nil
+        dismissDriAlertSubject.send()
+    }
+
+    /// Submits the DRI operator id and the key
+    ///
+    /// - Parameters:
+    ///    - driId: DRI operator id
+    ///    - driKey: DRI key
+    ///    - driIdLength: DRI operator id length
+    ///    - driKeyLength: DRI key length
+    func submitDRI(driId: String?, driKey: String?, driIdLength: Int, driKeyLength: Int) {
+        guard let dri = currentDroneHolder.drone.getPeripheral(Peripherals.dri),
+              let config = validateUserEntries(driId: driId,
+                                               driKey: driKey,
+                                               driIdLength: driIdLength,
+                                               driKeyLength: driKeyLength)
+        else { return }
+        isLoadingDri = true
+        dri.type.type = config
+    }
+
+    /// Checks user entries validity and creates a DRI type config with them.
+    ///
+    /// - Parameters:
+    ///    - driId: DRI operator id
+    ///    - driKey: DRI key
+    ///    - driIdLength: DRI operator id length
+    ///    - driKeyLength: DRI key length
+    /// - Returns: DRI type config, nil if user entries or config are invalid.
+    private func validateUserEntries(driId: String?, driKey: String?, driIdLength: Int, driKeyLength: Int) -> DriTypeConfig? {
+        guard let driId = driId,
+              driId.count == driIdLength else {
+                  errorMessageDri = L10n.settingsEditDriErrorOperatorIdLength
+            return nil
+        }
+
+        guard let driKey = driKey,
+              driKey.count == driKeyLength else {
+            errorMessageDri = L10n.settingsEditDriErrorKeyLength
+            return nil
+        }
+
+        guard let config = validConfig(for: driId, and: driKey) else {
+            errorMessageDri = L10n.settingsEditDriErrorInvalidId
+            return nil
+        }
+
+        return config
+    }
+
+    /// Creates valid config with given id and key.
+    ///
+    /// - Parameters:
+    ///    - driId: DRI operator id
+    ///    - driKey: DRI key
+    /// - Returns: DRI type config if valid, nil otherwise
+    private func validConfig(for driId: String, and driKey: String) -> DriTypeConfig? {
+        let operatorId = String(format: "%@-%@", driId, driKey)
+        let config = DriTypeConfig.en4709_002(operatorId: operatorId)
+        return config.isValid ? config : nil
     }
 }

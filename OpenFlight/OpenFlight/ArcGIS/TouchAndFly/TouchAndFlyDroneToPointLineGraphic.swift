@@ -33,7 +33,7 @@ import ArcGIS
 final class TouchAndFlyDroneToPointLineGraphic: AGSGraphic {
     // MARK: - Private Enums
     private enum Constants {
-        static let lineColor: UIColor = ColorName.highlightColor.color
+        static let lineColor: UIColor = .white
         static let lineWidth: CGFloat = 3.0
         static let wayPointAttributeKey: String = "droneToWayPointLine"
     }

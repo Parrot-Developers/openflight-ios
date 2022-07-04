@@ -42,20 +42,31 @@ final class HUDLandingViewModel {
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
 
     private var connectedDroneHolder = Services.hub.connectedDroneHolder
+    private var runManager = Services.hub.flightPlan.run
     private var cancellables = Set<AnyCancellable>()
 
-    private(set) var isReturnHomeActive = CurrentValueSubject<Bool, Never>(false)
     private(set) var isLanding = CurrentValueSubject<Bool, Never>(false)
+    private(set) var isBasicRthActive = CurrentValueSubject<Bool, Never>(false)
+    private(set) var isFlightPlanRthActive = CurrentValueSubject<Bool, Never>(false)
+
+    var isReturnHomeActive: AnyPublisher<Bool, Never> {
+        isBasicRthActive
+            .combineLatest(isFlightPlanRthActive)
+            .map { basicRth, flightPlanRth in
+                basicRth || flightPlanRth
+            }
+            .eraseToAnyPublisher()
+    }
 
     /// Drone current landed state.
     private var landedState: FlyingIndicatorsLandedState = .none
 
     var isLandingOrRth: Bool {
-        isReturnHomeActive.value || isLanding.value
+        isReturHomeActiveValue || isLanding.value
     }
 
     var isReturHomeActiveValue: Bool {
-        isReturnHomeActive.value
+        isBasicRthActive.value || isFlightPlanRthActive.value
     }
 
     var image: AnyPublisher<UIImage?, Never> {
@@ -91,6 +102,7 @@ private extension HUDLandingViewModel {
     func listenDrone(drone: Drone) {
         listenFlyingIndicators(drone: drone)
         listenReturnHome(drone: drone)
+        listenFlightPlanReturnHome(runManager: runManager)
     }
 
     /// Starts watcher for flying indicators.
@@ -108,11 +120,29 @@ private extension HUDLandingViewModel {
         updateReturnHomeState(drone: drone)
     }
 
+    /// Starts watcher for flight plan Return Home.
+    ///
+    ///  - Parameters:
+    ///     - runManager: The current FP run manager.
+    func listenFlightPlanReturnHome(runManager: FlightPlanRunManager) {
+        runManager.statePublisher
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                switch state {
+                case let .playing(droneConnected: _, flightPlan: _, rth: rth):
+                    self.isFlightPlanRthActive.send(rth)
+                default:
+                    self.isFlightPlanRthActive.send(false)
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     /// Updates return home state.
     func updateReturnHomeState(drone: Drone) {
-        ULog.i(.tag, "updateReturnHomeState isReturningHome: \(drone.isReturningHome) isForceLandingInProgress: \(drone.isForceLandingInProgress)")
+        ULog.i(.tag, "updateReturnHomeState isReturningHome: \(drone.isReturningHome) isForceLandingInProgress: \(drone.isForceLanding)")
         // Bypass `drone.isReturningHome` value if a force landing is in progress.
-        isReturnHomeActive.value = drone.isReturningHome && !drone.isForceLandingInProgress
+        isBasicRthActive.value = drone.isReturningHome && !drone.isForceLanding
     }
 
     /// Updates landing state.

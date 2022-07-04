@@ -81,9 +81,19 @@ public extension Date {
             : addTimeTo(stringDate: formatter.string(from: self))
     }
 
+    /// Common formatted string.
+    var commonFormattedString: String {
+        DateFormatter.commonFormatter.string(from: self)
+    }
+
     /// Short formatted date.
     var shortFormattedString: String? {
         formattedString(dateStyle: .medium, timeStyle: .medium)
+    }
+
+    /// Short formatted date without time
+    var shortWithoutTimeFormattedString: String? {
+        formattedString(dateStyle: .medium, timeStyle: .none)
     }
 
     /// Returns short formatted date, always with time.

@@ -32,7 +32,6 @@ import CoreLocation
 import GroundSdk
 
 /// Class representing a FlightPlan Point Of Interest (POI).
-
 public final class PoiPoint: Codable {
     // MARK: - Public Properties
     var index: Int?
@@ -139,5 +138,23 @@ public final class PoiPoint: Codable {
         self.wayPoints?.removeAll(where: {
             $0.poiIndex != self.index
         })
+    }
+}
+
+/// Extension for Equatable conformance.
+extension PoiPoint: Equatable {
+    public static func == (lhs: PoiPoint, rhs: PoiPoint) -> Bool {
+        lhs.index == rhs.index
+        && lhs.color == rhs.color
+        && lhs.coordinate == rhs.coordinate
+        && lhs.altitude == rhs.altitude
+        && lhs.wayPoints == rhs.wayPoints
+    }
+}
+
+/// Extension for debug description.
+extension PoiPoint: CustomStringConvertible {
+    public var description: String {
+        "\(latitude) \(longitude) \(altitude)"
     }
 }

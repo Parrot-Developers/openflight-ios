@@ -199,6 +199,19 @@ public enum Layout {
         : tableViewCellContentInsets(screenBorders: screenBorders).compact
     }
 
+    /// Settings table view cell spacing.
+    public static func settingsTableViewCellSpacing(_ isRegularSizeClass: Bool) -> CGFloat {
+        isRegularSizeClass ? tableViewCellSettingsSpacings.regular : tableViewCellSettingsSpacings.compact
+    }
+
+    /// Table view cell settings content inset.
+    public static func tableViewCellSettingsContentInset(_ isRegularSizeClass: Bool,
+                                                         screenBorders: [NSLayoutConstraint.Attribute] = []) -> UIEdgeInsets {
+        isRegularSizeClass
+        ? tableViewCellSettingsContentInsets(screenBorders: screenBorders).regular
+        : tableViewCellSettingsContentInsets(screenBorders: screenBorders).compact
+    }
+
     // MARK: - Side Panel Settings
     /// Side Panel Setting Table view cell content inset.
     public static func sidePanelSettingTableViewCellContentInset(_ isRegularSizeClass: Bool) -> UIEdgeInsets {
@@ -286,6 +299,9 @@ public enum Layout {
     public static func topBarFontSize(_ isRegularSizeClass: Bool) -> CGFloat {
         isRegularSizeClass ? topBarFontSizes.regular : topBarFontSizes.compact
     }
+    public static func mediumFontSize(_ isRegularSizeClass: Bool) -> CGFloat {
+        isRegularSizeClass ? mdeiumFontSizes.regular : mdeiumFontSizes.compact
+    }
 }
 private extension Layout {
     // MARK: - Buttons
@@ -318,6 +334,8 @@ private extension Layout {
     static let tableViewCellContainerLeftPadding: (compact: CGFloat, regular: CGFloat) = (15, 15)
     /// Main spacings.
     static let tableViewCellContainerSpacing: (compact: CGFloat, regular: CGFloat) = (10, 10)
+    /// Table view cell settings spacing
+    static let tableViewCellSettingsSpacings: (compact: CGFloat, regular: CGFloat) = (5, 10)
 
     // MARK: - Information screen Spacings
     /// Left safe area info margin.
@@ -384,6 +402,7 @@ private extension Layout {
     static let subtitleFontSizes: (compact: CGFloat, regular: CGFloat) = (15, 19)
     static let smallTextFontSizes: (compact: CGFloat, regular: CGFloat) = (15, 19)
     static let topBarFontSizes: (compact: CGFloat, regular: CGFloat) = (15, 19)
+    static let mdeiumFontSizes: (compact: CGFloat, regular: CGFloat) = (13, 16)
 
     // MARK: - Definitions
     /// Left safe area corners padding.
@@ -482,6 +501,18 @@ private extension Layout {
          .init(top: mainSpacings.regular,
                left: screenBorders.contains(.left) ? leftSafeAreaMaxPaddings.regular : mainPaddings.regular,
                bottom: screenBorders.contains(.bottom) ? mainBottomMargins.regular : mainSpacings.regular,
+               right: mainPaddings.regular))
+    }
+    /// TableViewCell settings content insets.
+    static func tableViewCellSettingsContentInsets(screenBorders: [NSLayoutConstraint.Attribute] = []) -> (compact: UIEdgeInsets,
+                                                                                                           regular: UIEdgeInsets) {
+        (.init(top: tableViewCellSettingsSpacings.compact,
+               left: screenBorders.contains(.left) ? leftSafeAreaMaxPaddings.compact : mainPaddings.compact,
+               bottom: screenBorders.contains(.bottom) ? mainBottomMargins.compact : tableViewCellSettingsSpacings.compact,
+               right: mainPaddings.compact),
+         .init(top: tableViewCellSettingsSpacings.regular,
+               left: screenBorders.contains(.left) ? leftSafeAreaMaxPaddings.regular : mainPaddings.regular,
+               bottom: screenBorders.contains(.bottom) ? mainBottomMargins.regular : tableViewCellSettingsSpacings.regular,
                right: mainPaddings.regular))
     }
     /// sidePanelSettingTableViewCell content insets.

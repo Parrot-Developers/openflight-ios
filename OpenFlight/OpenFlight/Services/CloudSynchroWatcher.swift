@@ -38,4 +38,6 @@ public protocol CloudSynchroWatcher: AnyObject {
     /// Publisher of isSynchronizingData
     var isSynchronizingDataPublisher: AnyPublisher<Bool, Never> { get }
 
+    ///  Published when we receive an update from the Cloud for a Flight Plan.
+    var flightPlanCloudStateUpdatedPublisher: AnyPublisher<FlightPlanModel, Never>? { get }
 }

@@ -36,13 +36,11 @@ public class ProjectsListViewModel {
     @Published private(set) var filteredProjects: [ProjectModel] = [ProjectModel]()
     @Published private(set) var selectedProject: ProjectModel?
 
-    private var allProjects: [ProjectModel] = [ProjectModel]()
-
     let manager: ProjectManager
     private weak var projectManagerViewModel: ProjectManagerViewModel?
     private let cloudSynchroWatcher: CloudSynchroWatcher?
     private weak var coordinator: ProjectManagerCoordinator?
-    private var isFlightPlanProjectType: Bool = Defaults.isFlightPlanProjectType
+    private var filteredProjectType: ProjectType = .classic
     private var cancellables = Set<AnyCancellable>()
 
     init(coordinator: ProjectManagerCoordinator?,
@@ -54,8 +52,8 @@ public class ProjectsListViewModel {
         self.projectManagerViewModel = projectManagerViewModel
         self.cloudSynchroWatcher = cloudSynchroWatcher
 
-        updateProjects()
         selectedProject = nil
+        refreshProjects()
         listenProjectTypeChange()
         listenProjectsPublisher()
         listenProjectsChange()
@@ -64,45 +62,40 @@ public class ProjectsListViewModel {
     // MARK: - Private funcs
     private func listenProjectTypeChange() {
         projectManagerViewModel?.isFlightPlanProjectType
-            .sink { [unowned self] isFlightPlanType in
-                selectedProject = nil
-                isFlightPlanProjectType = isFlightPlanType
-                updateProjects()
+            .sink { [weak self] isFlightPlanType in
+                guard let self = self else { return }
+                self.selectedProject = nil
+                self.filteredProjectType = isFlightPlanType ? ProjectType.classic : ProjectType.pgy
+                self.refreshProjects(forLimit: self.manager.numberOfProjectsPerPage)
             }
             .store(in: &cancellables)
     }
 
     private func listenProjectsPublisher() {
         manager.projectsDidChangePublisher
-            .receive(on: RunLoop.main)
             .sink { [weak self] in
                 guard let self = self else { return }
-                self.updateProjects()
+                self.refreshProjects()
             }
             .store(in: &cancellables)
     }
 
     private func listenProjectsChange() {
         projectManagerViewModel?.projectDidUpdate
-            .sink { [unowned self] projectUpdated in
-                updateProjects()
-                selectedProject = project(with: projectUpdated?.uuid)
+            .sink { [weak self] projectUpdated in
+                guard let self = self else { return }
+                self.refreshProjects()
+                self.selectedProject = self.project(with: projectUpdated?.uuid)
             }
             .store(in: &cancellables)
 
         projectManagerViewModel?.projectAdded
-            .sink { [unowned self] projectAdded in
-                updateProjects()
-                selectedProject = project(with: projectAdded?.uuid)
+            .sink { [weak self] projectAdded in
+                guard let self = self else { return }
+                self.refreshProjects()
+                self.selectedProject = self.project(with: projectAdded?.uuid)
            }
             .store(in: &cancellables)
-    }
-
-    private func updateProjects() {
-        allProjects = getAllProjects()
-        filteredProjects = isFlightPlanProjectType ?
-            allProjects.filter({ $0.isSimpleFlightPlan }) :
-            allProjects.filter({ !$0.isSimpleFlightPlan })
     }
 
     private func project(with uuid: String?) -> ProjectModel? {
@@ -110,19 +103,28 @@ public class ProjectsListViewModel {
         return filteredProjects.first { $0.uuid == uuid }
     }
 
-    private func getAllProjects() -> [ProjectModel] { manager.loadProjects(type: nil) }
-
     // MARK: - Public funcs
-    func didDoubleTap(project: ProjectModel) {
-        selectedProject = project
-        projectManagerViewModel?.openProject(project)
+    func selectProjectByDoubleTap(forIndexPath: IndexPath) {
+        guard forIndexPath.row < filteredProjects.count else {
+            return
+        }
+
+        selectedProject = filteredProjects[forIndexPath.row]
+        projectManagerViewModel?.openProject(filteredProjects[forIndexPath.row])
     }
 
-    func didSelect(project: ProjectModel) {
+    func selectProject(forIndexPath: IndexPath) {
+        guard forIndexPath.row < filteredProjects.count else {
+            return
+        }
+        selectedProject = filteredProjects[forIndexPath.row]
+    }
+
+    func selectProject(_ project: ProjectModel) {
         selectedProject = self.project(with: project.uuid) ?? project
     }
 
-    func didDeselectProject() {
+    func removeSelectedProject() {
         selectedProject = nil
     }
 
@@ -131,6 +133,50 @@ public class ProjectsListViewModel {
     }
 
     func getSelectedProjectIndex() -> Int? {
-        return filteredProjects.firstIndex(where: { $0.uuid == selectedProject?.uuid })
+        guard let selectedProject = selectedProject else {
+            return nil
+        }
+        var result: Int?
+
+        if let index = filteredProjects.firstIndex(where: { $0.uuid == selectedProject.uuid }) {
+            result = index
+        } else {
+            while getMoreProjects() {
+                if let index = filteredProjects.firstIndex(where: { $0.uuid == selectedProject.uuid }) {
+                    result = index
+                    break
+                }
+            }
+        }
+
+        return result
+    }
+
+    func shouldGetMoreProjects(fromIndexPath indexPath: IndexPath) {
+        if indexPath.row == filteredProjects.count - 1 {
+            getMoreProjects()
+        }
+    }
+
+    @discardableResult
+    func getMoreProjects() -> Bool {
+        let allFlightsCount = manager.getProjectsCount(withType: filteredProjectType)
+        guard filteredProjects.count < allFlightsCount else {
+            return false
+        }
+        let moreProjects = manager.loadProjects(type: filteredProjectType, offset: filteredProjects.count, limit: manager.numberOfProjectsPerPage)
+        if !moreProjects.isEmpty {
+            filteredProjects.append(contentsOf: moreProjects)
+        }
+        return true
+    }
+
+    func refreshProjects(forLimit: Int? = nil) {
+        guard let forLimit = forLimit else {
+            filteredProjects = manager.loadProjects(type: filteredProjectType, limit: filteredProjects.count)
+            return
+        }
+
+        filteredProjects = manager.loadProjects(type: filteredProjectType, limit: forLimit)
     }
 }

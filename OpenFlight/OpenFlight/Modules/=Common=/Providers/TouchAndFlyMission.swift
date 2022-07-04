@@ -95,7 +95,8 @@ public struct TouchAndFlyMission: MissionProvider {
                                                           isTrackingMode: false,
                                                           isAeLockEnabled: false,
                                                           isInstallationRequired: true,
-                                                          isCameraShutterButtonEnabled: true)
+                                                          isCameraShutterButtonEnabled: true,
+                                                          isTargetOnStream: true)
         let missionMode = MissionMode(
             configurator: touchAndFlyModeConf,
             missionActivationModel: TouchAndFlyActivationModel(),

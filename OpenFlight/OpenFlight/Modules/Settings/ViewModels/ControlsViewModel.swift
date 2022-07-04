@@ -153,89 +153,12 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
         state.set(copy)
 
         Defaults.userControlModeSetting = controlMode.value
-
-        guard let remote = remoteControl,
-              let skyCtrl4 = remote.getPeripheral(Peripherals.skyCtrl4Gamepad),
-              let droneModel = drone?.model else {
-            return
-        }
-
-        skyCtrl4.volatileMappingSetting?.value = false
-
-        switch controlMode {
-        case .mode1:
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            reverseAxes([.leftSlider])
-        case .mode1Inversed:
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            reverseAxes([.leftSlider])
-        case .mode2:
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            reverseAxes([.leftSlider])
-        case .mode2Inversed:
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
-                                                                     axisEvent: .leftStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlRoll,
-                                                                     axisEvent: .leftStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlThrottle,
-                                                                     axisEvent: .rightStickVertical, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlYawRotationSpeed,
-                                                                     axisEvent: .rightStickHorizontal, buttonEvents: []))
-            skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .tiltCamera,
-                                                                     axisEvent: .leftSlider, buttonEvents: []))
-            reverseAxes([.leftSlider])
-        }
+        Services.hub.remoteControlUpdater.updateRemoteMapping()
     }
 }
 
 // MARK: - Private Funcs
 private extension ControlsViewModel {
-    /// Dedicated helper to handle inverted axes.
-    ///
-    /// - Parameters:
-    ///     - axes: set of Sky controller axis
-    func reverseAxes(_ axes: Set<SkyCtrl4Axis>) {
-        guard let remote = remoteControl,
-              let skyCtrl4 = remote.getPeripheral(Peripherals.skyCtrl4Gamepad),
-              let droneModel = drone?.model else {
-            return
-        }
-
-        SkyCtrl4Axis.allCases.forEach { axe in
-            if (skyCtrl4.reversedAxes(forDroneModel: droneModel)?.contains(axe) == false && axes.contains(axe))
-                || (skyCtrl4.reversedAxes(forDroneModel: droneModel)?.contains(axe) == true && !axes.contains(axe)) {
-                skyCtrl4.reverse(axis: axe, forDroneModel: droneModel)
-            }
-        }
-    }
-
     /// Update state for drone and remote states.
     func updateState() {
         let copy = state.value.copy()

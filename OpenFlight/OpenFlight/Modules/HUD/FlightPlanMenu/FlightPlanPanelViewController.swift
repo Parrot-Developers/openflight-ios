@@ -34,7 +34,6 @@ import Combine
 final class FlightPlanPanelViewController: UIViewController {
     // MARK: - Outlets
 
-    @IBOutlet private weak var imageMenuView: UIView!
     @IBOutlet private weak var projectStackView: MainContainerStackView!
     @IBOutlet private weak var projectButtonHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var projectNameLabel: UILabel!
@@ -44,10 +43,16 @@ final class FlightPlanPanelViewController: UIViewController {
     @IBOutlet private weak var noFlightPlanContainer: UIView!
     @IBOutlet private weak var noFlightPlanLabel: UILabel!
     @IBOutlet private weak var cameraStreamingContainerView: UIView!
-    @IBOutlet private weak var gestureView: UIView!
-    @IBOutlet private weak var cameraStreamingBottomBannerHeightConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var bottomGradientView: BottomGradientView!
     @IBOutlet private weak var bottomStackView: MainContainerStackView!
     @IBOutlet private weak var progressViewContainer: FlightPlanPanelProgressView!
+    @IBOutlet private weak var tableView: UITableView!
+    @IBOutlet private weak var headerView: UIView!
+    @IBOutlet private weak var sideNavigationBarView: UIView!
+    @IBOutlet private weak var pendingExecutionCellContainer: UIView!
+    @IBOutlet private weak var footerBackgroundView: UIView!
+    @IBOutlet private weak var widgetContainerStackView: PassThroughBasicStackView!
+    @IBOutlet private weak var rthWidget: ReturnHomeBottomBarView!
 
     // Action Buttons
     @IBOutlet private weak var buttonsStackView: ActionStackView!
@@ -60,22 +65,29 @@ final class FlightPlanPanelViewController: UIViewController {
     @IBOutlet private weak var historyButton: ActionButton!
     @IBOutlet private var actionButtons: [ActionButton]!
 
-    // MARK: - Internal Properties
-    var flightPlanPanelImageRateView: FlightPlanPanelImageRateView?
-
     // MARK: - Private Properties
     private var flightPlanPanelViewModel: FlightPlanPanelViewModel!
+    private var pendingExecutionCell: FlightPlanExecutionCell = FlightPlanExecutionCell.loadFromNib()
     private weak var cameraStreamingViewController: HUDCameraStreamingViewController?
     private weak var mapViewController: MapViewController?
+    /// Whether the main RTH widget is shown.
+    private var isMainRthWidgetShown = false {
+        didSet { updateActionButtonsVisibility() }
+    }
+    /// Whether the FP RTH widget is shown.
+    private var isFpRthWidgetShown = false {
+        didSet { updateActionButtonsVisibility() }
+    }
 
     private var cancellables = [AnyCancellable]()
-    private var cancellableImageRateView: AnyCancellable?
 
     private var containerStatus: ContainerStatus = .streaming
+    private var settingsSections: [FlightPlanPanelViewModel.SettingsSection] = []
 
     // MARK: - Private Enums
     private enum Constants {
         static let disableControlsDuration: TimeInterval = 0.75
+        static let streamRatio: CGFloat = 9/16
     }
 
     private enum ContainerStatus: Int, CustomStringConvertible {
@@ -105,35 +117,27 @@ final class FlightPlanPanelViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initView()
+        initTableView()
         bindViewModel()
         listenToActionWidgets()
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
-        gestureView.addGestureRecognizer(tap)
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        containerStatus = .streaming
-        initImageRateView()
-        cancellableImageRateView = flightPlanPanelViewModel.$imageRate
-            .sink(receiveValue: { [unowned self] imageProvider in
-                self.flightPlanPanelImageRateView?.setup(
-                    provider: .init(dataSettings: imageProvider?.dataSettings),
-                    settings: imageProvider?.settings ?? [])
-            })
-        startStream()
+        cameraStreamingContainerView.addGestureRecognizer(tap)
+        // Plug RTH widget STOP to FP stop action.
+        rthWidget.customStopAction = stopAction
     }
 
     override func viewWillAppear(_ animated: Bool) {
-        panelDidShow()
-        Services.hub.ui.hudTopBarService.allowTopBarDisplay()
         super.viewWillAppear(animated)
+
+        Services.hub.ui.hudTopBarService.allowTopBarDisplay()
+        containerStatus = .streaming
+        startStream()
+        // Update pending execution in case it was removed from execution details view.
+        flightPlanPanelViewModel.updatePendingExecution()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         panelDidHide()
-        cancellableImageRateView = nil
-        flightPlanPanelImageRateView?.removeFromSuperview()
         super.viewWillDisappear(animated)
     }
 
@@ -153,6 +157,11 @@ final class FlightPlanPanelViewController: UIViewController {
             startStream()
             stopStreamOnSizeEvent = false
         }
+
+        // Adjust settings tableView content inset according to bottomStackView height.
+        tableView.contentInset.bottom = bottomStackView.bounds.height
+
+        updateTableHeaderView()
     }
 
     override var prefersStatusBarHidden: Bool {
@@ -180,8 +189,7 @@ extension FlightPlanPanelViewController {
     /// Listens to action widgets and hide controls if needed.
     func listenToActionWidgets() {
         Services.hub.ui.uiComponentsDisplayReporter.isActionWidgetShownPublisher.sink { [weak self] isWidgetShown in
-            // Buttons stack view needs to be hidden if an action widget is displayed.
-            self?.buttonsStackView.animateScaleAndAlpha(show: !isWidgetShown)
+            self?.isMainRthWidgetShown = isWidgetShown
         }
         .store(in: &cancellables)
     }
@@ -193,10 +201,11 @@ extension FlightPlanPanelViewController {
         addChild(cameraStreamingVC)
 
         cameraStreamingContainerView.addWithConstraints(subview: cameraStreamingVC.view)
-        cameraStreamingVC.mode = .preview
+        cameraStreamingContainerView.addSubview(cameraStreamingVC.view)
         cameraStreamingVC.didMove(toParent: self)
+        cameraStreamingContainerView.updateConstraints()
         cameraStreamingViewController = cameraStreamingVC
-        cameraStreamingContainerView.isExclusiveTouch = true
+        cameraStreamingVC.touchView.frame = cameraStreamingContainerView.frame
     }
 
     /// Stops streaming component.
@@ -206,16 +215,10 @@ extension FlightPlanPanelViewController {
         cameraStreamingViewController = nil
     }
 
-    /// Panel did show.
-    func panelDidShow() {
-        self.view.isHidden = false
-    }
-
     /// Panel did hide.
     func panelDidHide() {
-        self.view.isHidden = true
-        flightPlanPanelViewModel.showMap()
         if containerStatus != .streaming {
+            flightPlanPanelViewModel.showMap()
             hideMiniMap()
             startStream()
             containerStatus = .streaming
@@ -229,8 +232,6 @@ extension FlightPlanPanelViewController {
         cameraStreamingContainerView.addWithConstraints(subview: mapViewControllerVC.view)
         mapViewControllerVC.didMove(toParent: self)
         mapViewController = mapViewControllerVC
-        mapViewController?.clearGraphics()
-        cameraStreamingContainerView.isUserInteractionEnabled = false
     }
 
     /// Hide the map in container.
@@ -243,6 +244,11 @@ extension FlightPlanPanelViewController {
 
 // MARK: - Actions
 private extension FlightPlanPanelViewController {
+    /// Pending execution button touched up inside.
+    @IBAction func pendingExecutionButtonTouchedUpInside(_ sender: Any) {
+        flightPlanPanelViewModel.pendingExecutionButtonTouchedUpInside()
+    }
+
     /// History button touched up inside.
     @IBAction func historyTouchUpInside(_ sender: Any) {
         flightPlanPanelViewModel.historyTouchUpInside()
@@ -264,6 +270,7 @@ private extension FlightPlanPanelViewController {
     @IBAction func editButtonTouchedUpInside(_ sender: Any) {
         if containerStatus == .map {
             flightPlanPanelViewModel.showMap()
+            hideMiniMap()
             containerStatus = .streaming
         }
         LogEvent.log(.simpleButton(LogEvent.LogKeyHUDPanelButton.edit.name))
@@ -273,6 +280,11 @@ private extension FlightPlanPanelViewController {
     /// Stop button touched up inside.
     @IBAction func stopButtonTouchedUpInside(_ sender: Any) {
         LogEvent.log(.simpleButton(LogEvent.LogKeyHUDPanelButton.stop.name))
+        stopAction()
+    }
+
+    /// Triggers stop (either requested via main STOP or RTH STOP button).
+    func stopAction() {
         disableControlsForDelay()
         flightPlanPanelViewModel.stopFlightPlan()
     }
@@ -284,9 +296,8 @@ private extension FlightPlanPanelViewController {
     /// Inits view.
     func initView() {
 
-        cameraStreamingBottomBannerHeightConstraint.constant = Layout.hudTopBarHeight(isRegularSizeClass)
-
         projectButtonHeightConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
+        sideNavigationBarView.heightAnchor.constraint(equalToConstant: Layout.hudTopBarHeight(isRegularSizeClass)).isActive = true
 
         projectStackView.directionalLayoutMargins = .init(top: 0,
                                                           leading: Layout.mainPadding(isRegularSizeClass),
@@ -294,6 +305,12 @@ private extension FlightPlanPanelViewController {
                                                           trailing: Layout.mainPadding(isRegularSizeClass))
 
         bottomStackView.screenBorders = [.bottom]
+
+        // RTH widget container.
+        widgetContainerStackView.insetsLayoutMarginsFromSafeArea = false
+        widgetContainerStackView.isLayoutMarginsRelativeArrangement = true
+        widgetContainerStackView.directionalLayoutMargins = Layout.mainContainerInnerMargins(isRegularSizeClass,
+                                                                                              screenBorders: [.bottom])
 
         projectTitleLabel.makeUp(with: .caps, color: .disabledTextColor)
         projectTitleLabel.text = L10n.flightPlanMenuProject.uppercased()
@@ -305,6 +322,8 @@ private extension FlightPlanPanelViewController {
 
         projectStackView.tapGesturePublisher
             .sink { [unowned self] _ in
+                // Disallow to open the project manager when the folder button is hidden.
+                guard !folderButton.isHiddenInStackView else { return }
                 flightPlanPanelViewModel.projectTouchUpInside()
             }
             .store(in: &cancellables)
@@ -313,7 +332,6 @@ private extension FlightPlanPanelViewController {
                            style: .default1)
 
         noFlightPlanLabel.makeUp(with: .large, and: .defaultTextColor)
-        imageMenuView.backgroundColor = ColorName.white.color
 
         createButton.setup(style: .validate)
         playButton.setup(image: Asset.Common.Icons.play.image, style: .validate)
@@ -321,13 +339,40 @@ private extension FlightPlanPanelViewController {
         historyButton.setup(image: Asset.MyFlights.history.image, style: .default1)
         stopButton.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
 
+        footerBackgroundView.backgroundColor = ColorName.defaultBgcolor.color
+        footerBackgroundView.addShadow(shadowOffset: .init(width: 0, height: -1),
+                                       shadowRadius: 7)
+
+        // Update bottom gradient view.
+        bottomGradientView.shortGradient()
+
+        // Pending execution cell.
+        pendingExecutionCellContainer.addWithConstraints(subview: pendingExecutionCell.contentView)
+        pendingExecutionCellContainer.layoutMargins = .zero
+        pendingExecutionCell.enabledMargins.removeAll()
+        pendingExecutionCell.contentView.isUserInteractionEnabled = false
     }
 
-    /// Inits progress view.
-    func initImageRateView() {
-        let imageRateView = FlightPlanPanelImageRateView(frame: imageMenuView.frame)
-        imageMenuView.addWithConstraints(subview: imageRateView)
-        flightPlanPanelImageRateView = imageRateView
+    /// Inits table view
+    func initTableView() {
+        tableView.insetsContentViewsToSafeArea = false // Safe area is handled in this VC, not in content
+        tableView.register(cellType: SettingsImageTableViewCell.self)
+        tableView.register(cellType: SettingsMenuTableViewCell.self)
+        tableView.register(cellType: SettingsModeTableViewCell.self)
+        tableView.dataSource = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.makeUp(backgroundColor: .clear)
+    }
+
+    func updateTableHeaderView() {
+        let width = Layout.sidePanelWidth(isRegularSizeClass)
+        let height = Constants.streamRatio * width
+            + projectStackView.bounds.height
+            + sideNavigationBarView.bounds.height
+            + Layout.mainSpacing(isRegularSizeClass)
+        headerView.frame.size = .init(width: width, height: height)
+        tableView.tableHeaderView = headerView
+        tableView.alwaysBounceVertical = tableView.contentSize.height > tableView.bounds.height
     }
 
     /// Update buttons
@@ -337,7 +382,8 @@ private extension FlightPlanPanelViewController {
     private func updatePlayButtonState(_ information: FlightPlanPanelViewModel.ButtonsInformation) {
         playButton.setup(image: information.startButtonState.icon,
                          style: information.startButtonState.style)
-        playButton.isEnabled = information.areEnabled
+        playButton.isEnabled = information.startEnabled
+        stopButton.isEnabled = information.stopEnabled
     }
 
     /// Disables controls for a specified time interval.
@@ -375,6 +421,12 @@ private extension FlightPlanPanelViewController {
             }
             .store(in: &cancellables)
 
+        flightPlanPanelViewModel.$pendingExecution
+            .sink { [weak self] latestExecution in
+                self?.updatePendingExecutionTile(execution: latestExecution)
+            }
+            .store(in: &cancellables)
+
         flightPlanPanelViewModel.$buttonsState
             .sink { [weak self] state in
                 guard let self = self else { return }
@@ -385,6 +437,7 @@ private extension FlightPlanPanelViewController {
         flightPlanPanelViewModel.$extraViews
             .sink { [unowned self] in progressViewContainer?.setExtraViews($0) }
             .store(in: &cancellables)
+
         flightPlanPanelViewModel.$progressModel
             .compactMap({ $0 })
             .sink(receiveValue: { [unowned self] model in
@@ -401,6 +454,19 @@ private extension FlightPlanPanelViewController {
                 self.createButton.setTitle($0 ?? "", for: .normal)
             }
             .store(in: &cancellables)
+        flightPlanPanelViewModel.$settingsSections
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.settingsSections = $0
+                self.tableView.reloadData()
+            }
+            .store(in: &cancellables)
+        flightPlanPanelViewModel.$bottomGradientIsVisible
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.bottomGradientView.isHidden = !$0
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates action buttons according to view model's state.
@@ -415,8 +481,9 @@ private extension FlightPlanPanelViewController {
         updateHeader(viewState: viewState)
 
         let isCreationState = viewState == .creation
+        let isRthState = viewState == .rth
         noFlightPlanContainer.isHiddenInStackView = !isCreationState
-        progressViewContainer.isHiddenInStackView = isCreationState
+        progressViewContainer.isHiddenInStackView = isCreationState || isRthState
         projectStackView.isHiddenInStackView = isCreationState
 
         switch viewState {
@@ -431,7 +498,7 @@ private extension FlightPlanPanelViewController {
             editButton.isEnabled = canEdit
             historyButton.isEnabled = hasHistory
 
-        case .playing, .rth, .navigatingToStartingPoint:
+        case .playing, .navigatingToStartingPoint:
             stopLeadingSpacer.isHiddenInStackView = false
             stopTrailingSpacer.isHiddenInStackView = false
             stopButton.isHiddenInStackView = false
@@ -440,7 +507,30 @@ private extension FlightPlanPanelViewController {
         case .paused, .resumable:
             playButton.isHiddenInStackView = false
             stopButton.isHiddenInStackView = false
+
+        case .rth:
+            break
         }
+
+        updateRthWidget(show: isRthState)
+    }
+
+    /// Updates RTH widget appearance.
+    ///
+    /// - Parameter show: show widget if `true`, hide it otherwise
+    func updateRthWidget(show: Bool) {
+        widgetContainerStackView.showFromEdge(.bottom,
+                               offset: Layout.mainBottomMargin(isRegularSizeClass),
+                               show: show,
+                               fadeFrom: 1)
+        isFpRthWidgetShown = show
+    }
+
+    /// Updates the action buttons visibility according to RTH widgets state.
+    func updateActionButtonsVisibility() {
+        // Action buttons should be displayed only if no RTH widget is shown.
+        let showActionButtons = !isMainRthWidgetShown && !isFpRthWidgetShown
+        buttonsStackView.animateScaleAndAlpha(show: showActionButtons)
     }
 
     /// Updates the header panel according to view model's state.
@@ -455,8 +545,67 @@ private extension FlightPlanPanelViewController {
             break
         }
 
-        folderButton.isHiddenInStackView = inProgress
-        executionNameLabel.isHiddenInStackView = !inProgress
+        folderButton.animateIsHiddenInStackView(inProgress)
+        executionNameLabel.animateIsHiddenInStackView(!inProgress)
         projectNameLabel.numberOfLines = (!inProgress).toInt + 1
+    }
+
+    /// Updates pending execution tile according to current pending execution.
+    /// Tile is shown and filled with current pending execution content if not `nil`, hidden otherwise.
+    ///
+    /// - Parameter execution: the current pending execution (if any)
+    func updatePendingExecutionTile(execution: FlightPlanModel?) {
+        guard let execution = execution else {
+            // No current pending execution => hide tile.
+            showPendingExecutionTile(show: false)
+            return
+        }
+
+        showPendingExecutionTile(show: true)
+        pendingExecutionCell.fill(execution: execution, customTitle: L10n.flightPlanLatestExecution)
+    }
+
+    /// Shows or hide pending execution tile.
+    ///
+    /// - Parameter show: show tile if `true`,  hide it otherwise
+    func showPendingExecutionTile(show: Bool) {
+        pendingExecutionCellContainer.animateIsHiddenInStackView(!show)
+    }
+}
+// MARK: - UITableViewDataSource
+extension FlightPlanPanelViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return settingsSections.count
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        let type = settingsSections[section]
+        switch type {
+        case let .settings(_, fpSettings):
+            return fpSettings.count
+        case .image,
+             .mode:
+            return 1
+        }
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let type = settingsSections[indexPath.section]
+        switch type {
+        case let .settings(_, fpSettings):
+            let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsMenuTableViewCell
+            let setting = fpSettings[indexPath.row]
+            cell.setup(setting: setting, arrowVisibility: .gone)
+            return cell
+        case let .image(hasCustomType, fpSettings, fpDataSettings):
+            let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsImageTableViewCell
+            let cellProvider = ImageMenuCellProvider(dataSettings: fpDataSettings)
+            cell.setup(provider: cellProvider, settings: fpSettings, hasCustomType: hasCustomType)
+            return cell
+        case let .mode(type):
+            let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsModeTableViewCell
+            cell.setup(with: type)
+            return cell
+        }
     }
 }

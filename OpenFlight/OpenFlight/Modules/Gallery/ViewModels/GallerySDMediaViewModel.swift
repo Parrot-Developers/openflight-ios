@@ -228,6 +228,7 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     private var mediaListRef: Ref<[MediaItem]>?
     private var flyingIndicatorRef: Ref<FlyingIndicators>?
     private var sdMediaListener: Set<GallerySdMediaListener> = []
+    private var mediaStoreRef: Ref<MediaStore>?
 
     // MARK: - Internal Properties
     var availableSpace: Double {
@@ -265,6 +266,11 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
         }
     }
 
+    /// Resets media list ref.
+    func resetMediaRef() {
+        mediaListRef = nil
+    }
+
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         super.listenDrone(drone: drone)
@@ -274,7 +280,7 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
 
     override func droneConnectionStateDidChange() {
         super.droneConnectionStateDidChange()
-        
+
         if !self.state.value.isConnected() {
             clearMedia()
         } else {
@@ -322,7 +328,7 @@ extension GallerySDMediaViewModel {
         updateDroneUid(drone: drone)
         listenSDCard(drone: drone)
         listenFlyingIndicator(drone: drone)
-        loadMediaStore(drone: drone)
+        listenMediaStore(drone: drone)
         loadMedia(drone: drone)
     }
 
@@ -422,19 +428,18 @@ private extension GallerySDMediaViewModel {
         }
     }
 
+    /// Starts watcher for media store
+    func listenMediaStore(drone: Drone) {
+        mediaStoreRef = drone.getPeripheral(Peripherals.mediaStore) { [weak self] mediaStore in
+            self?.mediaStore = mediaStore
+        }
+    }
+
     /// Updates canFormat state
     func updateCanFormatState(drone: Drone) {
         let copy = state.value.copy()
         copy.canFormat = sdCardRef?.value?.canFormat == true && drone.isConnected && !drone.isFlying
         state.set(copy)
-    }
-
-    /// Load MediaStore from drone.
-    ///
-    /// - Parameters:
-    ///     - drone: current drone
-    func loadMediaStore(drone: Drone) {
-        mediaStore = drone.getPeripheral(Peripherals.mediaStore)
     }
 
     /// Load MediaList from mediaStore peripherial.
@@ -528,13 +533,15 @@ private extension GallerySDMediaViewModel {
         }
 
         return GalleryMedia(uid: mediaItem.uid,
-                            customTitle: mediaItem.customTitle,
+                            customTitle: mediaItem.customId?.isEmpty != false ? nil : mediaItem.customTitle,
                             source: source,
                             mediaItems: mediaItems,
                             type: mediaItem.mediaType,
                             downloadState: downloadState,
                             size: size(for: mediaItems),
                             date: mediaItem.creationDate,
+                            flightDate: mediaItem.flightDate,
+                            bootDate: mediaItem.bootDate,
                             url: nil)
     }
 

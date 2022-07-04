@@ -40,20 +40,17 @@ class ParrotDebugViewController: UIViewController {
     @IBOutlet private weak var filesTableView: UITableView!
     @IBOutlet private weak var switchLog: UISwitch!
     @IBOutlet private weak var enableStreamRecord: UIButton!
-    @IBOutlet private weak var recordDisparitySwitch: UISwitch!
     @IBOutlet private weak var sendDebugTagButton: UIButton!
     @IBOutlet private weak var sendDebugTagTextField: POFTextField!
 
     // MARK: - Private Properties
-    private var cancellables = Set<AnyCancellable>()
     private var drone: Drone?
     private weak var renameOkAction: UIAlertAction?
     private var nameToRename: String?
     private var documentInteractionController: UIDocumentInteractionController!
     private var fileListUrls = [URL]()
+    private var currentLogDirectory: String? { ParrotDebug.currentLogDirectory?.lastPathComponent }
     private var refreshControl = UIRefreshControl()
-    private var activeFileName: String?
-    private var devToolboxRef: Ref<DevToolbox>?
     private weak var coordinator: ParrotDebugCoordinator?
 
     // MARK: - Private Enums
@@ -85,23 +82,12 @@ class ParrotDebugViewController: UIViewController {
         filesTableView.refreshControl = refreshControl
         refreshControl.addTarget(self, action: #selector(refreshFileList(_:)), for: .valueChanged)
         sendDebugTagTextField.setPlaceholderTitle("Debug tag...")
-
-        Services.hub.currentDroneHolder.dronePublisher.sink { [unowned self] drone in
-            self.drone = drone
-            devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
-                if let debugSettings = devToolbox?.debugSettings,
-                   let cameraConf = debugSettings.first(where: { $0.name == Constants.oaRecordStartConfName }) as? BoolDebugSetting {
-                    self?.recordDisparitySwitch.isOn = cameraConf.value
-                }
-            }
-        }
-        .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
 
-        switchLog.isOn = ParrotDebug.activeLogFileName != nil
+        switchLog.isOn = currentLogDirectory != nil
         loadFileList()
         displayInformations()
         updateStreamRecordDisplay()
@@ -131,6 +117,10 @@ private extension ParrotDebugViewController {
 
     @IBAction private func showPGYDebug(_ sender: AnyObject) {
         coordinator?.showPhotogrammetryDebug()
+    }
+
+    @IBAction func startCustomMissionDebug(_ sender: Any) {
+        coordinator?.showCustomMissionDebug()
     }
 
     @IBAction func enableStreamRecord(_ sender: UIButton) {
@@ -170,12 +160,6 @@ private extension ParrotDebugViewController {
         displayInformations()
     }
 
-    @IBAction private func recordDisparityTouchedUpInside(_ sender: UISwitch) {
-        let devToolBox = drone?.getPeripheral(Peripherals.devToolbox)
-        let cameraConf = devToolBox?.debugSettings.first(where: { $0.name == Constants.oaRecordStartConfName }) as? BoolDebugSetting
-        cameraConf?.value = sender.isOn
-    }
-
     @IBAction private func sendDebugTagTouchedUpInside(_ sender: AnyObject) {
         guard let tagValue = self.sendDebugTagTextField.text,
               let devToolBox = self.drone?.getPeripheral(Peripherals.devToolbox) else {
@@ -208,19 +192,18 @@ private extension ParrotDebugViewController {
 
         let messVersion = Bundle.main.infoDictionary?[Constants.bundleVersionKey] as? String ?? "?"
 
-        let messFile: String
-        if let filePath = ParrotDebug.activeLogFileName {
-            let fileName = URL(fileURLWithPath: filePath).lastPathComponent
-            messFile = " - LOG: \(fileName)"
+        let messDir: String
+        if let logDirectory = currentLogDirectory {
+            messDir = " - LOG: \(logDirectory)"
         } else {
-            messFile = ""
+            messDir = ""
         }
 
         let messAutoCountry = "\(Defaults.debugC == true ? "*" : "")" +
         "auto country(\(GroundSdkConfig.sharedInstance.autoSelectWifiCountry ? "Y" : "N"))" +
         "\(drone?.getPeripheral(Peripherals.wifiAccessPoint)?.isoCountryCode.value ?? "?")"
 
-        let messageInfo = "\(messDebugBuild) v\(messVersion) \(messAutoCountry)\(messFile)"
+        let messageInfo = "\(messDebugBuild) v\(messVersion) \(messAutoCountry)\(messDir)"
         informationsLabel.text = messageInfo
     }
 
@@ -232,12 +215,15 @@ private extension ParrotDebugViewController {
     }
 
     func share(url: URL, sourceFrame: CGRect, coordinateSpace: UICoordinateSpace) {
+        guard let logs = ParrotDebug.fileToShare(for: url) else {
+            return
+        }
         documentInteractionController = UIDocumentInteractionController()
-        documentInteractionController.url = url
+        documentInteractionController.url = logs
         documentInteractionController.uti = Constants.defaultShareUti
         documentInteractionController.name = url.lastPathComponent
-        let from = coordinateSpace.convert(sourceFrame, to: self.view)
-        documentInteractionController.presentOptionsMenu(from: from, in: self.view, animated: true)
+        let from = coordinateSpace.convert(sourceFrame, to: view)
+        documentInteractionController.presentOptionsMenu(from: from, in: view, animated: true)
     }
 
     func rename(url: URL) {
@@ -279,11 +265,6 @@ private extension ParrotDebugViewController {
 
     func loadFileList() {
         fileListUrls = ParrotDebug.listLogFiles().sorted { $0.lastPathComponent > $1.lastPathComponent }
-        if let filePath = ParrotDebug.activeLogFileName {
-            activeFileName = URL(fileURLWithPath: filePath).lastPathComponent
-        } else {
-            activeFileName = nil
-        }
         filesTableView.reloadData()
     }
 
@@ -302,44 +283,41 @@ extension ParrotDebugViewController: UITableViewDelegate, UITableViewDataSource 
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if let fileCell = tableView.dequeueReusableCell(withIdentifier: "FileCell", for: indexPath) as? ParrotLogFileCell {
             fileCell.fileName.text = fileListUrls[indexPath.row].lastPathComponent
-            fileCell.fileName.isHighlighted = (fileCell.fileName.text == activeFileName)
+            fileCell.fileName.isHighlighted = (fileCell.fileName.text == currentLogDirectory)
             return fileCell
         } else {
             return UITableViewCell()
         }
     }
 
-    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
-        let deleteAction = UITableViewRowAction(style: .destructive, title: L10n.commonDelete) { [weak self] (_, indexPath) in
-            guard let strongSelf = self else {
-                return
-            }
-            ParrotDebug.removeLogUrl(fileURL: strongSelf.fileListUrls[indexPath.row], srcVC: strongSelf) {
-                strongSelf.fileListUrls.remove(at: indexPath.row)
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: L10n.commonDelete) { [weak self] (_, _, _) in
+            guard let self = self else { return }
+            ParrotDebug.removeLogUrl(fileURL: self.fileListUrls[indexPath.row], srcVC: self) {
+                self.fileListUrls.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .fade)
             }
         }
-        let shareAction = UITableViewRowAction(style: .default, title: L10n.commonShare) { [weak self] (_, indexPath) in
-            guard let strongSelf = self else {
-                return
-            }
+
+        let shareAction = UIContextualAction(style: .normal, title: L10n.commonShare) { [weak self] (_, _, _) in
+            guard let self = self else { return }
             let sourceFrame = tableView.rectForRow(at: indexPath)
-            strongSelf.share(url: strongSelf.fileListUrls[indexPath.row],
+            self.share(url: self.fileListUrls[indexPath.row],
                              sourceFrame: sourceFrame,
                              coordinateSpace: tableView)
         }
         shareAction.backgroundColor = UIColor.darkGray
-        let renameAction = UITableViewRowAction(style: .default, title: L10n.commonRename) { [weak self] (_, indexPath) in
-            guard let strongSelf = self else {
-                return
-            }
-            strongSelf.rename(url: strongSelf.fileListUrls[indexPath.row])
+
+        let renameAction = UIContextualAction(style: .normal, title: L10n.commonRename) { [weak self] (_, _, _) in
+            guard let self = self else { return }
+            self.rename(url: self.fileListUrls[indexPath.row])
         }
         renameAction.backgroundColor = UIColor.lightGray
-        if fileListUrls[indexPath.row].lastPathComponent == activeFileName {
-            return [shareAction]
+
+        if fileListUrls[indexPath.row].lastPathComponent == currentLogDirectory {
+            return UISwipeActionsConfiguration(actions: [shareAction])
         } else {
-            return [deleteAction, shareAction, renameAction]
+            return UISwipeActionsConfiguration(actions: [deleteAction, shareAction, renameAction])
         }
     }
 }

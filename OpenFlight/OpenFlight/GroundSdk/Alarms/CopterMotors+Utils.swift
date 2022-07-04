@@ -31,6 +31,18 @@ import GroundSdk
 
 /// Utility extension for `CopterMotors`.
 extension CopterMotors {
+    /// The sorted motors banner alerts according to current copter motors state.
+    var bannerAlerts: [AnyBannerAlert] {
+        return motorsCurrentlyInError
+            .compactMap { latestError(onMotor: $0) }
+            .uniques
+            .compactMap { $0.bannerAlert }
+            .map { AnyBannerAlert($0) }
+            .sorted()
+    }
+
+    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+    // TODO: Remove property.
     /// Returns current alerts for motors.
     var currentErrors: [HUDAlertType] {
         return motorsCurrentlyInError

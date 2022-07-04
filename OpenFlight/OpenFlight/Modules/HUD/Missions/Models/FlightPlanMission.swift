@@ -61,7 +61,7 @@ public class FlightPlanActivationModel: MissionActivationModel {
         let projectManager = Services.hub.flightPlan.projectManager
         projectManager.setLastOpenedProjectAsCurrent(type: projectType)
         guard let project = projectManager.currentProject,
-              let flightPlan = projectManager.lastFlightPlan(for: project) else { return }
+              let flightPlan = projectManager.editableFlightPlan(for: project) else { return }
         // if editing  an FP (the editor is open in an edit state) avoid re-opening a stale one from
         // the database
         if Services.hub.flightPlan.edition.currentFlightPlanValue?.uuid != flightPlan.uuid {
@@ -128,7 +128,8 @@ enum FlightPlanMissionMode: String, CaseIterable {
                                                    isTrackingMode: false,
                                                    isAeLockEnabled: false,
                                                    isInstallationRequired: true,
-                                                   isCameraShutterButtonEnabled: false)
+                                                   isCameraShutterButtonEnabled: false,
+                                                   isTargetOnStream: false)
         return MissionMode(configurator: configurator,
                            flightPlanProvider: self.flightPlanProvider,
                            missionActivationModel: FlightPlanActivationModel(),

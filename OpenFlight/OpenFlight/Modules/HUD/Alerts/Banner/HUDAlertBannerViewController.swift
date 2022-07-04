@@ -27,6 +27,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+// TODO: Remove file.
+
 import UIKit
 import AudioToolbox
 
@@ -91,9 +94,6 @@ private extension HUDAlertBannerViewController {
         backgroundView.backgroundColor = alert.level.color
         mainLabel.textColor = alert.level.textColor
         backgroundView.isHidden = false
-        if state.shouldVibrate {
-            vibrateNow(withSecondVibration: alert.level == .critical)
-        }
         view.layoutIfNeeded()
     }
 

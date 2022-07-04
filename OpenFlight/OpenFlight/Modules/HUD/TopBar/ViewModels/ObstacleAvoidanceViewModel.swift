@@ -36,7 +36,7 @@ public class ObstacleAvoidanceViewModel {
     /// State for obstacle avoidance display.
     public enum State: Equatable {
         case disconnected
-        case unwanted
+        case unwanted(ObstacleAvoidanceState)
         case wanted(ObstacleAvoidanceState)
     }
 
@@ -78,7 +78,7 @@ private extension ObstacleAvoidanceViewModel {
             }
             switch obstacleAvoidance.mode.preferredValue {
             case .disabled:
-                state = .unwanted
+                state = .unwanted(obstacleAvoidance.state)
             case .standard:
                 state = .wanted(obstacleAvoidance.state)
             }

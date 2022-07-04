@@ -37,7 +37,7 @@ protocol FlightExecutionDetailsSettingsCellProvider {
 
 protocol FlightPlanExecutionInfoCellProvider {
     var title: String { get }
-    var date: Date { get }
+    var date: String { get }
     var location: CLLocationCoordinate2D { get }
     var flights: [FlightModel] { get }
     var executionTitle: String { get }
@@ -62,6 +62,7 @@ open class FlightPlanExecutionViewModel {
     private let flightPlanUiStateProvider: FlightPlanUiStateProvider
     private let flightService: FlightService
     private let navigationStack: NavigationStackService
+    private let flightPlanManager: FlightPlanManager
 
     init(flightPlan: FlightPlanModel,
          flightRepository: FlightRepository,
@@ -70,7 +71,8 @@ open class FlightPlanExecutionViewModel {
          flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider,
          flightPlanUiStateProvider: FlightPlanUiStateProvider,
          flightService: FlightService,
-         navigationStack: NavigationStackService) {
+         navigationStack: NavigationStackService,
+         flightPlanManager: FlightPlanManager) {
         self.flightPlan = flightPlanRepository.getFlightPlan(withUuid: flightPlan.uuid) ?? flightPlan
         self.coordinator = coordinator
         self.flightPlanExecutionDetailsSettingsProvider = flightPlanExecutionDetailsSettingsProvider
@@ -79,6 +81,7 @@ open class FlightPlanExecutionViewModel {
         self.flightPlanUiStateProvider = flightPlanUiStateProvider
         self.flightService = flightService
         self.navigationStack = navigationStack
+        self.flightPlanManager = flightPlanManager
     }
 
     /// Back button tapped.
@@ -110,7 +113,7 @@ open class FlightPlanExecutionViewModel {
         let location = flights.first?.location.coordinate
             ?? flightPlan.points.first
             ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
-        let date = flightPlan.flightPlanFlights?.first?.dateExecutionFlight ?? Date.distantPast
+        let date = flightPlanManager.firstFlightFormattedDate(of: flightPlan)
 
         let executionTitle = Services.hub.missionsStore.missionFor(flightPlan: flightPlan)?
             .mission
@@ -172,11 +175,11 @@ open class FlightPlanExecutionViewModel {
     }
 }
 
-private struct FlightPlanExecutionInfoCellProviderImpl: FlightPlanExecutionInfoCellProvider {
+struct FlightPlanExecutionInfoCellProviderImpl: FlightPlanExecutionInfoCellProvider {
     let title: String
     let executionTitle: String
     let flightPlan: FlightPlanModel
-    let date: Date
+    let date: String
     let location: CLLocationCoordinate2D
     let flights: [FlightModel]
     let flightService: FlightService

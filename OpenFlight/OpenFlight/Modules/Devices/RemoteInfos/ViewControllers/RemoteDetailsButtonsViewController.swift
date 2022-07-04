@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Display buttons for remote details screen.
 final class RemoteDetailsButtonsViewController: UIViewController {
@@ -37,8 +38,9 @@ final class RemoteDetailsButtonsViewController: UIViewController {
     @IBOutlet private weak var softwareVersionButtonView: DeviceDetailsButtonView!
 
     // MARK: - Private Properties
-    private var viewModel: RemoteDetailsButtonsViewModel = RemoteDetailsButtonsViewModel()
+    private var viewModel: RemoteDetailsButtonsViewModel!
     private weak var coordinator: RemoteCoordinator?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -46,9 +48,10 @@ final class RemoteDetailsButtonsViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: RemoteCoordinator) -> RemoteDetailsButtonsViewController {
+    static func instantiate(coordinator: RemoteCoordinator, viewModel: RemoteDetailsButtonsViewModel) -> RemoteDetailsButtonsViewController {
         let viewController = StoryboardScene.RemoteDetailsButtons.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -56,7 +59,7 @@ final class RemoteDetailsButtonsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        initViewModel()
+        setupViewModel()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -95,51 +98,53 @@ private extension RemoteDetailsButtonsViewController {
 
 // MARK: - Private Funcs
 private extension RemoteDetailsButtonsViewController {
-    /// Inits the view model.
-    func initViewModel() {
 
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state: state)
-        }
-        updateView(state: viewModel.state.value)
-    }
+    func setupViewModel() {
+        viewModel.calibrationModel
+            .sink { [weak self] calibrationModel in
+                guard let self = self else { return }
+                self.calibrationButtonView.model = calibrationModel
 
-    /// Updates the view according to view model changement.
-    ///
-    /// - Parameters:
-    ///     - state: remote details state
-    func updateView(state: RemoteDetailsButtonsState) {
-        updateCalibrationView(state: state)
-        updateDroneView(state: state)
-        updateSoftwareView(state: state)
-    }
+            }
+            .store(in: &cancellables)
 
-    /// Updates drone view.
-    ///
-    /// - Parameters:
-    ///     - state: remote details buttons state
-    func updateDroneView(state: RemoteDetailsButtonsState) {
-        currentDroneButtonView.model = state.droneStatusModel
-        currentDroneButtonView.isEnabled = state.remoteControlConnectionState?.isConnected() == true
-    }
+        viewModel.$needCalibration
+            .removeDuplicates()
+            .sink { [weak self] needCalibration in
+                guard let self = self else { return }
+                self.calibrationButtonView.isEnabled = needCalibration
+            }
+            .store(in: &cancellables)
 
-    /// Updates remote software view.
-    ///
-    /// - Parameters:
-    ///     - state: remote details buttons state
-    func updateSoftwareView(state: RemoteDetailsButtonsState) {
-        softwareVersionButtonView.model = state.softwareModel
-        let isConnected = state.remoteControlConnectionState?.isConnected() == true
-        softwareVersionButtonView.isEnabled = (state.updateState.isAvailable && isConnected) || state.needDownload
-    }
+        viewModel.softwareModel
+            .sink { [weak self] softwareModel in
+                guard let self = self else { return }
+                self.softwareVersionButtonView.model = softwareModel
+            }
+            .store(in: &cancellables)
 
-    /// Updates calibration view.
-    ///
-    /// - Parameters:
-    ///     - state: remote details buttons state
-    func updateCalibrationView(state: RemoteDetailsButtonsState) {
-        calibrationButtonView.model = state.calibrationModel
-        calibrationButtonView.isEnabled = state.needCalibration
+        viewModel.softwareButtonViewEnabled
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                guard let self = self else { return }
+                self.softwareVersionButtonView.isEnabled = isEnabled
+            }
+            .store(in: &cancellables)
+
+        viewModel.droneStatusModel
+            .sink { [weak self] droneStatusModel in
+                guard let self = self else { return }
+                self.currentDroneButtonView.model = droneStatusModel
+            }
+            .store(in: &cancellables)
+
+        viewModel.droneStatusViewEnabled
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                guard let self = self else { return }
+                self.currentDroneButtonView.isEnabled = isEnabled
+            }
+            .store(in: &cancellables)
     }
 
     /// Present a common alert in case of update error.

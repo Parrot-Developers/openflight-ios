@@ -30,6 +30,7 @@
 import UIKit
 import GroundSdk
 import Lottie
+import Combine
 
 /// View Controller used to display the drone magnetometer calibration.
 final class MagnetometerCalibrationViewController: UIViewController {
@@ -43,7 +44,8 @@ final class MagnetometerCalibrationViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: DroneCalibrationCoordinator?
-    private var viewModel = MagnetometerCalibrationProcessViewModel()
+    private var viewModel = MagnetometerCalibrationProcessViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -92,8 +94,8 @@ final class MagnetometerCalibrationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.initUI()
-        self.setupViewModels()
+        initUI()
+        setupViewModels()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -105,7 +107,7 @@ final class MagnetometerCalibrationViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        self.viewModel.cancelCalibration()
+        viewModel.cancelCalibration()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -121,21 +123,21 @@ final class MagnetometerCalibrationViewController: UIViewController {
 private extension MagnetometerCalibrationViewController {
     /// Function called when the back button is clicked.
     @IBAction func backButtonTouchedUpInside(_ sender: UIButton) {
-        self.closeCalibrationView()
+        closeCalibrationView()
     }
 
     /// Function called when the calibrate button is clicked.
     @IBAction func calibrateButtonTouchedUpInside(_ sender: Any) {
-        self.calibrateButton.isHidden = true
-        self.droneCalibrationAxesView.isHidden = false
-        self.viewModel.startCalibration()
+        calibrateButton.isHidden = true
+        droneCalibrationAxesView.isHidden = false
+        viewModel.startCalibration()
         LogEvent.log(.button(item: LogEvent.LogKeyDroneDetailsCalibrationButton.magnetometerCalibrationCalibrate,
-                             value: self.viewModel.state.value.calibrationProcessState?.failed.description ?? ""))
+                             value: viewModel.calibrationProcessState?.failed.description ?? ""))
     }
 
     /// Function called when the ok button is clicked.
     @IBAction func okButtonTouchedUpInside(_ sender: Any) {
-        self.closeCalibrationView()
+        closeCalibrationView()
     }
 }
 
@@ -143,7 +145,7 @@ private extension MagnetometerCalibrationViewController {
 private extension MagnetometerCalibrationViewController {
     /// Initializes all the UI for the view controller.
     func initUI() {
-        self.droneCalibrationTitle.text = L10n.remoteCalibrationTitle
+        droneCalibrationTitle.text = L10n.remoteCalibrationTitle
         instructionsView.viewModel = DroneCalibrationInstructionsModel(image: Asset.Drone.icDroneOpenYourDrone.image,
                                                                        firstLabel: L10n.droneMagnetometerCalibrationInstruction,
                                                                        secondLabel: L10n.droneMagnetometerCalibrationInstructionComplement,
@@ -177,38 +179,50 @@ private extension MagnetometerCalibrationViewController {
         case .none:
             break
         case .roll:
-            self.displayRoll()
+            displayRoll()
         case .pitch:
-            self.displayPitch()
+            displayPitch()
         case .yaw:
-            self.displayYaw()
+            displayYaw()
         }
-        calibrationProcessState.calibratedAxes.forEach { self.droneCalibrationAxesView.markAsCalibrated(axis: $0) }
+        calibrationProcessState.calibratedAxes.forEach { droneCalibrationAxesView.markAsCalibrated(axis: $0) }
         if calibrationProcessState.failed {
-            self.onFailure()
+            onFailure()
         }
         if calibrationProcessState.isCalibrated(axis: .roll) {
-            self.onCalibrationCompleted()
+            onCalibrationCompleted()
         }
     }
 
     /// Sets up view models associated with the view.
     func setupViewModels() {
-        self.viewModel.state.valueChanged = { [weak self] state in
-            if let droneState = state.droneState,
-               droneState == .disconnected || droneState == .disconnecting {
-                self?.closeCalibrationView()
+        viewModel.$droneConnectionState
+            .sink { [weak self] connectionState in
+                guard let self = self else { return }
+                if connectionState == .disconnected || connectionState == .disconnecting {
+                    self.closeCalibrationView()
+                }
             }
+            .store(in: &cancellables)
 
-            if state.flyingState == .flying {
-                self?.viewModel.cancelCalibration()
-                self?.closeCalibrationView()
+        viewModel.$flyingState
+            .sink { [weak self] flyingState in
+                guard let self = self else { return }
+                if flyingState == .flying {
+                    self.viewModel.cancelCalibration()
+                    self.closeCalibrationView()
+                }
             }
+            .store(in: &cancellables)
 
-            if let calibrationProcessState = state.calibrationProcessState {
-                self?.updateMagnetometerUI(calibrationProcessState: calibrationProcessState)
+        viewModel.$calibrationProcessState
+            .sink { [weak self] calibrationProcessState in
+                guard let self = self,
+                      let calibrationProcessState = calibrationProcessState
+                else { return }
+                self.updateMagnetometerUI(calibrationProcessState: calibrationProcessState)
             }
-        }
+            .store(in: &cancellables)
     }
 
     /// Display yaw animation.
@@ -269,7 +283,7 @@ private extension MagnetometerCalibrationViewController {
 
     /// Close the view controller.
     func closeCalibrationView() {
-        self.viewModel.cancelCalibration()
+        viewModel.cancelCalibration()
         coordinator?.leave()
     }
 }

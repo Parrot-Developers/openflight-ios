@@ -115,7 +115,14 @@ extension CenteredRulerTableViewCell: SettingValueRulerViewDelegate {
         if let divider = settingType?.divider, divider < 1.0 {
             finalValue = Int(value / divider)
         }
+        delegate?.isUpdatingSetting(for: settingType?.key,
+                                    isUpdating: false)
         delegate?.updateSettingValue(for: settingType?.key,
                                      value: finalValue)
+    }
+
+    public func valueWillChange() {
+        delegate?.isUpdatingSetting(for: settingType?.key,
+                                    isUpdating: true)
     }
 }

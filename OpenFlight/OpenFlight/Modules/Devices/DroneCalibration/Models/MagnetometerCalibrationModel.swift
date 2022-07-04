@@ -62,7 +62,7 @@ enum DroneMagnetometerCalibrationState {
         switch self {
         case .needed:
             return .errorColor
-         case .recommended:
+        case .recommended:
             return .warningColor
         default:
             return .white

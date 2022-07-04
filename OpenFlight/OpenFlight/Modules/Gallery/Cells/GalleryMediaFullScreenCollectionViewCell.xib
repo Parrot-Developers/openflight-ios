@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -30,18 +30,16 @@
                     <rect key="frame" x="0.0" y="0.0" width="742" height="511"/>
                     <subviews>
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SjW-Fk-0sq">
-                            <rect key="frame" x="0.0" y="0.0" width="742" height="507"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="507" id="0YQ-Zr-Deh"/>
-                                <constraint firstAttribute="width" constant="742" id="HQf-64-Iha"/>
-                            </constraints>
+                            <rect key="frame" x="0.0" y="0.0" width="742" height="511"/>
                         </imageView>
                     </subviews>
                     <constraints>
-                        <constraint firstAttribute="bottom" secondItem="SjW-Fk-0sq" secondAttribute="bottom" id="DjK-qb-CtL"/>
-                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="leading" secondItem="LyU-An-W8O" secondAttribute="leading" id="gBw-vm-80B"/>
-                        <constraint firstAttribute="trailing" secondItem="SjW-Fk-0sq" secondAttribute="trailing" id="hhg-1x-01Z"/>
-                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="top" secondItem="LyU-An-W8O" secondAttribute="top" id="wS6-fy-wRe"/>
+                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="width" secondItem="LyU-An-W8O" secondAttribute="width" id="3YL-6u-WrP"/>
+                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="bottom" secondItem="LyU-An-W8O" secondAttribute="bottom" id="Chg-UZ-bUy"/>
+                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="top" secondItem="LyU-An-W8O" secondAttribute="top" id="KMM-rb-YLP"/>
+                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="height" secondItem="LyU-An-W8O" secondAttribute="height" id="aZX-YZ-Vfr"/>
+                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="trailing" secondItem="LyU-An-W8O" secondAttribute="trailing" id="ehZ-sN-xMl"/>
+                        <constraint firstItem="SjW-Fk-0sq" firstAttribute="leading" secondItem="LyU-An-W8O" secondAttribute="leading" id="qcy-e7-2vN"/>
                     </constraints>
                     <connections>
                         <outlet property="delegate" destination="iN0-l3-epB" id="z4f-cj-RhF"/>
@@ -97,8 +95,6 @@
                 <outlet property="loadingImageView" destination="cvS-pM-bhZ" id="ero-Cc-Mht"/>
                 <outlet property="scrollView" destination="LyU-An-W8O" id="pVz-jk-0UM"/>
                 <outlet property="showImmersivePanoramaButton" destination="BC1-Cu-4Za" id="6Op-og-Io3"/>
-                <outlet property="zoomableImageHeightConstraint" destination="0YQ-Zr-Deh" id="FKD-Dy-x3F"/>
-                <outlet property="zoomableImageWidthConstraint" destination="HQf-64-Iha" id="bkn-Dz-15y"/>
             </connections>
             <point key="canvasLocation" x="375.36231884057975" y="17.075892857142858"/>
         </view>

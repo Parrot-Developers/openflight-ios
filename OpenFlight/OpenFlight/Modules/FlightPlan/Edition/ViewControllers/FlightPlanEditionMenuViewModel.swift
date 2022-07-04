@@ -78,7 +78,7 @@ private struct ProjectNameCellProvider: ProjectNameMenuTableViewCellProvider, Pr
     var projectManager: ProjectManager
 
     // When it's a project creation, prompt user to edit the title at the opening.
-    var isTitleEditionNeeded: Bool { projectManager.isCurrentProjectBranNew }
+    var isTitleEditionNeeded: Bool { projectManager.isCurrentProjectBrandNew }
 
     var title: String {
         get {

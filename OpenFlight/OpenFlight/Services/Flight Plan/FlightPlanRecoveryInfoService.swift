@@ -75,11 +75,13 @@ public class FlightPlanRecoveryInfoServiceImpl {
         self.missionsStore = missionsStore
         self.currentMissionManager = currentMissionManager
 
+        // Listen drone connections / disconnections.
         connectedDroneHolder.dronePublisher.sink { [unowned self] drone in
+            // No need to check that `connectionState == .connected` for a `ConnectedDroneHolder`.
+            // If drone exists means it's connected.
             guard let drone = drone else { return }
-            if drone.state.connectionState == .connected {
-                catchUpFlightPlan(drone: drone)
-            }
+            // Catch up a running flight plan if available.
+            catchUpFlightPlan(drone: drone)
         }
         .store(in: &cancellables)
 
@@ -109,24 +111,38 @@ public class FlightPlanRecoveryInfoServiceImpl {
     private func catchUpFlightPlan(drone: Drone) {
         // As the recoveryInfo contains information about the last started FP,
         // if the itf is active its recoveryInfo points to the active FP
-        guard let pilotingItf = drone.getPilotingItf(PilotingItfs.flightPlan) else { return }
-
-        guard let recoveryInfo = pilotingItf.recoveryInfo,
-              let flightPlan = flightPlanManager.flightPlan(uuid: recoveryInfo.customId),
-              let project = projectService.project(for: flightPlan) else {
-                  if pilotingItf.state == .active, pilotingItf.recoveryInfo == nil {
-                      ULog.e(.tag, "catchUpFlightPlan recoveryInfo is nil, flight plan state is ignored")
-                  }
-                  return
-              }
-
-        if pilotingItf.state == .active {
-            catchUpRunningFlightPlan(project: project,
-                                     flightPlan: flightPlan,
-                                     recoveryInfo: recoveryInfo)
-            pilotingItf.clearRecoveryInfo()
-
+        guard let pilotingItf = drone.getPilotingItf(PilotingItfs.flightPlan) else {
+            ULog.i(.tag, "Drone did connect but Flight Plan Piloting Interface is not accessible.")
+            return
         }
+        guard let recoveryInfo = pilotingItf.recoveryInfo else {
+            ULog.e(.tag, "RecoveryInfo is nil, nothing to do.")
+            return
+        }
+        guard let flightPlan = flightPlanManager.flightPlan(uuid: recoveryInfo.customId) else {
+            ULog.e(.tag, "Flight Plan '\(recoveryInfo.customId)' not found locally. Ignore recovery info.")
+            return
+        }
+        guard let project = projectService.project(for: flightPlan) else {
+            ULog.e(.tag, "Unable to find a project for Flight Plan '\(recoveryInfo.customId)'.")
+            return
+        }
+        guard pilotingItf.state == .active else {
+            ULog.i(.tag, "Piloting Interface is not active")
+            return
+        }
+
+        // Following requirements to catch up an FP are met:
+        //   • The Flight Plan Piloting Interface has recovery information.
+        //   • The recovered Flight Plan and its project are known by the app.
+        //   • The piloting interface is active.
+
+        // Catch up the running flight plan.
+        catchUpRunningFlightPlan(project: project,
+                                 flightPlan: flightPlan,
+                                 recoveryInfo: recoveryInfo)
+        // Then tell the drone to clear its recovery info.
+        pilotingItf.clearRecoveryInfo()
     }
 
     /// Process recovery information provided by flight plan piloting interface.
@@ -154,7 +170,7 @@ public class FlightPlanRecoveryInfoServiceImpl {
             // The Local FP is updated with the recovery information.
             // Then we check if the last FP's way point has been reached
             // to handle, if necessary, the FP as 'finished offline'.
-            updateFlightPlanFromRecoveryInfo(flightPlan, recoveryInfo: recoveryInfo)
+            updateFlightPlanFromRecoveryInfo(flightPlan, recoveryInfo: recoveryInfo, isPaused: pilotingItf.isPaused)
         }
 
         // The piloting interface is not active, the recovery info can be cleared.
@@ -162,22 +178,41 @@ public class FlightPlanRecoveryInfoServiceImpl {
     }
 
     /// Update flight plan when receiving recovery information.
-    /// When flight plan state is running, and when flight plan has reached the last waypoint, the state machine is updated.
+    /// When flight plan state is running, the flight plan has reached the last waypoint and the RTH is not paused,
+    /// the state machine is updated to handle the flight plan as completed offline.
     ///
     /// - Parameters:
     ///    - flightPlan: flight plan
     ///    - recoveryInfo: recovery info
+    ///    - isPaused: whether the piloting interface is paused
     private func updateFlightPlanFromRecoveryInfo(_ flightPlan: FlightPlanModel,
-                                                  recoveryInfo: RecoveryInfo) {
+                                                  recoveryInfo: RecoveryInfo,
+                                                  isPaused: Bool) {
         ULog.d(.tag, "updatePassedFlightPlan '\(flightPlan.uuid)'")
         let flightPlan = flightPlanManager.update(flightPlan: flightPlan,
                                                   lastMissionItemExecuted: Int(recoveryInfo.latestMissionItemExecuted),
                                                   recoveryResourceId: recoveryInfo.resourceId)
-        if flightPlan.state == .flying,
-           let missionMode = missionsStore.missionFor(flightPlan: flightPlan)?.mission,
-           flightPlan.hasReachedLastWayPoint {
-            missionMode.stateMachine?.handleFinishedOfflineFlightPlan(flightPlan: flightPlan)
+        // Check if the current FP:
+        //  • is currently flying or stopped
+        //  • has reached the last way point (completed)
+        //  • the RTH has not been paused (e.g by an over-piloting)
+        // In case of all conditions are met, FP is handled as finished of line.
+        guard [.flying, .stopped].contains(flightPlan.state),
+              flightPlan.hasReachedLastWayPoint,
+              !isPaused else { return }
+        // Ensure flight plan has a valid mission.
+        guard let missionMode = missionsStore.missionFor(flightPlan: flightPlan)?.mission else {
+            ULog.e(.tag, "Trying to update an FP with an undefined mission")
+            return
         }
+        // Ensure we can access the FP State Machine.
+        guard let stateMachine = missionMode.stateMachine else {
+            ULog.e(.tag, "Unable to get the FP State Machine")
+            return
+        }
+        // Tell to the State Machine the FP finished off line.
+        ULog.i(.tag, "Updating Flight Plan State Machine")
+        stateMachine.handleFinishedOfflineFlightPlan(flightPlan: flightPlan)
     }
 
     private func catchUpRunningFlightPlan(project: ProjectModel,
@@ -188,7 +223,7 @@ public class FlightPlanRecoveryInfoServiceImpl {
         Services.hub.ui.hudTopBarService.allowTopBarDisplay()
         currentMissionManager.set(provider: provider)
         currentMissionManager.set(mode: mode)
-        projectService.setCurrent(project)
+        projectService.setCurrent(project, completion: nil)
         mode.stateMachine?.catchUp(flightPlan: flightPlan,
                                    lastMissionItemExecuted: Int(recoveryInfo.latestMissionItemExecuted),
                                    recoveryResourceId: recoveryInfo.resourceId,

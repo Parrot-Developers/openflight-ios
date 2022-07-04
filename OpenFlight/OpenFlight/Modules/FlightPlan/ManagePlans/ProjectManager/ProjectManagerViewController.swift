@@ -268,7 +268,7 @@ private extension ProjectManagerViewController {
         guard let defaultSelectedProject = defaultSelectedProject else { return }
         segmentedControl.selectedSegmentIndex = viewModel.projectTypeIndex(of: defaultSelectedProject) ?? 0
         if let selectedType = selectedType { viewModel.updateProjectType(selectedType) }
-        projectsListViewController?.viewModel.didSelect(project: defaultSelectedProject)
+        projectsListViewController?.viewModel.selectProject(defaultSelectedProject)
     }
 
     /// Listen keyboard state (shown or hidden) changes.

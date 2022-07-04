@@ -47,7 +47,7 @@ public final class SettingsCoordinator: Coordinator {
     /// Dismisses settings.
     func dismissSettings() {
         if parentCoordinator is DashboardCoordinator {
-            dismiss()
+            leave()
         } else {
             dismissCoordinatorWithAnimator()
         }
@@ -80,6 +80,13 @@ public final class SettingsCoordinator: Coordinator {
     /// Starts DRI info screen.
     func startDriInfoScreen() {
         let viewController = SettingsDRIViewController.instantiate(coordinator: self)
+        presentModal(viewController: viewController)
+    }
+
+    /// Starts DRI edition screen.
+    func startDriEdition(viewModel: SettingsNetworkViewModel) {
+        let viewController = EditionDRIViewController.instantiate(coordinator: self,
+                                                                  viewModel: viewModel)
         presentModal(viewController: viewController)
     }
 }

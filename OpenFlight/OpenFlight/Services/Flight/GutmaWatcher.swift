@@ -71,7 +71,7 @@ open class GutmaWatcherImpl {
             guard let files = gutmaLogManager?.files else {
                 return
             }
-            let models = files.compactMap { [unowned self] in toFlight(gutmaUrl: $0) }
+            let models = files.compactMap { toFlight(gutmaUrl: $0) }
             service.save(gutmaOutput: models)
 
             files.forEach { urlFile in
@@ -96,8 +96,8 @@ open class GutmaWatcherImpl {
                  (.landed, .emergencyLanding):
                 watchLastFlight = true
                 watchLastFlightTimer?.invalidate()
-                watchLastFlightTimer = Timer.scheduledTimer(withTimeInterval: Constants.lastFlightObservationDelay, repeats: false, block: { _ in
-                    watchLastFlight = false
+                watchLastFlightTimer = Timer.scheduledTimer(withTimeInterval: Constants.lastFlightObservationDelay, repeats: false, block: { [weak self] _ in
+                    self?.watchLastFlight = false
                 })
             default:
                 break

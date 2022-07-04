@@ -33,6 +33,9 @@ import Combine
 
 /// Bottom bar widget for Return Home feature.
 final class ReturnHomeBottomBarView: UIView, NibOwnerLoadable {
+    /// Optional custom stop action. Currently used to stop an FP in final RTH state.
+    var customStopAction: (() -> Void)?
+
     // MARK: - Outlets
     @IBOutlet private weak var barButtonView: BarButtonView!
     @IBOutlet private weak var stopView: StopView!
@@ -91,6 +94,11 @@ private extension ReturnHomeBottomBarView {
 // MARK: - StopViewDelegate
 extension ReturnHomeBottomBarView: StopViewDelegate {
     func didClickOnStop() {
-        viewModel.stopReturnHome()
+        // Perform custom action if configured, view model's stop action otherwise.
+        if let customStopAction = customStopAction {
+            customStopAction()
+        } else {
+            viewModel.stopReturnHome()
+        }
     }
 }

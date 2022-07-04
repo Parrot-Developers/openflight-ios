@@ -27,6 +27,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
+// TODO: Remove file.
+
 /// Used to sort top alerts by priority.
 open class AlertBannerSorter {
     // MARK: - Public Properties
@@ -48,8 +51,6 @@ open class AlertBannerSorter {
         .wontReachHome,
         //        RTH    Very Low Battery will RTH    Can’t reach Home
         .needCalibration,
-        // Takeoff    Default takeoff issue    Magneto calibration needs to be done
-        .takeoffUnavailable,
         // Takeoff    Default takeoff issue    Take off is unavailable
         .obstacleAvoidanceComputationalError,
         // Obstacle avoidance    Computational error    Obstacle avoidance disabled - Internal error
@@ -79,8 +80,6 @@ open class AlertBannerSorter {
         // Conditions    Heading Locked KO    Magnetic perturbations - autonomous flights are unavailable.
         .headingLockedKoEarthMagnetic,
         // Conditions    Heading Locked KO    Earth magnetic field too low - autonomous flights are unavailable.
-        .noGpsLapse,
-        // Conditions    No GPS - GPS lapse    Flight quality is not optimal - GPS lapse is unavailable.
         .tooMuchWind,
         // Conditions_Wind    Too much wind    Strong winds
         .strongImuVibration,

@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Displays a view with informations about the drone (system, imei etc).
 final class DroneDetailsInformationsViewController: UIViewController {
@@ -39,14 +40,13 @@ final class DroneDetailsInformationsViewController: UIViewController {
     @IBOutlet private weak var resetButton: ActionButton!
 
     // MARK: - Private Properties
-    private weak var coordinator: Coordinator?
-    private var viewModel = DroneDetailsInformationsViewModel()
+    private var viewModel: DroneDetailsInformationsViewModel!
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
-    static func instantiate(coordinator: Coordinator) -> DroneDetailsInformationsViewController {
+    static func instantiate(viewModel: DroneDetailsInformationsViewModel) -> DroneDetailsInformationsViewController {
         let viewController = StoryboardScene.DroneDetailsInformations.initialScene.instantiate()
-        viewController.coordinator = coordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -91,38 +91,59 @@ private extension DroneDetailsInformationsViewController {
 private extension DroneDetailsInformationsViewController {
     /// Sets up the view.
     func setupView() {
-        resetButton.setup(title: L10n.commonReset, style: .default2)
-    }
-
-    /// Sets up view model.
-    func setupViewModel() {
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateView(state)
-        }
-        updateView(viewModel.state.value)
-    }
-
-    /// Updates the view with given state.
-    ///
-    /// - Parameters:
-    ///    - state: current state
-    func updateView(_ state: DroneDetailsInformationsState) {
-        resetButton.isEnabled = state.isConnected()
-        let resetColor: ColorName = state.isConnected() ? ColorName.defaultTextColor : ColorName.disabledTextColor
-
-        resetButton.makeup(with: .large, color: resetColor)
         resetButton.cornerRadiusedWith(backgroundColor: ColorName.whiteAlbescent.color,
                                        borderColor: .clear,
                                        radius: Style.largeCornerRadius,
                                        borderWidth: Style.noBorderWidth)
+    }
 
-        serialContainerView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
-                                                            description: state.serialNumber)
-        hardwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
-                                                                     description: state.hardwareVersion)
-        firmwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsFirmwareCharles,
-                                                                     description: state.firmwareVersion)
-        imeiContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsImei,
-                                                          description: state.imei)
+    /// Sets up view model.
+    func setupViewModel() {
+        viewModel.resetButtonEnabled
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                guard let self = self else { return }
+                self.resetButton.isEnabled = isEnabled
+                let resetColor: ColorName = isEnabled ? ColorName.defaultTextColor : ColorName.disabledTextColor
+                self.resetButton.setup(title: L10n.commonReset, style: .default2)
+                self.resetButton.makeup(with: .large, color: resetColor)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$firmwareVersion
+            .removeDuplicates()
+            .sink { [weak self] firmwareVersion in
+                guard let self = self else { return }
+                self.firmwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsFirmwareCharles,
+                                                                                  description: firmwareVersion)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$hardwareVersion
+            .removeDuplicates()
+            .sink { [weak self] hardwareVersion in
+                guard let self = self else { return }
+                self.hardwareVersionContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsHardwareVersion,
+                                                                                  description: hardwareVersion)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$serialNumber
+            .removeDuplicates()
+            .sink { [weak self] serialNumber in
+                guard let self = self else { return }
+                self.serialContainerView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
+                                                                         description: serialNumber)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$imei
+            .removeDuplicates()
+            .sink { [weak self] imei in
+                guard let self = self else { return }
+                self.imeiContainerView.model = DeviceInformationsModel(title: L10n.droneDetailsImei,
+                                                                       description: imei)
+            }
+            .store(in: &cancellables)
     }
 }

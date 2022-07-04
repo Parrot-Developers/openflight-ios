@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Kb9-F6-CeX">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Kb9-F6-CeX">
     <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -32,10 +32,10 @@
                                 <rect key="frame" x="0.0" y="0.0" width="568" height="320"/>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RcB-v3-bxs">
-                                <rect key="frame" x="29" y="115" width="510" height="205"/>
+                                <rect key="frame" x="37" y="115" width="494" height="205"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="HXa-xC-WVB">
-                                        <rect key="frame" x="10" y="10" width="490" height="165"/>
+                                        <rect key="frame" x="2" y="10" width="490" height="165"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PxP-xI-jFS" userLabel="TopView">
                                                 <rect key="frame" x="0.0" y="0.0" width="490" height="40"/>
@@ -98,7 +98,7 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hX2-fg-fDW">
-                                <rect key="frame" x="29" y="115" width="50" height="50"/>
+                                <rect key="frame" x="37" y="115" width="50" height="50"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="hX2-fg-fDW" secondAttribute="height" multiplier="1:1" id="Hxd-dY-uBU"/>
                                     <constraint firstAttribute="width" constant="50" id="ilb-15-K3K"/>

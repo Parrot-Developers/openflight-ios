@@ -28,13 +28,17 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import GroundSdk
+import Combine
 
 /// Settings content sub class dedicated to network settings.
 final class SettingsNetworkViewController: SettingsContentViewController {
     // MARK: - Private Properties
-    private let networkViewModel = SettingsNetworkViewModel()
+    private let networkViewModel = SettingsNetworkViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
     private var wifiNameIndex: Int?
     private var cellularDataIndex: Int?
+
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Deinit
     deinit {
@@ -91,19 +95,26 @@ extension SettingsNetworkViewController {
 
     /// Sets up view model.
     func setupViewModel() {
-        // Setup view model.
-        networkViewModel.state.valueChanged = { [weak self] state in
-            // Lock refresh display while editing network name,
-            // to prevent from keyboard dismissing (using tableview).
-            if state.isEditing == false {
-                self?.updateDataSource(state)
+        networkViewModel.$isNotFlying
+            .removeDuplicates()
+            .combineLatest(networkViewModel.wifiAccessPointPublisher,
+                           networkViewModel.wifiScannerPublisher,
+                           networkViewModel.networkControlPublisher)
+            .combineLatest(networkViewModel.$isEditing, networkViewModel.driPublisher)
+            .sink { [weak self] (arg0, isEditing, _) in
+                let (isNotFlying, _, _, _) = arg0
+                guard let self = self else { return }
+                if !isEditing {
+                    self.updateDataSource(isNotFlying)
+                }
             }
-        }
+            .store(in: &cancellables)
+
         networkViewModel.infoHandler = { [weak self] _ in
             self?.coordinator?.startDriInfoScreen()
         }
         // Inital data source update.
-        updateDataSource(SettingsNetworkState())
+        updateDataSource(networkViewModel.isNotFlying)
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -119,6 +130,8 @@ extension SettingsNetworkViewController {
         case .cellularData:
             cell = configureCellularDataCell(atIndexPath: indexPath)
             cellularDataIndex = indexPath.row
+        case .dri:
+            cell = configureDriCell(at: indexPath)
         default:
             cell = super.tableView(tableView, cellForRowAt: indexPath)
         }
@@ -170,17 +183,51 @@ private extension SettingsNetworkViewController {
         return cell
     }
 
+    /// Configure DRI Cell.
+    ///
+    /// - Parameters:
+    ///     - indexPath: cell indexPath
+    /// - Returns:
+    ///     - UITableViewCell
+    func configureDriCell(at indexPath: IndexPath) -> UITableViewCell {
+        let cell = settingsTableView.dequeueReusableCell(for: indexPath) as SettingsDriCell
+        cell.delegate = self
+        let settingEntry = filteredSettings[indexPath.row]
+        if let settingSegments: SettingsSegmentModel = settingEntry.segmentModel {
+            cell.configureCell(cellTitle: settingEntry.title,
+                               segmentModel: settingSegments,
+                               subtitle: settingEntry.subtitle,
+                               operatorId: networkViewModel.driOperatorFullId,
+                               operatorColor: networkViewModel.driOperatorColor,
+                               isEnabled: settingEntry.isEnabled,
+                               subtitleColor: ColorName.secondaryTextColor.color,
+                               showInfo: settingEntry.showInfo,
+                               infoText: settingEntry.infoText,
+                               atIndexPath: indexPath,
+                               bgColor: settingEntry.bgColor)
+        }
+        cell.showEdition = { [weak self] in
+            self?.showDriEdition()
+        }
+        return cell
+    }
+
     /// Show password edition view controller.
     func showPasswordEdition() {
         coordinator?.startSettingDronePasswordEdition(viewModel: networkViewModel)
+    }
+
+    /// Show DRI edition view controller.
+    func showDriEdition() {
+        coordinator?.startDriEdition(viewModel: networkViewModel)
     }
 
     /// Update data source.
     ///
     /// - Parameters:
     ///     - state: Network state
-    func updateDataSource(_ state: SettingsNetworkState) {
-        resetCellLabel = state.isNotFlying ? L10n.settingsConnectionReset : nil
+    func updateDataSource(_ isNotFlying: Bool) {
+        resetCellLabel = isNotFlying ? L10n.settingsConnectionReset : nil
         settings = networkViewModel.settingEntries
     }
 }
@@ -206,7 +253,7 @@ private extension SettingsNetworkViewController {
 // MARK: - SettingsCellularDataDelegate
 extension SettingsNetworkViewController: SettingsCellularDataDelegate {
     func cellularDataDidChange() {
-        updateDataSource(networkViewModel.state.value)
+        updateDataSource(networkViewModel.isNotFlying)
         settingsTableView?.reloadData()
     }
 
