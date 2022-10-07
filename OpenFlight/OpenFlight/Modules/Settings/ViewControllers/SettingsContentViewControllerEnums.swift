@@ -44,4 +44,5 @@ enum SettingsCellType {
     case cellularData
     case endHovering
     case dri
+    case shellAccess
 }

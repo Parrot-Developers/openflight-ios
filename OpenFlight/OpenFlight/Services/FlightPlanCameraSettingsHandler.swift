@@ -271,8 +271,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
         let gpslapseInterval = flightPlanData.gpsLapseDistance.map { Double($0) / 1000 }
 
         // get current signature configuration
-        var photoSignature = droneHolder.drone.getPeripheral(Peripherals.mainCamera2)?
-            .config[Camera2Params.photoDigitalSignature]?.value
+        var photoSignature = UserDefaults.photoDigitalSignature
 
         // disablePhotoSignature is coming from the libPigeon
         // it decides whether the signature is technically possible or not
@@ -296,7 +295,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
                                       gpslapseInterval: gpslapseInterval)
         ULog.i(.tag, "Sending settings \(settings)")
         // Do not change camera mode immediately. The drone will do it automatically as its first action
-        setCameraSettings(settings, shouldChangeCameraMode: false)
+        setCameraSettings(settings, shouldChangeCameraMode: false, disablePhotoSignature: flightPlanData.disablePhotoSignature)
     }
 
     /// Restore saved camera settings after flight plan execution
@@ -312,8 +311,13 @@ private extension FlightPlanCameraSettingsHandlerImpl {
     }
 
     /// Set camera settings to the drone
-    /// - Parameter settings: the settings to apply
-    func setCameraSettings(_ settings: CameraSettings, shouldChangeCameraMode: Bool) {
+    /// - Parameters:
+    ///  - settings: the settings to apply
+    ///  - shouldChangeCameraMode: whether the camera mode must be changed
+    ///  - disablePhotoSignature: whether the photo signature must be disabled whithout regarding user's choice
+    func setCameraSettings(_ settings: CameraSettings,
+                           shouldChangeCameraMode: Bool,
+                           disablePhotoSignature: Bool = false) {
         guard let camera = droneHolder.drone.getPeripheral(Peripherals.mainCamera2) else { return }
         ULog.d(.tag, "setCameraSettings \(settings)")
         // Edit camera configuration from scratch.
@@ -343,7 +347,7 @@ private extension FlightPlanCameraSettingsHandlerImpl {
 
         // Apply camera configuration.
         // Empty configuration fields will be filled with current configuration values when available.
-        editor.saveSettings(currentConfig: camera.config, saveParams: false)
+        editor.saveSettings(currentConfig: camera.config, saveParams: false, disablePhotoSignature: disablePhotoSignature)
     }
 }
 

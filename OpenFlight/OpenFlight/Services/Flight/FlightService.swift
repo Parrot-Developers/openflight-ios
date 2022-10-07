@@ -104,6 +104,15 @@ public protocol FlightService: AnyObject {
     /// - Parameter data: gutma's data
     func gutma(data: Data) -> Gutma?
     func handleFlightsUnknownLocationTitle(inFlights: [FlightModel]) async
+
+    /// Update the Cloud Synchro Watcher.
+    ///
+    /// - Parameter cloudSynchroWatcher: the cloudSynchroWatcher to update
+    ///
+    /// - Note:
+    ///     If the cloud synchro watcher service is not yet instatiated during this service's init,
+    ///     this method can be called to update and configure his watcher.
+    func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?)
 }
 
 open class FlightServiceImpl {
@@ -117,6 +126,7 @@ open class FlightServiceImpl {
     private var cancellables = Set<AnyCancellable>()
     private var gutmaCache = NSCache<NSString, Gutma>()
     private let flightPlanRunManager: FlightPlanRunManager
+    private var cloudSynchroWatcher: CloudSynchroWatcher?
     public var numberOfFlightsPerPage: Int = 100
 
     init(repo: FlightRepository,
@@ -130,7 +140,7 @@ open class FlightServiceImpl {
         self.thumbnailRepo = thumbnailRepo
         self.userService = userService
         self.flightPlanRunManager = flightPlanRunManager
-
+        updateCloudSynchroWatcher(cloudSynchroWatcher)
         refreshAllFlightsSummary()
 
         userService.userEventPublisher
@@ -138,13 +148,6 @@ open class FlightServiceImpl {
                 refreshAllFlightsSummary()
             }
             .store(in: &cancellables)
-
-        cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynchronizingData in
-            if !isSynchronizingData {
-                flightsDidChangeSubject.send()
-                refreshAllFlightsSummary()
-            }
-        }.store(in: &cancellables)
 
         repo.flightsDidChangePublisher
             .debounce(for: .seconds(1), scheduler: DispatchQueue.main)
@@ -167,6 +170,17 @@ open class FlightServiceImpl {
                 allFlightSummarySubject.value.removeAllFlights()
             }.store(in: &cancellables)
     }
+
+    public func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?) {
+        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynchronizingData in
+            if !isSynchronizingData {
+                flightsDidChangeSubject.send()
+                refreshAllFlightsSummary()
+            }
+        }.store(in: &cancellables)
+    }
+
 }
 
 private extension FlightServiceImpl {

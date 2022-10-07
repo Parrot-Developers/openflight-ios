@@ -72,8 +72,20 @@ extension GalleryInternalMediaViewModel {
     ///    - mediaItem: Media containing the resource to delete.
     ///    - completion: Completion block called after deletion.
     func deleteResource(_ resource: MediaItem.Resource, of mediaItem: MediaItem, completion: @escaping (Bool) -> Void) {
+        deleteResources([resource], of: mediaItem, completion: completion)
+    }
+
+    /// Deletes some resources from a media.
+    ///
+    /// - Parameters:
+    ///    - resources: the resources to delete
+    ///    - mediaItem: the media containing the resources to delete
+    ///    - completion: the completion block called after deletion
+    func deleteResources(_ resources: [MediaItem.Resource], of mediaItem: MediaItem, completion: @escaping (Bool) -> Void) {
         let mediaList = MediaResourceListFactory.emptyList()
-        mediaList.add(media: mediaItem, resource: resource)
+        for resource in resources {
+            mediaList.add(media: mediaItem, resource: resource)
+        }
 
         deleteRequest = drone?
             .getPeripheral(Peripherals.mediaStore)?

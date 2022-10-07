@@ -143,12 +143,29 @@ final class MediaUtils {
     /// - Parameters:
     ///     - medias: medias
     /// - Returns: MediaResourceList
-    static func convertMediasToDownloadableResourceList(medias: [MediaItem]) -> MediaResourceList {
+    static func getDownloadableResources(medias: [MediaItem]) -> MediaResourceList {
         let resourceList = MediaResourceListFactory.emptyList()
         medias.forEach { mediaItem in
             mediaItem.downloadableResources.forEach({ resource in
                 resourceList.add(media: mediaItem, resource: resource)
             })
+        }
+        return resourceList
+    }
+
+    /// Returns a `MediaResourceList` with n first downloadable resources of a `MediaItem` array that have not been cached yet.
+    ///
+    /// - Parameters:
+    ///    - medias: the array describing the number of resources to download for each `MediaItem`
+    ///    - droneId: the drone's uid (used to parse cache directory)
+    /// - Returns: the media resources list containing the downloadable previewable and non-cached resources.
+    static func getDownloadablePreviewableResources(medias: [(MediaItem, Int)], droneId: String) -> MediaResourceList {
+        let resourceList = MediaResourceListFactory.emptyList()
+        medias.forEach { (mediaItem, length) in
+            mediaItem.downloadablePreviewableResources
+                .prefix(length)
+                .filter { !$0.cachedImgUrlExist(droneId: droneId) }
+                .forEach { resourceList.add(media: mediaItem, resource: $0) }
         }
         return resourceList
     }

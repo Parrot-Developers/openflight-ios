@@ -163,6 +163,9 @@
                             </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <accessibility key="accessibilityConfiguration" label="My Flights">
+                            <bool key="isElement" value="YES"/>
+                        </accessibility>
                         <constraints>
                             <constraint firstItem="TBa-ik-3Ir" firstAttribute="leading" secondItem="z9k-7h-y8c" secondAttribute="leading" id="47c-Yv-ZaN"/>
                             <constraint firstAttribute="trailing" secondItem="TBa-ik-3Ir" secondAttribute="trailing" id="84U-CH-zeo"/>

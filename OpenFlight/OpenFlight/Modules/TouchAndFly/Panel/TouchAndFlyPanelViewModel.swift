@@ -30,6 +30,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import GroundSdk
 
 public enum DisplayOnMap: Equatable {
     case nothing
@@ -149,12 +150,14 @@ class TouchAndFlyPanelViewModelImpl {
 
     public func showStream() {
         splitControls.forceStream = true
+        splitControls.streamViewController?.doNotPauseStreamOnDisappear = true
         splitControls.displayMapOr3DasChild()
         splitControls.updateCenterMapButtonStatus()
     }
 
     public func showMap() {
         splitControls.forceStream = false
+        splitControls.streamViewController?.doNotPauseStreamOnDisappear = true
         splitControls.displayMapOr3DasChild()
         splitControls.updateCenterMapButtonStatus()
     }
@@ -313,11 +316,13 @@ class TouchAndFlyPanelViewModelImpl {
     ///    - location: the new location
     ///    - type: the type
     ///    - altitude: the altitude
-    func update(location: CLLocationCoordinate2D, type: TouchStreamView.TypeView, altitude: Double? = nil) {
+    func update(location: CLLocationCoordinate2D?, type: TouchStreamView.TypeView, altitude: Double? = nil) {
         switch type {
         case .waypoint:
+            guard let location = location ?? service.wayPoint else { return }
             service.setWayPoint(location, altitude: altitude?.rounded())
         case .poi:
+            guard let location = location ?? service.poi else { return }
             service.setPoi(location, altitude: altitude?.rounded())
         }
     }
@@ -327,10 +332,45 @@ class TouchAndFlyPanelViewModelImpl {
     /// - Parameters:
     ///    - point: the new point
     ///    - type: the type
-    func update(point: CGPoint, type: TouchStreamView.TypeView) {
-        if let location = service.setLocation(point: point) {
-            update(location: location.coordinate, type: type, altitude: location.altitude)
+    /// - Returns: true if a location was computed
+    func update(point: CGPoint, type: TouchStreamView.TypeView) -> Bool {
+        var result = false
+        switch type {
+        case .poi:
+            if let location = service.setPoiLocation(point: point) {
+                result = true
+                update(location: location.coordinate, type: type, altitude: 0)
+            }
+        case .waypoint:
+            if let location = service.setWaypointLocation(point: point) {
+                result = true
+                update(location: location.coordinate, type: type, altitude: location.altitude)
+            }
         }
+        return result
+    }
+
+    /// Update horizontally or vertically an existing waypoint
+    ///
+    /// - Parameters:
+    ///    - point: the new point
+    ///    - dragDirection: the updated direction
+    /// - Returns: true if a location was computed
+    func update(point: CGPoint, dragDirection: TouchStreamView.DragDirection) -> Bool {
+        guard
+            let location = service.setWaypointLocation(point: point),
+            let currentLocation = service.wayPoint
+        else { return false }
+
+        switch dragDirection {
+        case .vertical:
+            update(location: currentLocation, type: .waypoint, altitude: location.altitude)
+        case .horizontal:
+            update(location: location.coordinate, type: .waypoint, altitude: service.targetAltitude)
+        default:
+            return false
+        }
+        return true
     }
 }
 

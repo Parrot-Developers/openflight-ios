@@ -216,6 +216,4 @@ extension ActiveFlightPlanExecutionWatcherImpl: ActiveFlightPlanExecutionWatcher
         ULog.i(.tag, "Flight plan did update '\(flightPlan?.uuid ?? "")'")
         runningFlightPlan = flightPlan
     }
-
-
 }

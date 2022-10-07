@@ -63,32 +63,32 @@ open class DashboardCoordinator: Coordinator {
 
     open func startPhotogrammetryDebug() {
     }
-}
 
-// MARK: - Dashboard Navigation
-extension DashboardCoordinator: DashboardCoordinatorNavigation {
     /// Starts Parrot Debug screen.
-    func startParrotDebug() {
-        let debugCoordinator = ParrotDebugCoordinator()
+    open func startParrotDebug() {
+        let debugCoordinator = ParrotDebugCoordinator(services: services)
         debugCoordinator.parentCoordinator = self
         debugCoordinator.start()
         present(childCoordinator: debugCoordinator)
     }
 
+    /// Starts drone details screen.
+    open func startDroneInformation() {
+        let droneCoordinator = DroneCoordinator(services: services)
+        droneCoordinator.parentCoordinator = self
+        droneCoordinator.start()
+        present(childCoordinator: droneCoordinator)
+    }
+}
+
+// MARK: - Dashboard Navigation
+extension DashboardCoordinator: DashboardCoordinatorNavigation {
     /// Starts layout grid manager screen.
     func startLayoutGridManagerScreen() {
         let layoutGridManagerCoordinator = LayoutGridManagerCoordinator()
         layoutGridManagerCoordinator.parentCoordinator = self
         layoutGridManagerCoordinator.start()
         present(childCoordinator: layoutGridManagerCoordinator)
-    }
-
-    /// Starts drone details screen.
-    func startDroneInformation() {
-        let droneCoordinator = DroneCoordinator(services: services)
-        droneCoordinator.parentCoordinator = self
-        droneCoordinator.start()
-        present(childCoordinator: droneCoordinator)
     }
 
     /// Starts remote details screen.

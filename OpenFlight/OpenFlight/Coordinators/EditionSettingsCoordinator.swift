@@ -38,7 +38,7 @@ public final class EditionSettingsCoordinator: Coordinator {
 
     var viewModel: EditionSettingsViewModel?
     weak var flightPlanEditionViewController: FlightPlanEditionViewController?
-    weak var buldingHeightPickerViewController: UIViewController?
+    weak var buildingHeightPickerViewController: UIViewController?
 
     // MARK: - Public Funcs
     public func start() {
@@ -54,11 +54,21 @@ public final class EditionSettingsCoordinator: Coordinator {
         }
     }
 
-    public func dismissBuildingHeightPickerIfNeeded() {
-        if buldingHeightPickerViewController != nil {
-            back()
+    /// Dismisses building height picker panel if needed.
+    /// Also closes settings panel (on which building height picker is pushed) if required.
+    ///
+    /// - Parameter closeSettings: whether the settings panel should be closed (`true` by default)
+    public func dismissBuildingHeightPickerIfNeeded(closeSettings: Bool = true) {
+        guard buildingHeightPickerViewController != nil else { return }
+
+        // Dismiss VC.
+        back()
+        buildingHeightPickerViewController = nil
+
+        // Close settings panel if required.
+        if closeSettings {
+            flightPlanEditionViewController?.closeSettings()
         }
-        buldingHeightPickerViewController = nil
     }
 }
 
@@ -77,6 +87,6 @@ extension EditionSettingsCoordinator {
                     return
                 }
         navigationController?.pushViewController(viewController, animated: true)
-        buldingHeightPickerViewController = viewController
+        buildingHeightPickerViewController = viewController
     }
 }

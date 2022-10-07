@@ -55,18 +55,35 @@ public class MapViewModel {
     private let networkService: NetworkService
     /// FlightPlan Edition Service
     private let flightPlanEdition: FlightPlanEditionService
+    /// FlightPlan run manager
+    private let flightPlanRunManager: FlightPlanRunManager
+    /// RTH Service
+    private let rthService: RthService
     /// Current drone connection state
     private var droneConnectionStateSubject = CurrentValueSubject<Bool, Never>(false)
     /// Reference to GPS Instrument
     private var gpsRef: Ref<Gps>?
+    /// Reference to GPS Instrument
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     /// Drone gps strength
     @Published private(set) var droneIcon = Asset.Map.mapDrone.image
-
+    /// Current RTH status
+    @Published private(set) var isRthActive: Bool = false
+    /// Current flying state indicators
+    @Published private(set) var flyingState: FlyingIndicatorsFlyingState?
+    /// RTH minimum Altitude
+    @Published private(set) var minAltitude: Double = RthPreset.minAltitude
+    /// RTH current target
+    @Published private(set) var currentTarget: ReturnHomeTarget = RthPreset.rthType
     // MARK: Public Properties
     /// User location publisher
     public var userLocationPublisher: AnyPublisher<OrientedLocation, Never> { locationsTracker.userLocationPublisher }
     /// Drone location publisher
     public var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> { locationsTracker.droneLocationPublisher }
+    /// Return home location publisher
+    public var returnHomeLocationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> {
+        locationsTracker.returnHomeLocationPublisher
+    }
     /// Drone connection state publisher
     public var droneConnectedPublisher: AnyPublisher<Bool, Never> { droneConnectionStateSubject.eraseToAnyPublisher() }
     /// Network reachable publisher
@@ -107,6 +124,10 @@ public class MapViewModel {
             return nil
         }
     }
+    /// Current center
+    public var currentCenter: MapCenterState {
+        return centerStateSubject.value
+    }
     /// Terrain elevation source.
     public var elevationSource: MapElevationSource
 
@@ -121,12 +142,15 @@ public class MapViewModel {
     init(locationsTracker: LocationsTracker,
          connectedDroneHolder: ConnectedDroneHolder,
          networkService: NetworkService,
-         flightPlanEdition: FlightPlanEditionService) {
+         flightPlanEdition: FlightPlanEditionService,
+         flightPlanRunManager: FlightPlanRunManager,
+         rthService: RthService) {
         self.locationsTracker = locationsTracker
         self.connectedDroneHolder = connectedDroneHolder
         self.networkService = networkService
         self.flightPlanEdition = flightPlanEdition
-
+        self.flightPlanRunManager = flightPlanRunManager
+        self.rthService = rthService
         elevationSource = MapElevationSource(networkService: networkService)
 
         connectedDroneHolder.dronePublisher
@@ -134,6 +158,8 @@ public class MapViewModel {
                 guard let self = self else { return }
                 self.droneConnectionStateSubject.value = drone != nil
                 self.listenGps(drone: drone)
+                self.listenRth()
+                self.listenFlyingState(drone: drone)
             }
             .store(in: &cancellables)
     }
@@ -149,6 +175,42 @@ public class MapViewModel {
         gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
             self?.updateDroneIcon(gps: gps?.gpsStrength ?? .none)
         }
+    }
+
+    /// Starts observing flying state changes.
+    ///
+    /// - Parameter drone: the current drone
+    func listenFlyingState(drone: Drone?) {
+        guard let drone = drone else {
+            flyingState = nil
+            return
+        }
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
+            self?.flyingState = flyingIndicators?.flyingState
+        }
+    }
+
+    /// Starts observing changes RTH and updates the isActive and minAltitude properties
+    func listenRth() {
+        rthService.isActivePublisher
+            .removeDuplicates()
+            .combineLatest(rthService.minAltitudePublisher, rthService.currentTargetPublisher, flightPlanRunManager.statePublisher)
+            .sink { [weak self] isRthActive, minAltitude, currentTarget, runManagerState in
+                var isFlightPlanRthActive: Bool
+                guard let self = self else { return }
+                switch runManagerState {
+                case let .playing(droneConnected: _, flightPlan: _, rth: rth):
+                    isFlightPlanRthActive = rth
+                case .rth(flightPlan: _):
+                    isFlightPlanRthActive = true
+                default:
+                    isFlightPlanRthActive = false
+                }
+                self.isRthActive = isRthActive || isFlightPlanRthActive
+                self.minAltitude = minAltitude
+                self.currentTarget = currentTarget
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates drone icon according to its gps strength
@@ -195,7 +257,7 @@ private extension MapViewModel {
             isFlying = drone.isFlying
         }
         if currentMapMode == .flightPlanEdition || currentMapMode == .flightPlan,
-           currentFlightPlanEdition != nil, !isFlying {
+           let currentFlightPlanEdition = currentFlightPlanEdition, !isFlying, !currentFlightPlanEdition.isEmpty {
             return .project
         } else if droneLocation.isValid, droneGpsFixed || alwaysCenterOnDrone {
             return .drone

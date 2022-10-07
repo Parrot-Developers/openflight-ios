@@ -89,4 +89,11 @@ public final class SettingsCoordinator: Coordinator {
                                                                   viewModel: viewModel)
         presentModal(viewController: viewController)
     }
+
+    /// Starts public key edition screen.
+    func startPublicKeyEdition(viewModel: SettingsDeveloperViewModel) {
+        let viewController = EditionPublicKeyViewController.instantiate(coordinator: self,
+                                                                        viewModel: viewModel)
+        presentModal(viewController: viewController)
+    }
 }

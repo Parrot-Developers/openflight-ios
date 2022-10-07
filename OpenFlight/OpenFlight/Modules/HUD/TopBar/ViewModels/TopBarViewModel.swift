@@ -52,7 +52,7 @@ open class TopBarViewModel {
             .map { $0 != nil }
             .combineLatest(connectedRemoteControlHolder.remoteControlPublisher.map { $0 != nil })
             .map { (droneConnected, rcConnected) in
-                !droneConnected || rcConnected
+                return !droneConnected || rcConnected
             }
             .eraseToAnyPublisher()
     }
@@ -62,12 +62,6 @@ open class TopBarViewModel {
             .map { !$0 }
             .eraseToAnyPublisher()
     }
-
-    open var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> {
-        service.isBackButtonDisplayedPublisher.eraseToAnyPublisher()
-    }
-
-    open var isBackButtonDisplayed: Bool { service.isBackButtonDisplayed }
 
     public var showTopBarPublisher: AnyPublisher<Bool, Never> { service.showTopBarPublisher }
 

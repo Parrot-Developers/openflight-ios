@@ -196,8 +196,6 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
         static let gradientCentralColor: CGColor = ColorName.defaultBgcolor.color.cgColor
         static let gradientStartingPoint: CGPoint = CGPoint(x: 0.0, y: 0.5)
         static let gradientEndPoint: CGPoint = CGPoint(x: 1.0, y: 0.5)
-        static let cellSize: CGSize = CGSize(width: Layout.sidePanelSettingSliderItemWidth(UIViewController().isRegularSizeClass),
-                                             height: Layout.sidePanelSettingSliderHeight(UIViewController().isRegularSizeClass))
     }
 
     // MARK: - Override Funcs
@@ -374,14 +372,5 @@ extension SettingValueRulerView: UICollectionViewDelegate {
             ? collectionView.closestToHorizontalCenterIndexPath
             : collectionView.closestToVerticalCenterIndexPath
         updateValue(indexPath: indexPath ?? indexPathForSelectedValue)
-    }
-}
-
-// MARK: - UICollectionViewDelegateFlowLayout
-extension SettingValueRulerView: UICollectionViewDelegateFlowLayout {
-    public func collectionView(_ collectionView: UICollectionView,
-                               layout collectionViewLayout: UICollectionViewLayout,
-                               sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return Constants.cellSize
     }
 }

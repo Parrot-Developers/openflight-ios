@@ -26,6 +26,7 @@
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1Xh-U2-6Kn">
                                     <rect key="frame" x="0.0" y="0.0" width="98" height="40"/>
+                                    <accessibility key="accessibilityConfiguration" identifier="RTH"/>
                                     <constraints>
                                         <constraint firstAttribute="width" relation="lessThanOrEqual" constant="98" id="kki-4G-sxm"/>
                                     </constraints>
@@ -36,6 +37,7 @@
                                 </button>
                                 <button opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KB7-AI-Gmm">
                                     <rect key="frame" x="102" y="0.0" width="98" height="40"/>
+                                    <accessibility key="accessibilityConfiguration" identifier="takeOff"/>
                                     <constraints>
                                         <constraint firstAttribute="width" relation="lessThanOrEqual" constant="98" id="1Kw-5g-Yg7"/>
                                     </constraints>

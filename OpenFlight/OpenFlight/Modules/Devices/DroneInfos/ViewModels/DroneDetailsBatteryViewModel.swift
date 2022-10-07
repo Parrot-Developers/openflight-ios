@@ -43,6 +43,10 @@ final class DroneDetailsBatteryViewModel {
     @Published private(set) var temperature: String = Style.dash
     @Published private(set) var serialNumber: String = Style.dash
     @Published private(set) var totalVoltage: String = Style.dash
+    @Published private(set) var configurationDate: String = Style.dash
+    @Published private(set) var firmwareVersion: String = Style.dash
+    @Published private(set) var hardwareRevision: String = Style.dash
+    @Published private(set) var batteryLevel: BatteryValueModel = BatteryValueModel()
     @Published private(set) var voltage1: String = Style.dash
     @Published private(set) var voltage2: String = Style.dash
     @Published private(set) var voltage3: String = Style.dash
@@ -50,10 +54,26 @@ final class DroneDetailsBatteryViewModel {
     @Published private(set) var progress2: Float = 0.0
     @Published private(set) var progress3: Float = 0.0
 
+    private var integerFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        return formatter
+    }()
+
+    private var decimalFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 1
+        formatter.locale = .current
+        return formatter
+    }()
+
     private weak var coordinator: DroneCoordinator?
     private var batteryRef: Ref<BatteryInfo>?
     private let connectedDroneHolder: ConnectedDroneHolder
     private var cancellables = Set<AnyCancellable>()
+
     init(coordinator: DroneCoordinator, connectedDroneHolder: ConnectedDroneHolder) {
         self.coordinator = coordinator
         self.connectedDroneHolder = connectedDroneHolder
@@ -89,11 +109,23 @@ private extension DroneDetailsBatteryViewModel {
             dismissView()
             return
         }
+
         health = batteryInfos?.batteryHealth.flatMap { String($0) + "%" } ?? Style.dash
         cycles = batteryInfos?.cycleCount.flatMap { String($0) } ?? Style.dash
         serialNumber = batteryInfos?.batteryDescription?.serial ?? Style.dash
-        temperature = batteryInfos?.temperature.flatMap { String(format: "%.1f", Double($0) - Constants.kelvinTemperature) + " °C" } ?? Style.dash
-        capacity = batteryInfos?.capacity.flatMap { String($0.fullChargeCapacity) + " mAH" } ?? Style.dash
+        temperature = batteryInfos?.temperature.flatMap {
+            (integerFormatter.string(from: Double($0) - Constants.kelvinTemperature as NSNumber) ?? Style.dash) + " °C"
+        } ?? Style.dash
+        capacity = batteryInfos?.capacity.flatMap { (integerFormatter.string(from: $0.fullChargeCapacity as NSNumber) ?? Style.dash) + " mAh"} ?? Style.dash
+        configurationDate = batteryInfos?.batteryDescription?.configurationDate.flatMap { $0.shortWithoutTimeFormattedString } ?? Style.dash
+        firmwareVersion = batteryInfos?.version?.firmwareVersion ?? Style.dash
+        if let hardwareRevisionValue = batteryInfos?.version?.hardwareRevision {
+            hardwareRevision = "HW_" + String(format: "%02d", hardwareRevisionValue)
+        } else {
+            hardwareRevision = Style.dash
+        }
+        let batteryValue = BatteryValueModel(currentValue: batteryInfos?.batteryLevel)
+        batteryLevel = batteryValue
     }
 
     func setTotalVoltage(batteryInfos: BatteryInfo?) {
@@ -114,7 +146,7 @@ private extension DroneDetailsBatteryViewModel {
 
         let totalCellVoltages = Double(cellVoltage[0] + cellVoltage[1] + cellVoltage[2])
 
-        totalVoltage = String(format: "%.1f", totalCellVoltages/1000.0) + "V"
+        totalVoltage = (decimalFormatter.string(from: totalCellVoltages/1000.0 as NSNumber) ?? Style.dash) + " V"
     }
 
     func setVoltage(batteryInfos: BatteryInfo?) {
@@ -132,13 +164,13 @@ private extension DroneDetailsBatteryViewModel {
         let stringCellVoltage = batteryInfos
             .cellVoltages
             .compactMap { $0 }
-            .map { String($0) }
+            .map { integerFormatter.string(from: $0 as NSNumber) ?? Style.dash }
 
         guard stringCellVoltage.count >= 3 else { return }
 
-        voltage1 = stringCellVoltage[0] + "mV"
-        voltage2 = stringCellVoltage[1] + "mV"
-        voltage3 = stringCellVoltage[2] + "mV"
+        voltage1 = stringCellVoltage[0] + " mV"
+        voltage2 = stringCellVoltage[1] + " mV"
+        voltage3 = stringCellVoltage[2] + " mV"
     }
 
     func setProgress(batteryInfos: BatteryInfo?) {

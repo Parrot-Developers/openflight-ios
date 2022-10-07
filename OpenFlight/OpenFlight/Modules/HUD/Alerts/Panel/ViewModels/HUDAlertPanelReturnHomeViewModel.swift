@@ -365,4 +365,6 @@ extension HUDAlertPanelReturnHomeViewModel: AlertPanelActionType {
         cancelAutoTriggerRTH()
         dismissPanel()
     }
+
+    func progressDidFinish() { startAction() }
 }

@@ -127,6 +127,9 @@
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <accessibility key="accessibilityConfiguration" label="My Projects">
+                            <bool key="isElement" value="YES"/>
+                        </accessibility>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="eOI-CA-q2g" secondAttribute="bottom" constant="5" id="01x-ch-33k">
                                 <variation key="heightClass=regular-widthClass=regular" constant="10"/>

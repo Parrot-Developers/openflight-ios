@@ -55,6 +55,10 @@ public extension DefaultsKeys {
     var lastShutterSpeedValue: DefaultsKey<String?> { .init("key_lastShutterSpeedValue") }
     var lastCameraIsoValue: DefaultsKey<String?> { .init("key_lastCameraIsoValue") }
     var highDynamicRangeSetting: DefaultsKey<String?> { .init("key_highDynamicRangeSetting") }
+    var userPhotoSignatureSetting: DefaultsKey<String?> { .init("key_userPhotoSignatureSetting") }
+    var userVideoCodecSetting: DefaultsKey<String?> { .init("key_userVideoCodecSetting") }
+    var photoDynamicRangeSetting: DefaultsKey<String?> { .init("key_photoDynamicRangeSetting") }
+    var videoDynamicRangeSetting: DefaultsKey<String?> { .init("key_videoDynamicRangeSetting") }
 
     // MARK: - Parrot Debug
     var activatedLog: DefaultsKey<Bool> { .init("key_activatedLog", defaultValue: false) }

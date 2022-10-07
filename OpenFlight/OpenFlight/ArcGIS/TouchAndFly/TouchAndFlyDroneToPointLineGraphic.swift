@@ -33,7 +33,7 @@ import ArcGIS
 final class TouchAndFlyDroneToPointLineGraphic: AGSGraphic {
     // MARK: - Private Enums
     private enum Constants {
-        static let lineColor: UIColor = .white
+        static let lineColor: UIColor = ColorName.blueDodger.color
         static let lineWidth: CGFloat = 3.0
         static let wayPointAttributeKey: String = "droneToWayPointLine"
     }
@@ -45,7 +45,7 @@ final class TouchAndFlyDroneToPointLineGraphic: AGSGraphic {
     ///    - polyline: line between the drone and the point
     ///    - isWayPoint: whether line is directed towards an active waypoint
     init(polyline: AGSPolyline, isWayPoint: Bool) {
-        let symbol = AGSSimpleLineSymbol(style: .dash,
+        let symbol = AGSSimpleLineSymbol(style: .solid,
                                          color: Constants.lineColor,
                                          width: Constants.lineWidth)
         super.init(geometry: polyline,

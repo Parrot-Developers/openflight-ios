@@ -36,12 +36,12 @@ public class OGSpeedometer {
     private let averageNumber = Occupancy.framesUsedForSpeed
     private var historySpeed = [simd_float3]()
     private var lastEntryTime: Date?
-    private let acccessQueue = DispatchQueue(label: "OGSpeedometer.access", qos: .userInteractive)
+    private let accessQueue = DispatchQueue(label: "OGSpeedometer.access", qos: .userInteractive)
 
     public var speed: simd_float3 {
         let oneFrameTime = Float32(1) / Float32(Occupancy.framesPerSec)
         var retValue: simd_float3?
-        acccessQueue.sync {
+        accessQueue.sync {
             let atAtime = Date()
             if let lastEntryTime = self.lastEntryTime {
                 let elapsedTime = Float(atAtime.timeIntervalSince(lastEntryTime))
@@ -60,7 +60,7 @@ public class OGSpeedometer {
     }
 
     public func setNewSpeed(_ speed: simd_float3) {
-        acccessQueue.async {
+        accessQueue.async {
             self.lastEntryTime = Date()
             self.historySpeed.append(speed)
             if self.historySpeed.count > self.averageNumber {
@@ -78,13 +78,13 @@ public class OGRotatiometer {
     private var history = [simd_float3]()
     private var lastEntry: simd_float3?
     private var lastEntryTime: Date?
-    private let acccessQueue = DispatchQueue(label: "OGRotatiometer.access", qos: .userInteractive)
+    private let accessQueue = DispatchQueue(label: "OGRotatiometer.access", qos: .userInteractive)
 
     public var average: simd_float3 {
         let oneFrameTime = Float32(1) / Float32(Occupancy.framesPerSec)
 
         var retValue: simd_float3?
-        acccessQueue.sync {
+        accessQueue.sync {
             let atAtime = Date()
             if let lastEntryTime = self.lastEntryTime {
                 let elapsedTime = Float(atAtime.timeIntervalSince(lastEntryTime))
@@ -99,14 +99,12 @@ public class OGRotatiometer {
                 retValue = history.reduce(simd_float3(), +) * simd_float3(averageCoef, averageCoef, averageCoef)
             }
         }
-        let debugRotation = (retValue?.y ?? simd_float3().y)
-
         return retValue ?? simd_float3()
     }
 
     public func setNewRotation(_ eulerRotation: simd_float3) {
         let atAtime = Date()
-        acccessQueue.async                                                                                                   {
+        accessQueue.async {
             if let lastEntry = self.lastEntry, let lastEntryTime = self.lastEntryTime {
 
                 var deltaRotation = eulerRotation - lastEntry

@@ -167,7 +167,7 @@ private extension FlightDetailsViewController {
     func bindViewModel() {
         if case let .execution(executionViewModel) = viewModel {
             executionViewModel
-                .flightPlanUiStateProviderPublisher
+                .flightPlanUiPublisher
                 .sink { [unowned self] _ in
                     rightTableView.reloadData()
                 }

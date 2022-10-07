@@ -65,7 +65,7 @@ public protocol UserRepository: AnyObject {
     func isNewUserFromPrevious(withApcId apcId: String) -> Bool
 
     /// Delete all users except for anonymous user
-    func deleteAllUsersExceptAnonymous()
+    func deleteAllUsersExceptAnonymous(completion: ((_ status: Bool) -> Void)?)
 
     /// Delete all other users from apcId except for anonymous user
     /// - Parameters:
@@ -143,15 +143,19 @@ extension CoreDataServiceImpl: UserRepository {
     }
 
     // MARK: __ Delete
-    public func deleteAllUsersExceptAnonymous() {
+    public func deleteAllUsersExceptAnonymous(completion: ((_ status: Bool) -> Void)?) {
         let fetchRequest = UserParrot.fetchRequest()
         let anonymousPredicate = NSPredicate(format: "apcId != %@", User.anonymousId)
         fetchRequest.predicate = anonymousPredicate
 
         let users = fetch(request: fetchRequest)
-        delete(users) { error in
-            ULog.e(.dataModelTag, "Error deleteAllUsersExceptAnonymous: \(error.localizedDescription)")
-        }
+        deleteObjects(users, completion: { result in
+            if case .success = result {
+                completion?(true)
+            } else {
+                completion?(false)
+            }
+        })
     }
 
     public func deleteAllOtherUsersExceptAnonymous(fromApcId apcId: String) {

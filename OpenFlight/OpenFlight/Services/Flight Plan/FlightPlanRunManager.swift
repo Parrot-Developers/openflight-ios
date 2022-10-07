@@ -70,7 +70,18 @@ public protocol FlightPlanRunManager: AnyObject {
     func unpause()
 
     /// Stop a running execution
-    func stop()
+    ///
+    /// - Parameter forced: whether the FP RTH, if enabled, must also be aborted
+    ///
+    /// - Description:
+    ///     There are some cases (as switching to another mission) where we need to handle the FP as ended and stop, if needed, its RTH.
+    ///     This prevents to let the Run Manager and State Machine in incorrect states.
+    ///     By default this value will be `false`, but when called from a `reset` command, it will be set to `true`
+    ///     forcing the end of the FP and its RTH.
+    func stop(forced: Bool)
+
+    ///  Performs dedicated actions after an activation timeout.
+    func handleTimeout(flightPlan: FlightPlanModel)
 
     /// Set the flightplan to run
     func setup(flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand])
@@ -111,7 +122,8 @@ public enum FlightPlanRunningState: CustomStringConvertible {
     case idle(flightPlan: FlightPlanModel, startAvailability: FlightPlanStartAvailability)
     case activationError(FlightPlanActivationFailureReason)
     case playing(droneConnected: Bool, flightPlan: FlightPlanModel, rth: Bool)
-    case paused(flightPlan: FlightPlanModel, startAvailability: FlightPlanStartAvailability)
+    case rth(flightPlan: FlightPlanModel)
+    case paused(droneConnected: Bool, flightPlan: FlightPlanModel, startAvailability: FlightPlanStartAvailability)
     case ended(completed: Bool, flightPlan: FlightPlanModel)
 
     public var description: String {
@@ -124,8 +136,11 @@ public enum FlightPlanRunningState: CustomStringConvertible {
             return "activationError(reasons: \(reasons))"
         case .playing(droneConnected: let droneConnected, flightPlan: let flightPlan, rth: let rth):
             return "playing('\(flightPlan.uuid)', droneConnected: \(droneConnected), rth: \(rth))"
-        case .paused(flightPlan: let flightPlan, startAvailability: let startAvailability):
-            return "paused('\(flightPlan.uuid)', startAvailability: \(startAvailability))"
+        case .rth(flightPlan: let flightPlan):
+            return "rth('\(flightPlan.uuid)')"
+        case .paused(droneConnected: let droneConnected, flightPlan: let flightPlan,
+                     startAvailability: let startAvailability):
+            return "paused('\(flightPlan.uuid)', droneConnected: \(droneConnected), startAvailability: \(startAvailability))"
         case .ended(completed: let completed, flightPlan: let flightPlan):
             return "ended('\(flightPlan.uuid)', completed: \(completed))"
         }
@@ -141,7 +156,9 @@ public enum FlightPlanRunningState: CustomStringConvertible {
             return nil
         case .playing(_, flightPlan: let flightPlan, _):
             return flightPlan
-        case .paused(flightPlan: let flightPlan, _):
+        case .rth(flightPlan: let flightPlan):
+            return flightPlan
+        case .paused(_, flightPlan: let flightPlan, _):
             return flightPlan
         case .ended(_, flightPlan: let flightPlan):
             return flightPlan
@@ -178,6 +195,7 @@ public class FlightPlanRunManagerImpl {
     private let criticalAlertService: CriticalAlertService
 
     private var flightPlanPilotingRef: Ref<FlightPlanPilotingItf>?
+    private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private var cancellables = Set<AnyCancellable>()
     private var runningTimer: Timer?
     private var fpConfigTimer: Timer?
@@ -250,7 +268,7 @@ public class FlightPlanRunManagerImpl {
         self.fpConfigTimerRestart = false
         startAvailabilityWatcher.availabilityForRunningPublisher.sink { [unowned self] in
             startAvailability = $0
-            if case let .paused(flightPlan, _) = stateSubject.value {
+            if case let .paused(droneConnected, flightPlan, _) = stateSubject.value {
                 // Check unavailability reason
                 if case .unavailable(let pilotingItfReasons) = startAvailability,
                    case .pilotingItfUnavailable(let unavailabilityReasons) = pilotingItfReasons,
@@ -260,7 +278,9 @@ public class FlightPlanRunManagerImpl {
                     handleFlightEnds(flightPlan: flightPlan)
                     return
                 }
-                updateState(.paused(flightPlan: flightPlan, startAvailability: startAvailability))
+                updateState(.paused(droneConnected: droneConnected,
+                                    flightPlan: flightPlan,
+                                    startAvailability: startAvailability))
             }
             if case let .idle(flightPlan, _) = stateSubject.value {
                 updateState(.idle(flightPlan: flightPlan, startAvailability: startAvailability))
@@ -269,6 +289,7 @@ public class FlightPlanRunManagerImpl {
         .store(in: &cancellables)
         currentDroneHolder.dronePublisher.sink { [unowned self] drone in
             listenFlightPlanPiloting(drone: drone)
+            listenToRth(drone: drone)
             listenConnectionState(drone: drone)
         }
         .store(in: &cancellables)
@@ -282,7 +303,7 @@ private extension FlightPlanRunManagerImpl {
         stateSubject.value = state
         switch state {
         case .playing(_, flightPlan: let flightPlan, _),
-                .paused(flightPlan: let flightPlan, _):
+                .paused(_, flightPlan: let flightPlan, _):
             playingFlightPlanSubject.value = flightPlan
         default:
             playingFlightPlanSubject.value = nil
@@ -310,12 +331,11 @@ private extension FlightPlanRunManagerImpl {
         let flightPlan = updatedFlightPlan(flightPlan)
         // When paused, even during an RTH, we don't want to handle the FP has completed.
         // This allows to resume the RTH.
-        updateState(.paused(flightPlan: flightPlan, startAvailability: startAvailability))
+        updateState(.paused(droneConnected: true, flightPlan: flightPlan, startAvailability: startAvailability))
     }
 
     func handleFlightPlanPilotingActiveState(pilotingItf: FlightPlanPilotingItfs.ApiProtocol) {
         guard let flightPlan = flightPlan else { return }
-        startRunningTimer()
         switch stateSubject.value {
         case .activationError, .paused, .idle:
             // Current state is not playing: not consistent with itf state
@@ -331,7 +351,7 @@ private extension FlightPlanRunManagerImpl {
                 // We want to stop the itf, let's try again
                 _ = pilotingItf.stop()
             }
-        case .playing:
+        case .playing, .rth:
             // Consistent with the current state = nothing changed
             break
         case .noFlightPlan, .ended:
@@ -352,7 +372,7 @@ private extension FlightPlanRunManagerImpl {
         navigatingToStartingPointSubject.value = false
         stopRunningTimer()
         switch stateSubject.value {
-        case .playing:
+        case .playing, .rth:
             // Current state is playing: not consistent with itf state
             switch wantedState {
             case .none:
@@ -401,6 +421,26 @@ private extension FlightPlanRunManagerImpl {
         }
     }
 
+    func listenToRth(drone: Drone) {
+        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) {  [unowned self]  returnHome in
+            guard let returnHome = returnHome else { return }
+
+            if returnHome.reason == .flightplan {
+                switch stateSubject.value {
+                case .playing(let droneConnected, let flightPlan, _), .paused(let droneConnected, let flightPlan, _):
+                    if droneConnected {
+                        updateState(.rth(flightPlan: flightPlan))
+                    }
+                default:
+                    // In all other cases, there is an RTH initiated by an FP which should not be executed.
+                    // Stopping the FP piloting interface will stop its RTH.
+                    ULog.i(.tag, "Stop current FP RTH from Run Manager state: '\(stateSubject.value)' and wantedState = '\(wantedState)'")
+                    _ = getPilotingItf()?.stop()
+               }
+            }
+        }
+    }
+
     func isInRth() -> Bool {
         if hasRth,
            let latestItemExecuted = latestItemExecuted,
@@ -412,6 +452,9 @@ private extension FlightPlanRunManagerImpl {
     }
 
     func updateLatestItem(itf: FlightPlanPilotingItf) {
+        // Get the FlightPlan's lastMissionItemExecuted.
+        let flightPlanLatestItemExecuted = flightPlan?.lastMissionItemExecuted
+
         // Find largest mavlink index between latest skipped and executed items
         var largestMissionItem: Int?
         if let latestSkipped = itf.latestMissionItemSkipped {
@@ -422,15 +465,42 @@ private extension FlightPlanRunManagerImpl {
         }
 
         // Update latest item executed only if received idx is greater than current idx
-        if let largestMissionItem = largestMissionItem,
-           largestMissionItem > latestItemExecuted ?? 0 {
-            latestItemExecuted = largestMissionItem
+        // and is greater or equal to FP's lastMissionItemExecuted (for resumed executions)
+        guard let largestMissionItem = largestMissionItem,
+              largestMissionItem > latestItemExecuted ?? -1,
+              largestMissionItem >= flightPlanLatestItemExecuted ?? 0
+        else {
+            ULog.d(.tag,
+                   "Skipping item."
+                   + " largestMissionItem: \(largestMissionItem?.description ?? "nil")"
+                   + "/ latestItemExecuted: \(latestItemExecuted?.description ?? "nil")"
+                   + "/ flightPlanLatestItemExecuted: \(flightPlanLatestItemExecuted?.description ?? "nil")")
+            return
         }
+
+        latestItemExecuted = largestMissionItem
+
         if case let .playing(droneConnected, flightPlan, _) = stateSubject.value {
+            // Update the Flight Plan state.
             var newFlight = flightPlan
             newFlight.lastMissionItemExecuted = Int64(latestItemExecuted ?? 0)
+            updateCompletionState(for: &newFlight)
+            // Update current state.
             updateState(.playing(droneConnected: droneConnected, flightPlan: newFlight, rth: isInRth()))
         }
+    }
+
+    /// Updates the completion state properties of the flight plan passed in parameter.
+    ///
+    /// - Parameter flightPlan: the flight plan to update
+    func updateCompletionState(for flightPlan: inout FlightPlanModel) {
+        let itemIndex = Int(flightPlan.lastMissionItemExecuted)
+        flightPlan.hasReachedFirstWayPoint = mavlinkCommands.hasReachedFirstWayPoint(index: itemIndex)
+        flightPlan.hasReachedLastWayPoint = mavlinkCommands.hasReachedLastWayPoint(index: itemIndex)
+        flightPlan.lastPassedWayPointIndex = mavlinkCommands.lastPassedWayPointIndex(for: itemIndex)
+        // The latest item executed has been changed, percentCompleted needs to be computed.
+        let percentCompleted = mavlinkCommands.percentCompleted(for: itemIndex, flightPlan: flightPlan)
+        flightPlan.percentCompleted = percentCompleted
     }
 
     /// Return the index of the last mavlink command
@@ -469,6 +539,8 @@ private extension FlightPlanRunManagerImpl {
             flightPlan = flightPlanManager.update(flightPlan: flightPlan,
                                                   lastMissionItemExecuted: latestItemExecuted,
                                                   recoveryResourceId: recoveryResourceId)
+            // Update the completion state.
+            updateCompletionState(for: &flightPlan)
             // Update local Flight Plan
             self.flightPlan = flightPlan
         }
@@ -604,9 +676,14 @@ private extension FlightPlanRunManagerImpl {
         let currentLocation = currentDroneHolder.drone.getInstrument(Instruments.gps)?.lastKnownLocation
         // Update the last known Drone position into the Flight Plan Data Settings.
         dataSetting.lastDroneLocation = currentLocation
-        flightPlan?.dataSetting = dataSetting
+        // Calculate the new progress.
         let newProgress = dataSetting.completionProgress(with: currentLocation?.agsPoint,
                                                          lastWayPointIndex: lastPassedWayPointIndex)
+        // Update the `percentCompleted` property into the Flight Plan Data Settings.
+        dataSetting.percentCompleted = newProgress.rounded(toPlaces: Constants.progressRoundPrecision) * 100.0
+        // Update FP's Data Settings.
+        flightPlan?.dataSetting = dataSetting
+
         if newProgress.rounded(toPlaces: Constants.progressRoundPrecision) <= progressSubject.value {
             return
         }
@@ -730,6 +807,7 @@ private extension FlightPlanRunManagerImpl {
 
     func playDidStart(flightPlan: FlightPlanModel) {
         let flightPlan = flightPlan
+        startRunningTimer()
         activeFlightPlanWatcher.flightPlanActivationSucceeded(flightPlan)
         updateState(.playing(droneConnected: true, flightPlan: flightPlan, rth: isInRth()))
     }
@@ -768,6 +846,14 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
             updateState(.activationError(.noFlightPlan))
             return
         }
+
+        guard let interface = getPilotingItf() else {
+            updateState(.activationError(.droneNotReady))
+            return
+        }
+
+        // Let drone know a FP will be activated
+        interface.prepareForFlightPlanActivation()
 
         // Let the FP watcher know the FP will be activated
         activeFlightPlanWatcher.flightPlanWillBeActivated(flightPlan)
@@ -826,8 +912,9 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
         latestItemExecuted = lastMissionItemExecuted
         recoveryResourceId = newRecoveryResourceId
         durationSubject.value = duration
-        startRunningTimer()
-        playDidStart(flightPlan: flightPlan)
+        // Update the flight plan with `latestItemExecuted`, then inform about the start.
+        let updatedFlightPlan = updatedFlightPlan(flightPlan)
+        playDidStart(flightPlan: updatedFlightPlan)
     }
 
     public func pause() {
@@ -845,15 +932,44 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
         _ = getPilotingItf()?.deactivate()
     }
 
-    public func stop() {
-        ULog.i(.tag, "COMMAND: stop '\(flightPlan?.uuid ?? "")'")
+    public func stop(forced: Bool = false) {
+        ULog.i(.tag, "COMMAND: stop\(forced ? " forced" : "") '\(flightPlan?.uuid ?? "")'")
         // Ensure the running timer is stopped (the itf update may not be triggered)
         stopRunningTimer()
         stopFpConfigTimer()
+
         guard let flightPlan = flightPlan else { return }
+
+        // If rth is enabled on the current flightplan, the FP has not reached the last WP
+        // and we don't want to force to handle the FP as ended,
+        // the drone wont stop the execution immediately, but it will execute the rth before.
+        if hasRth,
+           !forced,
+           !flightPlan.hasReachedLastWayPoint {
+            switch stateSubject.value {
+            case .playing(let droneConnected, _, _), .paused(let droneConnected, _, _):
+                if droneConnected {
+                    // If the drone is still connected, send stop without disabling the interface.
+                    // The UI will display the rth animation instead of going to editable.
+                    _ = getPilotingItf()?.stop()
+                    return
+                }
+            default:
+                break
+            }
+        }
+
+        // Otherwise, send stop and pass to editable.
+        // If the drone was disconnected, the UI will catch up with the
+        // drone once the connection is restored.
         wantedState = .stopped
         _ = getPilotingItf()?.stop()
         handleFlightEnds(flightPlan: flightPlan)
+    }
+
+    public func handleTimeout(flightPlan: FlightPlanModel) {
+        // Inform the active FP watcher that FP activation failed.
+        activeFlightPlanWatcher.flightPlanActivationFailed(flightPlan)
     }
 
     public func setup(flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]) {
@@ -878,8 +994,11 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
             break
         case .playing(let droneConnected, _, let rth):
             updateState(.playing(droneConnected: droneConnected, flightPlan: flightPlan, rth: rth))
-        case .paused(_, let startAvailability):
-            updateState(.paused(flightPlan: flightPlan, startAvailability: startAvailability))
+        case .rth:
+            updateState(.rth(flightPlan: flightPlan))
+        case .paused(let droneConnected, _, let startAvailability):
+            updateState(.paused(droneConnected: droneConnected,
+                                flightPlan: flightPlan, startAvailability: startAvailability))
         case .ended(let completed, let flightPlan):
             updateState(.ended(completed: completed, flightPlan: flightPlan))
         }

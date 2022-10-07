@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -17,22 +17,19 @@
                 <rect key="frame" x="0.0" y="0.0" width="398" height="139"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="gDc-HY-cLJ" customClass="SidePanelSettingCellContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                    <stackView opaque="NO" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="gDc-HY-cLJ" customClass="SidePanelSettingCellContainerStackView" customModule="OpenFlight" customModuleProvider="target">
                         <rect key="frame" x="16" y="11" width="366" height="117"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="250" insetsLayoutMarginsFromSafeArea="NO" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="QEA-XM-Hd7">
-                                <rect key="frame" x="162.5" y="0.0" width="41.5" height="20.5"/>
+                                <rect key="frame" x="0.0" y="0.0" width="366" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" name="default_text_color"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="fillEqually" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="zli-GB-lKU" customClass="SidePanelSettingContainerStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="168" y="30.5" width="30" height="86.5"/>
+                                <rect key="frame" x="0.0" y="30.5" width="366" height="86.5"/>
                                 <color key="backgroundColor" name="white_albescent"/>
                                 <color key="tintColor" name="default_text_color"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="30" id="bS3-vZ-9kc"/>
-                                </constraints>
                             </stackView>
                         </subviews>
                     </stackView>

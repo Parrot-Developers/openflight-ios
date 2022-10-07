@@ -85,7 +85,7 @@ extension GalleryInternalMediaViewModel {
             return
         }
 
-        let mediaList = MediaUtils.convertMediasToDownloadableResourceList(medias: mediasToDownload)
+        let mediaList = MediaUtils.getDownloadableResources(medias: mediasToDownload)
 
         downloadRequest = mediaStore.newDownloader(
             mediaResources: mediaList,

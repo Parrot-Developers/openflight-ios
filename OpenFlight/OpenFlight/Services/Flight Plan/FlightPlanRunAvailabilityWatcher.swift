@@ -55,7 +55,7 @@ public enum FlightPlanStartAvailability: Equatable, CustomStringConvertible {
     public var description: String {
         switch self {
         case .available(let isRthActive):
-            return ".available(rth is \(isRthActive ? "" : "not ")active"
+            return ".available(rth is \(isRthActive ? "" : "not ")active)"
         case .alreadyRunning:
             return ".alreadyRunning"
         case .unavailable(let reason):
@@ -68,6 +68,7 @@ public protocol FlightPlanStartAvailabilityWatcher {
     var availabilityForRunningPublisher: AnyPublisher<FlightPlanStartAvailability, Never> { get }
     var availabilityForSendingMavlinkPublisher: AnyPublisher<FlightPlanStartAvailability, Never> { get }
     var availabilityForRunning: FlightPlanStartAvailability { get }
+    var availabilityForSendingMavlink: FlightPlanStartAvailability { get }
 }
 
 public class FlightPlanStartAvailabilityWatcherImpl {
@@ -165,6 +166,8 @@ extension FlightPlanStartAvailabilityWatcherImpl: FlightPlanStartAvailabilityWat
     public var availabilityForRunningPublisher: AnyPublisher<FlightPlanStartAvailability, Never> {
         availabilityForRunningSubject.eraseToAnyPublisher()
     }
+
+    public var availabilityForSendingMavlink: FlightPlanStartAvailability { availabilityForSendingMavlinkSubject.value }
 
     public var availabilityForRunning: FlightPlanStartAvailability { availabilityForRunningSubject.value }
 }

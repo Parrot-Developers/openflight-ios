@@ -271,7 +271,7 @@ private extension AirSdkMissionsUpdaterWrapper {
         copy.currentUpdatingProgress = missionUpdater.currentProgress ?? -1
 
         if let currentUpdatingFilePath = missionUpdater.currentFilePath,
-           !currentUpdatingFilePath.isEmptyOrWhitespace() {
+           !currentUpdatingFilePath.isEmptyOrWhitespace {
             copy.currentUpdatingFilePath = currentUpdatingFilePath
         }
 

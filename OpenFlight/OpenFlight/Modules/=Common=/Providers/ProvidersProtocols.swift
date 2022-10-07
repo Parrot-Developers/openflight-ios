@@ -253,7 +253,7 @@ extension FlightPlanSettingType {
     var currentValueDescription: String? {
         switch self.type {
         case .choice:
-            return currentValue == 1 ? L10n.commonNo : L10n.commonYes 
+            return currentValue == 1 ? L10n.commonNo : L10n.commonYes
         case .centeredRuler:
             guard let value = currentValue else { return nil }
 
@@ -603,6 +603,7 @@ public enum FlightPlanSettingCellType {
 public enum FlightPlanSettingCategory: Hashable {
     case common
     case image
+    case rth
     case custom(String)
 
     /// Returns title category settings.
@@ -614,6 +615,8 @@ public enum FlightPlanSettingCategory: Hashable {
             return L10n.flightPlanMenuImage
         case .custom(let title):
             return title
+        case .rth:
+            return L10n.flightPlanSettingsRthTitle
         }
     }
 }

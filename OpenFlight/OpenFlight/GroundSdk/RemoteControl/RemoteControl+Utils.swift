@@ -42,7 +42,7 @@ extension RemoteControl {
         switch model {
         case .skyCtrl3:
             return "Parrot Skycontroller 3"
-        case .skyCtrl4:
+        case .skyCtrl4, .skyCtrl4Black:
             return "Parrot Skycontroller 4"
         case .skyCtrlUA:
             return "Parrot Skycontroller UA"

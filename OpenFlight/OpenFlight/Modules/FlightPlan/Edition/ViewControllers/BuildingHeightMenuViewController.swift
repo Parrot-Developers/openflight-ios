@@ -112,7 +112,7 @@ final class BuildingHeightMenuViewController: UIViewController {
 private extension BuildingHeightMenuViewController {
 
     @IBAction func doneTouchUpInside(_ sender: Any) {
-        coordinator?.back()
+        coordinator?.dismissBuildingHeightPickerIfNeeded()
     }
 }
 

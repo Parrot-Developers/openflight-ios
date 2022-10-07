@@ -231,7 +231,8 @@ extension CoreDataServiceImpl: ThumbnailRepository {
     }
 
     public func getAllModifiedThumbnails() -> [ThumbnailModel] {
-        return getThumbnailsCD(withQuery: "latestLocalModificationDate != nil").map({ $0.model() })
+        let apcIdQuery = "apcId == '\(userService.currentUser.apcId)'"
+        return getThumbnailsCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").map({ $0.model() })
     }
 
     public func getOddThumbnails(_ completion: @escaping (([ThumbnailModel]) -> Void)) {
@@ -318,19 +319,19 @@ extension CoreDataServiceImpl: ThumbnailRepository {
             return
         }
 
-        batchDeleteAndSave({ _ in
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Thumbnail.entityName)
-            let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
-            fetchRequest.predicate = uuidPredicate
-
-            return fetchRequest
+        performAndSave({ [unowned self] _ in
+            let thumbnailCDs = getThumbnailsCD(withUuids: uuids)
+            deleteObjects(thumbnailCDs)
+            return true
         }, { [unowned self] result in
             switch result {
             case .success:
+                ULog.d(.dataModelTag, "deleteThumbnail with UUIDs: \(uuids.joined(separator: ", "))")
                 thumbnailsDidChangeSubject.send()
                 completion?(true)
             case .failure(let error):
-                ULog.e(.dataModelTag, "Error deleteThumbnail with UUIDs error: \(error.localizedDescription)")
+                ULog.e(.dataModelTag,
+                        "Error deleteThumbnail with UUIDs: \(uuids.joined(separator: ", ")) - error: \(error.localizedDescription)")
                 completion?(false)
             }
         })
@@ -342,7 +343,7 @@ extension CoreDataServiceImpl: ThumbnailRepository {
         guard let entityName = fetchRequest.entityName else {
             return
         }
-        migrateAnonymousDataToLoggedUser(for: entityName) {
+        migrateAnonymousDataToLoggedUser(for: entityName) { _ in
             completion()
         }
     }

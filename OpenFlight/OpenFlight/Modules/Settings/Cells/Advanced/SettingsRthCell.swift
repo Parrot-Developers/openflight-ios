@@ -57,7 +57,8 @@ final class SettingsRthActionView: UIView {
     private var dashedLinePath = UIBezierPath()
     private var pointerHalfWidth: CGFloat = 0.0
     private var minHeight: CGFloat = 0.0
-    private var viewModel: SettingsRthActionViewModel = SettingsRthActionViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
+    private var viewModel = SettingsRthActionViewModel(currentDroneHolder: Services.hub.currentDroneHolder,
+                                                       rthSettingsMonitor: Services.hub.rthSettingsMonitor)
     private var initialCenter: CGPoint = .zero
     private var cancellables = Set<AnyCancellable>()
 

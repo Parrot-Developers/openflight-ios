@@ -75,6 +75,7 @@ final class HUDTopBarViewController: UIViewController {
 
     // MARK: - Internal Properties
     weak var navigationDelegate: HUDTopBarViewControllerNavigation?
+    weak var bottomBarService: HudBottomBarService?
     var context: HUDTopBarContext = .standard
     private var cancellables = Set<AnyCancellable>()
 
@@ -110,13 +111,7 @@ final class HUDTopBarViewController: UIViewController {
                 droneActionView.isHidden = $0
             }
             .store(in: &cancellables)
-        topBarViewModel.isBackButtonDisplayedPublisher
-            .sink { [weak self] in
-                let iconAsset = $0 ? Asset.Common.Icons.icBack : Asset.Common.Icons.icDashboard
-                self?.dashboardButton.setImage(iconAsset.image, for: .normal)
-            }
-            .store(in: &cancellables)
-        // Listen view model to know if we need to leave the view.
+
         topBarViewModel.goBackPublisher
             .sink { [weak self] in
                 // Return to previous view in the stack.
@@ -168,6 +163,12 @@ private extension HUDTopBarViewController {
     /// Called when user taps the Dashboard button.
     @IBAction func dashboardButtonTouchedUpInside(_ sender: Any) {
         LogEvent.log(.simpleButton(LogEvent.LogKeyHUDTopBarButton.dashboard))
+
+        // Dashboard button can also be used to pop bottom bar levels whenever needed.
+        // => Need to check if a level has to be popped. If so (`.pop()` returns `true`),
+        // then button has completed its purpose and navigation needs to be aborted.
+        if bottomBarService?.pop() ?? false { return }
+
         // Depending which view has opened the HUD, we must navigate throw back to display the correct
         // previous view. The navigation delegate is responsible to show the Dashboard if no view exist
         // in the navigation stack.
@@ -190,6 +191,7 @@ private extension HUDTopBarViewController {
         hudHeightConstraint.constant = Layout.hudTopBarHeight(isRegularSizeClass)
         infoPanelWidthConstraint.constant = Layout.hudTopBarPanelWidth(isRegularSizeClass)
         infoPanelWidthConstraint.isActive = view.bounds.width > Constants.minimumViewWidthForRadar
+        dashboardButton.setImage(Asset.Common.Icons.icBack.image, for: .normal)
     }
 
     /// Starts view model and shows radar view if size is sufficient.

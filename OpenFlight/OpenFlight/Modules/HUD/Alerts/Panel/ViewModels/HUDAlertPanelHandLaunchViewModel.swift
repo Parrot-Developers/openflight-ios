@@ -296,4 +296,6 @@ extension HUDAlertPanelHandLaunchViewModel: AlertPanelActionType {
             break
         }
     }
+
+    func progressDidFinish() { startAction() }
 }

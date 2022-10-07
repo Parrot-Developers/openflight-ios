@@ -56,6 +56,16 @@ class DashboardDeviceCell: UICollectionViewCell, NibReusable, CellConfigurable {
     private var currentUserDeviceState: UserDeviceInfosState?
     private weak var delegate: DashboardDeviceCellDelegate?
 
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        setupUI()
+    }
+
+    func setupUI() {
+        batteryValueLabel.makeUp(with: .current, color: .defaultTextColor)
+        batteryValueUserDeviceLabel.makeUp(with: .current, color: .defaultTextColor)
+    }
+
     // MARK: - Internal Funcs
     /// Sets up function used for User Device and Remote states.
     ///

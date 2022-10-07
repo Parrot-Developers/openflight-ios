@@ -30,6 +30,7 @@
 import UIKit
 import Combine
 import CoreLocation
+import GroundSdk
 
 class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
 
@@ -78,6 +79,7 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
     private var viewModel: TouchAndFlyPanelViewModelImpl!
     private var containerStatus: ContainerStatus?
     private var stream: HUDCameraStreamingViewController?
+    private var cameraMode: Camera2Mode?
 
     // MARK: - Private Enums
     private enum ContainerStatus: Int, CustomStringConvertible {
@@ -212,7 +214,8 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
             containerStatus = .streaming
             viewModel.showMap()
             if let touchView = stream?.touchView {
-                touchView.userInteraction(false)
+                touchView.isHidden = true
+                touchView.setUserInteraction(false)
             }
         case .streaming:
             stopStream()
@@ -220,7 +223,8 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
             containerStatus = .map
             viewModel.showStream()
             if let touchView = viewModel.splitControls.streamViewController?.touchView {
-                touchView.userInteraction(true)
+                touchView.isHidden = false
+                touchView.setUserInteraction(true)
                 touchView.delegate = self
             }
         default:
@@ -321,6 +325,7 @@ private extension TouchAndFlyPanelViewController {
     // MARK: - functions to replace stream by map and map by stream
     private func startStream() {
         guard stream == nil else { return }
+        stream?.doNotPauseStreamOnDisappear = true
         let streamVC = HUDCameraStreamingViewController.instantiate()
         addChild(streamVC)
 
@@ -333,6 +338,7 @@ private extension TouchAndFlyPanelViewController {
     }
 
     private func stopStream() {
+        stream?.doNotPauseStreamOnDisappear = true
         containerStream.subviews.first?.removeFromSuperview()
         stream?.removeFromParent()
         stream = nil
@@ -456,12 +462,16 @@ extension TouchAndFlyPanelViewController: UITableViewDataSource {
 // MARK: - TouchStreamViewDelegate
 extension TouchAndFlyPanelViewController: TouchStreamViewDelegate {
 
-    func update(location: CLLocationCoordinate2D, type: TouchStreamView.TypeView) {
-        viewModel.update(location: location, type: type)
+    func updatePoi(point: CGPoint) -> Bool {
+        return viewModel.update(point: point, type: .poi)
     }
 
-    func update(point: CGPoint, type: TouchStreamView.TypeView) {
-        viewModel.update(point: point, type: type)
+    func updateWaypoint(point: CGPoint, dragDirection: TouchStreamView.DragDirection) -> Bool {
+        if dragDirection == .undefined {
+            return viewModel.update(point: point, type: .waypoint)
+        } else {
+            return viewModel.update(point: point, dragDirection: dragDirection)
+        }
     }
 }
 

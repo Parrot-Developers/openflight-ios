@@ -31,6 +31,12 @@ import UIKit
 import MapKit
 import Combine
 
+/// Protocol used to inform view controller of the dismissal of th modal.
+protocol DroneDetailsMapViewProtocol: AnyObject {
+    /// Dismisses screen.
+    func dismissScreen()
+}
+
 /// Display map into drone details screen.
 final class DroneDetailsMapViewController: UIViewController {
     // MARK: - Outlets
@@ -51,17 +57,21 @@ final class DroneDetailsMapViewController: UIViewController {
     private let viewModel = DroneDetailsMapViewModel()
     private var cancellables = Set<AnyCancellable>()
 
+    // MARK: - Public Properties
+    private weak var delegate: DroneDetailsMapViewProtocol?
+
     // MARK: - Setup
-    static func instantiate(coordinator: Coordinator) -> DroneDetailsMapViewController {
+    static func instantiate(coordinator: Coordinator, delegate: DroneDetailsMapViewProtocol) -> DroneDetailsMapViewController {
+
         let viewController = StoryboardScene.DroneDetailsMap.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.delegate = delegate
         return viewController
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
         initMap()
         setupViewModel()
@@ -91,6 +101,7 @@ private extension DroneDetailsMapViewController {
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
         self.view.backgroundColor = .clear
         coordinator?.dismiss()
+        delegate?.dismissScreen()
     }
 
     @IBAction func bellButtonTouchedUpInside(_ sender: Any) {
@@ -120,9 +131,11 @@ private extension DroneDetailsMapViewController {
 
     /// Init map view controller.
     func initMap() {
-        let controller = MapViewController.instantiate(mapMode: .droneDetails)
-        addChild(controller)
-        mapController = controller
+        if mapController == nil {
+            let controller = MapViewController.instantiate(mapMode: .droneDetails)
+            addChild(controller)
+            mapController = controller
+        }
         if let mapView = mapController?.view {
             containerView.addWithConstraints(subview: mapView)
         }

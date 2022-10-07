@@ -28,23 +28,25 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import GroundSdk
 import ArsdkEngine
 import CoreLocation
 
 protocol TouchStreamViewDelegate: AnyObject {
-    /// Update the location of the poi or waypoint
-    ///
-    /// - Parameters:
-    ///    - location: the new location
-    ///    - type: the type
-    func update(location: CLLocationCoordinate2D, type: TouchStreamView.TypeView)
-
-    /// Update the point of the poi or waypoint in stream
+    /// Update the point of the poi or waypoint in stream.
     ///
     /// - Parameters:
     ///    - point: the new point
-    ///    - type: the type
-    func update(point: CGPoint, type: TouchStreamView.TypeView)
+    /// - Returns: true if the point was updated
+    func updatePoi(point: CGPoint) -> Bool
+
+    /// Update the point of the poi or waypoint in stream.
+    ///
+    /// - Parameters:
+    ///    - point: the new or updated waypoint
+    ///    - dragDirection: the direction of the update (undefined if new point)
+    /// - Returns: true if the point was updated
+    func updateWaypoint(point: CGPoint, dragDirection: TouchStreamView.DragDirection) -> Bool
 }
 
 /// Touch stream view used to display waypoint / poi / user graphics in stream.
@@ -54,6 +56,8 @@ public class TouchStreamView: UIView {
         static let outsideCircle = 42.0
         static let diamandSize = 54.0
         static let userSize = 15.0
+        static let dragMinimumOffset = 5.0
+        static let altitudeOffsetRatio = 15.0
     }
 
     public enum TypeView {
@@ -61,82 +65,63 @@ public class TouchStreamView: UIView {
         case poi
     }
 
+    enum DragDirection {
+        case undefined
+        case horizontal
+        case vertical
+    }
+
     private var poi: PoiGraphic?
     private var waypoint: WayPointGraphic?
     private var user = UserGraphic()
-
-    private var isMoving = false
+    private var arrowHorizontal: ArrowGraphic?
+    private var arrowVertical: ArrowGraphic?
+    private var axis: AxisGraphic?
+    private lazy var stateMachine: TouchStreamStateMachine = {
+        TouchStreamStateMachine(view: self)
+    }()
     weak var delegate: TouchStreamViewDelegate?
 
-    override public  func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isMoving = false
+    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first, touches.count == 1 else { return }
+        let location = touch.location(in: self)
+        stateMachine.process(event: .began(location))
+    }
 
-        if let touch = touches.first, poi != nil || waypoint != nil {
-            let position = touch.location(in: self)
-            updateCoordinate(view: poi ?? waypoint, size: Constants.diamandSize, position: position)
-            let type: TypeView = poi != nil ? .poi : .waypoint
-            delegate?.update(point: getStreamPoint(point: position), type: type)
-        }
+    override public  func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        stateMachine.process(event: .ended(location))
     }
 
     override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isMoving = true
-        if let touch = touches.first, poi != nil || waypoint != nil {
-            updateCoordinate(view: poi ?? waypoint, size: Constants.diamandSize, position: touch.location(in: self))
-        }
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        stateMachine.process(event: .moved(location))
     }
 
     override public func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        isMoving = false
-        if let touch = touches.first, poi != nil || waypoint != nil {
-            let position = touch.location(in: self)
-            updateCoordinate(view: poi ?? waypoint, size: Constants.diamandSize, position: position)
-            let type: TypeView = poi != nil ? .poi : .waypoint
-            delegate?.update(point: getStreamPoint(point: position), type: type)
-        }
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        stateMachine.process(event: .cancelled(location))
     }
 
-    // MARK: - Funcs
-    /// Set user interaction
+    /// Set user interaction.
     ///
     /// - Parameters:
     ///    - enabled: interaction enabled or not
-    public func userInteraction(_ enabled: Bool) {
+    public func setUserInteraction(_ enabled: Bool) {
         self.isUserInteractionEnabled = enabled
-        self.isHidden = !enabled
     }
 
-    /// Create if necessary and add waypoint graphic to view
-    private func createWaypoint() {
-        clearPoi()
-        if waypoint == nil {
-            waypoint = WayPointGraphic()
-            addSubview(waypoint)
-            guard let waypoint = waypoint else { return }
-            sendSubviewToBack(waypoint)
-        }
-    }
-
-    /// Create and add user graphic to view
+    /// Create and add user graphic to view.
     private func createUser() {
         if !user.isDescendant(of: self) {
             addSubview(user)
         }
     }
 
-    /// Create if necessary and add poi graphic to view
-    private func createPoi() {
-        clearWayPoint()
-        if poi == nil {
-            poi = PoiGraphic()
-            addSubview(poi)
-
-            guard let poi = poi else { return }
-            sendSubviewToBack(poi)
-        }
-    }
-
-    /// Update Coordinate
+    /// Updates the frame of a view based on a size and a center position.
     ///
     /// - Parameters:
     ///    - view: the view to update
@@ -155,67 +140,45 @@ public class TouchStreamView: UIView {
     /// - Parameters:
     ///    - streamElement: the stream element
     public func displayPoint(streamElement: StreamElement) {
-        guard !isMoving else { return }
-
-        switch streamElement {
-        case .none:
-            clear()
-        case .waypoint(let point, let altitude):
-            updateWaypoint(point: point, altitude: altitude)
-        case .poi(let point, let altitude):
-            updatePoi(point: point, altitude: altitude)
-        case .user(let point):
-            updateUser(point: point)
-        }
+        stateMachine.process(event: .updated(streamElement))
     }
 
-    /// Update waypoint position.
+    /// Normalizes the coordinates of a point in the stream view.
     ///
     /// - Parameters:
-    ///    - point: the point
-    ///    - altitude: the altitude
-    private func updateWaypoint(point: CGPoint, altitude: Double) {
-        guard !point.isOriginPoint else {
-            clearWayPoint()
-            return
+    ///    - point: the point to convert
+    /// - Returns: the converted point
+    private func getStreamPoint(point: CGPoint) -> CGPoint {
+        let width = frame.width
+        let height = frame.height
+        guard width != 0 && height != 0 else {
+            return CGPoint(x: 0, y: 0)
         }
-        createWaypoint()
-        updateCoordinate(view: waypoint, size: Constants.outsideCircle, position: getRealPoint(point: point))
-        waypoint?.setText("\(Int(altitude))m")
+        return CGPoint(x: point.x / width, y: point.y / height)
     }
 
-    /// Update poi position.
-    ///
-    /// - Parameters:
-    ///    - point: the point
-    ///    - altitude: the altitude
-    private func updatePoi(point: CGPoint, altitude: Double) {
-        guard !point.isOriginPoint else {
-            clearPoi()
-            return
-        }
-        createPoi()
-        updateCoordinate(view: poi, size: Constants.diamandSize, position: getRealPoint(point: point))
-        poi?.setText("\(Int(altitude))m")
+    /// Update touch stream view frame.
+    public func update(frame: CGRect) {
+        self.frame = frame
     }
+}
 
-    /// Update user position.
+extension TouchStreamView: TouchStreamStateMachineView {
+    /// Converts a normalized point into steam view coordinates.
     ///
     /// - Parameters:
-    ///    - point: the point
-    private func updateUser(point: CGPoint) {
-        guard !point.isOriginPoint else {
-            user.removeFromSuperview()
-            return
-        }
-        createUser()
-        updateCoordinate(view: user, size: Constants.userSize, position: getRealPoint(point: point))
+    ///    - point: the point to convert
+    /// - Returns: the converted point
+    func pointInStreamView(point: CGPoint) -> CGPoint {
+        return CGPoint(x: frame.width * point.x, y: frame.height * point.y)
     }
 
     /// Clear all.
-    private func clear() {
+    func clear() {
         clearWayPoint()
         clearPoi()
+        clearArrows()
+        clearAxis()
     }
 
     /// Clear waypoint.
@@ -230,31 +193,178 @@ public class TouchStreamView: UIView {
         poi = nil
     }
 
-    /// Adapt point to size of stream
+    /// Create and display axis arrows.
     ///
-    /// - Parameters:
-    ///    - point: the point to convert
-    /// - Returns: the converted point
-    private func getRealPoint(point: CGPoint) -> CGPoint {
-        return CGPoint(x: frame.width * point.x, y: frame.height * point.y)
-    }
-
-    /// Adapt stream point to point
-    ///
-    /// - Parameters:
-    ///    - point: the point to convert
-    /// - Returns: the converted point
-    private func getStreamPoint(point: CGPoint) -> CGPoint {
-        let width = frame.width
-        let height = frame.height
-        guard width != 0 && height != 0 else {
-            return CGPoint(x: 0, y: 0)
+    /// Arrows are displayed during a drag event. If a drag direction is defined, only the corresponding arrow is displayed.
+    func createArrows(dragDirection: DragDirection) {
+        clearArrows()
+        if dragDirection != .horizontal {
+            arrowVertical = ArrowGraphic(color: ColorName.greenSpring.color, direction: .vertical)
+            addSubview(arrowVertical)
+            guard let arrowVertical = arrowVertical else { return }
+            sendSubviewToBack(arrowVertical)
         }
-        return CGPoint(x: point.x / width, y: point.y / height)
+        if dragDirection != .vertical {
+            arrowHorizontal = ArrowGraphic(color: ColorName.orange.color, direction: .horizontal)
+            addSubview(arrowHorizontal)
+            guard let arrowHorizontal = arrowHorizontal else { return }
+            sendSubviewToBack(arrowHorizontal)
+        }
     }
 
-    /// Update touch stream view frame
-    public func update(frame: CGRect) {
-        self.frame = frame
+    /// Update arrows.
+    ///
+    /// - Parameters:
+    ///    - location: the location of the origin of the arrow
+    func updateArrows(location: CGPoint, dragDirection: DragDirection) {
+        if dragDirection != .horizontal {
+            arrowVertical?.updatePosition(location)
+        }
+        if dragDirection != .vertical {
+            arrowHorizontal?.updatePosition(location)
+        }
     }
+
+    /// Clear arrows.
+    func clearArrows() {
+        arrowHorizontal?.removeFromSuperview()
+        arrowHorizontal = nil
+        arrowVertical?.removeFromSuperview()
+        arrowVertical = nil
+    }
+
+    /// Create if necessary and add waypoint graphic to view.
+    ///
+    /// - Parameters:
+    ///    - altitude: the altitude of the waypoint
+    func createWaypoint(altitude: Double) {
+        clearPoi()
+        if waypoint == nil {
+            waypoint = WayPointGraphic()
+            addSubview(waypoint)
+            guard let waypoint = waypoint else { return }
+            sendSubviewToBack(waypoint)
+        }
+        waypoint?.setText("\(Int(altitude))m")
+    }
+
+    /// Create if necessary and add poi graphic to view.
+    ///
+    /// - Parameters:
+    ///    - altitude: the altitude of the POI
+    func createPoi(altitude: Double) {
+        clearWayPoint()
+        if poi == nil {
+            poi = PoiGraphic()
+            addSubview(poi)
+
+            guard let poi = poi else { return }
+            sendSubviewToBack(poi)
+        }
+        poi?.setText("\(Int(altitude))m")
+    }
+
+    /// Update POI or WP graphic.
+    ///
+    /// - Parameters:
+    ///    - type: the type (POI/WP)
+    ///    - size: the size of the graphic
+    ///    - location: the location of the graphic (center)
+    func updateGraphic(type: TypeView, size: Double, location: CGPoint) {
+        var graphic: UIView?
+        switch type {
+        case .poi:
+            graphic = poi
+        case .waypoint:
+            graphic = waypoint
+        }
+        guard let graphic = graphic else { return }
+        graphic.frame = CGRect(x: location.x - size / 2.0,
+                            y: location.y - size / 2.0,
+                            width: size,
+                            height: size)
+    }
+
+    /// Update user location.
+    ///
+    /// - Parameters:
+    ///    - location: user location
+    func updateUser(location: CGPoint) {
+        guard !location.isOriginPoint else {
+            user.removeFromSuperview()
+            return
+        }
+        let graphicLocation = pointInStreamView(point: location)
+        createUser()
+        user.frame = CGRect(x: graphicLocation.x - Constants.userSize / 2.0,
+                            y: graphicLocation.y - Constants.userSize / 2.0,
+                            width: Constants.userSize,
+                            height: Constants.userSize)
+    }
+
+    /// Create and display an axis.
+    ///
+    /// Axis are displayed during a drag event one a direction has been defined.
+    func createAxisIfNeeded(location: CGPoint, dragDirection: DragDirection) {
+        if axis != nil {
+            return
+        }
+        switch dragDirection {
+        case .undefined:
+            return
+        case .horizontal:
+            axis = AxisGraphic(location: location, size: frame.size, direction: .horizontal)
+        case .vertical:
+            axis = AxisGraphic(location: location, size: frame.size, direction: .vertical)
+        }
+        addSubview(axis)
+        guard let axis = axis else { return }
+        sendSubviewToBack(axis)
+    }
+
+    /// Clear axis.
+    func clearAxis() {
+        axis?.removeFromSuperview()
+        axis = nil
+    }
+
+    /// Clamp the location.
+    /// Based on its size, keeps the object in the parent frame
+    /// 
+    /// - Parameters:
+    ///    - location: original touch location
+    ///    - objectSize: size of the graphic object
+    func clampedLocation(location: CGPoint, objectSize: Double) -> CGPoint {
+        guard self.frame.size.width > objectSize, self.frame.size.height > objectSize else {
+            return location
+        }
+        let halfObjectSize = objectSize / 2.0
+        var graphicLocation = location
+        graphicLocation.x = (halfObjectSize...self.frame.size.width - halfObjectSize).clamp(location.x)
+        graphicLocation.y = (halfObjectSize...self.frame.size.height - halfObjectSize).clamp(location.y)
+        return graphicLocation
+    }
+
+    /// Saves a waypoint at a given location.
+    ///
+    /// Calls the TouchStreamViewDelegate to save a waypoint.
+    ///
+    /// - Parameters:
+    ///    - location: original touch location
+    /// - Returns: true if the point could be saved
+    func saveWaypointLocation(_ location: CGPoint, dragDirection: DragDirection) -> Bool {
+        return delegate?.updateWaypoint(point: getStreamPoint(point: location), dragDirection: dragDirection) ?? false
+    }
+
+    /// Saves a poi.
+    ///
+    /// Calls the TouchStreamViewDelegate to save a poi.
+    ///
+    /// - Parameters:
+    ///    - location: original touch location
+    /// - Returns: true if the poi could be saved
+    func savePoiLocation(_ location: CGPoint) -> Bool {
+        return delegate?.updatePoi(point: getStreamPoint(point: location)) ?? false
+    }
+
 }

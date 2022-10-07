@@ -137,7 +137,30 @@ extension GalleryMediaViewModel: GalleryVideoCompatible {
     }
 
     func videoTogglePlayingStatus() {
+        // Rewind if player is stopped at the end of video (can be true only if video is not playing).
+        if isStoppedAtEnd {
+            rewind()
+        }
         getCurrentViewModel()?.videoTogglePlayingStatus()
+    }
+
+    /// Whether player has reached the end of video.
+    var hasReachedEnd: Bool {
+        guard let viewModel = getCurrentViewModel() else { return false }
+        let duration = viewModel.getVideoDuration()
+        guard duration > 0 else { return false }
+        return viewModel.getVideoPosition() >= duration
+    }
+
+    /// Whether player is stopped at the end of video.
+    var isStoppedAtEnd: Bool {
+        guard let viewModel = getCurrentViewModel() else { return false }
+        return !viewModel.videoIsPlaying() && hasReachedEnd
+    }
+
+    /// Rewinds the player to position 0.
+    func rewind() {
+        _ = getCurrentViewModel()?.videoUpdatePosition(position: 0)
     }
 
     func videoUpdateState() {

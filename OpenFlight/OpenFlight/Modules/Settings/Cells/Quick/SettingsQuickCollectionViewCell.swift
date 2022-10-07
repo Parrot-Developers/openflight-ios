@@ -93,6 +93,7 @@ final class SettingsQuickCollectionViewCell: UICollectionViewCell, NibReusable {
 
         settingImage.image = segmentModel.segments.elementAt(index: selectedIndex)?.image
         if segmentModel.isBoolean {
+            settingTitle.accessibilityValue = selectedIndex == 0 ? "Off" : "On"
             let textColor = (selectedIndex == 0) ? ColorName.defaultTextColor : ColorName.defaultTextColor
             settingTitle.text = settingEntry.title
             contentView.backgroundColor = (selectedIndex == 0) ? ColorName.whiteAlbescent.color : ColorName.white.color

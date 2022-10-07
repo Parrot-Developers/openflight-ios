@@ -78,7 +78,10 @@ class AlertsMonitor {
     }
     /// Whether drone is flying or waiting.
     private var isDroneFlyingOrWaiting = false {
-        didSet { updateHomePositionSetAlert() }
+        didSet {
+            guard oldValue != isDroneFlyingOrWaiting else { return }
+            updateHomePositionSetAlert()
+        }
     }
     /// Whether drone is taking off.
     private var isDroneTakingOff = false {
@@ -107,12 +110,20 @@ class AlertsMonitor {
     private var isHomeNotReachable = false {
         didSet { updateRthAlert() }
     }
-    /// Whether temperature is critical.
-    private var isTemperatureCritical = false {
+    /// Whether auto landing propeller icing alarm is on.
+    private var isAutolandingPropellerIcingAlarmOn = false {
         didSet { updateAutolandingAlerts() }
     }
-    /// Whether auto landing alarm is on.
-    private var isAutolandingAlarmOn = false {
+    /// Whether auto landing battery low alarm is on.
+    private var isAutolandingBatteryLowAlarmOn = false {
+        didSet { updateAutolandingAlerts() }
+    }
+    /// Whether auto landing battery too cold alarm is on.
+    private var isAutolandingBatteryTooColdAlarmOn = false {
+        didSet { updateAutolandingAlerts() }
+    }
+    /// Whether auto landing battery too hot alarm is on.
+    private var isAutolandingBatteryTooHotAlarmOn = false {
         didSet { updateAutolandingAlerts() }
     }
     /// Whether home position set alert is required.
@@ -205,8 +216,10 @@ private extension AlertsMonitor {
         isGpsFixMissing = false
         imuSaturationAlarmLevel = .notAvailable
         isHomeNotReachable = false
-        isTemperatureCritical = false
-        isAutolandingAlarmOn = false
+        isAutolandingBatteryLowAlarmOn = false
+        isAutolandingBatteryTooColdAlarmOn = false
+        isAutolandingBatteryTooHotAlarmOn = false
+        isAutolandingPropellerIcingAlarmOn = false
         isHomePositionSetAlertRequired = false
         isHomePositionSet = false
         isRthActive = false
@@ -243,7 +256,6 @@ private extension AlertsMonitor {
             // Update states.
             self.updateMotorsAlarmState(alarms: alarms)
             self.updateImuSaturationAlarmLevel(alarms: alarms)
-            self.updateTemperatureAlarmState(alarms: alarms)
             self.updateAutolandingAlarmState(alarms: alarms)
 
             // Update alerts.
@@ -358,20 +370,14 @@ private extension AlertsMonitor {
         imuSaturationAlarmLevel = alarms.level(.strongVibrations)
     }
 
-    /// Updates critical temperature state according to alarms instruments.
-    ///
-    /// - Parameter alarms: the alarms instrument
-    func updateTemperatureAlarmState(alarms: Alarms) {
-        isTemperatureCritical = alarms.level(.batteryTooHot) == .critical ||
-        alarms.level(.batteryTooCold) == .critical
-    }
-
     /// Updates auto landing state according to alarms instruments.
     ///
     /// - Parameter alarms: the alarms instrument
     func updateAutolandingAlarmState(alarms: Alarms) {
-        isAutolandingAlarmOn = alarms.level(.automaticLandingBatteryIssue) == .critical &&
-        alarms.automaticLandingDelay == 0
+        isAutolandingBatteryLowAlarmOn = alarms.level(.automaticLandingBatteryIssue) == .critical && alarms.automaticLandingDelay == 0
+        isAutolandingBatteryTooColdAlarmOn = alarms.level(.automaticLandingBatteryTooCold) == .critical && alarms.automaticLandingDelay == 0
+        isAutolandingBatteryTooHotAlarmOn = alarms.level(.automaticLandingBatteryTooHot) == .critical && alarms.automaticLandingDelay == 0
+        isAutolandingPropellerIcingAlarmOn = alarms.level(.automaticLandingPropellerIcingIssue) == .critical && alarms.automaticLandingDelay == 0
     }
 
     /// Updates flying states according to flying indicators.
@@ -433,8 +439,6 @@ private extension AlertsMonitor {
     ///
     /// - Parameter alarms: the alarms instrument
     func updateConditionsAlerts(alarms: Alarms) {
-        bamService.update(CriticalBannerAlert.forceLandingIcedPropeller,
-                          show: alarms.level(.icingLevel) == .critical)
         bamService.update(CriticalBannerAlert.noGpsTooDark,
                           show: alarms.isOn(.hoveringDifficultiesNoGpsTooDark))
         bamService.update(CriticalBannerAlert.noGpsTooHigh,
@@ -509,10 +513,14 @@ private extension AlertsMonitor {
 
     /// Updates auto landing banner alerts.
     func updateAutolandingAlerts() {
-        bamService.update(CriticalBannerAlert.forceLandingTemperature,
-                          show: isDroneEmergencyLanding && isTemperatureCritical)
+        bamService.update(CriticalBannerAlert.forceLandingBatteryTooCold,
+                          show: (isDroneFlying || isDroneEmergencyLanding) && isAutolandingBatteryTooColdAlarmOn)
+        bamService.update(CriticalBannerAlert.forceLandingBatteryTooHot,
+                          show: (isDroneFlying || isDroneEmergencyLanding) && isAutolandingBatteryTooHotAlarmOn)
         bamService.update(CriticalBannerAlert.forceLandingLowBattery,
-                          show: (isDroneFlying || isDroneEmergencyLanding) && isAutolandingAlarmOn)
+                          show: (isDroneFlying || isDroneEmergencyLanding) && isAutolandingBatteryLowAlarmOn)
+        bamService.update(CriticalBannerAlert.forceLandingIcedPropeller,
+                          show: (isDroneFlying || isDroneEmergencyLanding) && isAutolandingPropellerIcingAlarmOn)
     }
 
     /// Updates removable user storage banner alerts.

@@ -77,10 +77,14 @@ extension LogEvent {
         static let resetRTHSettings: String = "ResetRTHSettings"
         static let resetRecordingSettings: String = "ResetRecordingSettings"
         static let resetNetworkSettings: String = "ResetNetworkSettings"
+        static let resetDevelopperSettings: String = "ResetDevelopperSettings"
         static let networkPassword: String = "Password"
         static let cellularAccess: String = "CellularAccess"
         static let networkPreferences: String = "NetworkPreferences"
         static let driSetting: String = "DRI"
+        static let directConnectionSetting: String = "DirectConnectionSettings"
+        static let shellAccessSetting: String = "ShellAccessSettings"
+        static let missionLogsSetting: String = "MissionLogsSettings"
     }
 
     /// Enum which stores password edition button key for log message.

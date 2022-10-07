@@ -31,17 +31,18 @@ import Combine
 import UIKit
 import GroundSdk
 
-final class DroneDetailsCellularViewController: UIViewController {
+public final class DroneDetailsCellularViewController: UIViewController {
 
     // MARK: - Outlet
 
     @IBOutlet private weak var enterPinButton: ActionButton!
     @IBOutlet private weak var forgetPinButton: ActionButton!
     @IBOutlet private weak var showDebugButton: ActionButton!
+    @IBOutlet private weak var showSupportButton: ActionButton!
     @IBOutlet private weak var cellularView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var cellularStatusLabel: UILabel!
-    @IBOutlet private weak var operatorNameLabel: UILabel!
+    @IBOutlet private weak var connectionStatusLabel: UILabel!
     @IBOutlet private weak var controllerErrorLabel: UILabel!
 
     // Cellular view outlet
@@ -61,7 +62,7 @@ final class DroneDetailsCellularViewController: UIViewController {
     private var viewModel: DroneDetailCellularViewModel!
     private var cancellables = Set<AnyCancellable>()
 
-    static func instantiate(viewModel: DroneDetailCellularViewModel) -> DroneDetailsCellularViewController {
+    public static func instantiate(viewModel: DroneDetailCellularViewModel) -> DroneDetailsCellularViewController {
         let viewController = StoryboardScene.DroneDetailCellularViewController.initialScene.instantiate()
         viewController.viewModel = viewModel
         return viewController
@@ -69,7 +70,7 @@ final class DroneDetailsCellularViewController: UIViewController {
 
     // MARK: - View life cycle
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
 
         setupUI()
@@ -77,12 +78,12 @@ final class DroneDetailsCellularViewController: UIViewController {
         bindViewModel()
     }
 
-    override func viewDidAppear(_ animated: Bool) {
+    public override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         addColorTransition()
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
+    public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         view.backgroundColor = .clear
     }
@@ -99,6 +100,10 @@ final class DroneDetailsCellularViewController: UIViewController {
 
     @IBAction func showCellularDebug(_ sender: Any) {
         viewModel.showDebug()
+    }
+
+    @IBAction func showCellularSupport(_ sender: Any) {
+        viewModel.showSupport()
     }
 
     @IBAction func enterPin(_ sender: Any) {
@@ -140,8 +145,11 @@ private extension DroneDetailsCellularViewController {
         enterPinButton.setup(title: L10n.drone4gEnterPin, style: .default2)
         forgetPinButton.setup(title: L10n.cellularForgetPin, style: .default2)
         showDebugButton.setup(title: L10n.drone4gShowDebug, style: .secondary1)
-
+        showSupportButton.setup(title: "", style: .secondary1)
         cellularView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
+
+        cellularStatusLabel.makeUp(with: .smallText, color: .defaultTextColor)
+        controllerErrorLabel.makeUp(with: .smallText, color: .defaultTextColor)
     }
 
     func bindViewModel() {
@@ -149,10 +157,30 @@ private extension DroneDetailsCellularViewController {
         bindRemoteSide()
         bind4GIcon()
 
-        viewModel.controllerError
-            .combineLatest(viewModel.droneError)
-            .sink { [unowned self] (remoteError, droneError) in
-                controllerErrorLabel.text = droneError ?? remoteError
+        viewModel.$isSupportButtonHidden
+            .removeDuplicates()
+            .sink { [unowned self] in
+                showSupportButton.isHidden = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$isSupportButtonEnabled
+            .removeDuplicates()
+            .sink { [unowned self] in
+                showSupportButton.isEnabled = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$supportButtonTitle
+            .removeDuplicates()
+            .sink { [unowned self] in
+                showSupportButton.updateTitle($0)
+            }
+            .store(in: &cancellables)
+
+	viewModel.controllerStatus
+            .sink { [unowned self] remoteStatus in
+                controllerErrorLabel.text = remoteStatus
             }
             .store(in: &cancellables)
 
@@ -170,12 +198,6 @@ private extension DroneDetailsCellularViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.cellularStatusColor
-            .sink { [unowned self] cellularStatusColor in
-                cellularStatusLabel.textColor = cellularStatusColor.color
-            }
-            .store(in: &cancellables)
-
         viewModel.isForgetPinEnabled
             .removeDuplicates()
             .combineLatest(viewModel.isFlying.removeDuplicates())
@@ -186,17 +208,19 @@ private extension DroneDetailsCellularViewController {
 
         // Operator label's text
         viewModel.operatorName
-            .combineLatest(viewModel.cellularStatusColor)
-            .sink { [unowned self] (operatorName, cellularStatusColor) in
-                operatorNameLabel.text = operatorName
-                operatorNameLabel.textColor = cellularStatusColor.color
+            .combineLatest(viewModel.$connectionStatusColor, viewModel.cellularLinkState)
+            .sink { [unowned self] (operatorName, connectionStatusColor, cellularLinkState) in
+
+                connectionStatusLabel.text = operatorName ?? cellularLinkState ?? L10n.commonNotConnected
+                connectionStatusLabel.textColor = connectionStatusColor.color
             }
             .store(in: &cancellables)
+
     }
 }
 
 extension DroneDetailsCellularViewController: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
          if touch.view?.isDescendant(of: cellularView) == true {
             return false
          }

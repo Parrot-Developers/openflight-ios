@@ -59,16 +59,21 @@ public extension MapViewController {
         flightPlanManager = Services.hub.flightPlan.run
         if state.mode?.flightPlanProvider != nil {
             // Reset registration.
-            editionCancellable = flightEditionService?.currentFlightPlanPublisher
+            flightEditionService?.currentFlightPlanPublisher
                 .removeDuplicates()
                 .sink(receiveValue: { [weak self] flightplan in
                     self?.flightPlan = flightplan
                 })
+                .store(in: &editionCancellables)
+            // Update the map when an FP just setted up in the editor.
+            flightEditionService?.flightPlanSettedUpPublisher
+                .sink { [weak self] in self?.update(with: $0) }
+                .store(in: &editionCancellables)
         } else {
             // Remove potential old Flight Plan first.
             flightEditionService?.resetFlightPlan()
             // Then, unregister flight plan listener (editionCancellable = nil has effet if map is registred).
-            editionCancellable = nil
+            editionCancellables.removeAll()
         }
     }
 
@@ -93,6 +98,7 @@ public extension MapViewController {
 
         // Create new overlays.
         let graphics = provider?.graphicsWithFlightPlan(flightPlan, mapMode: currentMapMode) ?? []
+
         let newOverlay = FlightPlanGraphicsOverlay(graphics: graphics)
         // Add overlays to scene only if not in miniature mode.
         if !isMiniMap {
@@ -105,25 +111,28 @@ public extension MapViewController {
         insertUserGraphic()
         insertDroneGraphic()
 
-        // update heading correction of flight plan origin graphic
-        graphics.compactMap { $0 as? FlightPlanOriginGraphic }.first.map {
-            let rotationFactor = newOverlay.sceneProperties?.surfacePlacement == .drapedFlat ?
-            MapConstants.drapedFlatRotationFactor : MapConstants.defaultRotationFactor
-            $0.update(rotationFactor: rotationFactor)
-        }
+        // refresh orientaiton of origin graphic
+        refreshOriginGraphic()
 
         // apply an altitude offset and update the map view point,
         // and do it again once map elevation data are loaded;
         // the cancellable is stored in a dedicated variable in order to cancel any pending adjustments
         adjustAltitudeAndCameraCancellable = viewModel.elevationSource.$elevationLoaded
-            .prepend(true)
             .filter { $0 }
-            .sink { [weak self] _ in
-                guard let self = self else { return }
+            .sink { [weak self] elevationLoaded in
+                guard elevationLoaded, let self = self else { return }
                 self.adjustAltitudeAndCamera(overlay: newOverlay,
                                              flightPlan: flightPlan,
                                              shouldReloadCamera: shouldReloadCamera)
             }
+    }
+
+    /// Refresh orientation of origin graphic if map is drapedFlat.
+    private func refreshOriginGraphic() {
+        guard flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat else { return }
+        let camera = SceneSingleton.shared.sceneView.currentViewpointCamera()
+        guard let originGraphic = (flightPlanOverlay?.graphics.first(where: { $0 is FlightPlanOriginGraphic }) as? FlightPlanOriginGraphic) else { return }
+        originGraphic.update(heading: camera.heading)
     }
 
     /// Applies an altitude offset to graphics overlay, corresponding to altitude in AMSL of first waypoint and ajdusts map view point.
@@ -145,13 +154,19 @@ public extension MapViewController {
 
         ULog.d(.mapViewController, "Get elevation for FP at: \(firstWayPoint.x),\(firstWayPoint.y)")
         firstWpElevationRequest?.cancel()
+        firstWpElevationRequest = nil
         firstWpElevationRequest = sceneView.scene?.baseSurface?.elevation(for: firstWayPoint) { [weak self] elevation, error in
+            self?.firstWpElevationRequest = nil
             guard error == nil else {
                 ULog.w(.mapViewController, "Failed to get elevation for FP: \(String(describing: error))")
                 return
             }
-            ULog.d(.mapViewController, "Apply altitude offset to FP overlay: \(elevation)")
-            overlay.sceneProperties?.altitudeOffset = elevation
+            if flightPlan.isAMSL != true {
+                ULog.d(.mapViewController, "Apply altitude offset to FP overlay: \(elevation)")
+                overlay.sceneProperties?.altitudeOffset = elevation
+            } else {
+                ULog.d(.mapViewController, "Do not apply altitude offset to FP overlay (AMSL): \(elevation)")
+            }
             if shouldReloadCamera {
                 // Animate camera reloading, as only altitude has changed.
                 self?.reloadCamera(flightPlan: flightPlan,
@@ -174,6 +189,29 @@ public extension MapViewController {
         let viewPoint = viewPoint(polyline: dataSetting.polyline,
                                   altitudeOffset: altitudeOffset)
         updateViewPoint(viewPoint, animated: animated)
+        if altitudeOffset == nil, sceneView.scene?.baseSurface?.isEnabled == true {
+            moveCameraByElevation(goUp: true)
+        }
+    }
+
+    /// Moves the camera so when elevation is enabled/disabled the scene don't act like zooming when the ground approaches the camera.
+    ///
+    /// - Parameters:
+    ///    - goUp: If true, the camera moves up by ground elevation from sealevel. A value false makes the camera move down by the same distance.
+    func moveCameraByElevation(goUp: Bool) {
+        let originalLocation = self.sceneView.currentViewpointCamera().location
+        self.sceneView.scene?.baseSurface?.elevation(for: originalLocation, completion: { elevation, _ in
+            guard self.sceneView.scene?.baseSurface?.isEnabled == goUp,
+                  originalLocation == self.sceneView.currentViewpointCamera().location else {
+                return
+            }
+            let oldCamera = self.sceneView.currentViewpointCamera()
+            let oldLocation = oldCamera.location
+            let newElevation = oldLocation.z + (elevation * (goUp ? 1 : -1))
+            let newPoint = AGSPoint(x: oldLocation.x, y: oldLocation.y, z: newElevation, spatialReference: .wgs84())
+            let newCamera = AGSCamera(location: newPoint, heading: oldCamera.heading, pitch: oldCamera.pitch, roll: oldCamera.roll)
+            self.sceneView.setViewpointCamera(newCamera)
+        })
     }
 
     /// Reloads the camera based on a given FP model.
@@ -193,6 +231,7 @@ public extension MapViewController {
         // insert user and drone locations graphics to flight plan overlay
         insertUserGraphic()
         insertDroneGraphic()
+        ULog.d(.mapViewController, "Camera reloaded for FP, altitudeOffset \(altitudeOffset)")
     }
 
     /// Remove currently loaded flight plan from display.
@@ -413,14 +452,26 @@ extension MapViewController {
 private extension MapViewController {
     /// Disables elevation and displays flight plan in `drapedFlat` mode.
     func disableElevation() {
-        flightPlanOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-        sceneView.scene?.baseSurface?.isEnabled = false
+        if flightPlanOverlay?.sceneProperties?.surfacePlacement != .drapedFlat {
+            ULog.d(.mapViewController, "disableElevation surfacePlacement")
+            flightPlanOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
+        }
+        if sceneView.scene?.baseSurface?.isEnabled != false {
+            ULog.d(.mapViewController, "disableElevation baseSurface")
+            sceneView.scene?.baseSurface?.isEnabled = false
+        }
     }
 
     /// Enables elevation and displays flight plan in `absolute` mode.
     func enableElevation() {
-        flightPlanOverlay?.sceneProperties?.surfacePlacement = .absolute
-        sceneView.scene?.baseSurface?.isEnabled = true
+        if flightPlanOverlay?.sceneProperties?.surfacePlacement != .absolute {
+            ULog.d(.mapViewController, "enableElevation surfacePlacement")
+            flightPlanOverlay?.sceneProperties?.surfacePlacement = .absolute
+        }
+        if sceneView.scene?.baseSurface?.isEnabled != true {
+            ULog.d(.mapViewController, "enableElevation baseSurface")
+            sceneView.scene?.baseSurface?.isEnabled = true
+        }
     }
 
     /// Adds a waypoint to Flight Plan.

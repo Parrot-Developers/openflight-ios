@@ -17,40 +17,53 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WcN-c3-0bq">
-                        <rect key="frame" x="16" y="0.0" width="288" height="69"/>
+                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a2M-Eg-GzB">
+                        <rect key="frame" x="16" y="0.0" width="288" height="80"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GFG-nN-ooZ">
-                                <rect key="frame" x="0.0" y="0.0" width="288" height="69"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WcN-c3-0bq">
+                                <rect key="frame" x="0.0" y="0.0" width="288" height="72"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nws-8b-MEs">
-                                        <rect key="frame" x="0.0" y="0.0" width="41.5" height="69"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" name="default_text_color"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cdv-9L-rtj">
-                                        <rect key="frame" x="41.5" y="0.0" width="246.5" height="69"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <color key="textColor" name="highlight_color"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
+                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GFG-nN-ooZ">
+                                        <rect key="frame" x="0.0" y="0.0" width="288" height="72"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nws-8b-MEs">
+                                                <rect key="frame" x="0.0" y="0.0" width="41.5" height="72"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cdv-9L-rtj">
+                                                <rect key="frame" x="41.5" y="0.0" width="246.5" height="72"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" name="highlight_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </stackView>
                                 </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                         </subviews>
-                    </stackView>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="WcN-c3-0bq" secondAttribute="trailing" id="Nft-3Y-1wX"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="WcN-c3-0bq" secondAttribute="bottom" id="h6h-i3-EP0"/>
+                            <constraint firstItem="WcN-c3-0bq" firstAttribute="leading" secondItem="a2M-Eg-GzB" secondAttribute="leading" id="i2v-2E-W9P"/>
+                            <constraint firstItem="WcN-c3-0bq" firstAttribute="top" secondItem="a2M-Eg-GzB" secondAttribute="top" id="wXf-Q1-1uo"/>
+                        </constraints>
+                    </view>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="WcN-c3-0bq" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="Dfc-2Q-uCr"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="WcN-c3-0bq" secondAttribute="bottom" id="eHT-Oq-65p"/>
-                    <constraint firstItem="WcN-c3-0bq" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="jHF-R2-9Bz"/>
-                    <constraint firstAttribute="trailingMargin" secondItem="WcN-c3-0bq" secondAttribute="trailing" id="ofx-St-7xR"/>
+                    <constraint firstItem="a2M-Eg-GzB" firstAttribute="trailing" secondItem="H2p-sc-9uM" secondAttribute="trailingMargin" id="4K6-hd-1v1"/>
+                    <constraint firstItem="a2M-Eg-GzB" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="UUR-0p-Swj"/>
+                    <constraint firstAttribute="bottom" secondItem="a2M-Eg-GzB" secondAttribute="bottom" id="Wc0-Lx-HEP"/>
+                    <constraint firstItem="a2M-Eg-GzB" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="waS-BG-kpN"/>
                 </constraints>
             </tableViewCellContentView>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <connections>
+                <outlet property="containerView" destination="a2M-Eg-GzB" id="wFz-Fp-k9i"/>
                 <outlet property="modeLabel" destination="Cdv-9L-rtj" id="LeW-Wj-VH1"/>
                 <outlet property="titleLabel" destination="Nws-8b-MEs" id="z2k-bo-tCG"/>
             </connections>

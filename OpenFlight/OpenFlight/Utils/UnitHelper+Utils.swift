@@ -182,6 +182,7 @@ public final class UnitHelper: NSObject {
     public static func stringDistanceWithDouble(_ distance: Double,
                                                 spacing: Bool = true,
                                                 useFractionDigit: Bool? = nil) -> String {
+        var convertedDistance = NSNumber(value: doubleDistanceWithDouble(distance))
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         switch unitSetting {
@@ -197,8 +198,9 @@ public final class UnitHelper: NSObject {
             numberFormatter.maximumFractionDigits = 1
         } else {
             numberFormatter.maximumFractionDigits = 0
+            convertedDistance = NSNumber(value: Int(convertedDistance.doubleValue.rounded()))
         }
-        let formattedValue = numberFormatter.string(from: NSNumber(value: doubleDistanceWithDouble(distance))) ?? Style.dash
+        let formattedValue = numberFormatter.string(from: convertedDistance) ?? Style.dash
 
         return String(format: spacing ? "%@ %@" : "%@%@",
                       formattedValue,

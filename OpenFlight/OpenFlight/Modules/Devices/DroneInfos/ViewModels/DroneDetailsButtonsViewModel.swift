@@ -55,6 +55,8 @@ final class DroneDetailsButtonsViewModel {
     @Published private(set) var cellularStatus: DetailsCellularStatus = .noState
     /// Drone's connection state.
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+    /// Remote's connection state.
+    @Published private(set) var remoteConnectionState: DeviceState.ConnectionState = .disconnected
     /// Tells if we can display the cellular modal.
     @Published private(set) var mapThumbnail: UIImage? = Asset.MyFlights.poi.image
     /// Tells the health of the battery
@@ -72,17 +74,19 @@ final class DroneDetailsButtonsViewModel {
     private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var connectionStateRef: Ref<DeviceState>?
+    private var remoteConnectionStateRef: Ref<DeviceState>?
     private var batteryRef: Ref<BatteryInfo>?
     private var cancellables = Set<AnyCancellable>()
     private var currentDrone = Services.hub.currentDroneHolder
     private var cellularService = Services.hub.drone.cellularService
+    private var currentRemote = Services.hub.currentRemoteControlHolder
+    private var locationsTracker = Services.hub.locationsTracker
 
     // MARK: - Init
 
     init() {
         currentDrone.dronePublisher
             .sink { [unowned self] drone in
-                listenGps(drone)
                 listenGimbal(drone)
                 listenStereoVisionSensor(drone)
                 listenFrontStereoGimbal(drone)
@@ -93,9 +97,32 @@ final class DroneDetailsButtonsViewModel {
             }
             .store(in: &cancellables)
 
+        currentRemote.remoteControlPublisher
+            .sink { [weak self] remote in
+                guard let self = self else { return }
+                self.listenRemoteConnectionState(remote: remote)
+            }
+            .store(in: &cancellables)
+
         cellularService.cellularStatusPublisher
             .sink { [unowned self] cellularStatus in
                 updateCellularState(cellularStatus: cellularStatus)
+            }
+            .store(in: &cancellables)
+
+        locationsTracker.droneLocationPublisher
+            .removeDuplicates()
+            .sink { [weak self] location in
+                guard let self = self else { return }
+                if let coordinate = location.validCoordinates {
+                    // Only latitude and longitude are used for the generation of the thumbnail.
+                    let location = CLLocation(latitude: coordinate.coordinate.latitude,
+                                              longitude: coordinate.coordinate.longitude)
+                    if self.lastKnownPosition?.coordinate != location.coordinate {
+                        self.lastKnownPosition = location
+                        self.generateThumbnail(self.lastKnownPosition)
+                    }
+                }
             }
             .store(in: &cancellables)
 
@@ -209,10 +236,14 @@ final class DroneDetailsButtonsViewModel {
 
     var cellularButtonSubtitlePublisher: AnyPublisher<String, Never> {
         $cellularStatus
-            .combineLatest($connectionState)
-            .map { [unowned self] (cellularStatus, connectionState) in
+            .combineLatest($connectionState, $remoteConnectionState.removeDuplicates())
+            .map { [unowned self] (cellularStatus, connectionState, remoteConnectionState) in
                 if connectionState == .disconnected {
                     return Style.dash
+                }
+
+                if remoteConnectionState == .disconnected {
+                    return L10n.controllerNotConnected
                 }
 
                 var subtitle = cellularStatus.droneDetailsTileDescription ?? ""
@@ -248,17 +279,17 @@ private extension DroneDetailsButtonsViewModel {
     func listenConnectionState(drone: Drone) {
         connectionStateRef = drone.getState { [weak self] state in
             self?.connectionState = state?.connectionState ?? .disconnected
-            self?.generateThumbnail(drone.getInstrument(Instruments.gps)?.lastKnownLocation)
         }
     }
 
-    /// Starts watcher for gps.
-    func listenGps(_ drone: Drone) {
-        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            self?.lastKnownPosition = gps?.lastKnownLocation
-            self?.generateThumbnail(self?.lastKnownPosition)
+    /// Starts watcher for remote's connection state.
+    ///
+    /// - Parameter remote: the current remote controller
+    func listenRemoteConnectionState(remote: RemoteControl?) {
+        remoteConnectionStateRef = remote?.getState { [weak self] state in
+            guard let self = self else { return }
+            self.remoteConnectionState = state?.connectionState ?? .disconnected
         }
-        generateThumbnail(drone.getInstrument(Instruments.gps)?.lastKnownLocation)
     }
 
     /// Generates thumbnail from the center of the location.

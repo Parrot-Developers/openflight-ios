@@ -74,11 +74,14 @@ extension BottomBarLevelViewController {
     /// Add imaging settings bar.
     ///
     /// - Parameters:
-    ///     - delegate: Bar container delegate
-    func addImagingSettingsBar(delegate: BottomBarContainerDelegate? = nil) {
+    ///     - delegate: bar container delegate
+    ///     - bottomBarService: the bottom bar service
+    func addImagingSettingsBar(delegate: BottomBarContainerDelegate? = nil,
+                               bottomBarService: HudBottomBarService?) {
         showSettingsContainer(.imaging)
 
-        let imagingSettingsBarVC = ImagingSettingsBarViewController.instantiate(delegate: delegate)
+        let imagingSettingsBarVC = ImagingSettingsBarViewController.instantiate(delegate: delegate,
+                                                                                bottomBarService: bottomBarService)
         imagingSettingsBarViewController = imagingSettingsBarVC
         add(imagingSettingsBarVC, in: imagingSettingsView)
     }

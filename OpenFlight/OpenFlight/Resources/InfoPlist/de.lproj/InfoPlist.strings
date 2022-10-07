@@ -1,6 +1,6 @@
-NSLocationWhenInUseUsageDescription = "OpenFlight requires access to the GPS position to locate you.";
-NSLocationAlwaysAndWhenInUseUsageDescription = "OpenFlight requires access to the GPS position to locate you.";
-NSLocationAlwaysUsageDescription = "OpenFlight requires access to the GPS position to locate you.";
+NSLocationWhenInUseUsageDescription = "OpenFlight requires access to your GPS position to locate you and enable automatic flight back to your position (Return Home). Your location is also used to center maps automatically on your position.";
+NSLocationAlwaysAndWhenInUseUsageDescription = "OpenFlight requires access to your GPS position to locate you and enable automatic flight back to your position (Return Home). Your location is also used to center maps automatically on your position.";
+NSLocationAlwaysUsageDescription = "OpenFlight requires access to your GPS position to locate you and enable automatic flight back to your position (Return Home). Your location is also used to center maps automatically on your position.";
 NSPhotoLibraryAddUsageDescription = "OpenFlight requires access to the photo library to save media.";
 NSPhotoLibraryUsageDescription = "OpenFlight requires access to the photo library to save media.";
 NSCameraUsageDescription = "OpenFlight requires access to the Camera for FPV piloting mode.";

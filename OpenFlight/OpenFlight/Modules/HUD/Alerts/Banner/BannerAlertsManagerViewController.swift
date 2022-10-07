@@ -187,8 +187,8 @@ private extension BannerAlertsManagerViewController {
         // Dispatch banners removal in order to avoid unwanted slide transitions when
         // simultaneously adding/removing banners.
         DispatchQueue.main.async {
-            for id in bannerIdsToRemove {
-                self.removeBanner(with: id, from: stackView)
+            for identifier in bannerIdsToRemove {
+                self.removeBanner(with: identifier, from: stackView)
             }
         }
     }

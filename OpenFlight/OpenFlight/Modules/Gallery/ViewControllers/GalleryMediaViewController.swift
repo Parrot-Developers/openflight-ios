@@ -167,31 +167,8 @@ private extension GalleryMediaViewController {
                 selectedMedias[index].downloadState = .downloaded
             }
         }
-
-        let deleteAction = AlertAction(title: L10n.commonDelete,
-                                       style: .destructive,
-                                       actionHandler: { [weak self] in
-                                        // Delete loading medias.
-                                        guard let medias = self?.loadingMedias else { return }
-
-                                        self?.viewModel?.deleteMedias(medias, completion: { _ in
-                                            self?.loadingMedias.removeAll()
-                                            self?.viewModel?.refreshMedias()
-                                            self?.delegate?.multipleSelectionActionTriggered()
-                                        })
-                                       })
-        let keepAction = AlertAction(title: L10n.commonKeep,
-                                     style: .validate,
-                                     actionHandler: { [weak self] in
-                                        // Remove loading files.
-                                        self?.loadingMedias.removeAll()
-                                        self?.viewModel?.refreshMedias()
-                                     })
-        let message = loadingMedias.count == 1 ? L10n.galleryDownloadKeep : L10n.galleryDownloadKeepPlural
-        showAlert(title: L10n.galleryDownloadComplete,
-                  message: message,
-                  cancelAction: deleteAction,
-                  validateAction: keepAction)
+        loadingMedias.removeAll()
+        viewModel?.refreshMedias()
     }
 
     /// Handle delete.

@@ -35,6 +35,7 @@ public enum RequestHeaderFields {
     public static let contentType: String = "Content-Type"
     public static let accept: String = "Accept"
     public static let xApiKey: String = "x-api-key"
+    public static let appZip: String = "application/zip"
     public static let appJson: String = "application/json"
     public static let appJsonUtf8: String = "application/json; charset=utf-8"
     public static let formUrlEncoded: String = "application/x-www-form-urlencoded"

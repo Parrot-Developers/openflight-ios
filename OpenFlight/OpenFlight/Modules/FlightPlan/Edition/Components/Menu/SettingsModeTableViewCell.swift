@@ -34,6 +34,7 @@ import Reusable
 
 final class SettingsModeTableViewCell: SettingsTableViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var modeLabel: UILabel!
     @IBOutlet private weak var titleLabel: UILabel!
 
@@ -52,6 +53,7 @@ private extension SettingsModeTableViewCell {
         titleLabel.makeUp(with: .current, color: .defaultTextColor)
         titleLabel.text = L10n.commonMode
         modeLabel.makeUp(with: .current, color: .highlightColor)
+        containerView.layoutMargins = Layout.tableViewCellContainerInset(isRegularSizeClass)
     }
 }
 

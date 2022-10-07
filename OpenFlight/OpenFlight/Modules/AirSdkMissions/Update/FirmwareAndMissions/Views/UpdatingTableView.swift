@@ -30,16 +30,16 @@
 import Foundation
 
 /// A table view for update process, which sets its size according to its content.
-final class UpdatingTableView: UITableView {
+public final class UpdatingTableView: UITableView {
 
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
         if bounds.size != intrinsicContentSize {
             invalidateIntrinsicContentSize()
         }
     }
 
-    override var intrinsicContentSize: CGSize {
+    public override var intrinsicContentSize: CGSize {
         return contentSize
     }
 }

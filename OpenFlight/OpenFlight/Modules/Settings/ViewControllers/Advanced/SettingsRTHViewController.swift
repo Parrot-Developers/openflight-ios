@@ -100,7 +100,8 @@ private extension SettingsRTHViewController {
 
     /// Sets up the view model.
     func setupViewModel() {
-        viewModel = SettingsRthViewModel(currentDroneHolder: Services.hub.currentDroneHolder)
+        viewModel = SettingsRthViewModel(currentDroneHolder: Services.hub.currentDroneHolder,
+                                         rthSettingsMonitor: Services.hub.rthSettingsMonitor)
         guard let viewModel = viewModel as? SettingsRthViewModel else { return }
         viewModel.notifyChangePublisher
             .sink { [weak self] _ in

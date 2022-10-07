@@ -86,7 +86,7 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     ///     - project: project model
     ///     - isSelected: Whether cell is selected.
     func configureCell(project: ProjectModel, isSelected: Bool) {
-        let lastExecution = project.lastExecution
+        let lastExecution = project.flightPlans?.first
 
         titleLabel.text = project.title ?? lastExecution?.dataSetting?.coordinate?.coordinatesDescription
         var date: Date = project.lastUpdated
@@ -107,7 +107,7 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
             typeImage.isHidden = true
         }
 
-        projectExecutedIcon.isHidden = !project.hasExecutedProject()
+        projectExecutedIcon.isHidden = !project.isProjectExecuted
 
         gradientView.backgroundColor = isSelected ? ColorName.white50.color : .clear
         selectedView.isHidden = !isSelected

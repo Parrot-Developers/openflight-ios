@@ -74,8 +74,11 @@ final class FlightDetailsSummaryView: UIView, NibOwnerLoadable {
 
     func fill(provider: FlightDetailsSummaryViewProvider) {
         timeLabel.text = provider.duration.formattedString
+        timeLabel.accessibilityValue = String(provider.duration)
         batteryLabel.text = Double(provider.batteryConsumption).asPercent()
+        batteryLabel.accessibilityValue = String(provider.batteryConsumption)
         distanceLabel.text = UnitHelper.stringDistanceWithDouble(provider.distance)
+        distanceLabel.accessibilityValue = String(provider.distance)
         photoLabel.text = String(provider.photoCount)
         videoLabel.text = String(provider.videoCount)
     }

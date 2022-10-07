@@ -84,6 +84,11 @@ extension MediaItem {
         return resources.filter { !$0.isDownloaded(droneId: droneId, mediaType: mediaType) }
     }
 
+    /// The previewable resources that have not been downloaded.
+    var downloadablePreviewableResources: [MediaItem.Resource] {
+        return previewableResources.filter { !$0.isDownloaded(droneId: droneId, mediaType: mediaType) }
+    }
+
     /// Returns true if mediaItem is downloaded.
     var isDownloaded: Bool {
         return downloadableResources.isEmpty

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FlightPlanVersionUpgraderProgressView" customModule="OpenFlight" customModuleProvider="target">
+            <connections>
+                <outlet property="progressText" destination="xfP-k3-kqf" id="Wqi-hg-Lcl"/>
+                <outlet property="progressView" destination="ngY-1C-fJf" id="tAa-ks-Pkn"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ngY-1C-fJf" customClass="CircleProgressView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="176" y="176" width="248" height="248"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="ngY-1C-fJf" secondAttribute="height" multiplier="1:1" id="g82-ag-Tes"/>
+                        <constraint firstAttribute="width" constant="248" id="tEz-DW-NIk"/>
+                    </constraints>
+                </view>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xfP-k3-kqf">
+                    <rect key="frame" x="225.5" y="225.5" width="149" height="149"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="xfP-k3-kqf" secondAttribute="height" multiplier="1:1" id="J5E-Fn-i6q"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="ngY-1C-fJf" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="OX9-uL-Rai"/>
+                <constraint firstItem="xfP-k3-kqf" firstAttribute="width" secondItem="ngY-1C-fJf" secondAttribute="width" multiplier="0.6" id="WQI-Kz-8OM"/>
+                <constraint firstItem="xfP-k3-kqf" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="kXM-Pi-48H"/>
+                <constraint firstItem="xfP-k3-kqf" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="rcL-En-dTr"/>
+                <constraint firstItem="ngY-1C-fJf" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="veV-hJ-1Uj"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="130" y="89"/>
+        </view>
+    </objects>
+</document>

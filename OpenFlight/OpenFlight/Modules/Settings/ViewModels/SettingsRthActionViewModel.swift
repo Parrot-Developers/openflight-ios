@@ -41,6 +41,7 @@ final class SettingsRthActionViewModel {
 
     // MARK: - Private Properties
 
+    private var rthSettingsMonitor: RthSettingsMonitor
     private var currentDroneHolder: CurrentDroneHolder
     private var cancellables = Set<AnyCancellable>()
 
@@ -53,24 +54,37 @@ final class SettingsRthActionViewModel {
         returnHomePilotingRef = nil
     }
 
-    init(currentDroneHolder: CurrentDroneHolder) {
+    // MARK: - Internal Funcs
+    /// Inits.
+    ///
+    ///  - Parameters:
+    ///         - currentDroneHolder: drone holder
+    ///         - rthSettingsMonitor: return home settings manager
+    init(currentDroneHolder: CurrentDroneHolder,
+         rthSettingsMonitor: RthSettingsMonitor) {
         self.currentDroneHolder = currentDroneHolder
+        self.rthSettingsMonitor = rthSettingsMonitor
 
         currentDroneHolder.dronePublisher
             .sink { [weak self] drone in
                 guard let self = self else { return }
                 self.listenReturnHome(drone)
+                self.listenUserRthSettings()
             }
             .store(in: &cancellables)
     }
 
-    // MARK: - Internal Funcs
     /// Saves Return Home in drone.
     ///
     /// - Parameters:
     ///     - altitude: altitude to save
     func saveRth(altitude: Double) {
-        currentDroneHolder.drone.getPilotingItf(PilotingItfs.returnHome)?.minAltitude?.value = altitude
+        let userSettings = rthSettingsMonitor.getUserRthSettings()
+        let rthSettings = RthSettings(rthReturnTarget: userSettings.rthReturnTarget,
+                                      rthHeight: altitude,
+                                      rthEndBehaviour: userSettings.rthEndBehaviour,
+                                      rthHoveringHeight: userSettings.rthHoveringHeight)
+        rthSettingsMonitor.updateUserRthSettings(rthSettings: rthSettings)
     }
 }
 
@@ -82,9 +96,16 @@ private extension SettingsRthActionViewModel {
             guard let rth = rth,
                   let currentMinAltitude = rth.minAltitude else { return }
 
-            altitude = currentMinAltitude.value
             minAltitude = currentMinAltitude.min
             maxAltitude = currentMinAltitude.max
         }
+    }
+
+    func listenUserRthSettings() {
+        rthSettingsMonitor.userPreferredRthSettingsPublisher.sink { [weak self] rthSettings in
+            guard let self = self else { return }
+            self.altitude = rthSettings.rthHeight
+        }
+        .store(in: &cancellables)
     }
 }

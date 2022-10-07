@@ -150,6 +150,13 @@ public protocol FlightEditionDelegate: AnyObject {
 
 // MARK: - FlightPlanEditionViewModel
 class FlightPlanEditionViewModel {
+    /// The view state reflecting current subject value. Private setter.
+    private(set) var viewState: ViewState? {
+        get { viewStateSubject.value }
+        set { viewStateSubject.value = newValue }
+    }
+    /// The view state publisher.
+    var viewStatePublisher: AnyPublisher<ViewState?, Never> { viewStateSubject.eraseToAnyPublisher() }
 
     // MARK: - Private Properties
     private var edition: FlightPlanEditionService!
@@ -163,8 +170,8 @@ class FlightPlanEditionViewModel {
     private(set) var selectedGraphic: FlightPlanGraphic?
     private var globalSettingsProvider: FlightPlanSettingsProvider?
     private var cancellables = [AnyCancellable]()
-
-    @Published private(set) var viewState: ViewState?
+    /// The view state subject.
+    private let viewStateSubject = CurrentValueSubject<ViewState?, Never>(nil)
 
     // MARK: - Public Properties
     weak var mapDelegate: MapViewEditionControllerDelegate?

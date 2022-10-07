@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Fj7-S8-J2m">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Fj7-S8-J2m">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -43,29 +43,8 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="Wah-3w-ODt">
                                                         <rect key="frame" x="0.0" y="0.0" width="140" height="30"/>
                                                         <subviews>
-                                                            <stackView opaque="NO" contentMode="center" alignment="center" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="3Ge-i6-sd5">
-                                                                <rect key="frame" x="0.0" y="0.0" width="45" height="30"/>
-                                                                <subviews>
-                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryRemoteNone" translatesAutoresizingMaskIntoConstraints="NO" id="ISI-TF-Ab8">
-                                                                        <rect key="frame" x="0.0" y="9" width="15" height="12"/>
-                                                                        <color key="tintColor" name="suva_grey"/>
-                                                                        <constraints>
-                                                                            <constraint firstAttribute="width" constant="15" id="rFB-LG-q3U"/>
-                                                                        </constraints>
-                                                                    </imageView>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sWC-zG-klp">
-                                                                        <rect key="frame" x="16" y="8.3333333333333144" width="29" height="13"/>
-                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
-                                                                        <color key="textColor" name="default_text_color"/>
-                                                                        <nil key="highlightedColor"/>
-                                                                    </label>
-                                                                </subviews>
-                                                                <constraints>
-                                                                    <constraint firstAttribute="height" constant="30" id="RJt-N9-CDr"/>
-                                                                </constraints>
-                                                            </stackView>
                                                             <stackView opaque="NO" contentMode="center" alignment="center" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="ypY-Qu-BHy">
-                                                                <rect key="frame" x="61" y="0.0" width="45" height="30"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="45" height="30"/>
                                                                 <subviews>
                                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryUserDeviceNone" translatesAutoresizingMaskIntoConstraints="NO" id="FRO-eG-xMa">
                                                                         <rect key="frame" x="0.0" y="9.3333333333333144" width="15" height="11"/>
@@ -83,6 +62,27 @@
                                                                 </subviews>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="30" id="noK-wU-LJM"/>
+                                                                </constraints>
+                                                            </stackView>
+                                                            <stackView opaque="NO" contentMode="center" alignment="center" spacing="1" translatesAutoresizingMaskIntoConstraints="NO" id="3Ge-i6-sd5">
+                                                                <rect key="frame" x="61" y="0.0" width="45" height="30"/>
+                                                                <subviews>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryRemoteNone" translatesAutoresizingMaskIntoConstraints="NO" id="ISI-TF-Ab8">
+                                                                        <rect key="frame" x="0.0" y="9" width="15" height="12"/>
+                                                                        <color key="tintColor" name="suva_grey"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" constant="15" id="rFB-LG-q3U"/>
+                                                                        </constraints>
+                                                                    </imageView>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sWC-zG-klp">
+                                                                        <rect key="frame" x="16" y="8.3333333333333144" width="29" height="13"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
+                                                                        <color key="textColor" name="default_text_color"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                </subviews>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="30" id="RJt-N9-CDr"/>
                                                                 </constraints>
                                                             </stackView>
                                                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9Ch-kg-4Xg">

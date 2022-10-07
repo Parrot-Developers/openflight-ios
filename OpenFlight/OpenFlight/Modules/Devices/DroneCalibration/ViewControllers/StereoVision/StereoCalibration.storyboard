@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina5_9" orientation="landscape" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
-        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="Stack View standard spacing" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
+        <array key="Rajdhani-Bold.ttf">
+            <string>Rajdhani-Bold</string>
+        </array>
         <array key="Rajdhani-Regular.ttf">
             <string>Rajdhani-Regular</string>
         </array>
@@ -30,93 +32,167 @@
         <scene sceneID="s0d-6b-0kx">
             <objects>
                 <viewController storyboardIdentifier="StereoCalibrationViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Y6W-OH-hqX" userLabel="Stereo Calibration View Controller" customClass="StereoCalibrationViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="5EZ-qb-Rvc">
-                        <rect key="frame" x="0.0" y="0.0" width="812" height="375"/>
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="jCm-fw-SO1"/>
+                        <viewControllerLayoutGuide type="bottom" id="UTM-TE-Rha"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
+                        <rect key="frame" x="0.0" y="0.0" width="844" height="390"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Lqj-PN-oeC" userLabel="Streaming Container View">
-                                <rect key="frame" x="0.0" y="0.0" width="512" height="375"/>
+                                <rect key="frame" x="0.0" y="0.0" width="544" height="390"/>
                                 <connections>
                                     <segue destination="UlH-ly-QFt" kind="embed" id="WCD-pa-dna"/>
                                 </connections>
                             </containerView>
-                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SJl-QT-BfC" userLabel="Right panel View" customClass="RightSidePanelView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="512" y="0.0" width="300" height="375"/>
+                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SJl-QT-BfC" userLabel="Right panel View">
+                                <rect key="frame" x="544" y="0.0" width="300" height="390"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="pTt-br-Wfo" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="8" y="30" width="284" height="337"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="kN9-H7-oUy">
+                                        <rect key="frame" x="0.0" y="0.0" width="300" height="390"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Obstacle Avoidance Calibration" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r91-sn-ByV">
-                                                <rect key="frame" x="0.0" y="0.0" width="284" height="50"/>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rsf-ky-uvr" userLabel="Box spacer" customClass="SideNavigationBarView" customModule="OpenFlight">
+                                                <rect key="frame" x="0.0" y="0.0" width="300" height="40"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="50" id="QiW-WQ-MBi"/>
+                                                    <constraint firstAttribute="height" constant="40" placeholder="YES" id="Yvw-dj-ytX"/>
                                                 </constraints>
-                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
-                                                <color key="textColor" name="default_text_color"/>
-                                                <color key="highlightedColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <variation key="heightClass=regular-widthClass=regular">
-                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="22"/>
-                                                </variation>
-                                            </label>
-                                            <stackView opaque="NO" contentMode="scaleToFill" alignment="top" translatesAutoresizingMaskIntoConstraints="NO" id="zsQ-PW-Rtq">
-                                                <rect key="frame" x="0.0" y="50" width="284" height="237"/>
+                                            </view>
+                                            <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="pTt-br-Wfo" customClass="RightSidePanelStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="40" width="300" height="350"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="l6K-Nl-xDB">
-                                                        <rect key="frame" x="0.0" y="0.0" width="284" height="45"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="AOL-1g-NsE">
+                                                        <rect key="frame" x="0.0" y="0.0" width="300" height="20"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="The drone will take off and fly upward." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zzJ-3K-o6a">
-                                                                <rect key="frame" x="0.0" y="0.0" width="284" height="15"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
-                                                                <color key="textColor" name="warning_color"/>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="NPH-Dn-sIl">
+                                                                <rect key="frame" x="0.0" y="0.0" width="300" height="20"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Obstacle Avoidance Calibration" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r91-sn-ByV">
+                                                                        <rect key="frame" x="42.666666666666629" y="0.0" width="215" height="5"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                                                        <color key="textColor" name="default_text_color"/>
+                                                                        <color key="highlightedColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="22"/>
+                                                                        </variation>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="Handlaunch available" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XAJ-N7-m5z">
+                                                                        <rect key="frame" x="101" y="9" width="98" height="11"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="11"/>
+                                                                        <color key="textColor" name="navy_blue"/>
+                                                                        <color key="highlightedColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                                            <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="13"/>
+                                                                        </variation>
+                                                                    </label>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="Y1X-L2-5gx">
+                                                        <rect key="frame" x="0.0" y="20" width="300" height="255"/>
+                                                        <subviews>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="l6K-Nl-xDB">
+                                                                <rect key="frame" x="0.0" y="0.0" width="300" height="49"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="249" text="The drone will take off and fly upward." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zzJ-3K-o6a">
+                                                                        <rect key="frame" x="34.000000000000014" y="0.0" width="232.33333333333337" height="15"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
+                                                                        <color key="textColor" name="warning_color"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="22"/>
+                                                                        </variation>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Please make sure you are in an open area before starting." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yBM-PS-OCb">
+                                                                        <rect key="frame" x="20.333333333333371" y="19" width="259.66666666666669" height="30"/>
+                                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
+                                                                        <color key="textColor" name="warning_color"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                        <variation key="heightClass=regular-widthClass=regular">
+                                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="22"/>
+                                                                        </variation>
+                                                                    </label>
+                                                                </subviews>
+                                                            </stackView>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="BUD-pV-FgZ">
+                                                                <rect key="frame" x="0.0" y="53" width="300" height="164"/>
+                                                                <subviews>
+                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" image="handAnimation000000" translatesAutoresizingMaskIntoConstraints="NO" id="9Fv-08-zGd">
+                                                                        <rect key="frame" x="15" y="0.0" width="270" height="164"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    </imageView>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstItem="9Fv-08-zGd" firstAttribute="centerX" secondItem="BUD-pV-FgZ" secondAttribute="centerX" id="IM8-Jt-ARX"/>
+                                                                    <constraint firstItem="9Fv-08-zGd" firstAttribute="top" secondItem="BUD-pV-FgZ" secondAttribute="top" id="TnK-Y3-vIR"/>
+                                                                    <constraint firstAttribute="bottom" secondItem="9Fv-08-zGd" secondAttribute="bottom" id="c6G-Ur-kmn"/>
+                                                                    <constraint firstItem="9Fv-08-zGd" firstAttribute="width" secondItem="BUD-pV-FgZ" secondAttribute="width" multiplier="0.9" id="fAa-L3-91q"/>
+                                                                </constraints>
+                                                            </view>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I9z-ka-vrm">
+                                                                <rect key="frame" x="0.0" y="221" width="300" height="34"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="34"/>
+                                                                <color key="textColor" name="default_text_color"/>
                                                                 <nil key="highlightedColor"/>
-                                                                <variation key="heightClass=regular-widthClass=regular">
-                                                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="22"/>
-                                                                </variation>
-                                                            </label>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Please make sure you are in an open area before starting." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yBM-PS-OCb">
-                                                                <rect key="frame" x="0.0" y="15" width="284" height="30"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="15"/>
-                                                                <color key="textColor" name="warning_color"/>
-                                                                <nil key="highlightedColor"/>
-                                                                <variation key="heightClass=regular-widthClass=regular">
-                                                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="22"/>
-                                                                </variation>
                                                             </label>
                                                         </subviews>
                                                     </stackView>
-                                                </subviews>
-                                            </stackView>
-                                            <stackView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="248" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="ZUA-nK-yqv" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="287" width="284" height="50"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="gzZ-iM-dSL" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="284" height="25"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
-                                                        <state key="normal" title="Test">
-                                                            <color key="titleColor" name="default_text_color"/>
-                                                        </state>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="18"/>
-                                                        </variation>
-                                                        <connections>
-                                                            <action selector="startQuickCalibration:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Nsb-Hk-2Jv"/>
-                                                        </connections>
-                                                    </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="lVj-OJ-0Z8" userLabel="Start Button" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="25" width="284" height="25"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
-                                                        <state key="normal" title="Test3">
-                                                            <color key="titleColor" name="default_text_color"/>
-                                                        </state>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="18"/>
-                                                        </variation>
-                                                        <connections>
-                                                            <action selector="startOptimalCalibration:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Q9p-x0-Gbg"/>
-                                                        </connections>
-                                                    </button>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="248" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="ZUA-nK-yqv" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="275" width="300" height="75"/>
+                                                        <subviews>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oeS-tN-Lqf" customClass="ActionView" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="0.0" width="300" height="25"/>
+                                                                <subviews>
+                                                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fb4-RX-8Gp" customClass="StopView" customModule="OpenFlight" customModuleProvider="target">
+                                                                        <rect key="frame" x="137.66666666666663" y="0.0" width="25" height="25"/>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="width" secondItem="fb4-RX-8Gp" secondAttribute="height" multiplier="1:1" id="Tg9-um-wWs"/>
+                                                                        </constraints>
+                                                                    </view>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstItem="fb4-RX-8Gp" firstAttribute="height" secondItem="oeS-tN-Lqf" secondAttribute="height" id="0ly-oe-xrL"/>
+                                                                    <constraint firstItem="fb4-RX-8Gp" firstAttribute="centerY" secondItem="oeS-tN-Lqf" secondAttribute="centerY" id="21I-s3-tZ4"/>
+                                                                    <constraint firstItem="fb4-RX-8Gp" firstAttribute="centerX" secondItem="oeS-tN-Lqf" secondAttribute="centerX" id="O7E-V3-Hjo"/>
+                                                                </constraints>
+                                                            </view>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="gzZ-iM-dSL" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="25" width="300" height="25"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                                                <state key="normal" title="Test">
+                                                                    <color key="titleColor" name="default_text_color"/>
+                                                                </state>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="18"/>
+                                                                </variation>
+                                                                <connections>
+                                                                    <action selector="startQuickCalibration:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Nsb-Hk-2Jv"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="lVj-OJ-0Z8" userLabel="Start Button" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="50" width="300" height="25"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
+                                                                <state key="normal" title="Test3">
+                                                                    <color key="titleColor" name="default_text_color"/>
+                                                                </state>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="18"/>
+                                                                </variation>
+                                                                <connections>
+                                                                    <action selector="startOptimalCalibration:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="Q9p-x0-Gbg"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </stackView>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
@@ -124,20 +200,19 @@
                                 </subviews>
                                 <color key="backgroundColor" name="default_bgcolor"/>
                                 <constraints>
-                                    <constraint firstItem="pTt-br-Wfo" firstAttribute="leading" secondItem="SJl-QT-BfC" secondAttribute="leadingMargin" id="49b-Xb-sJ2"/>
-                                    <constraint firstAttribute="trailingMargin" secondItem="pTt-br-Wfo" secondAttribute="trailing" id="FWw-fj-5j3"/>
-                                    <constraint firstAttribute="bottomMargin" secondItem="pTt-br-Wfo" secondAttribute="bottom" id="HcP-yh-uqu"/>
-                                    <constraint firstItem="pTt-br-Wfo" firstAttribute="top" secondItem="SJl-QT-BfC" secondAttribute="top" constant="30" id="U51-Wk-Scy">
-                                        <variation key="heightClass=regular-widthClass=regular" constant="50"/>
-                                    </constraint>
+                                    <constraint firstAttribute="bottom" secondItem="kN9-H7-oUy" secondAttribute="bottom" id="Kwy-ah-pKP"/>
                                     <constraint firstAttribute="width" constant="300" placeholder="YES" id="bJm-lc-JJU"/>
+                                    <constraint firstItem="kN9-H7-oUy" firstAttribute="top" secondItem="SJl-QT-BfC" secondAttribute="top" id="fH4-fz-Fd3"/>
+                                    <constraint firstItem="BUD-pV-FgZ" firstAttribute="centerY" secondItem="SJl-QT-BfC" secondAttribute="centerY" id="jEs-v3-r7n"/>
+                                    <constraint firstAttribute="trailing" secondItem="kN9-H7-oUy" secondAttribute="trailing" id="nlK-q3-BRb"/>
+                                    <constraint firstItem="kN9-H7-oUy" firstAttribute="leading" secondItem="SJl-QT-BfC" secondAttribute="leading" id="zMD-rl-ocb"/>
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" spacingType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="lqM-Vg-B3y">
-                                <rect key="frame" x="0.0" y="0.0" width="812" height="60"/>
+                                <rect key="frame" x="0.0" y="0.0" width="844" height="60"/>
                                 <subviews>
                                     <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tyg-Yq-KSi">
-                                        <rect key="frame" x="0.0" y="0.0" width="812" height="60"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="844" height="60"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="60" id="adn-o0-pcr"/>
                                         </constraints>
@@ -148,7 +223,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZV3-Bm-EDa">
-                                <rect key="frame" x="220.33333333333334" y="50" width="71.333333333333343" height="40"/>
+                                <rect key="frame" x="236.33333333333334" y="50" width="71.333333333333343" height="40"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2HZ-ik-2Mt">
                                         <rect key="frame" x="15.000000000000004" y="5" width="41.333333333333343" height="30"/>
@@ -172,7 +247,6 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="X6f-5X-Ilt"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="lqM-Vg-B3y" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="3cc-i5-5ug"/>
@@ -192,10 +266,14 @@
                     <connections>
                         <outlet property="alertLabel" destination="2HZ-ik-2Mt" id="gVs-Cl-sAc"/>
                         <outlet property="alertView" destination="ZV3-Bm-EDa" id="znj-fG-1lF"/>
+                        <outlet property="animationImageView" destination="9Fv-08-zGd" id="5c3-oF-xyY"/>
+                        <outlet property="countdownLabel" destination="I9z-ka-vrm" id="07U-7d-eLP"/>
                         <outlet property="messageLabel" destination="zzJ-3K-o6a" id="DNY-nC-GqC"/>
                         <outlet property="optimalCalibrationButton" destination="lVj-OJ-0Z8" id="nbM-ue-SaB"/>
                         <outlet property="quickCalibrationButton" destination="gzZ-iM-dSL" id="MXw-E5-jOb"/>
                         <outlet property="rightPanelView" destination="SJl-QT-BfC" id="6nq-dL-2kg"/>
+                        <outlet property="stopView" destination="fb4-RX-8Gp" id="CEE-Kg-0wQ"/>
+                        <outlet property="subtitleLabel" destination="XAJ-N7-m5z" id="fS8-ja-yf0"/>
                         <outlet property="titleLabel" destination="r91-sn-ByV" id="4qw-U8-l1Z"/>
                         <outlet property="warningLabel" destination="yBM-PS-OCb" id="KgR-iu-YY5"/>
                         <outlet property="welcomeStackView" destination="pTt-br-Wfo" id="a1C-u9-Bs5"/>
@@ -215,11 +293,15 @@
         </scene>
     </scenes>
     <resources>
+        <image name="handAnimation000000" width="275" height="126"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="default_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="navy_blue">
+            <color red="0.078431372549019607" green="0.43137254901960786" blue="0.84705882352941175" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="warning_color">
             <color red="1" green="0.44313725490196076" blue="0.27058823529411763" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

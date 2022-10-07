@@ -39,13 +39,14 @@ extension GallerySDMediaViewModel {
     ///    - media: Media Item
     ///    - resources: resources to download
     ///    - completion: provides media url after download
-    func downloadResource(media: MediaItem?,
+    func downloadPreviews(media: MediaItem?,
                           resources: [MediaItem.Resource],
                           completion: @escaping (URL?) -> Void) {
         guard let mediaStore = mediaStore,
               let imgUrl = MediaItem.Resource.previewDirectoryUrl(droneId: state.value.droneUid),
               let mediaItem = media,
               !resources.isEmpty else {
+            completion(nil)
             return
         }
 
@@ -68,10 +69,65 @@ extension GallerySDMediaViewModel {
 
                     AssetUtils.shared.addMediaItemToLocalList(currentMedia, for: droneId)
                     AssetUtils.shared.addMediaInfoToLocalList(media: currentMedia, url: mediaDownloader?.fileUrl)
+                case .error:
+                    completion(nil)
                 default:
                     break
                 }
             })
+    }
+
+    /// Load media's ressource(s) from drone in preview mode.
+    /// Yield `.fileDownloaded` status to caller after a resource from media with `mediaUid` uid has been downloaded
+    /// if a uid is specified, or after any resource has been downloaded otherwise.
+    ///
+    /// - Parameters:
+    ///    - mediaUid: the media uid triggering `.fileDownloaded` task status (optional)
+    ///    - mediaResources: the resources to download
+    /// - Returns: an async stream tracking the download status
+    func downloadPreviews(mediaUid: String? = nil, mediaResources: MediaResourceList) -> AsyncStream<MediaTaskStatus> {
+        AsyncStream { continuation in
+            guard let imgUrl = MediaItem.Resource.previewDirectoryUrl(droneId: state.value.droneUid),
+                  let mediaStore = mediaStore else {
+                continuation.yield(.error)
+                continuation.finish()
+                return
+            }
+
+            // Get media store downloader reference (potential ongoing preview download request will be canceled).
+            previewDownloadRequest = mediaStore.newDownloader(
+                mediaResources: mediaResources,
+                type: DownloadType.preview,
+                destination: .directory(path: imgUrl.path)) { mediaDownloader in
+                    guard let downloadStatus = mediaDownloader?.status else {
+                        // Unknown status => report error and finish sequence, as download may never be complete.
+                        continuation.yield(.error)
+                        continuation.finish()
+                        return
+                    }
+
+                    switch downloadStatus {
+                    case .fileDownloaded:
+                        if mediaUid == nil || mediaDownloader?.currentMedia?.uid == mediaUid {
+                            // Yield .fileDownloaded if it matches `mediaUid`, or if no uid has been specified.
+                            continuation.yield(.fileDownloaded)
+                        }
+
+                    case .error:
+                        continuation.yield(.error)
+                        // Should only yield continuation (with `.error` status) here. Unfortunately `newDownloader` currently
+                        // interrupts download as soon as an error is met.
+                        continuation.finish()
+
+                    case .complete:
+                        continuation.yield(.complete)
+                        continuation.finish()
+
+                    default:
+                        break
+                    }
+                }
+        }
     }
 
     /// Download medias and save them to the mobile device.
@@ -86,7 +142,7 @@ extension GallerySDMediaViewModel {
             return
         }
 
-        let mediaList = MediaUtils.convertMediasToDownloadableResourceList(medias: mediasToDownload)
+        let mediaList = MediaUtils.getDownloadableResources(medias: mediasToDownload)
 
         downloadRequest = mediaStore.newDownloader(
             mediaResources: mediaList,
@@ -135,6 +191,11 @@ extension GallerySDMediaViewModel {
         downloaderDidUpdate(nil)
         drone?.getPeripheral(Peripherals.streamServer)?.enabled = true
         refreshMedias()
+    }
+
+    /// Cancel previews downloads.
+    func cancelPreviewsDownloads() {
+        previewDownloadRequest = nil
     }
 
     /// Save media item.

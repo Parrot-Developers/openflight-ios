@@ -113,7 +113,9 @@ final class FlightPlanPanelEstimationView: UIView, NibOwnerLoadable {
     ///     - model: Flight Plan estimations
     func updateEstimations(model: FlightPlanEstimationsModel?) {
         timeLabel.text = model?.formattedDuration ?? Style.dash
+        timeLabel.accessibilityValue = String(Int(model?.duration ?? 0))
         mediaLabel.text = model?.formattedDistance ?? Style.dash
+        mediaLabel.accessibilityValue = String(Int(model?.distance ?? 0))
     }
 }
 

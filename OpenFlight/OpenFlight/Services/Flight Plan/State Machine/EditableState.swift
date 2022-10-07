@@ -29,6 +29,11 @@
 
 import GameKit
 import Combine
+import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "EditableState")
+}
 
 public protocol EditableStateDelegate: AnyObject {
     func flightPlanIsEditable(_ flightPlan: FlightPlanModel, startAvailability: FlightPlanStartAvailability)
@@ -74,12 +79,15 @@ open class EditableState: GKState {
 
     public func forceEditable() {
         guard flightPlan.state != .editable,
-              let editableFP = flightPlanManager.editableFlightPlansFor(projectId: flightPlan.projectUuid).first
-        else { return }
-
+              let editableFP = flightPlanManager.editableFlightPlansFor(projectId: flightPlan.projectUuid).first else {
+            ULog.e(.tag, "forceEditable failed: flightPlan.state = \(flightPlan.state) or editableFP not found")
+            return
+        }
+        ULog.d(.tag, "forceEditable with flight plan \(editableFP)")
         // Delete, if needed, the previous execution.
         if mustDelete(flightPlan: flightPlan) {
             flightPlanManager.delete(flightPlan: flightPlan)
+            projectManager.cancelLastExecution(forProjectId: flightPlan.projectUuid)
         }
         // Update the current FP.
         flightPlan = editableFP

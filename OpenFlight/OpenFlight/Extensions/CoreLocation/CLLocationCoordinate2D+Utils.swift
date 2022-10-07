@@ -30,7 +30,7 @@
 import CoreLocation
 
 /// Utility extension for `CLLocationCoordinate2D`.
-extension CLLocationCoordinate2D {
+public extension CLLocationCoordinate2D {
     // MARK: - Internal Properties
     /// Returns coordinates as string.
     var coordinatesDescription: String {
@@ -79,6 +79,30 @@ extension CLLocationCoordinate2D {
                       longInMinutes,
                       longInSeconds,
                       longInDegrees >= 0 ? L10n.cardinalDirectionEast : L10n.cardinalDirectionWest)
+    }
+
+    func distance(from: CLLocationCoordinate2D) -> CLLocationDistance {
+        let locationFrom = CLLocation(latitude: from.latitude, longitude: from.longitude)
+        let locationTo = CLLocation(latitude: self.latitude, longitude: self.longitude)
+        return locationFrom.distance(from: locationTo)
+    }
+
+    /// Returns the bearing to a given location.
+    ///
+    /// - Parameters:
+    ///     - location: target of the bearing
+    func bearingTo(_ location: CLLocationCoordinate2D) -> Double {
+        let latitude1 = self.latitude.toRadians()
+        let longitude1 = self.longitude.toRadians()
+        let latitude2 = location.latitude.toRadians()
+        let longitude2 = location.longitude.toRadians()
+
+        let delta = longitude2 - longitude1
+        let coordX = sin(delta) * cos(latitude2)
+        let coordY = cos(latitude1) * sin(latitude2) - sin(latitude1) * cos(latitude2) * cos(delta)
+        let radiansBearing = atan2(coordX, coordY)
+
+        return radiansBearing.toDegrees()
     }
 }
 

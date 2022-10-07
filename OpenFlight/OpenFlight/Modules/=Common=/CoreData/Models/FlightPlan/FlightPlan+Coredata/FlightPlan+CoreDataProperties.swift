@@ -54,6 +54,10 @@ extension FlightPlan {
     @NSManaged public var mediaCount: Int16
     @NSManaged public var uploadedMediaCount: Int16
     @NSManaged public var lastUpdate: Date!
+    @NSManaged public var hasReachedFirstWayPoint: Bool
+    @NSManaged public var hasReachedLastWayPoint: Bool
+    @NSManaged public var lastPassedWayPointIndex: NSNumber?
+    @NSManaged public var percentCompleted: Double
     @NSManaged public var synchroStatus: Int16
     @NSManaged public var fileSynchroStatus: Int16
     @NSManaged public var fileSynchroDate: Date?
@@ -66,6 +70,7 @@ extension FlightPlan {
     @NSManaged public var lastUploadAttempt: Date?
     @NSManaged public var latestLocalModificationDate: Date?
     @NSManaged public var synchroError: Int16
+    @NSManaged public var executionRank: NSNumber?
 
     // MARK: - Relationship
 

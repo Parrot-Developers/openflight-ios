@@ -147,6 +147,9 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3sY-Wu-zmw" customClass="MissionLauncherButton" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <accessibility key="accessibilityConfiguration" label="Mission Launcher">
+                                            <bool key="isElement" value="YES"/>
+                                        </accessibility>
                                         <connections>
                                             <action selector="missionLauncherButtonTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="fd0-Te-RTi"/>
                                         </connections>
@@ -164,6 +167,7 @@
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Whv-gc-ugc" customClass="BarButtonView" customModule="OpenFlight" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="61" height="50"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <accessibility key="accessibilityConfiguration" identifier="cameraMode"/>
                                                         <connections>
                                                             <action selector="cameraModeTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="Cci-y7-jgV"/>
                                                         </connections>
@@ -171,6 +175,7 @@
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Mlh-JI-FAA" customClass="CameraWidgetView" customModule="OpenFlight" customModuleProvider="target">
                                                         <rect key="frame" x="61" y="0.0" width="61" height="50"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <accessibility key="accessibilityConfiguration" identifier="cameraSettings"/>
                                                         <connections>
                                                             <action selector="cameraWidgetTouchedUpInside:" destination="9Ua-ni-zRI" eventType="touchUpInside" id="swH-lg-Rcd"/>
                                                         </connections>
@@ -194,6 +199,7 @@
                                             </view>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <accessibility key="accessibilityConfiguration" identifier="cameraCapture"/>
                                         <constraints>
                                             <constraint firstItem="Moq-UE-Mq3" firstAttribute="leading" secondItem="qnh-0R-mgj" secondAttribute="leading" id="8t9-JY-cL7"/>
                                             <constraint firstAttribute="trailing" secondItem="Moq-UE-Mq3" secondAttribute="trailing" id="8tD-wB-f1h"/>

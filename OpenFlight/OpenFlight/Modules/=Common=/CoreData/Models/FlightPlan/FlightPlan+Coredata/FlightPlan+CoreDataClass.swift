@@ -98,6 +98,21 @@ public class FlightPlan: NSManagedObject {
         mediaCount = flightPlanModel.mediaCount
         uploadedMediaCount = flightPlanModel.uploadedMediaCount
         lastUpdate = flightPlanModel.lastUpdate
+
+        hasReachedFirstWayPoint = flightPlanModel.hasReachedFirstWayPoint
+        hasReachedLastWayPoint = flightPlanModel.hasReachedLastWayPoint
+        if let lastPassedWayPointIndexSetting = flightPlanModel.lastPassedWayPointIndex {
+            lastPassedWayPointIndex = NSNumber(value: lastPassedWayPointIndexSetting)
+        } else {
+            lastPassedWayPointIndex = nil
+        }
+        percentCompleted = flightPlanModel.percentCompleted
+        if let anExecutionRank = flightPlanModel.executionRank {
+            executionRank = NSNumber(value: anExecutionRank)
+        } else {
+            executionRank = nil
+        }
+
         latestCloudModificationDate = flightPlanModel.latestCloudModificationDate
         lastUploadAttempt = flightPlanModel.lastUploadAttempt
         uploadAttemptCount = flightPlanModel.uploadAttemptCount

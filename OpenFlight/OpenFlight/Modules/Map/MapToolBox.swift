@@ -34,12 +34,18 @@ extension MapViewController {
     ///
     /// - Parameters:
     ///    - point: ags point
+    ///    - altitude: altitude to apply
     /// - Returns: Boolean indicating if the location is inside the zone
-    public func isInside(point: AGSPoint) -> Bool {
-        let locationPoint = shouldDisplayMapIn2D ? AGSPoint(x: point.x, y: point.y, spatialReference: .wgs84()) : point
+    public func isInside(point: AGSPoint, altitude: Double = 0.0) -> Bool {
+        let locationPoint: AGSPoint
+        if shouldDisplayMapIn2D {
+            locationPoint = AGSPoint(x: point.x, y: point.y, z: 0.0, spatialReference: .wgs84())
+        } else {
+            locationPoint = AGSPoint(x: point.x, y: point.y, z: point.z + altitude, spatialReference: .wgs84())
+        }
+
         let screenPoint = sceneView.location(toScreen: locationPoint).screenPoint
         guard !screenPoint.isOriginPoint else { return false }
-
         let minX = sceneView.bounds.width * MapConstants.mapBorderHorizontal
         let minY = sceneView.bounds.height * MapConstants.mapBorderVertical
         let width = sceneView.bounds.width * (1 - MapConstants.mapBorderHorizontal * 2)
@@ -53,9 +59,10 @@ extension MapViewController {
     ///
     /// - Parameters:
     ///    - location: the 2d location of a point
+    ///    - altitude: altitude of the point (AMSL)
     /// - Returns: Boolean indicating if the location is inside the zone
-    public func isInside(location: CLLocationCoordinate2D) -> Bool {
-        return isInside(point: AGSPoint(clLocationCoordinate2D: location))
+    public func isInside(location: CLLocationCoordinate2D, altitude: Double?) -> Bool {
+        return isInside(point: AGSPoint(clLocationCoordinate2D: location), altitude: altitude ?? 0.0)
     }
 
     /// Creates a view point to view a polyline.

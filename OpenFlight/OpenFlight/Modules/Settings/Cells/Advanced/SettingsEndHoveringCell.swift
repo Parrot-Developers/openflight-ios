@@ -38,7 +38,7 @@ final class SettingsEndHoveringCell: MainTableViewCell, NibReusable {
     @IBOutlet private weak var stackView: UIStackView!
 
     // MARK: - Private Properties
-    private let viewModel = SettingsEndHoveringViewModel()
+    private let viewModel = SettingsEndHoveringViewModel(rthSettingsMonitor: Services.hub.rthSettingsMonitor)
     private var segmentedCell: SettingsSegmentedCell = SettingsSegmentedCell.loadFromNib()
     private var sliderCell: SettingsSliderCell = SettingsSliderCell.loadFromNib()
 
@@ -107,8 +107,14 @@ private extension SettingsEndHoveringCell {
 // MARK: - SettingsSliderCellDelegate
 extension SettingsEndHoveringCell: SettingsSliderCellDelegate {
     func settingsSliderCellSliderDidFinishEditing(value: Float, atIndexPath indexPath: IndexPath) {
-        if let setting = viewModel.endHoveringAltitudeEntry.setting as? DoubleSetting {
+        if let setting = viewModel.endHoveringAltitudeEntry.setting as? HoveringAltitudeModel {
             setting.value = Double(value)
+            let userPreferredRthSettings = viewModel.rthSettingsMonitor.getUserRthSettings()
+            let rthSettings = RthSettings(rthReturnTarget: userPreferredRthSettings.rthReturnTarget,
+                                          rthHeight: userPreferredRthSettings.rthHeight,
+                                          rthEndBehaviour: userPreferredRthSettings.rthEndBehaviour,
+                                          rthHoveringHeight: setting.value)
+            viewModel.rthSettingsMonitor.updateUserRthSettings(rthSettings: rthSettings)
         }
     }
 

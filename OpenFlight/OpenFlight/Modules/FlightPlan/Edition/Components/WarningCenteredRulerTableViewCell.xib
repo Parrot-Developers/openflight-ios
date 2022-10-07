@@ -10,53 +10,54 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" indentationWidth="10" reuseIdentifier="WarningCenteredRulerTableViewCell" id="KGk-i7-Jjw" userLabel="WarningCenteredRulerTableViewCell" customClass="WarningCenteredRulerTableViewCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="100"/>
+        <tableViewCell contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="default" indentationWidth="10" reuseIdentifier="WarningCenteredRulerTableViewCell" rowHeight="134" id="KGk-i7-Jjw" userLabel="WarningCenteredRulerTableViewCell" customClass="WarningCenteredRulerTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="134"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="320" height="100"/>
+                <rect key="frame" x="0.0" y="0.0" width="320" height="134"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="85X-GB-rOP" customClass="SidePanelSettingCellContainerStackView" customModule="OpenFlight" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="89"/>
+                    <stackView opaque="NO" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="85X-GB-rOP" customClass="SidePanelSettingCellContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="123"/>
                         <subviews>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GSy-Cx-6Cm" userLabel="titleView">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="21"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="trash.slash.circle.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="YeH-eG-bSm" userLabel="leftIcon">
-                                        <rect key="frame" x="8" y="1" width="20" height="19"/>
+                                        <rect key="frame" x="8" y="12" width="20" height="19"/>
                                         <color key="tintColor" name="default_text_color"/>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" insetsLayoutMarginsFromSafeArea="NO" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jKr-8u-Mvm">
-                                        <rect key="frame" x="139.5" y="0.5" width="41.5" height="20.5"/>
+                                        <rect key="frame" x="8" y="0.0" width="304" height="43"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="folder.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="VpV-YY-I07" userLabel="rightIcon">
-                                        <rect key="frame" x="289" y="1.5" width="23" height="17.5"/>
+                                        <rect key="frame" x="289" y="12.5" width="23" height="17.5"/>
                                         <color key="tintColor" name="default_text_color"/>
                                     </imageView>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="VpV-YY-I07" firstAttribute="centerY" secondItem="GSy-Cx-6Cm" secondAttribute="centerY" id="GrO-VQ-e1f"/>
-                                    <constraint firstItem="jKr-8u-Mvm" firstAttribute="centerY" secondItem="GSy-Cx-6Cm" secondAttribute="centerY" id="Nqe-sF-tTV"/>
+                                    <constraint firstAttribute="bottom" secondItem="jKr-8u-Mvm" secondAttribute="bottom" id="McL-Mv-kIX"/>
                                     <constraint firstItem="YeH-eG-bSm" firstAttribute="leading" secondItem="GSy-Cx-6Cm" secondAttribute="leadingMargin" id="QOM-Da-GtK"/>
+                                    <constraint firstAttribute="trailingMargin" secondItem="jKr-8u-Mvm" secondAttribute="trailing" id="UUR-T6-V1r"/>
+                                    <constraint firstItem="jKr-8u-Mvm" firstAttribute="top" secondItem="GSy-Cx-6Cm" secondAttribute="top" id="Z5k-Xz-R7b"/>
+                                    <constraint firstItem="jKr-8u-Mvm" firstAttribute="leading" secondItem="GSy-Cx-6Cm" secondAttribute="leadingMargin" id="lE2-qM-BnX"/>
                                     <constraint firstAttribute="trailingMargin" secondItem="VpV-YY-I07" secondAttribute="trailing" id="ubf-wO-7tc"/>
-                                    <constraint firstItem="jKr-8u-Mvm" firstAttribute="centerX" secondItem="GSy-Cx-6Cm" secondAttribute="centerX" id="vOh-vz-8z9"/>
-                                    <constraint firstAttribute="height" constant="21" id="wRM-UL-khU"/>
                                     <constraint firstItem="YeH-eG-bSm" firstAttribute="centerY" secondItem="GSy-Cx-6Cm" secondAttribute="centerY" id="xCP-wo-de5"/>
                                 </constraints>
                             </view>
-                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b6R-nR-BTH">
-                                <rect key="frame" x="0.0" y="33" width="320" height="56"/>
+                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b6R-nR-BTH" customClass="SidePanelSettingRulerView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="43" width="320" height="80"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </stackView>
                     <view hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QvG-Sz-iUY">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="100"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="134"/>
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.25" colorSpace="custom" customColorSpace="calibratedRGB"/>
                     </view>
                 </subviews>
@@ -87,7 +88,7 @@
                 <outlet property="titleLabel" destination="jKr-8u-Mvm" id="GWn-KU-5Gy"/>
                 <outlet property="titleView" destination="GSy-Cx-6Cm" id="Op3-ND-4Sx"/>
             </connections>
-            <point key="canvasLocation" x="139" y="155"/>
+            <point key="canvasLocation" x="137.68115942028987" y="143.30357142857142"/>
         </tableViewCell>
     </objects>
     <resources>

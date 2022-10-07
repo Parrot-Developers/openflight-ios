@@ -33,6 +33,7 @@ import Reusable
 /// Image menu table view cell.
 final class SettingsImageTableViewCell: SettingsTableViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var modeImage: UIImageView!
     @IBOutlet private weak var imageLabel: UILabel!
@@ -50,6 +51,12 @@ final class SettingsImageTableViewCell: SettingsTableViewCell, NibReusable {
 
         imageLabel.makeUp(with: .current, color: .defaultTextColor)
         imageLabel.text = Style.dash
+        // Add slight extra spacing on top of cell in order to avoid settings tableView
+        // being too close to stream view (image setting is 1st line).
+        containerView.layoutMargins = .init(top: Layout.mainSpacing(isRegularSizeClass) * 0.5,
+                                            left: 0,
+                                            bottom: Layout.tableViewCellContainerInset(isRegularSizeClass).bottom,
+                                            right: 0)
     }
 }
 

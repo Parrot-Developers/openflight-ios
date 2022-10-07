@@ -105,6 +105,9 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
         super.viewWillAppear(animated)
 
         setupPreviewImage()
+        // Hide play button until view is actually displayed and player is started
+        // in order to avoid potential remaining state from previous video after a scroll.
+        playButton.alphaHidden()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -119,6 +122,8 @@ final class GalleryVideoViewController: UIViewController, SwipableViewController
               }
 
         viewModel.mediaBrowsingViewModel.didDisplayMedia(index: mediaIndex, count: 1)
+        // Video is actually started => unhide play button.
+        playButton.animateIsHidden(false)
         start {
             self.viewModel?.videoPlay()
         }
@@ -171,13 +176,10 @@ private extension GalleryVideoViewController {
 // MARK: - Private Funcs
 private extension GalleryVideoViewController {
     func setupPreviewImage() {
-        guard let viewModel = viewModel,
-              let media = media else {
-                  return
-              }
+        guard let media = media else { return }
 
         let thumbnailViewModel = GalleryMediaThumbnailViewModel(media: media,
-                                                                index: viewModel.getMediaImageDefaultIndex(media))
+                                                                index: 0)
 
         thumbnailViewModel.getThumbnail { [weak self] image in
             self?.showPreviewImage(true)
@@ -255,9 +257,13 @@ private extension GalleryVideoViewController {
     func updatePlayButton() {
         guard let viewModel = viewModel else { return }
 
-        let image = viewModel.videoIsPlaying()
-            ? Asset.Gallery.Player.buttonPauseBig.image
-            : Asset.Gallery.Player.buttonPlayBig.image
+        // Set play button image according to playing state:
+        //   - Show pause button if video is playing.
+        //   - Show rewind button if player is stopped at the end of video.
+        //   - Show play button otherwise.
+        let image = viewModel.videoIsPlaying() ?
+        Asset.Gallery.Player.buttonPauseBig.image : viewModel.isStoppedAtEnd ?
+        Asset.Gallery.Player.buttonResetBig.image : Asset.Gallery.Player.buttonPlayBig.image
 
         playButton.setImage(image, for: .normal)
 

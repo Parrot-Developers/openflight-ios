@@ -58,6 +58,7 @@ open class HUDCoordinator: Coordinator {
                                                            currentMissionManager: services.currentMissionManager,
                                                            airsdkMissionsManager: services.drone.airsdkMissionsManager,
                                                            topBarService: services.ui.hudTopBarService,
+                                                           bottomBarService: services.ui.hudBottomBarService,
                                                            pinCodeService: services.drone.pinCodeService,
                                                            rthService: services.drone.rthService,
                                                            panoramaService: services.panoramaService,
@@ -153,6 +154,26 @@ open class HUDCoordinator: Coordinator {
     /// Returns dashboard coordinator.
     open func dashboardCoordinator() -> Coordinator { DashboardCoordinator(services: services) }
 
+    /// Starts drone details coordinator.
+    open func startDroneInformation() {
+        // hide mission launcher if it was opened
+        hideMissionLauncher()
+
+        // open drone information screen
+        let droneCoordinator = DroneCoordinator(services: services)
+        droneCoordinator.parentCoordinator = self
+        droneCoordinator.start()
+        present(childCoordinator: droneCoordinator)
+    }
+
+    /// Starts drone calibration.
+    open func startDroneCalibration() {
+        let droneCoordinator = DroneCalibrationCoordinator(services: services)
+        droneCoordinator.parentCoordinator = self
+        droneCoordinator.startWithMagnetometerCalibration()
+        present(childCoordinator: droneCoordinator)
+    }
+
     /// Returns to the previous displayed view according navigation stack service.
     ///
     /// - Parameters:
@@ -242,18 +263,6 @@ extension HUDCoordinator {
         present(childCoordinator: pairingCoordinator)
     }
 
-    /// Starts drone details coordinator.
-    func startDroneInformation() {
-        // hide mission launcher if it was opened
-        hideMissionLauncher()
-
-        // open drone information screen
-        let droneCoordinator = DroneCoordinator(services: services)
-        droneCoordinator.parentCoordinator = self
-        droneCoordinator.start()
-        present(childCoordinator: droneCoordinator)
-    }
-
     /// Starts remote details coordinator.
     func startRemoteInformation() {
         // hide mission launcher if it was opened
@@ -264,14 +273,6 @@ extension HUDCoordinator {
         remoteCoordinator.parentCoordinator = self
         remoteCoordinator.start()
         present(childCoordinator: remoteCoordinator)
-    }
-
-    /// Starts drone calibration.
-    func startDroneCalibration() {
-        let droneCoordinator = DroneCalibrationCoordinator(services: services)
-        droneCoordinator.parentCoordinator = self
-        droneCoordinator.startWithMagnetometerCalibration()
-        present(childCoordinator: droneCoordinator)
     }
 
     /// Displays remote shutdown alert screen.
@@ -317,12 +318,14 @@ extension HUDCoordinator {
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(viewModel: viewModel))
     }
 
+    /// Shows the mission launcher.
     func showMissionLauncher() {
         viewController?.missionControls.showMissionLauncher()
         showMissionsLauncherSubject.value = true
     }
 
-    func hideMissionLauncher() {
+    /// Hides the mission launcher.
+    public func hideMissionLauncher() {
         viewController?.missionControls.hideMissionLauncher()
         showMissionsLauncherSubject.value = false
     }

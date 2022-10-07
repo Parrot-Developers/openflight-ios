@@ -235,6 +235,8 @@ private extension BannerAlertManagerServiceImpl {
     func publish() {
         guard activeBanners != bannersSubject.value else { return }
 
+        logEvent(activeBanners, previousBanners: bannersSubject.value)
+
         bannersSubject.value = activeBanners
 
         ULog.i(.tag, "Active: \(bannersSubject.value), stack: \(bannersStack)")
@@ -272,6 +274,36 @@ private extension BannerAlertManagerServiceImpl {
                         self.publish()
                     }
             }
+        }
+    }
+}
+
+// MARK: - Logs
+private extension BannerAlertManagerServiceImpl {
+    /// Logs new active banners based on current and previous banners array.
+    ///
+    /// - Parameters:
+    ///   - banners: the current active banners array
+    ///   - previousBanners: the previous active banners array
+    func logEvent(_ banners: [AnyBannerAlert], previousBanners: [AnyBannerAlert]) {
+        guard !banners.isEmpty else {
+            // `banners` array is empty => log `noBanner` event.
+            LogEvent.log(.alert(type: LogEvent.AlertType.noBanner))
+            return
+        }
+
+        // Log any new active banner by subtracting `previousBanners` content from current array.
+        for banner in Set(banners).subtracting(previousBanners) {
+            var info = [LogEvent.AlertKey.message: banner.description.replacingOccurrences(of: "\"", with: ""),
+                        LogEvent.AlertKey.severity: banner.severity.description]
+            if let onDuration = banner.behavior.onDuration {
+                info[LogEvent.AlertKey.onDuration] = onDuration.description
+            }
+            if let snoozeDuration = banner.behavior.snoozeDuration {
+                info[LogEvent.AlertKey.snoozeDuration] = snoozeDuration.description
+            }
+            LogEvent.log(.alert(type: LogEvent.AlertType.banner,
+                                info: info))
         }
     }
 }

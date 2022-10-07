@@ -144,17 +144,4 @@ extension NetworkControl {
         return quality <= Constants.linkQualityThreshold &&
         currentLink == .wlan
     }
-
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
-    /// Returns current Wifi errors.
-    var currentWifiAlerts: [HUDAlertType] {
-        if let quality = linkQuality,
-           quality <= Constants.linkQualityThreshold,
-           currentLink == .wlan {
-            return [HUDBannerWarningAlertType.lowAndPerturbedWifi]
-        } else {
-            return []
-        }
-    }
 }

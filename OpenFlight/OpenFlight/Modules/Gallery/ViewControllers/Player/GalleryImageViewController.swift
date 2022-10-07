@@ -64,7 +64,7 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
               let media = media else {
             return 0
         }
-        return viewModel.getMediaImageCount(media) + additionalImageIndexOffset
+        return viewModel.getMediaImageCount(media, previewableOnly: true) + additionalImageIndexOffset
     }
     private var currentZoomableCell: GalleryMediaFullScreenCollectionViewCell? {
         guard let cell = itemsCollectionView.visibleCells.first as? GalleryMediaFullScreenCollectionViewCell,
@@ -148,7 +148,6 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
     /// Reloads collectionView content and fetch current image.
     func reloadContent() {
         itemsCollectionView.reloadData()
-        fetchImage(at: urlIndex(visibleIndex ?? imageIndex))
 
         guard let viewModel = viewModel,
               let media = media,
@@ -156,11 +155,9 @@ final class GalleryImageViewController: UIViewController, SwipableViewController
                   return
               }
 
-        // Content is reloaded based on current state => do not reset VM urls.
         viewModel.mediaBrowsingViewModel.didDisplayMedia(media,
                                                           index: mediaIndex,
-                                                          count: resourcesCount,
-                                                          resetUrls: false)
+                                                          count: resourcesCount)
     }
 }
 
@@ -189,23 +186,49 @@ private extension GalleryImageViewController {
 
 // MARK: - Images Fetching
 private extension GalleryImageViewController {
-    /// Fetches an image for a given resource index.
+    /// Fetches an image for a given resource index and prefetches contiguous resources in order to improve UX.
     ///
-    /// - Parameters:
-    ///     - index: The resource index in VM `mediaUrls` array.
-    func fetchImage(at index: Int?) {
-        guard let index = index,
-              index < viewModel?.mediaBrowsingViewModel.mediaUrls.count ?? 0,
-              viewModel?.mediaBrowsingViewModel.mediaUrls[index] == nil, // Fetch only if URL not known yet.
-              let media = media else {
-                  didCompleteImageFetch()
-                  return
-              }
+    /// - Parameter index: the resource index
+    func prefetchResources(at index: Int) {
+        guard let media = media,
+              let prefetch = viewModel?.prefetchResources(media: media, at: index) else { return }
 
-        viewModel?.getMediaPreviewImageUrl(media,
-                                           index) { [weak self] url in
-            self?.viewModel?.mediaBrowsingViewModel.didLoadUrl(url, at: index)
-            self?.reloadVisibleCell()
+        Task {
+            do {
+                for try await status in prefetch where status == .fileDownloaded {
+                    // Preview has been downloaded => reload visible cell if needed.
+                    // Note: It's currently impossible to gather the uid of the downloaded resource, so
+                    // we need to ensure that downloaded file is indeed the active resource in order
+                    // to avoid any useless reloads.
+                    reloadVisibleCellIfNeeded()
+                }
+            }
+        }
+    }
+
+    /// Fetches the first resource of current media and prefetches contiguous medias and resources in order to improve UX.
+    func prefetchMedias() {
+        guard let media = media,
+              let prefetch = viewModel?.prefetchMedias(media: media, mediaIndex: index) else { return }
+
+        Task {
+            do {
+                for try await status in prefetch {
+                    switch status {
+                    case .fileDownloaded:
+                        // Preview has been downloaded => reload visible cell if needed.
+                        // Note: It's currently impossible to gather the uid of the downloaded resource, so
+                        // we need to ensure that downloaded file is indeed the active resource in order
+                        // to avoid any useless reloads.
+                        reloadVisibleCellIfNeeded()
+                    case .complete:
+                        // Contiguous medias have been prefetched => run next resources prefetch in order
+                        // to anticipate resources browsing.
+                        prefetchResources(at: GalleryMediaViewModel.Constants.resourcesInitPrefetchSize)
+                    default: break
+                    }
+                }
+            }
         }
     }
 
@@ -213,6 +236,16 @@ private extension GalleryImageViewController {
     func reloadVisibleCell() {
         guard let visibleIndex = visibleIndex,
               visibleIndex < resourcesCount else { return }
+        itemsCollectionView.reloadItems(at: [IndexPath(item: visibleIndex, section: 0)])
+    }
+
+    /// Reloads current visible collectionView cell if it is in loading state.
+    func reloadVisibleCellIfNeeded() {
+        guard let visibleIndex = visibleIndex,
+              visibleIndex < resourcesCount,
+              let visibleCell = itemsCollectionView.cellForItem(at: .init(item: visibleIndex, section: 0)) as? GalleryMediaFullScreenCollectionViewCell,
+              visibleCell.isLoading
+        else { return }
         itemsCollectionView.reloadItems(at: [IndexPath(item: visibleIndex, section: 0)])
     }
 
@@ -246,12 +279,8 @@ private extension GalleryImageViewController {
 
     /// Shows immersive panorama view.
     func showImmersivePanorama() {
-        guard let viewModel = viewModel else { return }
-        let mediaUrls = viewModel.mediaBrowsingViewModel.mediaUrls
-        guard mediaUrls.count > imageIndex,
-              let url = mediaUrls[imageIndex] else {
-            return
-        }
+        guard let viewModel = viewModel,
+        let url = viewModel.mediaResourceUrl(media, at: imageIndex) else { return }
 
         coordinator?.showPanoramaVisualisationScreen(viewModel: viewModel, url: url)
     }
@@ -268,17 +297,15 @@ private extension GalleryImageViewController {
               }
 
         viewModel.mediaBrowsingViewModel.didDisplayMedia(media, index: mediaIndex, count: resourcesCount)
-        fetchImage(at: urlIndex(imageIndex))
+        prefetchMedias()
     }
 
     /// Setup default image index.
     func setupDefaultImageIndex() {
-        guard let viewModel = viewModel,
-              let media = media else {
-            return
-        }
+        guard let viewModel = viewModel else { return }
 
-        imageIndex = viewModel.getMediaImageDefaultIndex(media)
+        // Init resource index to 0 whatever the media type is.
+        imageIndex = 0
         viewModel.mediaBrowsingViewModel.didDisplayResourceAt(imageIndex)
         DispatchQueue.main.async {
             // Need to dispatch scrolling to defaultIndex, as collectionView may not be visible yet.
@@ -293,7 +320,7 @@ private extension GalleryImageViewController {
     func gotoImageAtIndex(_ index: Int) {
         guard index != visibleIndex else { return }
 
-        fetchImage(at: urlIndex(index))
+        prefetchResources(at: urlIndex(index))
         let indexPath = IndexPath.init(item: index, section: 0)
         itemsCollectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
     }
@@ -325,14 +352,17 @@ extension GalleryImageViewController: UIScrollViewDelegate {
             return
         }
 
-        fetchImage(at: urlIndex(visibleIndex))
+        prefetchResources(at: urlIndex(visibleIndex))
     }
 }
 
 // MARK: - UICollectionView DataSource
 extension GalleryImageViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        resourcesCount
+        // `resourcesCount` can be 0 if a media only contains non-previewable resources.
+        // => Ensure at least 1 empty cell is still displayed (in order to still be able to delete/share
+        //    the non-previewable resource).
+        max(1, resourcesCount)
     }
 
     func urlIndex(_ item: Int) -> Int {
@@ -345,10 +375,8 @@ extension GalleryImageViewController: UICollectionViewDataSource, UICollectionVi
         let cell = collectionView.dequeueReusableCell(for: indexPath) as GalleryMediaFullScreenCollectionViewCell
 
         let urlIndex = urlIndex(indexPath.item)
-        guard urlIndex < viewModel?.mediaBrowsingViewModel.mediaUrls.count ?? 0 else { return cell }
-
         cell.delegate = self
-        cell.model = GalleryMediaFullScreenCellModel(url: viewModel?.mediaBrowsingViewModel.mediaUrls[urlIndex],
+        cell.model = GalleryMediaFullScreenCellModel(url: viewModel?.mediaResourceUrl(media, at: urlIndex),
                                                      isAdditionalPanoramaCell: hasAdditionalPanoramaGenerationImage && indexPath.item == 0,
                                                      panoramaGenerationState: media?.panoramaGenerationState ?? .none,
                                                      hasShowImmersivePanoramaButton: (media?.canShowImmersivePanorama ?? false) && indexPath.item == 0,

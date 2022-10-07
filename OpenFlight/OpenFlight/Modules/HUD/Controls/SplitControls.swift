@@ -170,19 +170,16 @@ public class SplitControls: NSObject, DelayedTaskProvider {
     ///
     /// - Parameters:
     ///    - image: image
-    open func updateCenterMapButtonStatus(image: UIImage? = nil) {
+    open func updateCenterMapButtonStatus(state: MapCenterState? = nil) {
         switch SecondaryScreenType.current {
         case .threeDimensions where isMapRequired, .map:
-            if forceStream {
-                centerMapButton.isHidden = true
-            } else {
-                centerMapButton.isHidden = false
-                if image != nil {
-                    centerMapButton.setImage(image, for: .normal)
-                }
-            }
+            centerMapButton.isHidden = forceStream
         case .threeDimensions:
             centerMapButton.isHidden = true
+        }
+        if let state = state {
+            centerMapButton.setImage(state.image, for: .normal)
+            centerMapButton.accessibilityValue = state.rawValue
         }
     }
 }
@@ -355,7 +352,7 @@ extension SplitControls {
     }
 
     /// Update the right pannel with Map or 3D View
-    open func displayMapOr3DasChild() {
+    public func displayMapOr3DasChild() {
         guard mapViewController != nil, let parent = mapOr3DParent else {
             return
         }

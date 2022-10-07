@@ -103,29 +103,6 @@ enum SettingsCellularSelection: String, SettingMode, CaseIterable {
     }
 }
 
-/// Model for direct connection setting.
-enum SettingsDirectConnection: String, SettingMode, CaseIterable {
-    case disabled
-    case enabled
-
-    var localized: String {
-        switch self {
-        case .disabled:
-            return L10n.commonNo
-        case .enabled:
-            return L10n.commonYes
-        }
-    }
-
-    var key: String {
-        return rawValue
-    }
-
-    static var allValues: [SettingMode] {
-        return SettingsDirectConnection.allCases
-    }
-}
-
 /// Setting related to broadcast DRI.
 enum BroadcastDRISettings: String, SettingMode, CaseIterable {
     case driOff

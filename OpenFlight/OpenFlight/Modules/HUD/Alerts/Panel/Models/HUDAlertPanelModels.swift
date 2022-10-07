@@ -79,6 +79,8 @@ public protocol AlertPanelActionType {
     func startAction()
     /// Cancels alert action.
     func cancelAction()
+    /// Called at the end of the animation.
+    func progressDidFinish()
 }
 
 // MARK: - Public Enums

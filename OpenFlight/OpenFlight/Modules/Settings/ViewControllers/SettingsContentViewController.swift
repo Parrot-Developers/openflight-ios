@@ -142,6 +142,7 @@ private extension SettingsContentViewController {
         settingsTableView.register(cellType: SettingsCellularDataCell.self)
         settingsTableView.register(cellType: SettingsEndHoveringCell.self)
         settingsTableView.register(cellType: SettingsDriCell.self)
+        settingsTableView.register(cellType: SettingsShellAccessCell.self)
         settingsTableView.estimatedRowHeight = Layout.buttonIntrinsicHeight(isRegularSizeClass)
         settingsTableView.delaysContentTouches = false
     }
@@ -157,6 +158,8 @@ private extension SettingsContentViewController {
                     return .segmented
                 case is DriSettingModel:
                     return .dri
+                case is ShellAccessSettingModel:
+                    return .shellAccess
                 case is UIImage:
                     return .title
                 default:

@@ -36,9 +36,6 @@ class DroneDetailsBatteryViewController: UIViewController {
     // MARK: - Outlet
     @IBOutlet private weak var batteryView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var cell1Label: UILabel!
-    @IBOutlet private weak var cell2Label: UILabel!
-    @IBOutlet private weak var cell3Label: UILabel!
     @IBOutlet private weak var voltage1Label: UILabel!
     @IBOutlet private weak var voltage2Label: UILabel!
     @IBOutlet private weak var voltage3Label: UILabel!
@@ -56,10 +53,18 @@ class DroneDetailsBatteryViewController: UIViewController {
     @IBOutlet private weak var healthValueLabel: UILabel!
     @IBOutlet private weak var cyclesLabel: UILabel!
     @IBOutlet private weak var cyclesValueLabel: UILabel!
-    @IBOutlet private weak var temperatureLabel: UILabel!
-    @IBOutlet private weak var temperatureValueLabel: UILabel!
     @IBOutlet private weak var serialNumberLabel: UILabel!
     @IBOutlet private weak var serialNumberValueLabel: UILabel!
+    @IBOutlet private weak var softwareVersionLabel: UILabel!
+    @IBOutlet private weak var softwareVersionValueLabel: UILabel!
+    @IBOutlet private weak var hardwareVersionLabel: UILabel!
+    @IBOutlet private weak var harwareVersionValueLabel: UILabel!
+    @IBOutlet private weak var configurationDateLabel: UILabel!
+    @IBOutlet private weak var configurationDateValueLabel: UILabel!
+    @IBOutlet private weak var batteryPercentageValueLabel: UILabel!
+    @IBOutlet private weak var batteryImage: UIImageView!
+    @IBOutlet private weak var temperatureValueLabel: UILabel!
+    @IBOutlet private weak var cellsVoltageLabel: UILabel!
 
     // MARK: - Privates properties
 
@@ -113,29 +118,31 @@ private extension DroneDetailsBatteryViewController {
     func setupUI() {
         titleLabel.text = L10n.batteryInformation
         titleLabel.makeUp(with: .title, color: .defaultTextColor)
+        cellsVoltageLabel.text = L10n.batteryCellsVoltage
+        cellsVoltageLabel.makeUp(with: .subtitle, color: .defaultTextColor)
         batteryView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
 
         setupVoltageLabels()
         setupLeftInfoLabels()
         setupRightInfoLabels()
+        setupInfosLabels()
         setupProgressView()
-        setupCellsLabels()
     }
 
     func setupProgressView() {
-        voltage1ProgressView.tintColor = ColorName.batteryProgressColor.color
+        voltage1ProgressView.tintColor = ColorName.highlightColor.color
         voltage1ProgressView.setProgress(0.0, animated: false)
         voltage1ProgressView.layer.cornerRadius = Style.mediumCornerRadius
         voltage1ProgressView.layer.masksToBounds = true
         voltage1ProgressView.transform = CGAffineTransform(rotationAngle: .pi / -2)
 
-        voltage2ProgressView.tintColor = ColorName.batteryProgressColor.color
+        voltage2ProgressView.tintColor = ColorName.highlightColor.color
         voltage2ProgressView.setProgress(0.0, animated: false)
         voltage2ProgressView.layer.cornerRadius = Style.mediumCornerRadius
         voltage2ProgressView.layer.masksToBounds = true
         voltage2ProgressView.transform = CGAffineTransform(rotationAngle: .pi / -2)
 
-        voltage3ProgressView.tintColor = ColorName.batteryProgressColor.color
+        voltage3ProgressView.tintColor = ColorName.highlightColor.color
         voltage3ProgressView.setProgress(0.0, animated: false)
         voltage3ProgressView.layer.cornerRadius = Style.mediumCornerRadius
         voltage3ProgressView.layer.masksToBounds = true
@@ -155,22 +162,40 @@ private extension DroneDetailsBatteryViewController {
                                         borderWidth: 1.0)
     }
 
-    func setupCellsLabels() {
-        cell1Label.text = L10n.batteryCell1
-        cell1Label.makeUp(with: .subtitle, color: .defaultTextColor)
-        cell2Label.text = L10n.batteryCell2
-        cell2Label.makeUp(with: .subtitle, color: .defaultTextColor)
-        cell3Label.text = L10n.batteryCell3
-        cell3Label.makeUp(with: .subtitle, color: .defaultTextColor)
+    func setupVoltageLabels() {
+        voltage1Label.makeUp(with: .medium, color: .defaultTextColor)
+        voltage2Label.makeUp(with: .medium, color: .defaultTextColor)
+        voltage3Label.makeUp(with: .medium, color: .defaultTextColor)
     }
 
-    func setupVoltageLabels() {
-        voltage1Label.makeUp(with: .subtitle, color: .defaultTextColor)
-        voltage2Label.makeUp(with: .subtitle, color: .defaultTextColor)
-        voltage3Label.makeUp(with: .subtitle, color: .defaultTextColor)
+    func setupInfosLabels() {
+        temperatureValueLabel.makeUp(with: .subtitle, color: .defaultTextColor)
+        batteryPercentageValueLabel.makeUp(with: .subtitle, color: .defaultTextColor)
     }
 
     func setupLeftInfoLabels() {
+        serialNumberLabel.text = L10n.batterySerialNumber
+        serialNumberLabel.makeUp(with: .subtitle, color: .defaultTextColor)
+        serialNumberValueLabel.makeUp(with: .medium, color: .defaultTextColor)
+
+        softwareVersionLabel.text = L10n.batterySoftwareVersion
+        softwareVersionLabel.makeUp(with: .subtitle, color: .defaultTextColor)
+        softwareVersionValueLabel.makeUp(with: .medium, color: .defaultTextColor)
+
+        hardwareVersionLabel.text = L10n.batteryHardwareRevision
+        hardwareVersionLabel.makeUp(with: .subtitle, color: .defaultTextColor)
+        harwareVersionValueLabel.makeUp(with: .medium, color: .defaultTextColor)
+
+        configurationDateLabel.text = L10n.batteryConfigurationDate
+        configurationDateLabel.makeUp(with: .subtitle, color: .defaultTextColor)
+        configurationDateValueLabel.makeUp(with: .medium, color: .defaultTextColor)
+    }
+
+    func setupRightInfoLabels() {
+        totalVoltageLabel.text = L10n.batteryVoltage
+        totalVoltageLabel.makeUp(with: .subtitle, color: .defaultTextColor)
+        totalVoltageValueLabel.makeUp(with: .medium, color: .defaultTextColor)
+
         capacityLabel.text = L10n.batteryTotalCapacity
         capacityLabel.makeUp(with: .subtitle, color: .defaultTextColor)
         capacityValueLabel.makeUp(with: .medium, color: .defaultTextColor)
@@ -182,22 +207,24 @@ private extension DroneDetailsBatteryViewController {
         cyclesLabel.text = L10n.batteryCycles
         cyclesLabel.makeUp(with: .subtitle, color: .defaultTextColor)
         cyclesValueLabel.makeUp(with: .medium, color: .defaultTextColor)
-
-        temperatureLabel.text = L10n.batteryTemperature
-        temperatureLabel.makeUp(with: .subtitle, color: .defaultTextColor)
-        temperatureValueLabel.makeUp(with: .medium, color: .defaultTextColor)
-    }
-
-    func setupRightInfoLabels() {
-        totalVoltageLabel.text = L10n.batteryVoltage
-        totalVoltageLabel.makeUp(with: .subtitle, color: .defaultTextColor)
-        totalVoltageValueLabel.makeUp(with: .medium, color: .defaultTextColor)
-        serialNumberLabel.text = L10n.batterySerialNumber
-        serialNumberLabel.makeUp(with: .subtitle, color: .defaultTextColor)
-        serialNumberValueLabel.makeUp(with: .medium, color: .defaultTextColor)
     }
 
     func bindViewModel() {
+        bindRightInfos()
+        bindLeftInfos()
+        bindInfos()
+        bindProgress()
+        bindVoltage()
+    }
+
+    func bindRightInfos() {
+        viewModel.$totalVoltage.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.totalVoltageValueLabel.text = $0
+            }
+            .store(in: &cancellables)
+
         viewModel.$capacity.removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
@@ -218,21 +245,9 @@ private extension DroneDetailsBatteryViewController {
                 self.cyclesValueLabel.text = $0
             }
             .store(in: &cancellables)
+    }
 
-        viewModel.$temperature.removeDuplicates()
-            .sink { [weak self] in
-                guard let self = self else { return }
-                self.temperatureValueLabel.text = $0
-            }
-            .store(in: &cancellables)
-
-        viewModel.$totalVoltage.removeDuplicates()
-            .sink { [weak self] in
-                guard let self = self else { return }
-                self.totalVoltageValueLabel.text = $0
-            }
-            .store(in: &cancellables)
-
+    func bindLeftInfos() {
         viewModel.$serialNumber.removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
@@ -240,8 +255,42 @@ private extension DroneDetailsBatteryViewController {
             }
             .store(in: &cancellables)
 
-        bindProgress()
-        bindVoltage()
+        viewModel.$firmwareVersion.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.softwareVersionValueLabel.text = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$hardwareRevision.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.harwareVersionValueLabel.text = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$configurationDate.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.configurationDateValueLabel.text = $0
+            }
+            .store(in: &cancellables)
+    }
+
+    func bindInfos() {
+        viewModel.$temperature.removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.temperatureValueLabel.text = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$batteryLevel
+            .sink { [unowned self] batteryValue in
+                batteryPercentageValueLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryValue.currentValue)
+                batteryImage.image = batteryValue.batteryImage
+            }
+            .store(in: &cancellables)
     }
 
     func bindProgress() {

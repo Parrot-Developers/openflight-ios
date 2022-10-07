@@ -72,10 +72,15 @@ open class StartedNotFlyingState: GKState {
 
         // if flightPlan is editable, we duplicate the editable flight plan to use like execution.
         if flightPlan.state == .editable {
+            // set and get the next execution rank of the flight plan's project
+            let nextExecutionRank = projectManager.setNextExecutionRank(forProjectId: flightPlan.projectUuid)
             // duplicate the flightplan to use like execution
-            var newFlightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan, save: true)
-            // update the execution customTitle.
-            newFlightPlan = projectManager.updateExecutionCustomTitle(for: newFlightPlan)
+            var newFlightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan)
+            // set the execution rank
+            newFlightPlan.executionRank = nextExecutionRank
+            // update custom title with executionRank
+            newFlightPlan.customTitle = projectManager.executionCustomTitle(for: nextExecutionRank)
+
             // `newFlightPlan` is no more the project's editable FP.
             // It's the new execution, with the updated custom title, which must be considered as `.flying` state.
             flightPlan = flightPlanManager.update(flightplan: newFlightPlan, with: .flying)

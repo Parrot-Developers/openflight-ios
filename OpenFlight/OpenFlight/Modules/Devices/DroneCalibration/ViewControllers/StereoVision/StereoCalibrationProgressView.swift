@@ -48,6 +48,7 @@ class StereoCalibrationProgressView: UIView, NibOwnerLoadable {
     @IBOutlet weak var finishedButton: ActionButton!
     @IBOutlet weak var stopButton: ActionButton!
     @IBOutlet weak var calibrationCompleteImageView: UIImageView!
+    @IBOutlet weak var calibrationHandLandingImageView: UIImageView!
     @IBOutlet weak var calibrationErrorLabel: UILabel!
     @IBOutlet weak var landingStackView: UIStackView!
     @IBOutlet weak var landingButton: ActionButton!
@@ -58,8 +59,8 @@ class StereoCalibrationProgressView: UIView, NibOwnerLoadable {
     private var cancellables = Set<AnyCancellable>()
     private var stereoCalibViewModel: StereoCalibrationViewModel! {
         didSet {
-            bindViewModel()
             setupUI()
+            bindViewModel()
         }
     }
 
@@ -103,6 +104,7 @@ private extension StereoCalibrationProgressView {
         progressView.backgroundColor = .clear
         panelTitleLabel.text = L10n.loveCalibrationTitle
         landingTitle.text = L10n.loveCalibrationDone
+        calibrationHandLandingImageView.animationImages = Asset.Alertes.HandLand.Animation.allValues.compactMap { $0.image }
     }
 
     /// Loads the view from a xib.
@@ -151,8 +153,21 @@ private extension StereoCalibrationProgressView {
             .store(in: &cancellables)
 
         stereoCalibViewModel.$calibrationCompleteImageHidden
-            .sink { [unowned self] calibrationCompleteImageHidden in
-                calibrationCompleteImageView.isHidden = calibrationCompleteImageHidden
+            .removeDuplicates()
+            .sink { [unowned self]  in
+                calibrationCompleteImageView.isHidden = $0
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$calibrationHandLandingImageHidden
+            .removeDuplicates()
+            .sink { [unowned self]  in
+                calibrationHandLandingImageView.isHidden = $0
+                if !$0 {
+                    calibrationHandLandingImageView.startAnimating()
+                } else {
+                    calibrationHandLandingImageView.stopAnimating()
+                }
             }
             .store(in: &cancellables)
 

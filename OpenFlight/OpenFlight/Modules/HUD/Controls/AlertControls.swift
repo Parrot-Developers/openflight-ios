@@ -75,6 +75,8 @@ final class AlertControls: NSObject {
 extension AlertControls: HUDAlertPanelDelegate {
     func showAlertPanel() {
         guard alertPanelMode == .closed else { return }
+        // End any potential edition in order to dismiss keyboard and avoid UI textField selection glitch.
+        alertPanelView.superview?.endEditing(true)
         alertPanelMode = .opened
         updateConstraints()
     }

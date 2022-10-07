@@ -99,11 +99,17 @@ final class FlightPlanExecutionCell: MainTableViewCell, NibReusable {
     ///    - customTitle: the title to use instead of `execution.customTitle` (if not `nil`).
     func fill(execution: FlightPlanModel, customTitle: String? = nil) {
         titleLabel.text = customTitle ?? execution.customTitle
-        // TODO: Inject correclty after a refactor.
-        dateLabel.text = Services.hub
-            .flightPlan
-            .manager
-            .firstFlightFormattedDate(of: execution)
+        // TODO: Inject correctly after a refactor.
+        let manager = Services.hub.flightPlan.manager
+        dateLabel.text = manager.firstFlightFormattedDate(of: execution)
+
+        // Adjust the date label color if no date is available.
+        if manager.firstFlightDate(of: execution) == nil
+            && execution.flightPlanFlights?.first?.dateExecutionFlight == nil {
+            dateLabel.textColor = ColorName.warningColor.color
+        } else {
+            dateLabel.textColor = ColorName.disabledTextColor.color
+        }
 
         Services.hub.ui.flightPlanUiStateProvider.uiStatePublisher(for: execution)
             .sink { [unowned self] stateUiParameters in

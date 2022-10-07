@@ -37,7 +37,7 @@ final class GalleryPanoramaGenerationViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Outlets
-    @IBOutlet private weak var cancelButton: UIButton!
+    @IBOutlet private weak var cancelButton: InsetHitAreaButton!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var mediaTitleView: GalleryMediaTitleView!
     @IBOutlet private weak var circleProgressView: CircleProgressView!

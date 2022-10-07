@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21179.7" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
     <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21169.4"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -75,7 +75,7 @@
                                                 <color key="tintColor" red="0.28536473159999998" green="1" blue="0.24004633680000001" alpha="1" colorSpace="calibratedRGB"/>
                                                 <prototypes>
                                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="FileCell" id="Ksm-JP-BRV" customClass="ParrotLogFileCell" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="44.5" width="205" height="43.5"/>
+                                                        <rect key="frame" x="0.0" y="50" width="205" height="43.5"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ksm-JP-BRV" id="rDw-aq-kzy">
                                                             <rect key="frame" x="0.0" y="0.0" width="205" height="43.5"/>
@@ -116,7 +116,7 @@
                                                                 </constraints>
                                                                 <color key="textColor" name="default_text_color"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                                <textInputTraits key="textInputTraits" returnKeyType="done"/>
+                                                                <textInputTraits key="textInputTraits" keyboardType="alphabet" returnKeyType="done"/>
                                                                 <connections>
                                                                     <outlet property="delegate" destination="1UJ-SD-ecA" id="pp6-MX-MEu"/>
                                                                 </connections>
@@ -289,6 +289,7 @@
                     </view>
                     <connections>
                         <outlet property="activateLogsLabel" destination="Mrz-ox-D1m" id="vmm-FG-Rku"/>
+                        <outlet property="customMissionButton" destination="VLN-fA-bB7" id="SMK-Fm-icC"/>
                         <outlet property="enableStreamRecord" destination="GPA-T6-ekH" id="BHj-a6-bgl"/>
                         <outlet property="filesTableView" destination="QtU-FA-YFk" id="v67-kt-ziN"/>
                         <outlet property="informationsLabel" destination="ihn-4O-EJ6" id="N8A-mp-oZj"/>

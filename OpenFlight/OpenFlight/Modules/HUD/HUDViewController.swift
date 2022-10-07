@@ -31,12 +31,7 @@ import UIKit
 import Combine
 import GroundSdk
 
-public protocol CustomIndicatorProvider: AnyObject {
-
-    var customMessage: AnyPublisher<String?, Never> { get }
-    var shouldShowLoader: AnyPublisher<Bool, Never> { get }
-    var customMissionActive: AnyPublisher<Bool, Never> { get }
-}
+public protocol CustomIndicatorProvider: AnyObject { }
 
 /// Main view controller for the Heads-Up Display (HUD).
 final public class HUDViewController: UIViewController, DelayedTaskProvider {
@@ -56,6 +51,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var topStackView: UIStackView!
     @IBOutlet private weak var infoBannerTopConstraint: NSLayoutConstraint!
     @IBOutlet private weak var dismissMissionLauncherButton: UIButton!
+    @IBOutlet private weak var closeBottomBarButton: UIButton!
     @IBOutlet private weak var cameraSlidersLeadingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var actionWidgetBottomConstraint: NSLayoutConstraint!
     @IBOutlet private weak var actionWidgetStackView: RightSidePanelStackView!
@@ -74,6 +70,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     private var currentMissionManager: CurrentMissionManager?
     private var airsdkMissionsManager: AirSdkMissionsManager?
     private var topBarService: HudTopBarService?
+    private var bottomBarService: HudBottomBarService?
     private var pinCodeService: PinCodeService?
     private var rthService: RthService?
     private var panoramaService: PanoramaService?
@@ -88,6 +85,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     private var defaultMapViewController: MapViewController?
 
     /// View models.
+    private let topBannerViewModel = HUDTopBannerViewModel()
     private let joysticksViewModel = JoysticksViewModel()
     private let remoteShutdownAlertViewModel = RemoteShutdownAlertViewModel()
     private lazy var helloWorldViewModel: HelloWorldMissionViewModel? = {
@@ -125,6 +123,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
                             currentMissionManager: CurrentMissionManager,
                             airsdkMissionsManager: AirSdkMissionsManager,
                             topBarService: HudTopBarService,
+                            bottomBarService: HudBottomBarService,
                             pinCodeService: PinCodeService,
                             rthService: RthService,
                             panoramaService: PanoramaService,
@@ -138,6 +137,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         viewController.currentMissionManager = currentMissionManager
         viewController.airsdkMissionsManager = airsdkMissionsManager
         viewController.topBarService = topBarService
+        viewController.bottomBarService = bottomBarService
         viewController.pinCodeService = pinCodeService
         viewController.rthService = rthService
         viewController.panoramaService = panoramaService
@@ -172,10 +172,12 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
 
         listenMissionMode()
         listenTopBarChanges()
+        listenToBottomBar()
         listenRemoteShutdownAlert()
         listenPinCode()
         listenMissionLauncherState()
         listenToActionWidgets()
+        listenLanding()
 
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
@@ -225,7 +227,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         rightPanelContainerControls.start()
         updateViewModels()
         // Update landing view @willAppear, as it is removed when a fullscreen modal is presented.
-        updateLandingView(customIndicatorProvider: customIndicatorViewModel)
+        updateLandingView()
 
         super.viewWillAppear(animated)
     }
@@ -258,6 +260,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
 
         if let topBar = segue.destination as? HUDTopBarViewController {
             topBar.navigationDelegate = self
+            topBar.bottomBarService = bottomBarService
         } else if let cameraStreamingVC = segue.destination as? HUDCameraStreamingViewController {
             splitControls.cameraStreamingViewController = cameraStreamingVC
             cameraStreamingVC.delegate = self
@@ -266,6 +269,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
             indicatorViewController.indicatorViewControllerNavigation = self
         } else if let bottomBarContainerVC = segue.destination as? BottomBarContainerViewController {
             bottomBarContainerVC.coordinator = coordinator
+            bottomBarContainerVC.bottomBarService = bottomBarService
         } else if let missionLauncherVC = segue.destination as? MissionProviderSelectorViewController {
             guard let currentMissionManager = currentMissionManager,
                   let missionsStore = missionsStore,
@@ -294,7 +298,6 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
 
     func setupCustomMessageProvider(customMessageProvider: CustomIndicatorProvider?) {
         customIndicatorViewModel = customMessageProvider
-        listenLanding()
     }
 }
 
@@ -303,6 +306,11 @@ private extension HUDViewController {
     /// Dismiss mission Launcher by tapping outside it
     @IBAction func dismissMissionLauncherButtonTouchedUpInside() {
         coordinator?.hideMissionLauncher()
+    }
+    /// Closes bottom bar.
+    @IBAction func closeBottomBarButtonTouchedUpInside(_ sender: Any) {
+        // Close all bottom bar levels whenever a tap on background button is received.
+        bottomBarService?.set(mode: .closed)
     }
 }
 
@@ -341,6 +349,14 @@ private extension HUDViewController {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    /// Listens to bottom bar service in order to know if background close button needs to be displayed.
+    func listenToBottomBar() {
+        bottomBarService?.modePublisher.sink { [weak self] mode in
+            self?.closeBottomBarButton.isHiddenInStackView = mode == .closed
+        }
+        .store(in: &cancellables)
     }
 
     /// Listens if modal popup can be shown
@@ -464,6 +480,8 @@ private extension HUDViewController {
         let mode = currentMissionManager.mode
         if let map = mode.customMapProvider?() as? MapViewController {
             // Add custom map.
+            map.customControls = customControls
+            customControls?.mapViewController = map
             self.splitControls.addMap(map, parent: self)
             // Force recreate default map next time it will be necessary (this will deinit it).
             defaultMapViewController = nil
@@ -543,7 +561,7 @@ private extension HUDViewController {
             .combineLatest(landingViewModel.isReturnHomeActive.removeDuplicates())
             .sink { [unowned self] (isLanding, isReturnHomeActive) in
                 if isLanding || isReturnHomeActive {
-                    updateLandingView(customIndicatorProvider: customIndicatorViewModel)
+                    updateLandingView()
                 }
             }
             .store(in: &cancellables)
@@ -570,11 +588,10 @@ private extension HUDViewController {
 // MARK: - Utils for Hello World Mission
 private extension HUDViewController {
 
-    func updateLandingView(customIndicatorProvider: CustomIndicatorProvider?) {
+    func updateLandingView() {
         guard landingViewModel.isLandingOrRth else { return }
 
         let view = HUDLandingView()
-        view.setCustomProvider(customIndicatorProvider: customIndicatorProvider)
         view.commonInitHUDRTHAnimationView()
         addIndicatorView(with: view)
     }

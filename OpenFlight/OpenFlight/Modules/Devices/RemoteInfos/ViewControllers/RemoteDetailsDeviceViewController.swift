@@ -32,8 +32,6 @@ import UIKit
 /// Displays details about remote control physical device.
 final class RemoteDetailsDeviceViewController: UIViewController {
     // MARK: - Outlets
-    @IBOutlet private weak var modelLabel: UILabel!
-    @IBOutlet private weak var nameLabel: UILabel!
     @IBOutlet private weak var remoteImageView: UIImageView!
     @IBOutlet private weak var batteryImageView: UIImageView!
     @IBOutlet private weak var batteryValueLabel: UILabel!
@@ -57,6 +55,7 @@ final class RemoteDetailsDeviceViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
         observeViewModel()
         observeUserDeviceViewModel()
     }
@@ -72,6 +71,11 @@ final class RemoteDetailsDeviceViewController: UIViewController {
 
 // MARK: - Private Funcs
 private extension RemoteDetailsDeviceViewController {
+    func setupUI() {
+        batteryValueLabel.makeUp(with: .current, color: .defaultTextColor)
+        batteryDeviceValueLabel.makeUp(with: .current, color: .defaultTextColor)
+    }
+
     /// Observes the remote infos view model.
     func observeViewModel() {
         viewModel = RemoteInfosViewModel(batteryLevelDidChange: { [weak self] battery in

@@ -31,6 +31,10 @@ import GroundSdk
 import SwiftyUserDefaults
 import Combine
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "SettingsCameraViewModel")
+}
+
 /// Behaviours settings view model.
 final class SettingsCameraViewModel: SettingsViewModelProtocol {
     // MARK: - Published Properties
@@ -52,7 +56,7 @@ final class SettingsCameraViewModel: SettingsViewModelProtocol {
         let photoSignatureDisabled = photoSignatureModel?.forceDisabling ?? false
         let videoEncodingDisabled = videoEncodingModel?.forceDisabling ?? false
         let highDynamicRangeModel = self.highDynamicRangeModel
-        let hdrDisabled = !isDynamicRange10Enabled() || highDynamicRangeModel?.forceDisabling ?? false
+        let hdrDisabled = !isVideoDynamicRange10Possible() || highDynamicRangeModel?.forceDisabling ?? false
         let antiflickerDisabled = antiflickerModel?.forceDisabling ?? false
         return [SettingEntry(setting: SettingsOverexposure.self,
                              title: L10n.settingsCameraOverExposure,
@@ -119,12 +123,11 @@ final class SettingsCameraViewModel: SettingsViewModelProtocol {
 
 // MARK: - Private Funcs
 private extension SettingsCameraViewModel {
-    /// Verifies if HDR10 is enabled.
+    /// Verifies if video HDR10 can be enabled.
     ///
     /// - Returns: true if video encoding set on H265, false otherwise.
-    func isDynamicRange10Enabled() -> Bool {
-        let currentEditor = drone.currentCamera?.currentEditor
-        return currentEditor?[Camera2Params.videoRecordingCodec]?.value == .h265
+    func isVideoDynamicRange10Possible() -> Bool {
+        UserDefaults.videoRecordingCodec == .h265
     }
 
     /// Listens to camera2 peripheral
@@ -184,7 +187,13 @@ private extension SettingsCameraViewModel {
 
     /// Return video encoding setting model.
     var videoEncodingModel: DroneSettingModel? {
-        let videoEncoding = drone.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
+        let videoEncoding = UserDefaults.videoRecordingCodec
+        let droneValue = drone.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
+
+        if videoEncoding != droneValue {
+            ULog.w(.tag, "Video Encoding setting: \(videoEncoding) is different in the Drone: \(droneValue?.rawValue ?? "-")")
+        }
+
         let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2VideoCodec.allValues,
                                  supportedValues: Camera2VideoCodec.allValues,
@@ -192,38 +201,56 @@ private extension SettingsCameraViewModel {
                                  forceDisabling: forceDisabling) { [weak self] mode in
             guard let encodingMode = mode as? Camera2VideoCodec else { return }
 
+            // Store the new value locally.
+            Defaults.userVideoCodecSetting = encodingMode.rawValue
+
+            // Update Drone's camera config.
             let currentEditor = self?.drone.currentCamera?.currentEditor
             let currentConfig = self?.drone.currentCamera?.config
             currentEditor?[Camera2Params.videoRecordingCodec]?.value = encodingMode
+            // h264 only supports hdr8. Update the dynamic range accordingly.
+            // hdr10 will automatically set when switching to h265.
+            let hdr: Camera2DynamicRange = encodingMode == .h264 ? .hdr8 : .hdr10
+            Defaults.highDynamicRangeSetting = hdr.rawValue
             // If the current video dynamic range is HDR we update the drone value.
             if currentConfig?[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
-                if encodingMode == .h264 {
-                    currentEditor?[Camera2Params.videoRecordingDynamicRange]?.value = .hdr8
-                }
+                currentEditor?[Camera2Params.videoRecordingDynamicRange]?.value = hdr
+                Defaults.videoDynamicRangeSetting = hdr.rawValue
             }
             currentEditor?.saveSettings(currentConfig: currentConfig)
+            // Notify the change to update the HDR switch.
+            self?.notifyChangePublisher.send()
         }
     }
 
     /// Returns high dynamic range setting model.
     var highDynamicRangeModel: DroneSettingModel? {
+        let videoDynamicRange = UserDefaults.videoRecordingDynamicRange
         let currentHdrValue: Camera2DynamicRange
+        let droneValue = drone.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value
 
-        // If the drone have already a HDR value.
-        if let droneHDR = drone.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value,
-           droneHDR != .sdr {
-            Defaults.highDynamicRangeSetting = droneHDR.rawValue
-        }
-
-        // If we already have a HDR defaults.
-        if isDynamicRange10Enabled(),
-           let defaultsHDRString = Defaults.highDynamicRangeSetting,
-           let defaultsHDR = Camera2DynamicRange(rawValue: defaultsHDRString) {
+        if videoDynamicRange != .sdr {
+            // If video HDR is enabled, use its value.
+            currentHdrValue = videoDynamicRange
+        } else if let defaultsHDRString = Defaults.highDynamicRangeSetting,
+                  let defaultsHDR = Camera2DynamicRange(rawValue: defaultsHDRString) {
+            // If a default HDR value is available, use its value.
             currentHdrValue = defaultsHDR
         } else {
-            let videoEncoding = drone.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
-            currentHdrValue = videoEncoding == .h265 ? Camera2DynamicRange.hdr10 : Camera2DynamicRange.hdr8
+            // else set the value depending the video encoding setting.
+            currentHdrValue = UserDefaults.videoRecordingCodec == .h265 ? .hdr10 : .hdr8
+            Defaults.highDynamicRangeSetting = currentHdrValue.rawValue
         }
+
+        // Update the stored video dynamic range if HDR is enabled.
+        if drone.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
+            Defaults.videoDynamicRangeSetting = currentHdrValue.rawValue
+        }
+
+        if currentHdrValue != droneValue {
+            ULog.w(.tag, "Video Dynamic Range setting: \(currentHdrValue) is different in the Drone: \(droneValue?.rawValue ?? "-")")
+        }
+
         let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2DynamicRange.usedValues,
                                  supportedValues: Camera2DynamicRange.usedValues,
@@ -239,6 +266,7 @@ private extension SettingsCameraViewModel {
             if currentConfig?[Camera2Params.videoRecordingDynamicRange]?.value.isHdr == true {
                 let currentEditor = self?.drone.currentCamera?.currentEditor
                 currentEditor?[Camera2Params.videoRecordingDynamicRange]?.value = videoRange
+                Defaults.videoDynamicRangeSetting = videoRange.rawValue
                 currentEditor?.saveSettings(currentConfig: currentConfig)
             }
         }
@@ -246,18 +274,29 @@ private extension SettingsCameraViewModel {
 
     /// Returns photo signature setting model.
     var photoSignatureModel: DroneSettingModel? {
-        let photoSignature = drone.currentCamera?.config[Camera2Params.photoDigitalSignature]?.value
+        let photoSignature = UserDefaults.photoDigitalSignature
+        let droneValue = drone.currentCamera?.config[Camera2Params.photoDigitalSignature]?.value
+
+        if photoSignature != droneValue {
+            ULog.w(.tag, "Photo signature setting: \(photoSignature) is different in the Drone: \(droneValue?.rawValue ?? "-")")
+        }
+
         let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
+
         return DroneSettingModel(allValues: Camera2DigitalSignature.allValues,
                                  supportedValues: Camera2DigitalSignature.allValues,
                                  currentValue: photoSignature,
                                  forceDisabling: forceDisabling) { [weak self] digitalSignature in
-                                    guard let digitalSignature = digitalSignature as? Camera2DigitalSignature else { return }
+            guard let digitalSignature = digitalSignature as? Camera2DigitalSignature else { return }
 
-                                    let currentEditor = self?.drone.currentCamera?.currentEditor
-                                    let currentConfig = self?.drone.currentCamera?.config
-                                    currentEditor?[Camera2Params.photoDigitalSignature]?.value = digitalSignature
-                                    currentEditor?.saveSettings(currentConfig: currentConfig)
+            // Store the new value locally.
+            Defaults.userPhotoSignatureSetting = digitalSignature.rawValue
+
+            // Update Drone's camera config.
+            let currentEditor = self?.drone.currentCamera?.currentEditor
+            let currentConfig = self?.drone.currentCamera?.config
+            currentEditor?[Camera2Params.photoDigitalSignature]?.value = digitalSignature
+            currentEditor?.saveSettings(currentConfig: currentConfig)
         }
     }
 }

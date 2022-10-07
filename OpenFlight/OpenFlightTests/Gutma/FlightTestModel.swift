@@ -39,11 +39,11 @@ struct FlightTestModel: Codable {
     var duration: Double
     var gutmaFile: Data?
 
-    func flightModel() -> FlightModel {
+    func flightModel(gutma: Data?) -> FlightModel {
         return FlightModel(apcId: "", uuid: uuid, version: "", startTime: Date(), photoCount: photoCount,
                            videoCount: videoCount, startLatitude: 0, startLongitude: 0,
                            batteryConsumption: batteryConsumption, distance: distance,
-                           duration: duration, gutmaFile: gutmaFile)
+                           duration: duration, gutmaFile: gutma ?? gutmaFile)
     }
 
     /// Exports all flights currently in the repository.

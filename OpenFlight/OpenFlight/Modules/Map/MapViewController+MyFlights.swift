@@ -116,8 +116,10 @@ internal extension MapViewController {
 
         ULog.d(.mapViewController, "Get elevation for flight at: \(firstPoint.x),\(firstPoint.y)")
         myFlightAlttudeRequest?.cancel()
+        myFlightAlttudeRequest = nil
         myFlightAlttudeRequest = sceneView.scene?.baseSurface?.elevation(for: firstPoint) { [weak self] elevation, error in
             guard let self = self else { return }
+            self.myFlightAlttudeRequest = nil
             guard error == nil else {
                 ULog.w(.mapViewController, "Failed to get elevation for flight: \(error.debugDescription)")
                 return

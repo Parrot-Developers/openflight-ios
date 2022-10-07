@@ -30,7 +30,7 @@
 import UIKit
 
 /// A UIStackView with a default spacing value defined by `Layout.mainSpacing`.
-public class MainStackView: UIStackView {
+public class MainStackView: PassThroughBasicStackView {
     // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -294,55 +294,43 @@ public class ActionStackView: MainStackView {
     }
 }
 
-/// A Side Panel Setting UIView container adjusting its constraints.
-class SidePanelSettingContainerView: UIView {
-
-    /// The setting type.
-    var isTwoSegmentsSegmentedControl: Bool = false {
-        didSet { updateWidth() }
+/// A UIStackView with default text segments setting height (defined by `Layout.sidePanelSettingTextSegmentsHeight`).
+class SettingTextSegmentContainerStackView: UIStackView {
+    public override var intrinsicContentSize: CGSize {
+        .init(width: super.intrinsicContentSize.width,
+              height: Layout.sidePanelSettingTextSegmentsHeight(isRegularSizeClass)
+        )
     }
+}
 
-    // MARK: - Init
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupView()
+/// A UIStackView with default short picto segments setting height (defined by `Layout.sidePanelSettingShortPictoSegmentsHeight`).
+class SettingPictoSegmentContainerStackView: UIStackView {
+    public override var intrinsicContentSize: CGSize {
+        .init(width: super.intrinsicContentSize.width,
+              height: Layout.sidePanelSettingShortPictoSegmentsHeight(isRegularSizeClass)
+        )
     }
+}
 
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupView()
-    }
-
-    public override func prepareForInterfaceBuilder() {
-        super.prepareForInterfaceBuilder()
-        setupView()
-    }
-
-    // MARK: - Layout Configuration
-    private func setupView() {
-        updateWidth()
-    }
-
-    private func updateWidth() {
-        // Disable all height constraints already configured (previously or via the storyboard)
-        constraints
-            .filter { $0.firstAttribute == .width }
-            .forEach { $0.isActive = false }
-        // Activate the new constraint if needed
-        if isTwoSegmentsSegmentedControl {
-            widthAnchor
-                .constraint(equalToConstant: Layout.sidePanelSettingTwoSegmentsWidth(isRegularSizeClass))
-                .isActive = true
-        }
+/// A UIView with default slider setting height (defined by `Layout.sidePanelSettingSliderHeight`).
+class SidePanelSettingRulerView: UIView {
+    public override var intrinsicContentSize: CGSize {
+        .init(width: super.intrinsicContentSize.width,
+              height: Layout.sidePanelSettingSliderHeight(isRegularSizeClass))
     }
 }
 
 /// A Side Panel Setting UIStackView container adjusting its constraints.
 class SidePanelSettingContainerStackView: UIStackView {
+    public override var intrinsicContentSize: CGSize {
+        .init(width: super.intrinsicContentSize.width,
+              height: Layout.sidePanelSettingTextSegmentsHeight(isRegularSizeClass)
+        )
+    }
 
     /// The setting type.
-    var isTwoSegmentsSegmentedControl: Bool = false {
-        didSet { updateWidth() }
+    var settingType: SidePanelSettingType = .textSegments {
+        didSet { updateHeight() }
     }
 
     // MARK: - Init
@@ -363,20 +351,18 @@ class SidePanelSettingContainerStackView: UIStackView {
 
     // MARK: - Layout Configuration
     private func setupView() {
-        updateWidth()
+        updateHeight()
     }
 
-    private func updateWidth() {
+    private func updateHeight() {
         // Disable all height constraints already configured (previously or via the storyboard)
         constraints
-            .filter { $0.firstAttribute == .width }
+            .filter { $0.firstAttribute == .height }
             .forEach { $0.isActive = false }
         // Activate the new constraint if needed
-        if isTwoSegmentsSegmentedControl {
-            widthAnchor
-                .constraint(equalToConstant: Layout.sidePanelSettingTwoSegmentsWidth(isRegularSizeClass))
+            heightAnchor
+                .constraint(equalToConstant: settingType.height(isRegularSizeClass))
                 .isActive = true
-        }
     }
 }
 

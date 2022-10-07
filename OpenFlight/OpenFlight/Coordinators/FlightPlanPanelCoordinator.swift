@@ -113,22 +113,6 @@ public extension FlightPlanPanelCoordinator {
         navigationController?.popViewController(animated: animated)
     }
 
-    func saveChangesPopup(cancel: @escaping () -> Void, validate: @escaping () -> Void) {
-        let cancelAction = AlertAction(title: L10n.commonDiscard,
-                                 style: .destructive,
-                                 actionHandler: cancel)
-        let validateAction = AlertAction(title: L10n.commonSave,
-                                 style: .validate,
-                                 actionHandler: validate)
-        let controller = AlertViewController.instantiate(title: L10n.flightPlanDiscardChangesTitle,
-                                                         message: L10n.flightPlanDiscardChangesDescription,
-                                                         messageColor: .defaultTextColor,
-                                                         closeButtonStyle: .none,
-                                                         cancelAction: cancelAction,
-                                                         validateAction: validateAction)
-        presentModal(viewController: controller)
-    }
-
     /// Show HUD controls or map VC navigation bar according to `show` parameter.
     ///
     /// - Parameter show: whether HUD controls should be shown
@@ -190,6 +174,16 @@ private extension FlightPlanPanelCoordinator {
             .editionProvider(panelCoordinator: self,
                              flightPlanServices: services.flightPlan,
                              navigationStack: services.ui.navigationStack)
+
+        // Ensure that last VC of navigation stack is not of same type as `editionProvider`
+        // in order to avoid incorrectly pushing same VC twice (may occur on potential
+        // double taps on Edition button).
+        if let lastVC = navigationController?.viewControllers.last,
+           type(of: viewController) == type(of: lastVC) {
+            // `viewController` is already last VC of navigation stack => exit.
+            return
+        }
+
         navigationController?.pushViewController(viewController, animated: true)
     }
 

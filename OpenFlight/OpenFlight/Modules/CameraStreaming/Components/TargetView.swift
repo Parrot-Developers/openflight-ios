@@ -45,7 +45,7 @@ enum TargetState {
         case .locked:
             return ColorName.highlightColor.color
         case .pending:
-            return ColorName.yellowSea.color
+            return ColorName.warningColor.color
         case .proposal:
             return ColorName.gold.color
         }

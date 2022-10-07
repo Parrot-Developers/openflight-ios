@@ -212,7 +212,8 @@ extension CoreDataServiceImpl: FlightPlanFlightsRepository {
     }
 
     public func getAllModifiedLinks() -> [FlightPlanFlightsModel] {
-        return getFPlanFlightsCD(withQuery: "latestLocalModificationDate != nil").map({ $0.model() })
+        let apcIdQuery = "apcId == '\(userService.currentUser.apcId)'"
+        return getFPlanFlightsCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").map({ $0.model() })
     }
 
     // MARK: __ Delete
@@ -330,7 +331,7 @@ extension CoreDataServiceImpl: FlightPlanFlightsRepository {
         guard let entityName = fetchRequest.entityName else {
             return
         }
-        migrateAnonymousDataToLoggedUser(for: entityName) {
+        migrateAnonymousDataToLoggedUser(for: entityName) { _ in
             completion()
         }
     }

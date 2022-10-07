@@ -41,6 +41,7 @@ final class FlightPlanDashboardListViewController: UIViewController {
     @IBOutlet private weak var emptyExecutionLabel: UILabel!
     @IBOutlet private weak var openProjectButton: ActionButton!
     @IBOutlet private weak var bottomGradientView: BottomGradientView!
+    private var isFirstLoad: Bool = true
 
     typealias ViewModel = (FlightPlansListViewModelUIInput & FlightPlanListHeaderDelegate & FlightPlansListViewModelParentInput)
 
@@ -138,7 +139,6 @@ final class FlightPlanDashboardListViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        collectionView.reloadData()
         // If a prject was already selected, refresh his execution list.
         if let selectedProject = selectedProject {
             didSelectProject(selectedProject.project,
@@ -150,7 +150,10 @@ final class FlightPlanDashboardListViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
-        scrollToSelectedProject()
+        if isFirstLoad {
+            scrollToSelectedProject()
+            isFirstLoad = false
+        }
     }
 
     override func viewWillLayoutSubviews() {
@@ -200,11 +203,10 @@ final class FlightPlanDashboardListViewController: UIViewController {
             return
         }
         if let index = viewModel.getProjectIndex(forSelectedProject: selectedProject.project) {
-            self.didSelectProject(selectedProject.project, at: index)
             collectionView.reloadData()
             collectionView.scrollToItem(at: IndexPath(row: index, section: 0),
                                         at: .centeredVertically,
-                                        animated: false)
+                                        animated: true)
         } else {
             self.didDeselectProject()
         }

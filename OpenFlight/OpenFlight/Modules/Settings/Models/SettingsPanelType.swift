@@ -78,7 +78,8 @@ extension SettingsPanelType {
                     .geofence,
                     .rth,
                     .camera,
-                    .network]
+                    .network,
+                    .developer]
         }
     }
 }

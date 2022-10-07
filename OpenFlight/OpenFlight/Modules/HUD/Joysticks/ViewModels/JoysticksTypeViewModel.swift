@@ -56,52 +56,19 @@ enum JoystickType {
     }
 }
 
-/// State for `JoysticksTypeViewModel`.
-
-final class JoysticksTypeState: ViewModelState, EquatableState, Copying {
-    // MARK: - Internal Properties
-    /// Left joystick type.
-    fileprivate(set) var leftJoystickType: JoystickType = .gazYaw
-    /// Right joystick type.
-    fileprivate(set) var rightJoystickType: JoystickType = .pitchRoll
-
-    // MARK: - Init
-    required init() {}
-
-    /// Init.
-    ///
-    /// - Parameters:
-    ///    - leftJoystickType: type of the left joystick
-    ///    - rightJoystickType: type of the right joystick
-    init(leftJoystickType: JoystickType,
-         rightJoystickType: JoystickType) {
-        self.leftJoystickType = leftJoystickType
-        self.rightJoystickType = rightJoystickType
-    }
-
-    // MARK: - Equatable Implementation
-    func isEqual(to other: JoysticksTypeState) -> Bool {
-        return self.leftJoystickType == other.leftJoystickType
-            && self.leftJoystickType == other.leftJoystickType
-    }
-
-    // MARK: - Copying Implementation
-    func copy() -> JoysticksTypeState {
-        return JoysticksTypeState(leftJoystickType: self.leftJoystickType,
-                                  rightJoystickType: self.rightJoystickType)
-    }
-}
-
 /// View Model which provides type of left and right joysticks.
+final class JoysticksTypeViewModel {
+    // MARK: - Publish Properties
+    /// Left joystick type.
+    @Published private(set) var leftJoystickType: JoystickType = .gazYaw
+    /// Right joystick type.
+    @Published private(set) var rightJoystickType: JoystickType = .pitchRoll
 
-final class JoysticksTypeViewModel: BaseViewModel<JoysticksTypeState> {
     // MARK: - Private Properties
     private var disposable: DefaultsDisposable?
 
     // MARK: - Init
-    override init() {
-        super.init()
-
+    init() {
         listenControlsMode()
     }
 
@@ -116,12 +83,11 @@ final class JoysticksTypeViewModel: BaseViewModel<JoysticksTypeState> {
 private extension JoysticksTypeViewModel {
     /// Starts watcher for controls mode.
     func listenControlsMode() {
-        disposable = Defaults.observe(\.userControlModeSetting, options: [.new]) { [weak self] _ in
-            DispatchQueue.userDefaults.async {
+        disposable = Defaults.observe(\.userControlModeSetting, options: [.initial, .new]) { [weak self] _ in
+            DispatchQueue.main.async {
                 self?.updateJoysticks()
             }
         }
-        updateJoysticks()
     }
 
     /// Update left and right joystick types.
@@ -132,22 +98,20 @@ private extension JoysticksTypeViewModel {
             let userMode = ControlsSettingsMode(value: rawUserMode) {
             mode = userMode
         }
-        let copy = state.value.copy()
 
         switch mode {
         case .mode1:
-            copy.leftJoystickType = .pitchYaw
-            copy.rightJoystickType = .gazRoll
+            leftJoystickType = .pitchYaw
+            rightJoystickType = .gazRoll
         case .mode1Inversed:
-            copy.leftJoystickType = .gazRoll
-            copy.rightJoystickType = .pitchYaw
+            leftJoystickType = .gazRoll
+            rightJoystickType = .pitchYaw
         case .mode2:
-            copy.leftJoystickType = .gazYaw
-            copy.rightJoystickType = .pitchRoll
+            leftJoystickType = .gazYaw
+            rightJoystickType = .pitchRoll
         case .mode2Inversed:
-            copy.leftJoystickType = .pitchRoll
-            copy.rightJoystickType = .gazYaw
+            leftJoystickType = .pitchRoll
+            rightJoystickType = .gazYaw
         }
-        state.set(copy)
     }
 }

@@ -48,6 +48,7 @@ public struct FlightPlanStateUiParameters {
                 actionButtonColor: UIColor? = nil,
                 actionButtonProgress: Double? = nil,
                 actionButtonProgressColor: UIColor? = nil,
+                isActionButtonEnabled: Bool? = true,
                 actionButtonCallback: ButtonAction? = nil,
                 historyStatusText: String? = nil,
                 historyStatusTextColor: Color? = nil,
@@ -68,6 +69,7 @@ public struct FlightPlanStateUiParameters {
         self.actionButtonColor = actionButtonColor
         self.actionButtonProgress = actionButtonProgress
         self.actionButtonProgressColor = actionButtonProgressColor
+        self.isActionButtonEnabled = isActionButtonEnabled
         self.historyStatusText = historyStatusText
         self.historyStatusTextColor = historyStatusTextColor
         self.historyExtraIcon = historyExtraIcon
@@ -105,6 +107,7 @@ public struct FlightPlanStateUiParameters {
     public var actionButtonProgressColor: UIColor?
     public var actionButtonAction: ButtonAction?
     public var actionButtonCallback: ((Coordinator?) -> Void)?
+    public var isActionButtonEnabled: Bool?
 
     // ----
     // FP/PGY History cells
@@ -131,10 +134,13 @@ public class FlightPlanUiStateProviderImpl {
     private var optionalProviders = [FlightPlanOptionalUiStateProvider]()
     private let stateMachine: FlightPlanStateMachine
     private let projectManager: ProjectManager
+    private let startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher
 
     init(stateMachine: FlightPlanStateMachine,
+         startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher,
          projectManager: ProjectManager) {
         self.stateMachine = stateMachine
+        self.startAvailabilityWatcher = startAvailabilityWatcher
         self.projectManager = projectManager
     }
 }
@@ -151,6 +157,7 @@ extension FlightPlanUiStateProviderImpl: FlightPlanUiStateProvider {
         }
 
         let state = flightPlan.state
+        let isActionButtonEnabled = state.isButtonEnabled(startAvailability: startAvailabilityWatcher.availabilityForSendingMavlink)
 
         return FlightPlanStateUiParameters(statusText: state.labelText(for: flightPlan),
                                            statusTextColor: state.labelColor,
@@ -158,6 +165,7 @@ extension FlightPlanUiStateProviderImpl: FlightPlanUiStateProvider {
                                            actionButtonText: state.buttonText,
                                            actionButtonTextColor: state.buttonTextColor,
                                            actionButtonColor: state.buttonColor,
+                                           isActionButtonEnabled: isActionButtonEnabled,
                                            actionButtonCallback: buttonAction(for: flightPlan),
                                            historyStatusText: state.historyStatusText(for: flightPlan),
                                            historyStatusTextColor: state.historyStatusTextColor)
@@ -204,7 +212,10 @@ private extension FlightPlanModel.FlightPlanState {
 
     func labelText(for flightPlan: FlightPlanModel) -> String? {
         switch self {
-        case .stopped, .flying:
+        case .stopped:
+            // clamp value so that 99.nn is not displayed as 100
+            return L10n.flightPlanAlertStoppedAt((0.0 ... 99.49).clamp(flightPlan.percentCompleted).asPercent(maximumFractionDigits: 0))
+        case .flying:
             return L10n.flightPlanAlertStoppedAt(flightPlan.percentCompleted.asPercent(maximumFractionDigits: 0))
         case .completed:
             return L10n.flightPlanRunCompleted
@@ -266,9 +277,24 @@ private extension FlightPlanModel.FlightPlanState {
         }
     }
 
+    /// Returns FP UI action button isEnabled state according to FP start availability.
+    ///
+    /// - Parameter startAvailability: the FP start availability
+    /// - Returns: `true` if the action button is enabled, `false` otherwise
+    func isButtonEnabled(startAvailability: FlightPlanStartAvailability) -> Bool {
+        if case .unavailable = startAvailability {
+            // FP cannot be started => action button is disabled.
+            return false
+        }
+        return true
+    }
+
     func historyStatusText(for flightPlan: FlightPlanModel) -> String? {
         switch self {
-        case .stopped, .flying:
+        case .stopped:
+            // clamp value so that 99.nn is not displayed as 100
+            return L10n.flightPlanHistoryExecutionIncompleteAtDescription((0.0 ... 99.49).clamp(flightPlan.percentCompleted).asPercent(maximumFractionDigits: 0))
+        case .flying:
             return L10n.flightPlanHistoryExecutionIncompleteAtDescription(flightPlan.percentCompleted.asPercent(maximumFractionDigits: 0))
         case .completed:
             return L10n.flightPlanHistoryExecutionCompletedDescription

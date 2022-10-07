@@ -32,7 +32,33 @@ import GroundSdk
 import ArcGIS
 import CoreLocation
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "FlightPlanModel")
+}
+
+public typealias FlightPlanModelVersion = FlightPlanModel.ModelVersion
+
 public struct FlightPlanModel {
+    public enum ModelVersion {
+        // Version returned by the cloud for flight plan before the addition of 'version' field.
+        // This version can be handled as 'v1'.
+        public static let unknown: String = "unknown"
+        // The first version.
+        // swiftlint:disable:next identifier_name
+        public static let v1: String = "1"
+        // Version `2` stores the following fields into Core Data:
+        //    • hasReachedFirstWayPoint
+        //    • hasReachedLastWayPoint
+        //    • lastPassedWayPointIndex
+        //    • percentCompleted
+        // swiftlint:disable:next identifier_name
+        public static let v2: String = "2"
+
+        // Returns the latest version.
+        public static let latest = v2
+        // Returns the list of obsolete versions
+        public static let obsoletes: [String] = [unknown, v1]
+    }
     // MARK: __ Constants
     private enum Constants {
         static let dateTimeIntervalDivider: TimeInterval = 1000.0
@@ -70,6 +96,7 @@ public struct FlightPlanModel {
     // MARK: __ Local
     ///  dataSetting: object that saved as JSON to data base
     public var dataSetting: FlightPlanDataSetting?
+
     /// PGY
     public var pgyProjectId: Int64 {
         get { dataSetting?.pgyProjectId ?? 0 }
@@ -92,6 +119,37 @@ public struct FlightPlanModel {
     public var parrotCloudUploadUrl: String?
     public var mediaCustomId: String? // UNUSED
 
+    // MARK: __ Execution completion state
+    /// Whether the first way point has been reached.
+    public var hasReachedFirstWayPoint: Bool {
+        get { dataSetting?.hasReachedFirstWayPoint ?? false }
+        set { dataSetting?.hasReachedFirstWayPoint = newValue }
+    }
+    /// Whether the last way point has been reached.
+    public var hasReachedLastWayPoint: Bool {
+        get { dataSetting?.hasReachedLastWayPoint ?? false }
+        set { dataSetting?.hasReachedLastWayPoint = newValue }
+    }
+    /// Returns the last passed way point index.
+    public var lastPassedWayPointIndex: Int? {
+        get { dataSetting?.lastPassedWayPointIndex }
+        set { dataSetting?.lastPassedWayPointIndex = newValue }
+    }
+    /// Returns the execution completion in percent.
+    public var percentCompleted: Double {
+        get { dataSetting?.percentCompleted ?? 0 }
+        set { dataSetting?.percentCompleted = newValue }
+    }
+    public var executionRank: Int? {
+        get { dataSetting?.executionRank }
+        set { dataSetting?.executionRank = newValue }
+    }
+
+    public var isAMSL: Bool? {
+        get { dataSetting?.isAMSL }
+        set { dataSetting?.isAMSL = newValue }
+    }
+
     // MARK: __ Relationship
     public var thumbnail: ThumbnailModel?
     public var flightPlanFlights: [FlightPlanFlightsModel]?
@@ -112,6 +170,18 @@ public struct FlightPlanModel {
     public var fileSynchroStatus: Int16?
     ///  fileSynchroDate: Date of synchro file
     public var fileSynchroDate: Date?
+    /// Mavlink
+    public var mavlinkCommands: [MavlinkStandard.MavlinkCommand]? {
+        // Mavlink commands is a computed property and should only be used by Run Manager.
+        // All execution information (e.g. hasReachedFirstWayPoint) are updated during a run
+        // and must not be recalculated each time using the mavlink commands.
+        guard let data = dataSetting?.mavlinkDataFile,
+              let str = String(data: data, encoding: .utf8)
+        else { return nil }
+        ULog.d(.tag, "Parsing mavlink file of Flight Plan: \(uuid)")
+        let commands = try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: str)
+        return commands
+    }
 
     // MARK: - Public init
     public init(apcId: String,
@@ -143,7 +213,6 @@ public struct FlightPlanModel {
                 flightPlanFlights: [FlightPlanFlightsModel]? = nil,
                 latestLocalModificationDate: Date? = nil,
                 synchroError: SynchroError? = .noError) {
-
         self.dataSetting = FlightPlanDataSetting.instantiate(with: dataString)
         self.apcId = apcId
         self.type = type
@@ -171,6 +240,21 @@ public struct FlightPlanModel {
         self.latestLocalModificationDate = latestLocalModificationDate
         self.synchroError = synchroError
 
+        // Update the FP execution state from the data settings.
+        if let dataSetting = self.dataSetting {
+            self.hasReachedFirstWayPoint = dataSetting.hasReachedFirstWayPoint
+            self.hasReachedLastWayPoint = dataSetting.hasReachedLastWayPoint
+            self.lastPassedWayPointIndex = dataSetting.lastPassedWayPointIndex
+            self.percentCompleted = dataSetting.percentCompleted
+            self.executionRank = dataSetting.executionRank
+        } else {
+            self.hasReachedFirstWayPoint = false
+            self.hasReachedLastWayPoint = false
+            self.lastPassedWayPointIndex = nil
+            self.percentCompleted = 0
+            self.executionRank = nil
+        }
+
         self.pgyProjectId = pgyProjectId ?? 0
         self.uploadAttemptCount = uploadAttemptCount ?? 0
         self.lastUploadAttempt = lastUploadAttempt
@@ -189,7 +273,7 @@ extension FlightPlanModel {
         self.init(apcId: apcId,
                   type: type,
                   uuid: uuid,
-                  version: "1",
+                  version: FlightPlanModelVersion.latest,
                   customTitle: title,
                   thumbnailUuid: nil,
                   projectUuid: projectUuid,
@@ -255,8 +339,6 @@ extension FlightPlanModel {
                   flightPlanFlights: [],
                   latestLocalModificationDate: Date(),
                   synchroError: .noError)
-
-        self.dataSetting = dataSetting
 
         if let fpThumbnail = flightPlan.thumbnail {
             var fpThumbnail = fpThumbnail
@@ -331,7 +413,6 @@ extension FlightPlanModel {
 
 // MARK: - `FlightPlanModel` helpers
 extension FlightPlanModel {
-
     var points: [CLLocationCoordinate2D] {
         dataSetting?.wayPoints.compactMap({ $0.coordinate }) ?? []
     }
@@ -350,55 +431,6 @@ extension FlightPlanModel {
 
     var isEmpty: Bool {
         return self.dataSetting?.polygonPoints.isEmpty == true && points.isEmpty
-    }
-
-    public var hasReachedFirstWayPoint: Bool {
-        guard let commands = dataSetting?.mavlinkCommands else { return lastMissionItemExecuted > 0 }
-        guard let firstWayPointIndex = commands.firstIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
-        else { return false }
-        return lastMissionItemExecuted >= firstWayPointIndex
-    }
-
-    var hasReachedLastWayPoint: Bool {
-        guard let commands = dataSetting?.mavlinkCommands,
-              let lastWayPointIndex = commands.lastIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
-        else { return false }
-        return lastMissionItemExecuted >= lastWayPointIndex
-    }
-
-    /// Returns last passed waypoint index.
-    var lastPassedWayPointIndex: Int? {
-        // Ensure we can access Mavlink commands
-        guard let commands = dataSetting?.mavlinkCommands else { return nil }
-        // Check if the first Way Point reached
-        guard hasReachedFirstWayPoint else { return nil }
-        // Calculate the number of NavigateToWaypointCommand commands executed until the lastMissionItemExecuted
-        return commands
-            .prefix(Int(lastMissionItemExecuted) + 1)
-            .filter { $0 is MavlinkStandard.NavigateToWaypointCommand }
-            .count - 1
-    }
-
-    public var percentCompleted: Double {
-        // Get the last drone location for the FP run.
-        // This location is updated by the `FlightPlanRunManager`during the flight.
-        guard let droneLocation = dataSetting?.lastDroneLocation else {
-            // Handle the backward compatibility.
-            // Calculate an estimated progress with the number of executed Mavlink commands.
-            if let commands = dataSetting?.mavlinkCommands,
-               !commands.isEmpty {
-                return Double(lastMissionItemExecuted) / Double(commands.count) * 100
-            }
-            return 0
-        }
-
-        // Ensure a `lastPassedWayPointIndex` exists
-        guard let lastPassedWayPointIndex = lastPassedWayPointIndex else { return 0 }
-
-        // Calculate the progress
-        let progress = dataSetting?.completionProgress(with: droneLocation.agsPoint,
-                                                       lastWayPointIndex: lastPassedWayPointIndex) ?? 0
-        return progress.rounded(toPlaces: Constants.progressRoundPrecision) * 100.0
     }
 
     var lastFlightExecutionDate: Date? {
@@ -432,6 +464,50 @@ extension FlightPlanModel {
         guard customTitle == flightPlan.customTitle else { return false }
         // Checking Data Settings.
         return dataSetting == flightPlan.dataSetting
+    }
+}
+
+// MARK: - Model Versioning
+extension FlightPlanModel {
+    mutating public func updateToLatestVersionIfNeeded() {
+        guard version != FlightPlanModelVersion.latest else {
+            ULog.d(.tag, "Flight plan has latest version: \(FlightPlanModelVersion.latest)")
+            return
+        }
+
+        // - Update to latest version considered by FlightPlanModelVersion.latest
+        // The process is to update version by version, unknown/v1 > v2 > v3 and so on, until the latestVersion
+        if FlightPlanModelVersion.obsoletes.contains(where: { $0 == version }) {
+            // - Update 'unknown' or 'v1' to 'v2'
+            updateVersionToV2()
+
+            // - Update to the latest version
+            version = FlightPlanModelVersion.latest
+        }
+    }
+
+    mutating private func updateVersionToV2() {
+        guard version == FlightPlanModelVersion.unknown || version == FlightPlanModelVersion.v1 else {
+            ULog.d(.tag, "Flight plan version update to V2 not required")
+            return
+        }
+        if let commands = mavlinkCommands {
+            ULog.i(.tag, "Update completion state from mavlink for FP: '\(uuid)'")
+            let itemExecuted = Int(lastMissionItemExecuted)
+            hasReachedFirstWayPoint = commands.hasReachedFirstWayPoint(index: itemExecuted)
+            hasReachedLastWayPoint = commands.hasReachedLastWayPoint(index: itemExecuted)
+            lastPassedWayPointIndex = commands.lastPassedWayPointIndex(for: itemExecuted)
+            let progress = commands.percentCompleted(for: itemExecuted, flightPlan: self)
+            percentCompleted = progress
+        } else {
+            ULog.e(.tag, "Cannot update completion state without mavlink commands for FP: \(uuid)")
+            hasReachedFirstWayPoint = false
+            hasReachedLastWayPoint = false
+            lastPassedWayPointIndex = nil
+            percentCompleted = 0
+        }
+
+        version = FlightPlanModelVersion.v2
     }
 }
 

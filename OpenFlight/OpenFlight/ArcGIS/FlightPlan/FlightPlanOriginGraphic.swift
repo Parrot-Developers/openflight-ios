@@ -33,24 +33,25 @@ import ArcGIS
 public final class FlightPlanOriginGraphic: FlightPlanGraphic {
     // MARK: - Private Enums
     private enum Constants {
-        static let width: CGFloat = 29.0
-        static let height: CGFloat = 30.0
-        static let offSetY: CGFloat = 3
-        static let offSetX: CGFloat = 1.5
-        static let borderSize: CGFloat = 5.0
-        static let defaultColor: UIColor = ColorName.highlightColor.color
-        static let selectedColor: UIColor = ColorName.white.color
+        static let defaultColor: UIColor = ColorName.blueDodger.color
+        static let coneSideSize = 1.2
+        static let coneLengthSize = 3.0
+        static let coordsToResizeFactor: Double = 3500
+        static let minResizeFactor: Double = 0.7
+        static let maxResizeFactor: Double = 7
+        static let lngToMeters: Double = 111_320
+        static let latToMeters: Double = 110_574
+        static let coneTraitOverlap: Double = 0.95
     }
 
     // MARK: - Internal Properties
     /// Associated waypoint.
     private(set) var originWayPoint: WayPoint?
-    /// Symbol
-    private var arrow: AGSPictureMarkerSymbol?
-    /// Heading
-    private var headingDegrees: Float = 0
-    /// Rotation factor to fix heading. -1 when overlay type is draped.
-    private var rotationFactor: Float = 1
+
+    private var cone: AGSSimpleMarkerSceneSymbol
+
+    /// Camera heading
+    private var heading: Int = 0
 
     // MARK: - Init
     /// Init.
@@ -58,41 +59,17 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
     /// - Parameters:
     ///    - origin: origin waypoint
     public init(origin: WayPoint) {
-        let triangleView = TriangleView(frame: CGRect(x: 0, y: 0, width: Constants.width,
-                                                      height: Constants.height), color: Constants.defaultColor,
-                                                      externalColor: Constants.selectedColor)
-        arrow = AGSPictureMarkerSymbol(image: triangleView.asImage())
-        arrow?.angleAlignment = .map
-        arrow?.offsetY = Constants.offSetY
-        arrow?.offsetX = Constants.offSetX
         originWayPoint = origin
+        cone = AGSSimpleMarkerSceneSymbol.cone(with: Constants.defaultColor,
+                                               diameter: Constants.coneSideSize,
+                                               height: Constants.coneLengthSize,
+                                               anchorPosition: .center)
+        cone.pitch = 90
+
         super.init(geometry: origin.agsPoint,
-                   symbol: arrow,
+                   symbol: cone,
                    attributes: nil)
-
-        orientationCalculation()
-    }
-
-    /// Calculate orientation of origin
-    private func orientationCalculation() {
-        guard let origin = originWayPoint else { return }
-        if let coordinateNextWayPoint = origin.nextWayPoint?.coordinate {
-            let deltaLong = (coordinateNextWayPoint.longitude - origin.coordinate.longitude).toRadians()
-            let xValue = cos(coordinateNextWayPoint.latitude.toRadians()) * sin(deltaLong)
-            let yValue = cos(origin.coordinate.latitude.toRadians())
-                * sin(coordinateNextWayPoint.latitude.toRadians())
-                - sin(origin.coordinate.latitude.toRadians())
-                * cos(coordinateNextWayPoint.latitude.toRadians()) * cos(deltaLong)
-            let bearing = atan2(xValue, yValue)
-            headingDegrees = Float(bearing.toDegrees())
-            arrow?.angle = Float(headingDegrees) * rotationFactor
-        }
-    }
-
-    /// Updates rotation factor to fix heading display.
-    func update(rotationFactor: Float) {
-        self.rotationFactor = rotationFactor
-        orientationCalculation()
+        applyRotation()
     }
 
     /// Hides arrow symbol.
@@ -100,8 +77,52 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
         if value {
             symbol = nil
         } else {
-            symbol = arrow
+            symbol = cone
         }
     }
 
+    /// Updates camera heading.
+    ///
+    /// - Parameters:
+    ///     - heading: camera heading
+    public func update(heading newHeading: Double) {
+        if heading != Int(newHeading) {
+            heading = Int(newHeading)
+            applyRotation()
+            symbol = cone
+        }
+    }
+
+    /// Applies rotation to symbols.
+    private func applyRotation() {
+        guard let origin = originWayPoint,
+              let coordinateNextWayPoint = origin.nextWayPoint?.coordinate else { return }
+        cone.heading = coordinateNextWayPoint.bearingTo(origin.coordinate)
+        adjustPositionOffset()
+    }
+
+    public func adjustSize(wayPoints: [WayPoint]) {
+        guard !wayPoints.isEmpty else { return }
+        let latitudes = wayPoints.map { $0.coordinate.latitude }.sorted()
+        let longitudes = wayPoints.map { $0.coordinate.longitude }.sorted()
+        let diffLat = (latitudes.last ?? 0) - (latitudes.first ?? 0)
+        let midLat = ((latitudes.last ?? 0) + (latitudes.first ?? 0)).toRadians() / 2
+        let diffLng = ((longitudes.last ?? 0) - (longitudes.first ?? 0)) * cos(midLat)
+        var resizeFactor = ((diffLng + diffLat) / 2) * Constants.coordsToResizeFactor
+        resizeFactor = max(Constants.minResizeFactor, min(resizeFactor, Constants.maxResizeFactor))
+        cone.height = Constants.coneLengthSize * resizeFactor
+        cone.width = Constants.coneSideSize * resizeFactor
+        cone.depth = Constants.coneSideSize * resizeFactor
+        symbol = cone
+        adjustPositionOffset()
+    }
+
+    private func adjustPositionOffset() {
+        let size = Double(cone.height) / 2 * Constants.coneTraitOverlap
+        let heading = Double(cone.heading).toRadians()
+        guard let point = originWayPoint?.agsPoint else { return }
+        let deltaX = (size / Constants.lngToMeters) * sin(heading) / cos(Double(point.y).toRadians())
+        let deltaY = (size / Constants.latToMeters) * cos(heading)
+        geometry = AGSPoint(x: point.x + deltaX, y: point.y + deltaY, z: point.z, spatialReference: .wgs84())
+    }
 }

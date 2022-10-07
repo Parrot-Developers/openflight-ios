@@ -28,6 +28,11 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "FlightPlanMission")
+}
 
 // MARK: - Internal Structs
 
@@ -57,15 +62,29 @@ public class FlightPlanActivationModel: MissionActivationModel {
         airSdkMissionsManager.activate(mission: FlightPlanMission().signature)
 
         // start default mission
-        guard let projectType = FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType else { return }
+        guard let projectType = FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType
+        else {
+            ULog.e(.tag, "Flight Plan Provider doesn't exist")
+            return
+        }
         let projectManager = Services.hub.flightPlan.projectManager
         projectManager.setLastOpenedProjectAsCurrent(type: projectType)
         guard let project = projectManager.currentProject,
-              let flightPlan = projectManager.editableFlightPlan(for: project) else { return }
+              let flightPlan = projectManager.editableFlightPlan(for: project)
+        else {
+            if projectManager.currentProject == nil {
+                ULog.i(.tag, "No project found")
+            } else {
+                ULog.e(.tag, "Project without editable Flight Plan")
+            }
+            return
+        }
         // if editing  an FP (the editor is open in an edit state) avoid re-opening a stale one from
         // the database
         if Services.hub.flightPlan.edition.currentFlightPlanValue?.uuid != flightPlan.uuid {
             Services.hub.flightPlan.stateMachine.open(flightPlan: flightPlan)
+        } else {
+            ULog.i(.tag, "DON'T open flight plan '\(flightPlan.uuid)' (already opened)")
         }
     }
 

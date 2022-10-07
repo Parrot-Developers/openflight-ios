@@ -29,6 +29,7 @@
 
 import UIKit
 import Reusable
+import Combine
 
 /// Delegate protocol for `SettingsNetworkNameCell`.
 protocol SettingsNetworkNameDelegate: AnyObject {
@@ -50,6 +51,7 @@ final class SettingsNetworkNameCell: MainTableViewCell, NibReusable {
     // MARK: - Private Properties
     private var showInfo: (() -> Void)?
     private var viewModel: SettingsNetworkViewModel?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -68,7 +70,13 @@ final class SettingsNetworkNameCell: MainTableViewCell, NibReusable {
         self.showInfo = showInfo
         self.viewModel = viewModel
         textfield.text = viewModel.ssidName
-        enableCell(viewModel.ssidNameIsEnabled)
+
+        viewModel.isSsidNameEnabledPublisher
+            .removeDuplicates()
+            .sink { [weak self] in
+                self?.enableCell($0)
+            }
+            .store(in: &cancellables)
     }
 }
 

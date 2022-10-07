@@ -31,6 +31,7 @@
                                             <button opaque="NO" contentMode="center" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="250" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WUk-QM-rzn" userLabel="A1 Dashboard Button" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <accessibility key="accessibilityConfiguration" label="Dashboard"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="40" id="YDZ-aG-dZZ"/>
                                                 </constraints>
@@ -145,6 +146,9 @@
                                     <view contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="ShW-MJ-oyK" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="14" y="0.0" width="50" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <accessibility key="accessibilityConfiguration" identifier="droneSpeed">
+                                            <bool key="isElement" value="YES"/>
+                                        </accessibility>
                                         <connections>
                                             <action selector="speedItemTouchedUpInside:" destination="cxA-op-ycB" eventType="touchUpInside" id="wNv-eI-sNG"/>
                                         </connections>
@@ -152,6 +156,9 @@
                                     <view contentMode="scaleToFill" placeholderIntrinsicWidth="50" placeholderIntrinsicHeight="40" translatesAutoresizingMaskIntoConstraints="NO" id="aDH-VF-Gop" customClass="TelemetryItemView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="78" y="0.0" width="50" height="40"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <accessibility key="accessibilityConfiguration" identifier="droneAltitude">
+                                            <bool key="isElement" value="YES"/>
+                                        </accessibility>
                                         <connections>
                                             <action selector="altitudeItemTouchedUpInside:" destination="cxA-op-ycB" eventType="touchUpInside" id="GQm-zK-fNj"/>
                                         </connections>
@@ -245,6 +252,7 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="-" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5xA-CN-FR2">
                                                 <rect key="frame" x="24" y="0.0" width="6" height="20"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <accessibility key="accessibilityConfiguration" identifier="controllerCharge"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>
@@ -277,6 +285,7 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="-" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EYx-ib-buk" userLabel="batteryLevelLabel">
                                                 <rect key="frame" x="24" y="0.0" width="6" height="20"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <accessibility key="accessibilityConfiguration" identifier="droneCharge"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <nil key="highlightedColor"/>

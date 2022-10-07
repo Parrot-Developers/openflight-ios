@@ -54,6 +54,7 @@ final class BottomBarContainerViewController: UIViewController {
 
     // MARK: - Internal Properties
     weak var coordinator: HUDCoordinator?
+    weak var bottomBarService: HudBottomBarService?
 
     // MARK: - Private Properties
     private var levelOneViewController: BottomBarLevelViewController!
@@ -69,6 +70,7 @@ final class BottomBarContainerViewController: UIViewController {
     private var bottomBarMode: BottomBarMode = .preset {
         didSet {
             if bottomBarMode != oldValue {
+                bottomBarService?.set(mode: bottomBarMode)
                 NotificationCenter.default.post(name: .bottomBarModeDidChange,
                                                 object: self,
                                                 userInfo: [BottomBarMode.notificationKey: bottomBarMode])
@@ -96,6 +98,7 @@ final class BottomBarContainerViewController: UIViewController {
         if let bottomBarViewControler = segue.destination as? BottomBarViewController {
             bottomBarViewControler.delegate = self
             bottomBarViewControler.coordinator = coordinator
+            bottomBarViewControler.bottomBarService = bottomBarService
         } else if let levelOneViewController = segue.destination as? BottomBarLevelViewController {
             self.levelOneViewController = levelOneViewController
         } else if let levelTwoViewController = segue.destination as? BottomBarLevelTwoViewController {
@@ -158,7 +161,8 @@ extension BottomBarContainerViewController: BottomBarContainerDelegate {
         bottomBarMode = .levelOneOpened
         switch viewModel {
         case is CameraWidgetViewModel:
-            levelOneViewController.addImagingSettingsBar(delegate: self)
+            levelOneViewController.addImagingSettingsBar(delegate: self,
+                                                         bottomBarService: bottomBarService)
         default:
             levelOneViewController.addSegmentedBar(viewModel: viewModel)
         }

@@ -53,7 +53,10 @@ public extension Camera2Editor {
         switch strongCamera.mode {
         case .photo:
             // Photo can only do HDR 8.
-            self[Camera2Params.photoDynamicRange]?.value = enable ? .hdr8 : .sdr
+            let photoDynamicRange: Camera2DynamicRange = enable ? .hdr8 : .sdr
+            self[Camera2Params.photoDynamicRange]?.value = photoDynamicRange
+            // Store user preference.
+            Defaults.photoDynamicRangeSetting = photoDynamicRange.rawValue
         case .recording:
             let newHdrValue: Camera2DynamicRange
             // If we already have an HDR defaults.
@@ -66,8 +69,10 @@ public extension Camera2Editor {
                 newHdrValue = videoEncoding == .h265 ? Camera2DynamicRange.hdr10 : Camera2DynamicRange.hdr8
             }
 
-            self[Camera2Params.videoRecordingDynamicRange]?.value = enable ? newHdrValue : .sdr
+            let videoDynamicRange: Camera2DynamicRange = enable ? newHdrValue : .sdr
+            self[Camera2Params.videoRecordingDynamicRange]?.value = videoDynamicRange
             Defaults.highDynamicRangeSetting = newHdrValue.rawValue
+            Defaults.videoDynamicRangeSetting = videoDynamicRange.rawValue
         default:
             break
         }

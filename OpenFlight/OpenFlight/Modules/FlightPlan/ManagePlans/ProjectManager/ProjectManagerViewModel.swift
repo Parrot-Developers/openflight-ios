@@ -130,7 +130,9 @@ extension ProjectManagerViewModel {
         // show directly the HUD without loading anything.
         // This prevents to stop a running flight plan.
         guard manager.currentProject?.uuid != project.uuid else {
+            SceneSingleton.shared.forceCentering = true
             coordinator?.showCurrentProject()
+
             return
         }
         coordinator?.open(project: project, startEdition: false, isBrandNew: false)

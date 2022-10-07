@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" indentationWidth="10" reuseIdentifier="ModesChoiceTableViewCell" id="KGk-i7-Jjw" customClass="ModesChoiceTableViewCell" customModule="OpenFlight" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+        <tableViewCell contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" indentationWidth="10" reuseIdentifier="ModesChoiceTableViewCell" rowHeight="116" id="KGk-i7-Jjw" customClass="ModesChoiceTableViewCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="116"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
-                <rect key="frame" x="0.0" y="0.0" width="320" height="80"/>
+            <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="116"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                 <subviews>
-                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="WcN-c3-0bq">
-                        <rect key="frame" x="16" y="0.0" width="288" height="70"/>
+                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="WcN-c3-0bq">
+                        <rect key="frame" x="16" y="10" width="288" height="106"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GFG-nN-ooZ">
                                 <rect key="frame" x="0.0" y="0.0" width="288" height="20.5"/>
@@ -39,10 +39,10 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </stackView>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rZL-Hu-Q73">
-                                <rect key="frame" x="0.0" y="30.5" width="288" height="39.5"/>
+                                <rect key="frame" x="0.0" y="25.5" width="288" height="80.5"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="I8B-eU-Wdl">
-                                        <rect key="frame" x="0.0" y="0.0" width="288" height="39.5"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="I8B-eU-Wdl" customClass="SettingTextSegmentContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="288" height="80.5"/>
                                         <color key="tintColor" name="default_text_color"/>
                                     </stackView>
                                 </subviews>
@@ -55,15 +55,12 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="70" id="Y7D-8e-1Ti"/>
-                        </constraints>
                     </stackView>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 <constraints>
-                    <constraint firstItem="WcN-c3-0bq" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="Dfc-2Q-uCr"/>
-                    <constraint firstAttribute="bottomMargin" secondItem="WcN-c3-0bq" secondAttribute="bottom" id="eHT-Oq-65p"/>
+                    <constraint firstItem="WcN-c3-0bq" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="Dfc-2Q-uCr"/>
+                    <constraint firstAttribute="bottom" secondItem="WcN-c3-0bq" secondAttribute="bottom" id="eHT-Oq-65p"/>
                     <constraint firstItem="WcN-c3-0bq" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="jHF-R2-9Bz"/>
                     <constraint firstAttribute="trailingMargin" secondItem="WcN-c3-0bq" secondAttribute="trailing" id="ofx-St-7xR"/>
                 </constraints>
@@ -74,7 +71,7 @@
                 <outlet property="modesStackView" destination="I8B-eU-Wdl" id="APE-A1-80J"/>
                 <outlet property="titleLabel" destination="Nws-8b-MEs" id="z2k-bo-tCG"/>
             </connections>
-            <point key="canvasLocation" x="139" y="155"/>
+            <point key="canvasLocation" x="137.59999999999999" y="170.91454272863569"/>
         </tableViewCell>
     </objects>
     <resources>

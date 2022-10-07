@@ -47,6 +47,8 @@ public class LogEvent {
         case sanityCheck(_ event: String, info: [String: String]? = nil)
         /// 3rd party integrations event.
         case thirdParty(event: String, party: String, info: [String: String]? = nil)
+        /// Alert event.
+        case alert(type: String, info: [String: String]? = nil)
 
         /// Log name according to event type.
         var name: String {
@@ -61,6 +63,8 @@ public class LogEvent {
                 return "SANITY_CHECK"
             case .thirdParty:
                 return "3RD_PARTY"
+            case .alert:
+                return "ALERT"
             }
         }
     }
@@ -87,6 +91,8 @@ public class LogEvent {
             message = "EVT:\(event.name);event='\(dataSanityEvent)'" + formatInfo(info)
         case let .thirdParty(event: kind, party: party, info: info):
             message = "EVT:\(event.name);name='\(kind)';value='\(party)'" + formatInfo(info)
+        case let .alert(type, info):
+            message = "EVT:\(event.name);type='\(type)'" + formatInfo(info)
         }
         peripheral?.log(message.trimmingCharacters(in: .whitespaces))
     }

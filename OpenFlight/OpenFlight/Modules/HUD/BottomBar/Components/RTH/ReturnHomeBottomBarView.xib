@@ -30,6 +30,9 @@
                                 <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oj4-Qb-ml4" customClass="StopView" customModule="OpenFlight" customModuleProvider="target">
                                     <rect key="frame" x="550" y="0.0" width="50" height="50"/>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <accessibility key="accessibilityConfiguration" identifier="StopRTH">
+                                        <bool key="isElement" value="YES"/>
+                                    </accessibility>
                                     <constraints>
                                         <constraint firstAttribute="width" secondItem="oj4-Qb-ml4" secondAttribute="height" multiplier="1:1" id="QWf-cP-xkd"/>
                                     </constraints>

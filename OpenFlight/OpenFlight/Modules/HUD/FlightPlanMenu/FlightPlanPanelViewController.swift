@@ -55,9 +55,11 @@ final class FlightPlanPanelViewController: UIViewController {
     @IBOutlet private weak var rthWidget: ReturnHomeBottomBarView!
 
     // Action Buttons
-    @IBOutlet private weak var buttonsStackView: ActionStackView!
+    @IBOutlet private weak var playingButtonsStackView: ActionStackView!
+    @IBOutlet private weak var launcherButtonsStackView: ActionStackView!
     @IBOutlet private weak var createButton: ActionButton!
     @IBOutlet private weak var playButton: ActionButton!
+    @IBOutlet private weak var resumeButton: ActionButton!
     @IBOutlet private weak var editButton: ActionButton!
     @IBOutlet private weak var stopLeadingSpacer: HSpacerView!
     @IBOutlet private weak var stopTrailingSpacer: HSpacerView!
@@ -83,6 +85,9 @@ final class FlightPlanPanelViewController: UIViewController {
 
     private var containerStatus: ContainerStatus = .streaming
     private var settingsSections: [FlightPlanPanelViewModel.SettingsSection] = []
+
+    /// Whether the custom rth setting is activated
+    private var customRth: Bool = false
 
     // MARK: - Private Enums
     private enum Constants {
@@ -197,6 +202,7 @@ extension FlightPlanPanelViewController {
     /// Starts streaming component.
     func startStream() {
         guard cameraStreamingViewController == nil else { return }
+        cameraStreamingViewController?.doNotPauseStreamOnDisappear = true
         let cameraStreamingVC = HUDCameraStreamingViewController.instantiate()
         addChild(cameraStreamingVC)
 
@@ -210,6 +216,7 @@ extension FlightPlanPanelViewController {
 
     /// Stops streaming component.
     func stopStream() {
+        cameraStreamingViewController?.doNotPauseStreamOnDisappear = true
         cameraStreamingContainerView.subviews.first?.removeFromSuperview()
         cameraStreamingViewController?.removeFromParent()
         cameraStreamingViewController = nil
@@ -274,6 +281,7 @@ private extension FlightPlanPanelViewController {
             containerStatus = .streaming
         }
         LogEvent.log(.simpleButton(LogEvent.LogKeyHUDPanelButton.edit.name))
+        disableControlsForDelay()
         flightPlanPanelViewModel.editButtonTouchedUpInside()
     }
 
@@ -335,6 +343,7 @@ private extension FlightPlanPanelViewController {
 
         createButton.setup(style: .validate)
         playButton.setup(image: Asset.Common.Icons.play.image, style: .validate)
+        resumeButton.setup(image: Asset.Common.Icons.icResume.image, style: .validate)
         editButton.setup(image: Asset.Common.Icons.iconEdit.image, style: .default1)
         historyButton.setup(image: Asset.MyFlights.history.image, style: .default1)
         stopButton.setup(image: Asset.Common.Icons.stop.image, style: .destructive)
@@ -380,9 +389,8 @@ private extension FlightPlanPanelViewController {
     /// - Parameters:
     ///    - information: buttons information
     private func updatePlayButtonState(_ information: FlightPlanPanelViewModel.ButtonsInformation) {
-        playButton.setup(image: information.startButtonState.icon,
-                         style: information.startButtonState.style)
         playButton.isEnabled = information.startEnabled
+        resumeButton.isEnabled = information.startEnabled
         stopButton.isEnabled = information.stopEnabled
     }
 
@@ -413,6 +421,7 @@ private extension FlightPlanPanelViewController {
             .store(in: &cancellables)
 
         flightPlanPanelViewModel.$viewState
+            .removeDuplicates()
             .sink { [weak self] viewState in
                 guard let self = self else { return }
                 UIView.animate {
@@ -475,9 +484,6 @@ private extension FlightPlanPanelViewController {
     private func updateButtons(viewState: FlightPlanPanelViewModel.ViewState) {
         // Reset states.
         actionButtons.forEach { $0.isHiddenInStackView = true }
-        stopLeadingSpacer.isHiddenInStackView = true
-        stopTrailingSpacer.isHiddenInStackView = true
-        buttonsStackView.distribution = .fill
         updateHeader(viewState: viewState)
 
         let isCreationState = viewState == .creation
@@ -491,7 +497,6 @@ private extension FlightPlanPanelViewController {
             createButton.isHiddenInStackView = false
 
         case let .edition(hasHistory, canEdit):
-            buttonsStackView.distribution = .fillEqually
             playButton.isHiddenInStackView = false
             editButton.isHiddenInStackView = false
             historyButton.isHiddenInStackView = false
@@ -505,7 +510,7 @@ private extension FlightPlanPanelViewController {
             executionNameLabel.isHiddenInStackView = false
 
         case .paused, .resumable:
-            playButton.isHiddenInStackView = false
+            resumeButton.isHiddenInStackView = false
             stopButton.isHiddenInStackView = false
 
         case .rth:
@@ -530,7 +535,8 @@ private extension FlightPlanPanelViewController {
     func updateActionButtonsVisibility() {
         // Action buttons should be displayed only if no RTH widget is shown.
         let showActionButtons = !isMainRthWidgetShown && !isFpRthWidgetShown
-        buttonsStackView.animateScaleAndAlpha(show: showActionButtons)
+        launcherButtonsStackView.animateScaleAndAlpha(show: showActionButtons)
+        playingButtonsStackView.animateScaleAndAlpha(show: showActionButtons)
     }
 
     /// Updates the header panel according to view model's state.
@@ -595,7 +601,17 @@ extension FlightPlanPanelViewController: UITableViewDataSource {
         case let .settings(_, fpSettings):
             let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsMenuTableViewCell
             let setting = fpSettings[indexPath.row]
-            cell.setup(setting: setting, arrowVisibility: .gone)
+            if setting.key == ClassicFlightPlanSettingType.customRth.key {
+                customRth = setting.currentValue == 0
+            }
+            // Configure setting as non-editable in FP panel VC (displayed during FP execution for
+            // information purpose only).
+            cell.setup(setting: setting,
+                       index: indexPath.row,
+                       numberOfRows: tableView.numberOfRows(inSection: indexPath.section),
+                       isEditable: false,
+                       inEditionMode: false,
+                       customRth: customRth)
             return cell
         case let .image(hasCustomType, fpSettings, fpDataSettings):
             let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsImageTableViewCell

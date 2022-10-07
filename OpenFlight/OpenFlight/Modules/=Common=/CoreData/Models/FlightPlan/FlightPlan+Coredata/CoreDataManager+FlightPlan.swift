@@ -27,6 +27,8 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// swiftlint:disable file_length
+
 import Foundation
 import CoreData
 import GroundSdk
@@ -79,10 +81,6 @@ public protocol FlightPlanRepository: AnyObject {
                                  toSynchro: Bool,
                                  withFileUploadNeeded: Bool,
                                  completion: ((_ status: Bool) -> Void)?)
-
-    /// Reset CloudId and synchro flag of FlightPlans with UUIDs
-    /// - Parameter uuids: List of UUIDs to search
-    func resetFlightPlansCloudId(withUuids uuids: [String])
 
     // MARK: __ Get
     /// Get FlightPlanModel with UUID
@@ -142,6 +140,13 @@ public protocol FlightPlanRepository: AnyObject {
     /// - Returns: the `Date` if exists, `nil` otherwise
     func firstFlightDate(of flightPlanModel: FlightPlanModel) -> Date?
 
+    /// Get count of executed FlightPlans with specified project UUID
+    /// - Parameters:
+    ///    - projectUuid: project's UUID to specify
+    ///    - excludeUuids: flight plan's uuid to exclude (case of flying flight plan...)
+    /// - Returns: count of executed flight plan found
+    func getExecutedFlightPlansCount(withProjectUuid projectUuid: String, excludedUuids: [String]) -> Int
+
     /// Get count of all FlightPlans
     /// - Returns: Count of all FlightPlans
     func getAllFlightPlansCount() -> Int
@@ -160,6 +165,14 @@ public protocol FlightPlanRepository: AnyObject {
     /// - Returns:  List of FlightPlanModels
     func getAllModifiedFlightPlans() -> [FlightPlanModel]
 
+    /// Get count of FlightPlans with specified versions
+    func getFlightPlansCount(withVersions: [String]) -> Int
+
+    /// Get FlightPlansModels with specified versions
+    /// - Parameters:
+    ///     - completion: closure called on finish with a list of flight plan with specified version
+    func getFlightPlans(withVersions: [String], _ completion: @escaping (([FlightPlanModel]) -> Void))
+
     // MARK: __ Delete
     /// Delete FlightPlan in CoreData from UUID
     /// - Parameters:
@@ -177,6 +190,17 @@ public protocol FlightPlanRepository: AnyObject {
     /// - Parameter uuids: List of  UUIDs to search
     func deleteFlightPlans(withUuids uuids: [String])
     func deleteFlightPlans(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?)
+
+    /// Delete FlightPlans in CoreData with excluded state
+    /// - Parameters:
+    ///    - excludedStates: List of states to be excluded
+    ///    - completion: the completion block with the deletion status (`true` in case of successful deletion)
+    func deleteFlightPlans(withExcludedStates excludedStates: [String], completion: ((_ status: Bool) -> Void)?)
+
+    /// Remove CloudId and SynchroStatus for all FlightPlan
+    /// - Parameters:
+    ///    - completion: closure called when all flight plan are updated
+    func removeCloudIdForAllFlightPlans(completion: ((_ status: Bool) -> Void)?)
 
     // MARK: __ Related
     /// Migrate FlightPlans made by Anonymous user to current logged user
@@ -204,14 +228,22 @@ extension CoreDataServiceImpl: FlightPlanRepository {
         var thumbnailModifDate: Date?
 
         performAndSave({ [unowned self] context in
+            var isUpdating = false
             var flightPlanObj: FlightPlan?
+
+            ULog.d(.dataModelTag, "saveOrUpdateFlightPlan for \(flightPlanModel)")
+
             if let existingFlightPlan = getFlightPlanCD(withUuid: flightPlanModel.uuid) {
                 flightPlanObj = existingFlightPlan
+                isUpdating = true
+                ULog.d(.dataModelTag, "saveOrUpdateFlightPlan for UUID \(flightPlanModel.uuid) found in database, flight plan will be updated")
             } else if let newFlightPlan = insertNewObject(entityName: FlightPlan.entityName) as? FlightPlan {
                 flightPlanObj = newFlightPlan
+                ULog.d(.dataModelTag, "saveOrUpdateFlightPlan with UUID \(flightPlanModel.uuid) not found in database, new flight plan created")
             }
 
             guard let flightPlan = flightPlanObj else {
+                ULog.e(.dataModelTag, "Unable to insert or update Flight Plan '\(flightPlanModel.uuid)'")
                 completion?(false)
                 return false
             }
@@ -253,10 +285,20 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                 """
             ULog.d(.dataModelTag, logMessage)
 
+            // Check if there is an error getting the data in Core Data from its UUID.
+            // TODO: Only for debug purposes. To remove.
+            if isUpdating && flightPlan.uuid != flightPlanModel.uuid {
+                ULog.e(.dataModelTag, "ERROR: Trying to update CD FP '\(flightPlan.uuid ?? "-")' with model '\(flightPlanModel.uuid)'")
+                completion?(false)
+                return false
+            }
+
+            // Update the CD Flight plan.
             flightPlan.update(fromFlightPlanModel: flightPlanModel,
                               withProject: project,
                               withThumbnail: thumbnail)
 
+            // Return true to tell to save the Core Data context.
             return true
         }, { [unowned self] result in
             switch result {
@@ -303,6 +345,11 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                                         toSynchro: Bool,
                                         withFileUploadNeeded: Bool,
                                         completion: ((Bool) -> Void)?) {
+        guard !flightPlanModels.isEmpty else {
+            completion?(true)
+            return
+        }
+
         var modifDate: Date?
         var thumbnailModifDate: Date?
 
@@ -320,8 +367,10 @@ extension CoreDataServiceImpl: FlightPlanRepository {
 
                 if let flightPlan = flightPlans.first(where: { $0.uuid == flightPlanModel.uuid }) {
                     flightPlanObj = flightPlan
+                    ULog.d(.dataModelTag, "saveOrUpdateFlightPlans for UUID \(flightPlanModel.uuid) found in database, flight plan will be updated")
                 } else if let newFlightPlan = insertNewObject(entityName: FlightPlan.entityName) as? FlightPlan {
                     flightPlanObj = newFlightPlan
+                    ULog.d(.dataModelTag, "saveOrUpdateFlightPlans with UUID \(flightPlanModel.uuid) not found in database, new flight plan created")
                 }
 
                 if let flightPlan = flightPlanObj {
@@ -388,25 +437,6 @@ extension CoreDataServiceImpl: FlightPlanRepository {
         })
     }
 
-    public func resetFlightPlansCloudId(withUuids uuids: [String]) {
-        let projects = getFlightPlansCD(withUuids: uuids)
-
-        guard !projects.isEmpty else {
-            return
-        }
-
-        projects.forEach {
-            $0.cloudId = 0
-            $0.synchroStatus = 0
-        }
-
-        saveContext {
-            if case .failure(let error) = $0 {
-                ULog.e(.dataModelTag, "Error resetFlightPlansCloudId: \(error.localizedDescription)")
-            }
-        }
-    }
-
     // MARK: __ Get
     public func getFlightPlan(withUuid uuid: String) -> FlightPlanModel? {
         return getFlightPlanCD(withUuid: uuid)?.model()
@@ -441,7 +471,22 @@ extension CoreDataServiceImpl: FlightPlanRepository {
     }
 
     public func getFlightPlans(withProjectUuid projectUuid: String, withState: FlightPlanModel.FlightPlanState) -> [FlightPlanModel] {
-        return getFlightPlansCD(withProjectUuid: projectUuid, withState: withState.rawValue).compactMap({ $0.model() })
+        let result = getFlightPlansCD(withProjectUuid: projectUuid, withState: withState.rawValue).compactMap({ $0.model() })
+        ULog.d(.dataModelTag, "getFlightPlans with projectUuid [\(projectUuid)] withState \(withState)\nResult: \(result)")
+        return result
+    }
+
+    public func getFlightPlansCount(withVersions versions: [String]) -> Int {
+        getFlightPlansCountCD(withVersions: versions)
+    }
+
+    public func getFlightPlans(withVersions versions: [String], _ completion: @escaping (([FlightPlanModel]) -> Void)) {
+        return getFlightPlansCD(withVersions: versions) { flightPlans in
+            let flightPlanModels = flightPlans.compactMap({ $0.model() })
+            DispatchQueue.main.async {
+                completion(flightPlanModels)
+            }
+        }
     }
 
     public func getLastFlightDateOfFlightPlan(_ flightPlanModel: FlightPlanModel) -> Date? {
@@ -464,6 +509,10 @@ extension CoreDataServiceImpl: FlightPlanRepository {
             .min()
     }
 
+    public func getExecutedFlightPlansCount(withProjectUuid projectUuid: String, excludedUuids: [String]) -> Int {
+        return getExecutedFlightPlansCountCD(withProjectUuid: projectUuid, excludedUuids: excludedUuids)
+    }
+
     public func getAllFlightPlansCount() -> Int {
         return getAllFlightPlansCountCD(toBeDeleted: false)
     }
@@ -478,7 +527,8 @@ extension CoreDataServiceImpl: FlightPlanRepository {
     }
 
     public func getAllModifiedFlightPlans() -> [FlightPlanModel] {
-        return getFlightPlansCD(withQuery: "latestLocalModificationDate != nil").map({ $0.model() })
+        let apcIdQuery = "apcId == '\(userService.currentUser.apcId)'"
+        return getFlightPlansCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").map({ $0.model() })
     }
 
     // MARK: __ Delete
@@ -548,7 +598,7 @@ extension CoreDataServiceImpl: FlightPlanRepository {
                 return false
             }
 
-            ULog.d(.dataModelTag, "🗺🗑 deleteFlightPlan, uuid: \(uuid)")
+            ULog.d(.dataModelTag, "🗺🗑 deleteFlightPlan, uuid: \(uuid), flightPlan: \(flightPlan)")
             context.delete(flightPlan)
             return true
         }, { [unowned self] result in
@@ -575,13 +625,9 @@ extension CoreDataServiceImpl: FlightPlanRepository {
             return
         }
 
-        batchDeleteAndSave({ _ in
-            ULog.i(.dataModelTag, "Deleting FlightPlans... uuids: (\(uuids.joined(separator: ",")))")
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: FlightPlan.entityName)
-            let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
-            fetchRequest.predicate = uuidPredicate
-
-            return fetchRequest
+        performAndSave({ [unowned self] _ in
+            deleteObjects(getFlightPlansCD(withUuids: uuids))
+            return true
         }, { [unowned self] result in
             switch result {
             case .success:
@@ -595,13 +641,56 @@ extension CoreDataServiceImpl: FlightPlanRepository {
         })
     }
 
+    public func deleteFlightPlans(withExcludedStates excludedStates: [String], completion: ((_ status: Bool) -> Void)?) {
+        guard !excludedStates.isEmpty else {
+            completion?(true)
+            return
+        }
+
+        performAndSave({ [unowned self] _ in
+            deleteObjects(getFlightPlansCD(withExcludedStates: excludedStates, toBeDeleted: false))
+            return true
+        }, { result in
+            switch result {
+            case .success:
+                ULog.i(.dataModelTag, "FlightPlans Deleted. excludedTypes: (\(excludedStates.joined(separator: ",")))")
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deleteFlightPlan with UUIDs error: \(error.localizedDescription)")
+                completion?(false)
+            }
+        })
+    }
+
+    public func removeCloudIdForAllFlightPlans(completion: ((_ status: Bool) -> Void)?) {
+        performAndSave({ [unowned self] _ in
+            let flightPlanCDs = getAllFlightPlansCD(toBeDeleted: false)
+
+            for flightPlanCD in flightPlanCDs {
+                flightPlanCD.cloudId = 0
+                flightPlanCD.synchroStatus = 0
+            }
+
+            return true
+        }, { result in
+            switch result {
+            case .success:
+                ULog.d(.dataModelTag, "Remove cloudId and synchroStatus for all flight plans")
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error remove cloudId for all flight plans: \(error.localizedDescription)")
+                completion?(false)
+            }
+        })
+    }
+
     // MARK: __ Related
     public func migrateFlightPlansToLoggedUser(_ completion: @escaping () -> Void) {
         let fetchRequest: NSFetchRequest<FlightPlan> = FlightPlan.fetchRequest()
         guard let entityName = fetchRequest.entityName else {
             return
         }
-        migrateAnonymousDataToLoggedUser(for: entityName) {
+        migrateAnonymousDataToLoggedUser(for: entityName) { _ in
             completion()
         }
     }
@@ -704,7 +793,7 @@ internal extension CoreDataServiceImpl {
         return fetch(request: fetchRequest).first
     }
 
-    func getFlightPlansCD(withProjectUuid projectUuid: String, withState: String) -> [FlightPlan] {
+    func getFlightPlansCD(withProjectUuid projectUuid: String, withState: String?) -> [FlightPlan] {
         let fetchRequest = FlightPlan.fetchRequest()
 
         var subPredicateList = [NSPredicate]()
@@ -712,8 +801,10 @@ internal extension CoreDataServiceImpl {
         let projectUuidPredicate = NSPredicate(format: "projectUuid == %@", projectUuid)
         subPredicateList.append(projectUuidPredicate)
 
-        let statePredicate = NSPredicate(format: "state == %@", withState)
-        subPredicateList.append(statePredicate)
+        if let withState = withState {
+            let statePredicate = NSPredicate(format: "state == %@", withState)
+            subPredicateList.append(statePredicate)
+        }
 
         let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: false))
         subPredicateList.append(parrotToBeDeletedPredicate)
@@ -731,6 +822,9 @@ internal extension CoreDataServiceImpl {
         let fetchRequest = FlightPlan.fetchRequest()
 
         var subPredicateList = [NSPredicate]()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
 
         let statePredicate = NSPredicate(format: "state == %@", withState)
         subPredicateList.append(statePredicate)
@@ -761,6 +855,10 @@ internal extension CoreDataServiceImpl {
         let fetchRequest = FlightPlan.fetchRequest()
 
         var subPredicateList = [NSPredicate]()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
         for excludingType in excludingTypes {
             let excludingTypePredicate = NSPredicate(format: "type != %@", excludingType)
             subPredicateList.append(excludingTypePredicate)
@@ -777,6 +875,79 @@ internal extension CoreDataServiceImpl {
         fetchRequest.sortDescriptors = [lastUpdateSortDesc]
 
         return fetch(request: fetchRequest)
+    }
+
+    func getFlightPlansCD(withExcludedStates excludedStates: [String], toBeDeleted: Bool?) -> [FlightPlan] {
+        guard !excludedStates.isEmpty else {
+            return getAllFlightPlansCD(toBeDeleted: toBeDeleted)
+        }
+
+        let fetchRequest = FlightPlan.fetchRequest()
+        var subPredicateList = [NSPredicate]()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let excludingStatePredicate = NSPredicate(format: "NOT (state IN %@)", excludedStates)
+        subPredicateList.append(excludingStatePredicate)
+
+        if let toBeDeleted = toBeDeleted {
+            let toBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+            subPredicateList.append(toBeDeletedPredicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+
+        let lastUpdateSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: false)
+        fetchRequest.sortDescriptors = [lastUpdateSortDesc]
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getExecutedFlightPlansCountCD(withProjectUuid projectUuid: String, excludedUuids: [String]) -> Int {
+        let fetchRequest = FlightPlan.fetchRequest()
+        var subPredicateList = [NSPredicate]()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let projectUuidPredicate = NSPredicate(format: "projectUuid == %@", projectUuid)
+        subPredicateList.append(projectUuidPredicate)
+
+        let excludeUuidsPredicate = NSPredicate(format: "NOT (uuid IN %@)", excludedUuids)
+        subPredicateList.append(excludeUuidsPredicate)
+
+        let executionPredicate = NSPredicate(format: "hasReachedFirstWayPoint == YES")
+        subPredicateList.append(executionPredicate)
+
+        let toBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: false))
+        subPredicateList.append(toBeDeletedPredicate)
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+
+        return fetchCount(request: fetchRequest)
+    }
+
+    func getFlightPlansCountCD(withVersions versions: [String]) -> Int {
+        let fetchRequest = getFlightPlansCDFetchRequest(withVersions: versions)
+
+        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: true)
+        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
+
+        return fetchCount(request: fetchRequest)
+    }
+
+    func getFlightPlansCD(withVersions versions: [String], _ completion: @escaping (([FlightPlan]) -> Void)) {
+        guard !versions.isEmpty else {
+            completion([])
+            return
+        }
+        let fetchRequest = getFlightPlansCDFetchRequest(withVersions: versions)
+
+        let lastUpdatedSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: true)
+        fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
+
+        return fetch(request: fetchRequest, completion: completion)
     }
 
     // MARK: __ Delete
@@ -802,5 +973,26 @@ internal extension CoreDataServiceImpl {
 
     func getFlightPlansCD(withQuery query: String) -> [FlightPlan] {
         objects(withQuery: query)
+    }
+}
+
+// MARK: - Private
+private extension CoreDataServiceImpl {
+    func getFlightPlansCDFetchRequest(withVersions versions: [String]) -> NSFetchRequest<FlightPlan> {
+        let fetchRequest = FlightPlan.fetchRequest()
+        var subPredicateList = [NSPredicate]()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let versionPredicate = NSPredicate(format: "version IN %@", versions)
+        subPredicateList.append(versionPredicate)
+
+        let toBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: false))
+        subPredicateList.append(toBeDeletedPredicate)
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+
+        return fetchRequest
     }
 }

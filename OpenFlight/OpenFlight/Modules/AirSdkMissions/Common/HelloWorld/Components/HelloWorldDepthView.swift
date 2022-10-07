@@ -53,7 +53,6 @@ final class HelloWorldDepthView: UIView, NibOwnerLoadable {
         commonInitHelloWorldDepthView()
     }
 
-
     /// Retruns true if a `HelloWorldDepthView` is already in the View Controller hierarchy.
     ///
     /// - Parameters:

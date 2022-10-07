@@ -56,6 +56,7 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
         super.awakeFromNib()
         // Clean UI when we create the cell.
         cleanViews()
+        setupUI()
     }
 
     override func prepareForReuse() {
@@ -64,6 +65,10 @@ class DashboardDroneCell: UICollectionViewCell, NibReusable {
         // Clean UI and states.
         cleanViews()
         cleanStates()
+    }
+
+    func setupUI() {
+        batteryValueLabel.makeUp(with: .current, color: .defaultTextColor)
     }
 
     // MARK: - Internal Funcs

@@ -62,7 +62,8 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
     }
 
     var settingsProvider: FlightPlanSettingsProvider? {
-        return ClassicFlightPlanSettingsProvider(edition: Services.hub.flightPlan.edition)
+        return ClassicFlightPlanSettingsProvider(edition: Services.hub.flightPlan.edition,
+                                                 rthSettingsMonitor: Services.hub.rthSettingsMonitor)
     }
 
     var settingsAlwaysDisplayed: Bool {
@@ -135,6 +136,11 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     case exposure
     case whiteBalance
     case photoResolution
+    case customRth
+    case rthReturnTarget
+    case rthHeight
+    case rthEndBehaviour
+    case rthHoveringHeight
 
     // MARK: - Internal Properties
     public var title: String {
@@ -163,6 +169,16 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return L10n.flightPlanSettingsResolution
         case .whiteBalance:
             return L10n.flightPlanSettingsWhiteBalance
+        case .customRth:
+            return L10n.flightPlanSettingsRthCustomLong
+        case .rthReturnTarget:
+            return L10n.settingsRthTypeTitle
+        case .rthHeight:
+            return L10n.flightPlanSettingsRthAltitude
+        case .rthEndBehaviour:
+            return L10n.settingsRthEndByTitle
+        case .rthHoveringHeight:
+            return L10n.flightPlanSettingsRthHoveringAltitude
         }
     }
 
@@ -185,6 +201,16 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .whiteBalance,
              .photoResolution:
             return nil
+        case .customRth:
+            return L10n.flightPlanSettingsRthCustomShort
+        case .rthReturnTarget:
+            return L10n.settingsRthTypeTitle
+        case .rthHeight:
+            return L10n.flightPlanSettingsRthAltitude
+        case .rthEndBehaviour:
+            return L10n.settingsRthEndByTitle
+        case .rthHoveringHeight:
+            return L10n.flightPlanSettingsRthHoveringAltitudeShort
         }
     }
 
@@ -216,6 +242,18 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return Camera2PhotoResolution.availableResolutions.indices.map { $0 }
         case .exposure:
             return Camera2EvCompensation.availableValues.indices.map { $0 }
+        case .rthHeight:
+            guard let returnHomePilotingItfs = returnHomePilotingItfs,
+                  let minAltitude = returnHomePilotingItfs.minAltitude?.min,
+                  let maxAltitude = returnHomePilotingItfs.minAltitude?.max
+            else { return [] }
+            return Array(Int(minAltitude)...Int(maxAltitude))
+        case .rthHoveringHeight:
+            guard let returnHomePilotingItfs = returnHomePilotingItfs,
+                  let minAltitude = returnHomePilotingItfs.endingHoveringAltitude?.min,
+                  let maxAltitude = returnHomePilotingItfs.endingHoveringAltitude?.max
+            else { return [] }
+            return Array(Int(minAltitude)...Int(maxAltitude))
         default:
             return [0, 1]
         }
@@ -230,7 +268,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         case .continueMode,
              .lastPointRth,
              .disconnectionRth,
-             .obstacleAvoidance:
+             .obstacleAvoidance,
+             .customRth:
             return [L10n.commonYes, L10n.commonNo]
         case .framerate:
             guard let resolution = flightPlan?.dataSetting?.resolution else { return nil }
@@ -253,6 +292,14 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return Camera2PhotoResolution.availableResolutions.map { $0.title }
         case .exposure:
             return Camera2EvCompensation.availableValues.map { $0.title }
+        case .rthReturnTarget:
+            return [L10n.flightPlanSettingsRthTakeOff, L10n.settingsRthTypePilot]
+        case .rthHeight:
+            return nil
+        case .rthEndBehaviour:
+            return [L10n.flightPlanSettingsRthHovering, L10n.commonLanding]
+        case .rthHoveringHeight:
+            return nil
         }
     }
 
@@ -271,6 +318,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         currentValue(forFlightPlan: currentFlightPlan)
     }
 
+    // swiftlint:disable cyclomatic_complexity
     public func currentValue(forFlightPlan flightPlan: FlightPlanModel?) -> Int? {
         guard let dataSetting = flightPlan?.dataSetting else { return nil }
 
@@ -313,6 +361,26 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         case .whiteBalance:
             let value = dataSetting.whiteBalanceMode
             return Camera2WhiteBalanceMode.availableModes.firstIndex(where: { $0 == value })
+        case .customRth:
+            return dataSetting.customRth ? 0 : 1
+        case .rthReturnTarget:
+            return dataSetting.rthReturnTarget ? 0 : 1
+        case .rthHeight:
+            if let rthHeight = dataSetting.rthHeight {
+                return rthHeight
+            }
+            guard let minAltitude = returnHomePilotingItfs?.minAltitude?.value
+            else { return nil }
+            return Int(minAltitude)
+        case .rthEndBehaviour:
+            return dataSetting.rthEndBehaviour ? 0 : 1
+        case .rthHoveringHeight:
+            if let rthHoveringHeight = dataSetting.rthHoveringHeight {
+                return rthHoveringHeight
+            }
+            guard let endingHoveringAltitude = returnHomePilotingItfs?.endingHoveringAltitude?.value
+            else { return nil }
+            return Int(endingHoveringAltitude)
         }
     }
 
@@ -325,12 +393,17 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .imageMode,
              .whiteBalance,
              .photoResolution,
-             .obstacleAvoidance:
+             .obstacleAvoidance,
+             .customRth,
+             .rthReturnTarget,
+             .rthEndBehaviour:
             return .choice
         case .framerate,
              .gpsLapseDistance,
              .timeLapseCycle,
-             .exposure:
+             .exposure,
+             .rthHeight,
+             .rthHoveringHeight:
             return .centeredRuler
         }
     }
@@ -340,7 +413,13 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     }
 
     public var unit: UnitType {
-        return .none
+        switch self {
+        case .rthHeight,
+             .rthHoveringHeight:
+            return .distance
+        default:
+            return .none
+        }
     }
 
     public var step: Double {
@@ -366,6 +445,11 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .photoResolution,
              .whiteBalance:
             return .image
+        case .rthReturnTarget,
+             .rthHeight,
+             .rthEndBehaviour,
+             .rthHoveringHeight:
+            return .rth
         default:
             return .common
         }
@@ -375,14 +459,21 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     private var currentFlightPlan: FlightPlanModel? {
         return Services.hub.flightPlan.edition.currentFlightPlanValue
     }
+
+    private var returnHomePilotingItfs: ReturnHomePilotingItfs.ApiProtocol? {
+        Services.hub.currentDroneHolder.drone.getPilotingItf(PilotingItfs.returnHome)
+    }
 }
 
 /// Settings provider for classic Flight Plan.
 final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
     private let edition: FlightPlanEditionService
+    private let rthSettingsMonitor: RthSettingsMonitor
 
-    init(edition: FlightPlanEditionService) {
+    init(edition: FlightPlanEditionService,
+         rthSettingsMonitor: RthSettingsMonitor) {
         self.edition = edition
+        self.rthSettingsMonitor = rthSettingsMonitor
     }
 
     // MARK: - Internal Properties
@@ -399,7 +490,7 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
     }
 
     var settingsCategories: [FlightPlanSettingCategory] {
-        return [.image, .common]
+        return [.image, .common, .rth]
     }
 
     // MARK: - Private Properties
@@ -444,6 +535,10 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
             dataSetting.exposure =  Camera2EvCompensation.compensationForIndex(value)
         case ClassicFlightPlanSettingType.whiteBalance.key where value < Camera2WhiteBalanceMode.availableModes.count:
             dataSetting.whiteBalanceMode =  Camera2WhiteBalanceMode.modeForIndex(value)
+        case ClassicFlightPlanSettingType.rthHeight.key:
+            dataSetting.rthHeight = value
+        case ClassicFlightPlanSettingType.rthHoveringHeight.key:
+            dataSetting.rthHoveringHeight = value
         default:
             break
         }
@@ -461,6 +556,12 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
             dataSetting.setDisconnectionRth(value)
         case ClassicFlightPlanSettingType.obstacleAvoidance.key:
             dataSetting.obstacleAvoidanceActivated = value
+        case ClassicFlightPlanSettingType.customRth.key:
+            dataSetting.setCustomRth(value)
+        case ClassicFlightPlanSettingType.rthReturnTarget.key:
+            dataSetting.setRthReturnTarget(value)
+        case ClassicFlightPlanSettingType.rthEndBehaviour.key:
+            dataSetting.setRthEndBehaviour(value)
         default:
             break
         }
@@ -473,7 +574,20 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
             ClassicFlightPlanSettingType.continueMode.toFlightPlanSetting(),
             ClassicFlightPlanSettingType.lastPointRth.toFlightPlanSetting(),
             ClassicFlightPlanSettingType.disconnectionRth.toFlightPlanSetting(),
-            ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting()]
+            ClassicFlightPlanSettingType.imageMode.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.customRth.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.rthReturnTarget.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.rthHeight.toFlightPlanSetting(),
+            ClassicFlightPlanSettingType.rthEndBehaviour.toFlightPlanSetting()]
+
+        let defaultRthHoveringEnabled = flightPlan.dataSetting?.customRth != true
+                                        && rthSettingsMonitor.getUserRthSettings().rthEndBehaviour == .hovering
+        let customRthHoveringEnabled = flightPlan.dataSetting?.customRth == true
+                                       && flightPlan.dataSetting?.rthEndBehaviour == true
+
+        if defaultRthHoveringEnabled || customRthHoveringEnabled {
+            planSettings.append(ClassicFlightPlanSettingType.rthHoveringHeight.toFlightPlanSetting())
+        }
 
         switch flightPlan.dataSetting?.captureModeEnum {
         case .video:

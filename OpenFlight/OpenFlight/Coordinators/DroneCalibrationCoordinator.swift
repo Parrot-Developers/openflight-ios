@@ -27,23 +27,23 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-protocol DroneCalibrationCoordinatorDelegate: AnyObject {
+public protocol DroneCalibrationCoordinatorDelegate: AnyObject {
     func firmwareUpdateRequired()
 }
 
 /// Coordinator for drone calibration screens.
-public final class DroneCalibrationCoordinator: Coordinator {
+open class DroneCalibrationCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public weak var parentCoordinator: Coordinator?
-    weak var delegate: DroneCalibrationCoordinatorDelegate?
+    public weak var delegate: DroneCalibrationCoordinatorDelegate?
 
     // MARK: - Private
 
-    private let services: ServiceHub
+    public let services: ServiceHub
 
-    init(services: ServiceHub) {
+    public init(services: ServiceHub) {
         self.services = services
     }
 
@@ -58,6 +58,14 @@ public final class DroneCalibrationCoordinator: Coordinator {
         let viewController = MagnetometerCalibrationViewController.instantiate(coordinator: self)
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
+    }
+
+    /// Starts drone details coordinator.
+    open func startDroneInformation() {
+        let droneCoordinator = DroneCoordinator(services: services)
+        droneCoordinator.parentCoordinator = self
+        droneCoordinator.start()
+        present(childCoordinator: droneCoordinator)
     }
 }
 
@@ -105,14 +113,6 @@ extension DroneCalibrationCoordinator {
         let settingsCoordinator = SettingsCoordinator()
         settingsCoordinator.startSettingType = type
         presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
-    }
-
-    /// Starts drone details coordinator.
-    func startDroneInformation() {
-        let droneCoordinator = DroneCoordinator(services: services)
-        droneCoordinator.parentCoordinator = self
-        droneCoordinator.start()
-        present(childCoordinator: droneCoordinator)
     }
 
     /// Starts remote details coordinator.

@@ -33,7 +33,7 @@ import UIKit
 
 extension UIViewController {
     /// Returns true if both size classes are regular (iPad).
-    open var isRegularSizeClass: Bool {
+    public var isRegularSizeClass: Bool {
         return (traitCollection.horizontalSizeClass == .regular && traitCollection.verticalSizeClass == .regular)
     }
 }

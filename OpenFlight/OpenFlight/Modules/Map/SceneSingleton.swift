@@ -31,12 +31,12 @@ import Foundation
 import ArcGIS
 
 /// Class holding singleton of map scene view.
-class SceneSingleton {
+public class SceneSingleton {
 
     // MARK: - Properties
-    static let shared = SceneSingleton()
+    static public let shared = SceneSingleton()
 
-    let sceneView: AGSSceneView
+    public let sceneView: AGSSceneView
 
     /// KVO for scene loading status.
     private var isSceneLoadingObserver: NSKeyValueObservation?
@@ -46,6 +46,9 @@ class SceneSingleton {
 
     /// Whether map is displayed in panel
     public var isMiniMap = false
+
+    /// Whether sceneView should force centering project on viewWillAppear
+    public var forceCentering = false
 
     // Initialization
 

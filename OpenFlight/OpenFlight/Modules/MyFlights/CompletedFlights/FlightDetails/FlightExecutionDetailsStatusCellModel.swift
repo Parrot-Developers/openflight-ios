@@ -57,6 +57,7 @@ class FlightExecutionDetailsStatusCellModel {
     @Published private(set) var actionButtonProgress: Double?
     @Published private(set) var actionButtonProgressColor: UIColor?
     @Published private(set) var actionButtonAction: ((Coordinator?) -> Void)?
+    @Published private(set) var isActionButtonEnabled: Bool?
 
     private let flightPlan: FlightPlanModel!
     private let flightPlanUiStateProvider: FlightPlanUiStateProvider!
@@ -96,5 +97,6 @@ class FlightExecutionDetailsStatusCellModel {
         actionButtonProgress = stateUiParameters.actionButtonProgress
 
         actionButtonAction = stateUiParameters.actionButtonCallback
+        isActionButtonEnabled = stateUiParameters.isActionButtonEnabled
     }
 }

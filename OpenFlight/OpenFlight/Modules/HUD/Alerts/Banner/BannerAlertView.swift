@@ -110,7 +110,7 @@ private extension BannerAlertView {
     /// Updates view according to view model.
     func updateView() {
         let hPadding = viewModel.style.hPadding ?? BannerAlertConstants.defaultPadding
-        let vPadding = viewModel.style.vPadding ?? BannerAlertConstants.defaultPadding
+        let vPadding = viewModel.style.vPadding ?? BannerAlertConstants.compactPadding
         stackView.layoutMargins = .init(top: vPadding, left: hPadding, bottom: vPadding, right: hPadding)
         imageView.image = viewModel.content.icon
         imageView.isHidden = viewModel.content.icon == nil

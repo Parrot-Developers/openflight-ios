@@ -78,6 +78,7 @@ final class BottomBarViewController: UIViewController {
 
     // MARK: - Internal Properties
     weak var delegate: BottomBarContainerDelegate?
+    weak var bottomBarService: HudBottomBarService?
     weak var coordinator: HUDCoordinator? {
         didSet {
             guard let coordinator = coordinator else { return }
@@ -120,11 +121,17 @@ final class BottomBarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         missionLauncherButton.model = missionLauncherButtonModel
-        deselectableViewModels = [cameraWidgetViewModel, cameraCaptureModeViewModel]
         observeViewModels()
         initViewModelsState()
         observeViewModelsIsSelectedChange()
         view.translatesAutoresizingMaskIntoConstraints = false
+
+        bottomBarService?.modePublisher.sink { [weak self] mode in
+            if mode == .closed {
+                self?.deselectAllViewModels()
+            }
+        }
+        .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -192,6 +199,7 @@ private extension BottomBarViewController {
     func behaviorStackView(for missionMode: MissionMode?) {
         // Remove all views in left stackView.
         behaviorStackView.safelyRemoveArrangedSubviews()
+        deselectableViewModels = [cameraWidgetViewModel, cameraCaptureModeViewModel]
 
         // Add views for a specific mission.
         // If RTH is enabled, add only mandatory views.
@@ -320,12 +328,20 @@ private extension BottomBarViewController {
     /// Observes View Models isSelected changes.
     func observeViewModelsIsSelectedChange() {
         cameraWidgetViewModel.state.value.isSelected.valueChanged = { [weak self] isSelected in
-            guard let viewModel = self?.cameraWidgetViewModel else { return }
-            isSelected ? self?.delegate?.showLevelOne(viewModel: viewModel) : self?.delegate?.hideLevelOne(viewModel: viewModel)
-            self?.cameraWidgetView.model = viewModel.state.value
-            if isSelected {
-                self?.deselectAllViewModels(except: type(of: viewModel))
+            guard let self = self else { return }
+
+            let viewModel = self.cameraWidgetViewModel
+            if !isSelected {
+                self.delegate?.hideLevelOne(viewModel: viewModel)
+            } else if self.rightStackView.isHiddenInStackView == false {
+                // Camera widget is not hidden and VM is selected => show level one.
+                // (Need to ensure camera widget is visible, as VM update may be received after bottom bar is hidden,
+                // e.g. when switching mission right after an AE lock long press.)
+                self.delegate?.showLevelOne(viewModel: viewModel)
+                self.deselectAllViewModels(except: type(of: viewModel))
             }
+
+            self.cameraWidgetView.model = viewModel.state.value
         }
         cameraCaptureModeViewModel.state.value.isSelected.valueChanged = { [weak self] isSelected in
             guard let viewModel = self?.cameraCaptureModeViewModel else { return }

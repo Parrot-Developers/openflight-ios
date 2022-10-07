@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -35,16 +35,16 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TaX-5s-bHd" customClass="MainContainerView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="37" y="81.5" width="494" height="238.5"/>
+                                <rect key="frame" x="37" y="149" width="494" height="171"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" alignment="center" spacing="26" translatesAutoresizingMaskIntoConstraints="NO" id="TA2-sV-n0q">
-                                        <rect key="frame" x="17" y="15" width="460" height="193.5"/>
+                                        <rect key="frame" x="17" y="15" width="460" height="126"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="18" translatesAutoresizingMaskIntoConstraints="NO" id="MdF-8h-FIb">
-                                                <rect key="frame" x="209" y="0.0" width="42" height="55.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="460" height="50"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="9Hz-QJ-zLc">
-                                                        <rect key="frame" x="0.0" y="0.0" width="42" height="20"/>
+                                                        <rect key="frame" x="211" y="0.0" width="38" height="17"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                         <color key="textColor" name="default_text_color"/>
@@ -54,7 +54,7 @@
                                                         </variation>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000000000002" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Dm-B6-qHz">
-                                                        <rect key="frame" x="2.5" y="38" width="37" height="17.5"/>
+                                                        <rect key="frame" x="213.5" y="35" width="33" height="15"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Medium" family="Rajdhani" pointSize="15"/>
                                                         <color key="textColor" name="default_text_color"/>
@@ -67,76 +67,63 @@
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="TnN-l7-kSR" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="81.5" width="460" height="112"/>
+                                                <rect key="frame" x="0.0" y="76" width="460" height="50"/>
                                                 <subviews>
-                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OFt-fZ-mKw">
-                                                        <rect key="frame" x="0.0" y="0.0" width="210" height="112"/>
-                                                        <subviews>
-                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="XpA-IC-AVo" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="31" width="210" height="50"/>
-                                                                <color key="backgroundColor" name="error_color"/>
-                                                                <constraints>
-                                                                    <constraint firstAttribute="height" constant="50" id="Pof-uo-2hn"/>
-                                                                </constraints>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <state key="normal" title="Button">
-                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                </state>
-                                                                <connections>
-                                                                    <action selector="cancelButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="qzr-yK-Hxe"/>
-                                                                </connections>
-                                                            </button>
-                                                        </subviews>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <button opaque="NO" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="XpA-IC-AVo" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="126.5" height="50"/>
+                                                        <color key="backgroundColor" name="error_color"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="trailing" secondItem="XpA-IC-AVo" secondAttribute="trailing" id="7ZS-gu-MOp"/>
-                                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="top" secondItem="OFt-fZ-mKw" secondAttribute="top" priority="750" id="9Re-nD-lh5"/>
-                                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="leading" secondItem="OFt-fZ-mKw" secondAttribute="leading" id="NbG-mP-J8q"/>
-                                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="centerY" secondItem="OFt-fZ-mKw" secondAttribute="centerY" id="ZIM-Nl-HxF"/>
-                                                            <constraint firstAttribute="bottom" secondItem="XpA-IC-AVo" secondAttribute="bottom" priority="750" id="fxA-vr-6FS"/>
+                                                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="176" id="Xf8-Fi-qIq"/>
                                                         </constraints>
-                                                    </view>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="yAY-Ms-inL" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="250" y="0.0" width="210" height="112"/>
-                                                        <subviews>
-                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Cgn-cf-gWb" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="0.0" width="210" height="50"/>
-                                                                <color key="backgroundColor" name="highlight_color"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <state key="normal" title="Button">
-                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                </state>
-                                                                <connections>
-                                                                    <action selector="confirmButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="VkA-sY-4nz"/>
-                                                                </connections>
-                                                            </button>
-                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="3Fq-Vi-Bl1" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="62" width="210" height="50"/>
-                                                                <color key="backgroundColor" name="highlight_color"/>
-                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
-                                                                <state key="normal" title="Button">
-                                                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                </state>
-                                                                <connections>
-                                                                    <action selector="secondaryActionButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="x5Z-6R-Rb2"/>
-                                                                </connections>
-                                                            </button>
-                                                        </subviews>
-                                                    </stackView>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <state key="normal" title="Button">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="cancelButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="qzr-yK-Hxe"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Cgn-cf-gWb" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="166.5" y="0.0" width="127" height="50"/>
+                                                        <color key="backgroundColor" name="highlight_color"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="176" id="PsF-zf-L2N"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <state key="normal" title="Button">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="confirmButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="VkA-sY-4nz"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="3Fq-Vi-Bl1" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                                        <rect key="frame" x="333.5" y="0.0" width="126.5" height="50"/>
+                                                        <color key="backgroundColor" name="highlight_color"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" relation="lessThanOrEqual" constant="176" id="fOs-SF-uFF"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                        <state key="normal" title="Button">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="secondaryActionButtonTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="x5Z-6R-Rb2"/>
+                                                        </connections>
+                                                    </button>
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
-                                                    <constraint firstItem="3Fq-Vi-Bl1" firstAttribute="height" secondItem="XpA-IC-AVo" secondAttribute="height" id="gDD-kb-OIO"/>
-                                                    <constraint firstItem="Cgn-cf-gWb" firstAttribute="height" secondItem="XpA-IC-AVo" secondAttribute="height" id="o5A-yy-5dx"/>
+                                                    <constraint firstAttribute="height" constant="50" id="87q-H7-Oud"/>
                                                 </constraints>
                                             </stackView>
                                         </subviews>
                                         <constraints>
-                                            <constraint firstAttribute="width" priority="750" constant="460" id="I3y-jC-MVD">
+                                            <constraint firstItem="MdF-8h-FIb" firstAttribute="width" secondItem="TA2-sV-n0q" secondAttribute="width" priority="750" id="4X2-4j-Shz"/>
+                                            <constraint firstAttribute="width" constant="460" id="I3y-jC-MVD">
                                                 <variation key="heightClass=regular-widthClass=regular" constant="600"/>
                                             </constraint>
-                                            <constraint firstItem="Cgn-cf-gWb" firstAttribute="width" relation="greaterThanOrEqual" secondItem="TA2-sV-n0q" secondAttribute="width" multiplier="0.5" priority="750" id="LHn-PJ-vdU"/>
-                                            <constraint firstItem="XpA-IC-AVo" firstAttribute="width" relation="greaterThanOrEqual" secondItem="TA2-sV-n0q" secondAttribute="width" multiplier="0.5" priority="750" id="nMM-8u-0pP"/>
+                                            <constraint firstItem="TnN-l7-kSR" firstAttribute="width" secondItem="TA2-sV-n0q" secondAttribute="width" priority="750" id="wg9-Vk-ezG"/>
                                         </constraints>
                                     </stackView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aqZ-ZV-H7Z">
@@ -198,12 +185,10 @@
                         <outlet property="bgContentBottomConstraint" destination="O28-xo-10g" id="3Bu-xE-sW7"/>
                         <outlet property="buttonsStackView" destination="TnN-l7-kSR" id="aKJ-cf-1NX"/>
                         <outlet property="cancelButton" destination="XpA-IC-AVo" id="3bt-cW-UDy"/>
-                        <outlet property="cancelView" destination="OFt-fZ-mKw" id="Cvi-w5-beR"/>
                         <outlet property="closeButton" destination="aqZ-ZV-H7Z" id="Pb8-6t-CAK"/>
                         <outlet property="contentStackViewBottomConstraint" destination="M2H-DU-p98" id="kyJ-We-x9N"/>
                         <outlet property="secondaryActionButton" destination="3Fq-Vi-Bl1" id="fX4-ph-pHX"/>
                         <outlet property="validateButton" destination="Cgn-cf-gWb" id="Ywg-yq-tEy"/>
-                        <outlet property="validateStackView" destination="yAY-Ms-inL" id="6YL-pb-rbX"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>

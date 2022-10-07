@@ -38,7 +38,7 @@ final class RemoteUpdateViewController: UIViewController {
     @IBOutlet private weak var downloadingStepView: UpdateStepView!
     @IBOutlet private weak var rebootingStepView: UpdateStepView!
     @IBOutlet private weak var progressView: RemoteImageView!
-    @IBOutlet private weak var backButton: UIButton!
+    @IBOutlet private weak var backButton: InsetHitAreaButton!
     @IBOutlet private weak var continueButton: ActionButton!
 
     // MARK: - Private Properties

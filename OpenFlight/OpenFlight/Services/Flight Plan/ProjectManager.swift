@@ -142,9 +142,6 @@ public protocol ProjectManager {
     func loadProjects(type: ProjectType?, limit: Int) -> [ProjectModel]
 
     /// Loads executed projects, ordered by last execution date desc
-    func loadExecutedProjects() -> [ProjectModel]
-
-    /// Loads executed projects, ordered by last execution date desc
     ///
     /// - Parameters:
     ///    - offset: offset start
@@ -175,6 +172,12 @@ public protocol ProjectManager {
     ///     - withType: type of project to specidified
     /// - Returns: Count of projects with matching type
     func getExecutedProjectsCount(withType: ProjectType?) -> Int
+
+    /// Get executed flight plan from specified project
+    /// - Parameters:
+    ///     - project: project to specified
+    /// - Returns: List of executed flight plans with hasReachedFirstWaypoint to true
+    func getExecutedFlightPlans(ofProject project: ProjectModel) -> [FlightPlanModel]
 
     /// Creates new Project.
     ///
@@ -292,14 +295,13 @@ public protocol ProjectManager {
     /// Starts edition of current project.
     func startEdition()
 
-    /// Update a Flight Plan's `customTitle` according his execution position.
+    /// Get the execution custom title with executionRank
     ///
     /// - Parameters:
-    ///    - flightPlan: The flight plan execution.
+    ///    - executionRank: The executionRank to specified
     ///
-    /// - Returns: The updated `FlightPlanModel`.
-    @discardableResult
-    func updateExecutionCustomTitle(for flightPlan: FlightPlanModel) -> FlightPlanModel
+    /// - Returns: The custom title for an execution with its rank
+    func executionCustomTitle(for executionRank: Int) -> String
 
     /// Reset a Flight Plan's `customTitle` to his project's title.
     ///
@@ -332,6 +334,51 @@ public protocol ProjectManager {
     ///    - project: the project to rename
     /// - Returns: the new project name (the Project's title)
     func renamedProjectTitle(for name: String, of project: ProjectModel?) -> String
+
+    /// Update project and associated lfight plans executionRank if needed
+    /// If an executed flight plan has a nil executionRank, all of the executed flighplans executionRank is reordered
+    /// - Parameters:
+    ///     - project: the specified project
+    /// - Returns: The updated project
+    /// - Description:
+    ///     - If a project has executed flight plan and one of them has no executionRank, all executed flight plan
+    ///     will be sorted by their custom title in ascending order and the executionRank will be set according to that order.
+    ///     Project's 'latestExecutionRank' will be set with the highest executionRank if nil.
+    func updateFlightPlansExecutionRankIfNeeded(for project: ProjectModel) -> ProjectModel
+
+    /// Update project and associated lfight plans executionRank if needed
+    /// If an executed flight plan has a nil executionRank, all of the executed flighplans executionRank is reordered
+    /// - Parameters:
+    ///     - project: the specified project
+    ///     - didSave: optional closure called when saved in database if update was required
+    /// - Returns: The updated project
+    /// - Description:
+    ///     - If a project has executed flight plan and one of them has no executionRank, all executed flight plan
+    ///     will be sorted by their custom title in ascending order and the executionRank will be set according to that order
+    ///     Project's 'latestExecutionRank' will be set with the highest executionRank if nil.
+    func updateFlightPlansExecutionRankIfNeeded(for project: ProjectModel, didSave: ((_ project: ProjectModel) -> Void)?) -> ProjectModel
+
+    /// Set the next executionRank for project with specified UUID
+    /// - Parameters
+    ///     - projectId: project's UUID to specified
+    /// - Returns:
+    ///     - The next executionRank of the project
+    func setNextExecutionRank(forProjectId projectId: String) -> Int
+
+    /// Cancel the last execution for project with specified UUID
+    /// - Parameters:
+    ///     - projectId: project's UUID to specified
+    /// - Description:
+    ///     - Project's latestExecutionRank is decremented by 1
+    func cancelLastExecution(forProjectId projectId: String)
+
+    ///
+    /// - Parameter cloudSynchroWatcher: the cloudSynchroWatcher to update
+    ///
+    /// - Note:
+    ///     If the cloud synchro watcher service is not yet instatiated during this service's init,
+    ///     this method can be called to update and configure his watcher.
+    func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?)
 }
 
 private extension ULogTag {
@@ -339,10 +386,6 @@ private extension ULogTag {
 }
 
 public class ProjectManagerImpl {
-
-    private enum Constants {
-        public static let defaultFlightPlanVersion: Int = 1
-    }
     public var numberOfProjectsPerPage: Int = 40
 
     private let flightPlanTypeStore: FlightPlanTypeStore
@@ -355,6 +398,7 @@ public class ProjectManagerImpl {
     private let missionsStore: MissionsStore
     private let flightPlanManager: FlightPlanManager
     private let flightPlanRunManager: FlightPlanRunManager
+    private var cloudSynchroWatcher: CloudSynchroWatcher?
     private var cancellables = Set<AnyCancellable>()
 
     public var projectsDidChangePublisher: AnyPublisher<Void, Never> {
@@ -387,7 +431,8 @@ public class ProjectManagerImpl {
          userService: UserService,
          filesManager: FlightPlanFilesManager,
          flightPlanManager: FlightPlanManager,
-         flightPlanRunManager: FlightPlanRunManager) {
+         flightPlanRunManager: FlightPlanRunManager,
+         cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.missionsStore = missionsStore
         self.flightPlanTypeStore = flightPlanTypeStore
         self.persistenceProject = persistenceProject
@@ -398,6 +443,7 @@ public class ProjectManagerImpl {
         self.filesManager = filesManager
         self.flightPlanManager = flightPlanManager
         self.flightPlanRunManager = flightPlanRunManager
+        updateCloudSynchroWatcher(cloudSynchroWatcher)
 
         refreshAllProjectsSummary()
 
@@ -432,8 +478,21 @@ extension ProjectManagerImpl: ProjectManager {
         // Ensure Project Manager has a current project.
         guard let project = currentProject else { return false }
         // Check if project has executed flight plans.
-        // TODO: In this specific case, it should be more efficient to perform a DB 'Select Count' instead of fetching all project's executions.
-        return !executedFlightPlans(for: project).isEmpty
+        var excludedUuids: [String] = []
+        if let flyingUuid = flightPlanRunManager.playingFlightPlan?.uuid {
+            excludedUuids = [flyingUuid]
+        }
+        return flightPlanRepo.getExecutedFlightPlansCount(withProjectUuid: project.uuid, excludedUuids: excludedUuids) > 0
+    }
+
+    public func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?) {
+        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynchronizingData in
+            if !isSynchronizingData {
+                projectsDidChangeSubject.send()
+                refreshAllProjectsSummary()
+            }
+        }.store(in: &cancellables)
     }
 
     public func loadAllProjects() -> [ProjectModel] {
@@ -517,7 +576,8 @@ extension ProjectManagerImpl: ProjectManager {
     }
 
     public func editableFlightPlan(for project: ProjectModel) -> FlightPlanModel? {
-        flightPlans(for: project).first { $0.state == .editable }
+        let project = persistenceProject.getProjectWithEditable(withUuid: project.uuid)
+        return project?.editableFlightPlan
     }
 
     public func loadProjects(type: ProjectType?) -> [ProjectModel] {
@@ -532,16 +592,12 @@ extension ProjectManagerImpl: ProjectManager {
         persistenceProject.getProjectsWithEditable(offset: 0, limit: limit, withType: type?.rawValue)
     }
 
-    public func loadExecutedProjects() -> [ProjectModel] {
-        persistenceProject.getExecutedProjectsWithFlightPlans()
-    }
-
     public func loadExecutedProjects(offset: Int, limit: Int, withType: ProjectType?) -> [ProjectModel] {
-        persistenceProject.getExecutedProjectsWithFlightPlans(offset: offset, limit: limit, withType: withType)
+        persistenceProject.getExecutedProjectsWithLatestExecution(offset: offset, limit: limit, withType: withType)
     }
 
     public func loadExecutedProjects(limit: Int, withType: ProjectType?) -> [ProjectModel] {
-        persistenceProject.getExecutedProjectsWithFlightPlans(offset: 0, limit: limit, withType: withType)
+        persistenceProject.getExecutedProjectsWithLatestExecution(offset: 0, limit: limit, withType: withType)
     }
 
     public func getProjectsCount(withType: ProjectType) -> Int {
@@ -554,6 +610,11 @@ extension ProjectManagerImpl: ProjectManager {
 
     public func getAllProjectsCount() -> Int {
         persistenceProject.getAllProjectsCount()
+    }
+
+    public func getExecutedFlightPlans(ofProject project: ProjectModel) -> [FlightPlanModel] {
+        let project = updateFlightPlansExecutionRankIfNeeded(for: project)
+        return persistenceProject.getExecutedFlightPlans(ofProject: project)
     }
 
     public func delete(project: ProjectModel, completion: ((_ success: Bool) -> Void)?) {
@@ -598,7 +659,7 @@ extension ProjectManagerImpl: ProjectManager {
                     flightPlanRepo.saveOrUpdateFlightPlan(flightPlan, byUserUpdate: true, toSynchro: true,
                                                           withFileUploadNeeded: false) { [unowned self] success in
                         if success {
-                            ULog.e(.tag, "Rename project update for flight plan \(flightPlan.uuid)")
+                            ULog.i(.tag, "Rename project update for flight plan \(flightPlan.uuid)")
                             editionService.setupFlightPlan(flightPlan)
                         } else {
                             ULog.e(.tag, "Rename project update failed for flight plan \(flightPlan.uuid)")
@@ -625,8 +686,7 @@ extension ProjectManagerImpl: ProjectManager {
 
         // Get the editable's FP (a project must always contains at least one FP) to duplicate it.
         if let flightPlan = editableFlightPlan(for: project) {
-            var duplicatedFlightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan,
-                                                                       save: false)
+            var duplicatedFlightPlan = flightPlanManager.newFlightPlan(basedOn: flightPlan)
             duplicatedFlightPlan.customTitle = title
             duplicatedFlightPlan.projectUuid = duplicatedProjectID
             duplicatedFlightPlan.apcId = userService.currentUser.apcId
@@ -687,6 +747,15 @@ extension ProjectManagerImpl: ProjectManager {
         currentProject = loadProjects(type: type)
             .sorted(by: { $0.lastOpened ?? $0.lastUpdated > $1.lastOpened ?? $1.lastUpdated })
             .first
+
+        // Update, if needed, the order of executed flight plan of project by their executionRank
+        // if old flight plans have their executionRank to nil
+        if let project = currentProject {
+            currentProject = updateFlightPlansExecutionRankIfNeeded(for: project)
+        } else {
+            ULog.i(.tag, "No project found for type '\(type)'")
+        }
+
         // Reset the flag informing about the project creation.
         isCurrentProjectBrandNew = false
     }
@@ -726,6 +795,10 @@ extension ProjectManagerImpl: ProjectManager {
                                       autoStart: Bool,
                                       isBrandNew: Bool) {
         guard var project = project(for: flightPlan) else { return }
+
+        // Update, if needed, the order of executed flight plan of project by their executionRank
+        // if old flight plans have their executionRank to nil
+        project = updateFlightPlansExecutionRankIfNeeded(for: project)
 
         // Update `lastOpened` date in order to be able to correctly reload latest project when needed.
         // (Used in `setLastOpenedProjectAsCurrent` and `loadLastProject()`)
@@ -778,13 +851,8 @@ extension ProjectManagerImpl: ProjectManager {
         startEditionSubject.send()
     }
 
-    @discardableResult
-    public func updateExecutionCustomTitle(for flightPlan: FlightPlanModel) -> FlightPlanModel {
-        // Ensure Flight Plan has a project.
-        guard let project = project(for: flightPlan) else { return flightPlan }
-        // Generate the execution name then update the flight plan customTitle.
-        let customTitle = nextExecutionName(for: project)
-        return flightPlanManager.update(flightplan: flightPlan, with: customTitle)
+    public func executionCustomTitle(for executionRank: Int) -> String {
+        "\(L10n.flightPlanExecutionName) \(executionRank)"
     }
 
     @discardableResult
@@ -843,6 +911,45 @@ extension ProjectManagerImpl: ProjectManager {
         // Generate an alternative name.
         return alternativeName(for: trimmedName, of: project)
     }
+
+    public func updateFlightPlansExecutionRankIfNeeded(for project: ProjectModel) -> ProjectModel {
+        persistenceProject.updateExecutionRankIfNeeded(forProject: project)
+    }
+
+    public func updateFlightPlansExecutionRankIfNeeded(for project: ProjectModel, didSave: ((_ project: ProjectModel) -> Void)?) -> ProjectModel {
+        persistenceProject.updateExecutionRankIfNeeded(forProject: project, completion: didSave)
+    }
+
+    public func setNextExecutionRank(forProjectId projectId: String) -> Int {
+        guard var project = persistenceProject.getProject(withUuid: projectId) else {
+            ULog.e(.tag, "getNextExecutionRank for projectId \(projectId) not found")
+            return 1
+        }
+        let latestExecutionRank = project.latestExecutionRank ?? 0
+        let nextExecutionRank = latestExecutionRank + 1
+        project.latestExecutionRank = nextExecutionRank
+        persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true)
+        ULog.d(.tag, "setNextExecutionRank for projectId \(projectId) with execution rank = \(nextExecutionRank)")
+        return nextExecutionRank
+    }
+
+    public func cancelLastExecution(forProjectId projectId: String) {
+        guard var project = persistenceProject.getProject(withUuid: projectId) else {
+            ULog.e(.tag, "cancelLastExecution for projectId \(projectId) not found")
+            return
+        }
+
+        guard let latestExecutionRank = project.latestExecutionRank else {
+            return
+        }
+        if latestExecutionRank > 1 {
+            project.latestExecutionRank = latestExecutionRank - 1
+        } else {
+            project.latestExecutionRank = nil
+        }
+
+        persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true)
+    }
 }
 
 private extension ProjectManagerImpl {
@@ -871,7 +978,7 @@ private extension ProjectManagerImpl {
         let flightPlan = FlightPlanModel(apcId: userService.currentUser.apcId,
                                          type: flightPlanProvider.typeKey,
                                          uuid: UUID().uuidString,
-                                         version: String(Constants.defaultFlightPlanVersion),
+                                         version: FlightPlanModelVersion.latest,
                                          customTitle: title,
                                          thumbnailUuid: nil,
                                          projectUuid: uuid,
@@ -1008,27 +1115,20 @@ private extension ProjectManagerImpl {
     /// - Returns: The executions list.
     func executions(for project: ProjectModel, excludeFlyingFlightPlan: Bool) -> [FlightPlanModel] {
         // Get the list of executed FP (FP has reached first way point).
-        var executions = persistenceProject.getExecutedFlightPlans(ofProject: project)
+        var executions = getExecutedFlightPlans(ofProject: project)
         // Exclude, if needed, the flying FP.
         if excludeFlyingFlightPlan {
             executions = executions.filter { $0.uuid != flightPlanRunManager.playingFlightPlan?.uuid }
         }
-        // Re-order executions with no associated Flight at top of the list.
-        // Note: A FP is linked to a Flight only after the Drone landed and Gutma received.
-        let syncedExecutions = executions.filter { !($0.flightPlanFlights?.isEmpty ?? true) }
-        let unsyncedExecutions = executions.filter { $0.flightPlanFlights?.isEmpty ?? true }
-        return unsyncedExecutions + syncedExecutions
+        return executions
     }
 
     /// Returns the next execution customTitle for a project.
     ///
     /// - Parameter project: the project
     /// - Returns: the execution name (the FP's customTitle)
-    func nextExecutionName(for project: ProjectModel) -> String {
-        // Get the project's executions list.
-        let executions = executions(for: project)
-        // Extract customTitles and generate the next execution name.
-        return executions.map(\.customTitle).nextExecutionName
+    func executionName(for rank: Int) -> String {
+        "\(L10n.flightPlanExecutionName) \(rank)"
     }
 
     /// Returns the next duplicated project title.
@@ -1122,7 +1222,7 @@ private extension ProjectManagerImpl {
 ///
 /// The media tag is a string, sent to the drone, dedicated to identify the media stored in the Drone's memory.
 /// *Format*: `"{project title} - {execution customTitle}"` (e.g. "My FP - Execution 1" ...)
-private extension String {
+extension String {
 
     /// Regex patterns used to handle Project and FP names.
     private struct RexgexPattern {
@@ -1240,7 +1340,7 @@ private extension String {
     }
 }
 
-private extension Array where Element == String {
+extension Array where Element == String {
 
     /// Returns the highest execution index for a given list of execution name.
     var highestExecutionIndex: Int? {

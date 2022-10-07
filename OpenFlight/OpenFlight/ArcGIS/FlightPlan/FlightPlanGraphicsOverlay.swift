@@ -91,7 +91,7 @@ public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     /// Drone location graphic.
     private var droneGraphic: FlightPlanLocationGraphic?
     /// User location graphic.
-    private var userGraphic: FlightPlanLocationGraphic?
+    private var userGraphic: FlightPlanUserLocationGraphic?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -566,7 +566,10 @@ extension FlightPlanGraphicsOverlay {
         wayPoints.forEach { $0.update(heading: heading) }
         poiPoints.forEach { $0.update(heading: heading) }
         droneGraphic?.update(cameraHeading: heading)
-        userGraphic?.update(cameraHeading: heading)
+        guard let originGraphic = graphics.first(where: { $0 is FlightPlanOriginGraphic }) else { return }
+        if let sceneProperties = sceneProperties, sceneProperties.surfacePlacement == .drapedFlat {
+            (originGraphic as? FlightPlanOriginGraphic)?.update(heading: heading)
+        }
     }
 
     /// Sets drone location graphic.
@@ -595,7 +598,7 @@ extension FlightPlanGraphicsOverlay {
     /// Sets user location graphic.
     ///
     /// - Parameter graphic: user location graphic
-    func setUserGraphic(_ graphic: FlightPlanLocationGraphic?) {
+    func setUserGraphic(_ graphic: FlightPlanUserLocationGraphic?) {
         if let graphic = graphic {
             if !graphics.contains(graphic) {
                 graphics.add(graphic)

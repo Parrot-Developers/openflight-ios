@@ -34,12 +34,14 @@ public enum BannerAlertConstants {
     // MARK: Behavior
     /// The default on duration.
     static let defaultOnDuration: TimeInterval = 3
+    /// The default on duration for critical severity.
+    static let defaultCriticalOnDuration: TimeInterval = 30
     /// The default on duration for warning severity.
     static let defaultWarningOnDuration: TimeInterval = 30
     /// The default on duration for advice severity.
     static let defaultAdviceOnDuration: TimeInterval = 3
     /// The default snooze duration.
-    static let defaultSnoozeDuration: TimeInterval = 240
+    static let defaultSnoozeDuration: TimeInterval = 120
     /// The default system sound ID for critical severity.
     static let defaultCriticalSystemSoundId: UInt32 = 1257
     /// The maximum number of alerts that can be simultaneously displayed on screen.
@@ -84,7 +86,7 @@ public struct AnyBannerAlert: BannerAlert, CustomStringConvertible {
     public var priority: Int { banner.priority }
 
     public var description: String {
-        "\"\(content.title)\" (\(uid))"
+        "\"\(content.title)\""
     }
 
     /// Constructor.
@@ -149,7 +151,7 @@ extension Array where Element == AnyBannerAlert {
 
 // MARK: - Severity
 
-public enum BannerAlertSeverity: Int, Equatable, Comparable, Hashable {
+public enum BannerAlertSeverity: Int, Equatable, Comparable, Hashable, CustomStringConvertible {
     /// The highest severity level.
     /// Mandatory alerts are displayed even if other alerts are already displayed.
     case mandatory = 1
@@ -172,6 +174,16 @@ public enum BannerAlertSeverity: Int, Equatable, Comparable, Hashable {
     public static func < (lhs: BannerAlertSeverity, rhs: BannerAlertSeverity) -> Bool {
         // `lhs` is lower than `rhs` if its rawValue is higher.
         lhs.rawValue > rhs.rawValue
+    }
+
+    /// The severity description.
+    public var description: String {
+        switch self {
+        case .mandatory: return "mandatory"
+        case .critical: return "critical"
+        case .warning: return "warning"
+        case .advice: return "advice"
+        }
     }
 }
 
@@ -300,7 +312,7 @@ extension BannerAlertSeverity {
     public var onDuration: TimeInterval? {
         switch self {
         case .mandatory: return nil
-        case .critical: return nil
+        case .critical: return BannerAlertConstants.defaultCriticalOnDuration
         case .warning: return BannerAlertConstants.defaultWarningOnDuration
         case .advice: return BannerAlertConstants.defaultAdviceOnDuration
         }
@@ -309,8 +321,7 @@ extension BannerAlertSeverity {
     public var snoozeDuration: TimeInterval? {
         switch self {
         case .mandatory: return nil
-        case .critical: return nil
-        case .warning: return BannerAlertConstants.defaultSnoozeDuration
+        case .critical, .warning: return BannerAlertConstants.defaultSnoozeDuration
         case .advice: return nil
         }
     }

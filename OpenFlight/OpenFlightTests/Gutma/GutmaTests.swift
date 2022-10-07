@@ -33,13 +33,19 @@ import CoreLocation
 @testable import OpenFlight
 
 class GutmaTests: XCTestCase {
+    func get(gutma: String) -> Data? {
+        guard let json = Bundle(for: Self.self).url(forResource: gutma, withExtension: "json", subdirectory: "flights"),
+              let data = try? Data(contentsOf: json)
+        else { return nil }
+        return data
+    }
 
-    func get(flight: String) -> FlightModel? {
+    func get(flight: String, gutma: Data? = nil) -> FlightModel? {
         guard let json = Bundle(for: Self.self).url(forResource: flight, withExtension: "flight", subdirectory: "flights"),
               let data = try? Data(contentsOf: json),
               let flight = try? JSONDecoder().decode(FlightTestModel.self, from: data)
         else { return nil }
-        return flight.flightModel()
+        return flight.flightModel(gutma: gutma)
     }
 
     func get(flightPlan: String) -> FlightPlanModel? {
@@ -57,12 +63,13 @@ class GutmaTests: XCTestCase {
             flightPlan: flightPlan, date: "",
             location: CLLocationCoordinate2D(),
             flights: flights,
-            flightService: Services.hub.flight.service)
+            flightService: Services.hub.flight.service,
+            mavlinkCommands: flightPlan.mavlinkCommands)
     }
 
     func testFlights() {
         let bundleURL = Bundle(for: Self.self).bundleURL
-        let files = Bundle.urls(forResourcesWithExtension: nil, subdirectory: "flights", in: bundleURL)!
+        let files = Bundle.urls(forResourcesWithExtension: "flight", subdirectory: "flights", in: bundleURL)!
         assertThat(files.count, not(equalTo(0)))
 
         for file in files {
@@ -414,5 +421,30 @@ class GutmaTests: XCTestCase {
         assertThat(Int(result.duration), equalTo(22))
         assertThat(Int(result.distance), equalTo(52))
         assertThat(result.batteryConsumption, equalTo(2))
+    }
+
+    func testFlightPlanWithStartDateEvent() {
+        let flightPlan = get(flightPlan: "BasicTimelapse48Mp2Sec")!
+        let customGutma = get(gutma: "BasicTimelapse48Mp2SecWithFlightDateEvent")
+        let flight = get(flight: "0E5C29D2EB45A4E329A04361F7D0F90D", gutma: customGutma)!
+        let result = getExecutionDetailsProvider(flightPlan: flightPlan, flights: [flight]).summaryProvider
+
+        guard let data = flight.gutmaFile,
+              let gutma = try? JSONDecoder().decode(Gutma.self, from: data)
+        else {
+            XCTFail("flight or gutma not found")
+            return
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "y-MM-dd H:mm:ss.SSS Z"
+        let date = formatter.date(from: "1969-12-31 22:00:41.000 UTC")
+
+        assertThat(gutma.startDate!, equalTo(date!))
+        assertThat(result.photoCount, equalTo(28))
+        assertThat(result.videoCount, equalTo(0))
+        assertThat(Int(result.duration), equalTo(54))
+        assertThat(Int(result.distance), equalTo(224))
+        assertThat(result.batteryConsumption, equalTo(3))
     }
 }

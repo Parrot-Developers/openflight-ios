@@ -39,7 +39,11 @@ final class HUDLandingViewModel {
 
     // MARK: - Private Properties
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
+    private var returnHome: ReturnHomePilotingItf?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var flyingIndicators: FlyingIndicators?
+    private var alarmsRef: Ref<Alarms>?
+    private var alarms: Alarms?
 
     private var connectedDroneHolder = Services.hub.connectedDroneHolder
     private var runManager = Services.hub.flightPlan.run
@@ -99,31 +103,59 @@ final class HUDLandingViewModel {
 // MARK: - Private Funcs
 private extension HUDLandingViewModel {
 
+    /// Starts watcher for current drone.
+    ///
+    ///  - Parameters:
+    ///     - drone: current drone
     func listenDrone(drone: Drone) {
         listenFlyingIndicators(drone: drone)
         listenReturnHome(drone: drone)
+        listenAlarms(drone: drone)
         listenFlightPlanReturnHome(runManager: runManager)
     }
 
     /// Starts watcher for flying indicators.
+    ///
+    ///  - Parameters:
+    ///     - drone: current drone
     func listenFlyingIndicators(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
-            updateLandingState(flyingIndicators: flyingIndicators)
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
+            guard let self = self else { return }
+            self.flyingIndicators = flyingIndicators
+            self.updateLandingState()
+            self.updateReturnHomeState(drone: drone)
         }
     }
 
     /// Starts watcher for Return Home.
+    ///
+    ///  - Parameters:
+    ///     - drone: current drone
     func listenReturnHome(drone: Drone) {
-        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] _ in
-            updateReturnHomeState(drone: drone)
+        returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] returnHome in
+            guard let self = self else { return }
+            self.returnHome = returnHome
+            self.updateReturnHomeState(drone: drone)
         }
         updateReturnHomeState(drone: drone)
+    }
+
+    /// Starts watcher for alarms.
+    ///
+    ///  - Parameters:
+    ///     - drone: current drone
+    func listenAlarms(drone: Drone) {
+        alarmsRef = drone.getInstrument(Instruments.alarms) { [weak self] alarms in
+            guard let self = self else { return }
+            self.alarms = alarms
+            self.updateReturnHomeState(drone: drone)
+        }
     }
 
     /// Starts watcher for flight plan Return Home.
     ///
     ///  - Parameters:
-    ///     - runManager: The current FP run manager.
+    ///     - runManager: current FP run manager
     func listenFlightPlanReturnHome(runManager: FlightPlanRunManager) {
         runManager.statePublisher
             .sink { [weak self] state in
@@ -139,14 +171,19 @@ private extension HUDLandingViewModel {
     }
 
     /// Updates return home state.
+    ///
+    ///  - Parameters:
+    ///     - drone: current drone
     func updateReturnHomeState(drone: Drone) {
-        ULog.i(.tag, "updateReturnHomeState isReturningHome: \(drone.isReturningHome) isForceLandingInProgress: \(drone.isForceLanding)")
+        let isForceLanding = drone.isForceLanding(alarms: self.alarms, flyingIndicators: self.flyingIndicators)
+        let isReturningHome = returnHome?.state == .active
+        ULog.i(.tag, "updateReturnHomeState isReturningHome: \(isReturningHome) isForceLandingInProgress: \(isForceLanding)")
         // Bypass `drone.isReturningHome` value if a force landing is in progress.
-        isBasicRthActive.value = drone.isReturningHome && !drone.isForceLanding
+        isBasicRthActive.value = isReturningHome && !isForceLanding
     }
 
     /// Updates landing state.
-    func updateLandingState(flyingIndicators: FlyingIndicators?) {
+    func updateLandingState() {
         // ignore landing state if previous state was hand launch
         isLanding.value = flyingIndicators?.flyingState == .landing && landedState != .waitingUserAction
         landedState = flyingIndicators?.landedState ?? .none

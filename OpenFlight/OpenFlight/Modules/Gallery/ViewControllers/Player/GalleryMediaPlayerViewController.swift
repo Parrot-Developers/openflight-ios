@@ -117,7 +117,10 @@ final class GalleryMediaPlayerViewController: UIViewController {
         // => Stop potential video media.
         viewModel?.videoStop()
 
+        // Do not listen to medias updates anymore when gallery is dismissed.
         viewModel?.unregisterListener(mediaListener)
+        // Cancel any potential ongoing preview downloads initiated by browsing prefetch.
+        viewModel?.cancelPreviewsDownloads()
     }
 
     // MARK: - Override Funcs
@@ -435,19 +438,20 @@ extension GalleryMediaPlayerViewController {
                   return
               }
 
-        viewModel.getMediaPreviewImageUrl(currentMedia, resourceIndex) { [weak self] url in
-            guard let url = url else {
-                      return
-                  }
-
-            self?.coordinator?.showSharingScreen(fromView: srcView, items: [url])
+        Task {
+            // Get all linked resources' URL for currently displayed resource: the resource
+            // itself, plus any non-previewable related resources (i.e. its DNG version if existing).
+            let urls = await viewModel.getLinkedResourcesUrls(media: currentMedia, previewableIndex: resourceIndex)
+            DispatchQueue.main.async { [weak self] in
+                self?.coordinator?.showSharingScreen(fromView: srcView, items: urls)
+            }
         }
     }
 
     /// Shows an alert for removal confirmation.
     func showDeleteAlert() {
         guard let media = media,
-              let count = viewModel?.getMediaImageCount(media) else {
+              let count = viewModel?.getMediaImageCount(media, previewableOnly: true) else {
                   return
               }
 
@@ -544,9 +548,13 @@ extension GalleryMediaPlayerViewController {
                   return
               }
 
+        // Get all linked resources' indexes for currently displayed resource in order to
+        // ensure to delete all (previewable AND non-previewable) linked resources.
+        let indexes = media.linkedResourcesIndexes(for: resourceIndex)
+
         activityIndicator.startAnimating()
 
-        viewModel.deleteResourceAt(resourceIndex, of: media) { [weak self] success in
+        viewModel.deleteResourcesAt(indexes, of: media) { [weak self] success in
             guard let self = self else { return }
 
             guard success else {
@@ -556,31 +564,10 @@ extension GalleryMediaPlayerViewController {
                 return
             }
 
-            if self.viewModel?.sourceType == .mobileDevice {
-                // Need to manually refresh medias from AssetUtils in case of device deletion.
-                self.viewModel?.refreshMedias()
-                self.reloadGalleryImageContent()
-                self.activityIndicator.stopAnimating()
-            }
-
-            self.viewModel?.mediaBrowsingViewModel.didDeleteResourceAt(self.resourceIndex)
+            self.viewModel?.refreshMedias()
+            self.reloadGalleryImageContent()
+            self.activityIndicator.stopAnimating()
         }
-    }
-
-    /// Handles download end.
-    func handleDownloadEnd() {
-        let deleteAction = AlertAction(title: L10n.commonDelete,
-                                       style: .destructive,
-                                       actionHandler: { [weak self] in
-            self?.deleteCurrentMedia()
-        })
-        let keepAction = AlertAction(title: L10n.commonKeep,
-                                     style: .validate,
-                                     actionHandler: {})
-        showAlert(title: L10n.galleryDownloadComplete,
-                  message: L10n.galleryDownloadKeep,
-                  cancelAction: deleteAction,
-                  validateAction: keepAction)
     }
 
     /// Downloads the current media.
@@ -590,11 +577,7 @@ extension GalleryMediaPlayerViewController {
                   return
               }
 
-        viewModel.downloadMedias([currentMedia], completion: { [weak self] success in
-            guard success else { return }
-
-            self?.handleDownloadEnd()
-        })
+        viewModel.downloadMedias([currentMedia]) { _ in }
     }
 }
 

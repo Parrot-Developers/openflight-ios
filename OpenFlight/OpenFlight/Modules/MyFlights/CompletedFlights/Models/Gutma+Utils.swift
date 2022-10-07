@@ -43,10 +43,12 @@ enum GutmaConstants {
     static let eventTypeFlightPlan: String = "CONTROLLER_FLIGHTPLAN"
     static let eventStepMissionItem: String = "MISSION_ITEM"
     static let eventStepTakeOff: String = "TOF"
+    static let eventStepFlightDate: String = "FLIGHTDATE"
     static let eventStepStart: String = "START"
     static let eventStepPause: String = "PAUSE"
     static let eventStepResume: String = "RESUME"
     static let eventStepStop: String = "STOP"
+    static let eventStepPathStop: String = "PATH_STOP"
     static let eventInfoPhoto = "PHOTO"
     static let eventInfoVideo = "VIDEO"
     static let eventMediaTypeSaved = "saved"
@@ -72,7 +74,7 @@ extension Gutma {
         formatter.timeZone = TimeZone(abbreviation: "UTC")
         formatter.locale = Locale(identifier: "en_US_POSIX")
         let date = formatter.date(from: dateString)
-        return date?.addingTimeInterval(takeOffTimestamp)
+        return date?.addingTimeInterval(flightDateTimestamp ?? takeOffTimestamp)
     }
 
     var duration: TimeInterval {
@@ -109,9 +111,10 @@ extension Gutma {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: trajectory points for the given execution.
-    func flightPlanPoints(_ flightPlan: FlightPlanModel) -> [TrajectoryPoint] {
-        exchange?.message?.flightLogging?.flightPlanPoints(flightPlan) ?? []
+    func flightPlanPoints(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> [TrajectoryPoint] {
+        exchange?.message?.flightLogging?.flightPlanPoints(flightPlan, mavlinkCommands: mavlinkCommands) ?? []
     }
 
     /// Whether file contains point with altitudes in ASML coordinates.
@@ -129,16 +132,19 @@ extension Gutma {
         return exchange?.message?.flightLogging?.takeOffTimestamp ?? 0
     }
 
+    var flightDateTimestamp: TimeInterval? {
+        guard let time = exchange?.message?.flightLogging?.flightDateTimestamp else { return nil }
+        return floor(time)
+    }
+
     var photoCount: Int {
-        let photos = (exchange?.message?.flightLogging?.events?
-            .filter { $0.eventInfo == GutmaConstants.eventInfoPhoto }
-            .filter {
-                guard let photoTimestamp = TimeInterval($0.eventTimestamp ?? "") else { return false }
-                return photoTimestamp > takeOffTimestamp
-            })
-        let total = (photos?.filter { $0.mediaEvent == GutmaConstants.eventMediaTypeTaken }.count ?? 0)
-                    - (photos?.filter {$0.mediaEvent == GutmaConstants.eventMediaTypeDeleted }.count ?? 0)
-        return max(total, 0)
+        let photos = (exchange?.message?.flightLogging?.events?.filter {
+            guard let photoTimestamp = TimeInterval($0.eventTimestamp ?? "") else { return false }
+            return $0.eventInfo == GutmaConstants.eventInfoPhoto
+            && $0.mediaEvent == GutmaConstants.eventMediaTypeTaken
+            && photoTimestamp > takeOffTimestamp
+        })
+        return photos?.count ?? 0
     }
 
     var videoCount: Int {
@@ -220,10 +226,11 @@ extension Gutma {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: flight plan start timestamps if found, or empty array if no event related to this
     /// executions is found.
-    func flightPlanStartTimestamps(_ flightPlan: FlightPlanModel) -> [Double] {
-        exchange?.message?.flightLogging?.flightPlanStartTimestamps(flightPlan) ?? []
+    func flightPlanStartTimestamps(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> [Double] {
+        exchange?.message?.flightLogging?.flightPlanStartTimestamps(flightPlan, mavlinkCommands: mavlinkCommands) ?? []
     }
 
     /// Extracts timestamp of events indicating flight plan ends.
@@ -231,58 +238,64 @@ extension Gutma {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: flight plan end timestamps if found, or empty array if not found.
-    func flightPlanEndTimestamps(_ flightPlan: FlightPlanModel) -> [Double] {
-        exchange?.message?.flightLogging?.flightPlanEndTimestamps(flightPlan) ?? []
+    func flightPlanEndTimestamps(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> [Double] {
+        exchange?.message?.flightLogging?.flightPlanEndTimestamps(flightPlan, mavlinkCommands: mavlinkCommands) ?? []
     }
 
     /// Calculates the duration of an FP execution with a given uuid.
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the duration for the given execution if found in the receiver, `nil` otherwise.
-    func flightPlanDuration(_ flightPlan: FlightPlanModel) -> TimeInterval? {
-        exchange?.message?.flightLogging?.flightPlanDuration(flightPlan)
+    func flightPlanDuration(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> TimeInterval? {
+        exchange?.message?.flightLogging?.flightPlanDuration(flightPlan, mavlinkCommands: mavlinkCommands)
     }
 
     /// Calculates the battery of an FP execution with a given uuid.
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total battery consumption for the given execution if found in the receiver,
     /// `nil` otherwise.
-    func flightPlanBatteryConsumption(_ flightPlan: FlightPlanModel) -> Double? {
-        exchange?.message?.flightLogging?.flightPlanBatteryConsumption(flightPlan)
+    func flightPlanBatteryConsumption(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Double? {
+        exchange?.message?.flightLogging?.flightPlanBatteryConsumption(flightPlan, mavlinkCommands: mavlinkCommands)
     }
 
     /// Calculates the total distance of an FP execution with a given uuid.
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total distance for the given execution if found in the receiver,
     /// `nil` otherwise.
-    func flightPlanDistance(_ flightPlan: FlightPlanModel) -> Double? {
-        exchange?.message?.flightLogging?.flightPlanDistance(flightPlan)
+    func flightPlanDistance(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Double? {
+        exchange?.message?.flightLogging?.flightPlanDistance(flightPlan, mavlinkCommands: mavlinkCommands)
     }
 
     /// Calculates the number of photos taken during a FP execution.
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total number of photos,
     /// `nil` otherwise.
-    func flightPlanPhotoCount(_ flightPlan: FlightPlanModel) -> Int? {
-        exchange?.message?.flightLogging?.flightPlanPhotoCount(flightPlan)
+    func flightPlanPhotoCount(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Int? {
+        exchange?.message?.flightLogging?.flightPlanPhotoCount(flightPlan, mavlinkCommands: mavlinkCommands)
     }
 
     /// Calculates the number of videos taken during a FP execution.
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total number of videos,
     /// `nil` otherwise.
-    func flightPlanVideoCount(_ flightPlan: FlightPlanModel) -> Int? {
-        exchange?.message?.flightLogging?.flightPlanVideoCount(flightPlan)
+    func flightPlanVideoCount(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Int? {
+        exchange?.message?.flightLogging?.flightPlanVideoCount(flightPlan, mavlinkCommands: mavlinkCommands)
     }
 }
 
@@ -295,12 +308,18 @@ private extension Gutma.FlightLogging {
         return TimeInterval(takeOff?.eventTimestamp ?? "") ?? 0
     }
 
+    /// Flight time based on flight date event.
+    var flightDateTimestamp: TimeInterval? {
+        let flightDate = events?.first(where: { $0.eventInfo == GutmaConstants.eventStepFlightDate })
+        return TimeInterval(flightDate?.eventTimestamp ?? "")
+    }
+
     /// Flight duration.
     var duration: TimeInterval? {
         guard let first = itemValue(forKey: .timestamp, at: flightLoggingItems?.startIndex ?? 0),
               let last = itemValue(forKey: .timestamp, at: (flightLoggingItems?.endIndex ?? 1) - 1) else {
-                  return nil
-              }
+            return nil
+        }
         return last - first - takeOffTimestamp
     }
 
@@ -314,8 +333,8 @@ private extension Gutma.FlightLogging {
     var startPosition: CLLocation? {
         let items = items(startingFrom: takeOffTimestamp)
         guard let index = (items.startIndex..<items.endIndex).firstIndex(where: { index in
-                  location(ofItems: items, at: index)?.isValid ?? false
-              }),
+            location(ofItems: items, at: index)?.isValid ?? false
+        }),
               let location = location(ofItems: items, at: index)
         else { return nil }
         return CLLocation(latitude: location.latitude, longitude: location.longitude)
@@ -325,12 +344,13 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: trajectory points for the given execution.
-    func flightPlanPoints(_ flightPlan: FlightPlanModel) -> [TrajectoryPoint] {
+    func flightPlanPoints(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> [TrajectoryPoint] {
         // start times of trajectory to draw
-        let starts = flightPlanStartTimestamps(flightPlan)
+        let starts = flightPlanStartTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
         // end times of trajectory to draw
-        let ends = flightPlanEndTimestamps(flightPlan)
+        let ends = flightPlanEndTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
         return zip(starts, ends).flatMap { (start, end) in
             points(startTime: start, endTime: end)
         }
@@ -466,10 +486,11 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: A list of subexecutions. A subexecution is considered an array of Gutma events.
-    func flightPlanSubexecutionsEvents(_ flightPlan: FlightPlanModel) -> [[Gutma.Event]] {
+    func flightPlanSubexecutionsEvents(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> [[Gutma.Event]] {
         guard let events = events,
-              let mavlinkCommands = flightPlan.dataSetting?.mavlinkCommands,
+              let mavlinkCommands = mavlinkCommands,
               let firstWPIndex = mavlinkCommands.firstIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand }),
               let lastWPIndex = mavlinkCommands.lastIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
         else {
@@ -486,6 +507,7 @@ private extension Gutma.FlightLogging {
                                                                       GutmaConstants.eventStepResume,
                                                                       GutmaConstants.eventStepPause,
                                                                       GutmaConstants.eventStepStop,
+                                                                      GutmaConstants.eventStepPathStop,
                                                                       GutmaConstants.eventStepMissionItem]) else {
                 continue
             }
@@ -495,8 +517,8 @@ private extension Gutma.FlightLogging {
             // subexecution
             if (event.step == GutmaConstants.eventStepMissionItem
                 && event.missionItem
-                    .flatMap(Int.init)
-                    .map({ mavlinkCommands[$0] is MavlinkStandard.NavigateToWaypointCommand }) ?? false),
+                .flatMap(Int.init)
+                .map({ mavlinkCommands[$0] is MavlinkStandard.NavigateToWaypointCommand }) ?? false),
                !state.isInitialized {
                 state.start(atIndex: index)
             }
@@ -531,9 +553,10 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: A list of all starting timestamps of all sub-executions of the given flight plan.
-    func flightPlanStartTimestamps(_ flightPlan: FlightPlanModel) -> [Double] {
-        return flightPlanSubexecutionsEvents(flightPlan).compactMap { subexecutionEvents in
+    func flightPlanStartTimestamps(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> [Double] {
+        return flightPlanSubexecutionsEvents(flightPlan, mavlinkCommands: mavlinkCommands).compactMap { subexecutionEvents in
             subexecutionEvents.first?.eventTimestamp
         }.compactMap { Double($0) }
     }
@@ -542,9 +565,10 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: A list of all ending timestamps of all sub-executions of the given flight plan.
-    func flightPlanEndTimestamps(_ flightPlan: FlightPlanModel) -> [Double] {
-        flightPlanSubexecutionsEvents(flightPlan).compactMap { subexecutionEvents in
+    func flightPlanEndTimestamps(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> [Double] {
+        flightPlanSubexecutionsEvents(flightPlan, mavlinkCommands: mavlinkCommands).compactMap { subexecutionEvents in
             subexecutionEvents.last?.eventTimestamp
         }.compactMap { Double($0) }
     }
@@ -553,10 +577,11 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the duration for the given execution if found in the receiver, `nil` otherwise.
-    func flightPlanDuration(_ flightPlan: FlightPlanModel) -> TimeInterval? {
-        let starts = flightPlanStartTimestamps(flightPlan)
-        let ends = flightPlanEndTimestamps(flightPlan)
+    func flightPlanDuration(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> TimeInterval? {
+        let starts = flightPlanStartTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
+        let ends = flightPlanEndTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
         guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
             return nil
         }
@@ -569,11 +594,12 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total battery consumption for the given execution if found in the receiver,
     /// `nil` otherwise.
-    func flightPlanBatteryConsumption(_ flightPlan: FlightPlanModel) -> Double? {
-        let starts = flightPlanStartTimestamps(flightPlan)
-        let ends = flightPlanEndTimestamps(flightPlan)
+    func flightPlanBatteryConsumption(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Double? {
+        let starts = flightPlanStartTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
+        let ends = flightPlanEndTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
         guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
             return nil
         }
@@ -585,13 +611,14 @@ private extension Gutma.FlightLogging {
 
     /// Calculates the total distance of an FP execution with a given uuid.
     ///
-    /// - Parameters
+    /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total distance for the given execution if found in the receiver,
     /// `nil` otherwise.
-    func flightPlanDistance(_ flightPlan: FlightPlanModel) -> Double? {
-        let starts = flightPlanStartTimestamps(flightPlan)
-        let ends = flightPlanEndTimestamps(flightPlan)
+    func flightPlanDistance(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Double? {
+        let starts = flightPlanStartTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
+        let ends = flightPlanEndTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
         guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
             return nil
         }
@@ -605,9 +632,10 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total number of photos,
     /// `nil` otherwise.
-    func flightPlanPhotoCount(_ flightPlan: FlightPlanModel) -> Int {
+    func flightPlanPhotoCount(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Int {
         let photoEventsByCustomId = events?.filter {
             $0.eventInfo == GutmaConstants.eventInfoPhoto
             && $0.customId == flightPlan.uuid
@@ -615,12 +643,12 @@ private extension Gutma.FlightLogging {
 
         if photoEventsByCustomId?.isEmpty == false {
             let total = (photoEventsByCustomId?.filter { $0.mediaEvent == GutmaConstants.eventMediaTypeTaken }.count ?? 0)
-                        - (photoEventsByCustomId?.filter {$0.mediaEvent == GutmaConstants.eventMediaTypeDeleted }.count ?? 0)
+            - (photoEventsByCustomId?.filter {$0.mediaEvent == GutmaConstants.eventMediaTypeDeleted }.count ?? 0)
             return max(total, 0)
         } else {
             // Keep compatibility with old executions that does not have customId on photo events
-            let starts = flightPlanStartTimestamps(flightPlan)
-            let ends = flightPlanEndTimestamps(flightPlan)
+            let starts = flightPlanStartTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
+            let ends = flightPlanEndTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
             guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
                 return 0
             }
@@ -635,11 +663,12 @@ private extension Gutma.FlightLogging {
     ///
     /// - Parameters:
     ///   - flightPlan: the flight plan
+    ///   - mavlinkCommands: the flight plan's mavlink commands
     /// - Returns: the total number of videos,
     /// `nil` otherwise.
-    func flightPlanVideoCount(_ flightPlan: FlightPlanModel) -> Int {
-        let starts = flightPlanStartTimestamps(flightPlan)
-        let ends = flightPlanEndTimestamps(flightPlan)
+    func flightPlanVideoCount(_ flightPlan: FlightPlanModel, mavlinkCommands: [MavlinkStandard.MavlinkCommand]?) -> Int {
+        let starts = flightPlanStartTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
+        let ends = flightPlanEndTimestamps(flightPlan, mavlinkCommands: mavlinkCommands)
         guard !starts.isEmpty, !ends.isEmpty, starts.count == ends.count else {
             return 0
         }
@@ -740,8 +769,8 @@ private extension Gutma.FlightLogging {
               let timestampIndex = valueIndex(forKey: .timestamp),
               let firstItemIndex = items.firstIndex(where: { item in item[timestampIndex] >= start }),
               let lastItemIndex = items.firstIndex(where: { item in item[timestampIndex] >= end }) else {
-                  return []
-              }
+            return []
+        }
         let itemsOfTimestampRange = items[firstItemIndex..<lastItemIndex]
         return Array(itemsOfTimestampRange)
     }
@@ -763,10 +792,10 @@ private extension Gutma.FlightLogging {
         guard let events = events else { return 0 }
         let photosInRange = events.filter { event in
             guard event.eventInfo == GutmaConstants.eventInfoPhoto,
-                let eventTimestamp = event.eventTimestamp,
-                let timestamp = Double(eventTimestamp),
-                start <= timestamp,
-                timestamp <= end
+                  let eventTimestamp = event.eventTimestamp,
+                  let timestamp = Double(eventTimestamp),
+                  start <= timestamp,
+                  timestamp <= end
             else { return false }
             return true
         }
@@ -883,7 +912,7 @@ private extension Gutma.FlightLogging {
 
 extension Gutma.Event {
     var isEndingStep: Bool {
-        step == GutmaConstants.eventStepStop
+        step == GutmaConstants.eventStepStop || step == GutmaConstants.eventStepPathStop
     }
 
     var isStartingStep: Bool {

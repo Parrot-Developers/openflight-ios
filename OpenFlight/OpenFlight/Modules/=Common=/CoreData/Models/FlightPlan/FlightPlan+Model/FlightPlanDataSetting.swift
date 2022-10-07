@@ -71,7 +71,8 @@ public struct FlightPlanDataSetting: Codable {
     public var obstacleAvoidanceActivated: Bool = true
     public var mavlinkDataFile: Data? {
         didSet {
-            updateMavlinkCommands()
+            // Reset the FP completion state properties.
+            resetFlightPlanCompletionState()
         }
     }
     public var takeoffActions: [Action]
@@ -86,14 +87,31 @@ public struct FlightPlanDataSetting: Codable {
     public var disablePhotoSignature: Bool = false
     public var freeSettings = [String: String]()
     public var notPropagatedSettings = [String: String]()
+    public var customRth: Bool = false
+    public var rthReturnTarget: Bool = true
+    public var rthHeight: Int?
+    public var rthEndBehaviour: Bool = true
+    public var rthHoveringHeight: Int?
+
     /// Pgy data
     public var pgyProjectId: Int64?
     public var uploadAttemptCount: Int16?
     public var lastUploadAttempt: Date?
     /// Identifier of first media resource captured after the drone has passed the `lastMissionItemExecuted`.
     public var recoveryResourceId: String?
-    /// Mavlink
-    public private(set) var mavlinkCommands: [MavlinkStandard.MavlinkCommand]?
+
+    /// -- Flight Plan State
+    /// Whether the first way point has been reached.
+    public var hasReachedFirstWayPoint: Bool = false
+    /// Whether the last way point has been reached.
+    public var hasReachedLastWayPoint: Bool = false
+    /// Returns the last passed waypoint index.
+    public var lastPassedWayPointIndex: Int?
+    /// The completion percentage.
+    public var percentCompleted: Double = 0
+
+    public var executionRank: Int?
+    public var isAMSL: Bool?
 
     // MARK: - Internal Properties
 
@@ -132,6 +150,7 @@ public struct FlightPlanDataSetting: Codable {
                               timestamp: timestamp)
         }
         set {
+            // Set Drone location
             droneLatitude = newValue?.coordinate.latitude
             droneLongitude = newValue?.coordinate.longitude
             droneAltitude = newValue?.altitude
@@ -196,11 +215,24 @@ public struct FlightPlanDataSetting: Codable {
         case captureSettings
         case freeSettings
         case notPropagatedSettings
+        case customRth
+        case rthReturnTarget
+        case rthHeight
+        case rthEndBehaviour
+        case rthHoveringHeight
 
         // PGY
         case pgyProjectId
         case uploadAttemptCount
         case lastUploadAttempt
+
+        // FP State
+        case hasReachedFirstWayPoint
+        case hasReachedLastWayPoint
+        case lastPassedWayPointIndex
+        case percentCompleted
+
+        case executionRank
 
         // Recovery
         case recoveryResourceId
@@ -212,6 +244,7 @@ public struct FlightPlanDataSetting: Codable {
         case droneLocationHorizontalAccuracy = "droneLocaltionHorizontalAccuracy"
         case droneLocationVerticalAccuracy = "droneLocaltionVerticalAccuracy"
         case droneLocationTimestamp = "droneLocaltionTimestamp"
+        case isAMSL
     }
 
     // MARK: - Init
@@ -232,6 +265,11 @@ public struct FlightPlanDataSetting: Codable {
     ///    - lastUploadAttempt: the last pgy upload attempt date.
     ///    - lastDroneLocation: the last known drone location.
     ///    - recoveryResourceId: identifier of first media resource captured after the drone has
+    ///    - hasReachedFirstWayPoint: whether the first way point has been reached
+    ///    - hasReachedLastWayPoint: whether the last way point has been reached
+    ///    - lastPassedWayPointIndex: the last passed waypoint index
+    ///    - percentCompleted: the completion percentage
+    ///    - executionRank: the rank of the execution in the project
     ///     passed the `lastMissionItemExecuted`.
     public init(product: Drone.Model?,
                 settings: [FlightPlanLightSetting],
@@ -247,7 +285,13 @@ public struct FlightPlanDataSetting: Codable {
                 uploadAttemptCount: Int16? = nil,
                 lastUploadAttempt: Date? = nil,
                 lastDroneLocation: CLLocation? = nil,
-                recoveryResourceId: String? = nil) {
+                recoveryResourceId: String? = nil,
+                hasReachedFirstWayPoint: Bool = false,
+                hasReachedLastWayPoint: Bool = false,
+                lastPassedWayPointIndex: Int? = nil,
+                percentCompleted: Double = 0,
+                executionRank: Int? = nil,
+                isAMSL: Bool? = nil) {
         self.takeoffActions = takeoffActions
         self.pois = pois
         self.wayPoints = wayPoints
@@ -264,10 +308,15 @@ public struct FlightPlanDataSetting: Codable {
         self.lastUploadAttempt = lastUploadAttempt
         self.lastDroneLocation = lastDroneLocation
         self.recoveryResourceId = recoveryResourceId
+        self.hasReachedFirstWayPoint = hasReachedFirstWayPoint
+        self.hasReachedLastWayPoint = hasReachedLastWayPoint
+        self.lastPassedWayPointIndex = lastPassedWayPointIndex
+        self.percentCompleted = percentCompleted
+        self.executionRank = executionRank
+        self.isAMSL = isAMSL
 
         // Set Flight Plan object relations.
         self.setRelations()
-        updateMavlinkCommands()
     }
 
     public init(captureMode: FlightPlanCaptureMode) {
@@ -316,14 +365,26 @@ public struct FlightPlanDataSetting: Codable {
         self.uploadAttemptCount = try? container.decode(Int16.self, forKey: .uploadAttemptCount)
         self.lastUploadAttempt = try? container.decode(Date.self, forKey: .lastUploadAttempt)
         self.recoveryResourceId = try? container.decode(String.self, forKey: .recoveryResourceId)
+        self.customRth = (try? container.decode(Bool.self, forKey: .customRth)) ?? true
+        self.rthReturnTarget = (try? container.decode(Bool.self, forKey: .rthReturnTarget)) ?? true
+        self.rthHeight = (try? container.decode(Int.self, forKey: .rthHeight))
+        self.rthEndBehaviour = (try? container.decode(Bool.self, forKey: .rthEndBehaviour)) ?? true
+        self.rthHoveringHeight = (try? container.decode(Int.self, forKey: .rthHoveringHeight))
 
         // Plan
         self.takeoffActions = try container.decode([Action].self, forKey: .takeoffActions)
         self.pois = try container.decode([PoiPoint].self, forKey: .pois)
         self.wayPoints = try container.decode([WayPoint].self, forKey: .wayPoints)
+
+        // Flight Plan State
+        self.hasReachedFirstWayPoint = (try? container.decode(Bool.self, forKey: .hasReachedFirstWayPoint)) ?? false
+        self.hasReachedLastWayPoint = (try? container.decode(Bool.self, forKey: .hasReachedLastWayPoint)) ?? false
+        self.lastPassedWayPointIndex = try? container.decode(Int.self, forKey: .lastPassedWayPointIndex)
+        self.percentCompleted = (try? container.decode(Double.self, forKey: .percentCompleted)) ?? 0
+        self.executionRank = try? container.decode(Int.self, forKey: .executionRank)
+        self.isAMSL = (try? container.decode(Bool.self, forKey: .isAMSL))
         // Set Flight Plan object relations.
         self.setRelations()
-        updateMavlinkCommands()
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -358,6 +419,18 @@ public struct FlightPlanDataSetting: Codable {
         try container.encode(uploadAttemptCount, forKey: .uploadAttemptCount)
         try container.encode(lastUploadAttempt, forKey: .lastUploadAttempt)
         try container.encode(recoveryResourceId, forKey: .recoveryResourceId)
+        try container.encode(customRth, forKey: .customRth)
+        try container.encode(rthReturnTarget, forKey: .rthReturnTarget)
+        try container.encode(rthHeight, forKey: .rthHeight)
+        try container.encode(rthEndBehaviour, forKey: .rthEndBehaviour)
+        try container.encode(rthHoveringHeight, forKey: .rthHoveringHeight)
+
+        try container.encode(hasReachedFirstWayPoint, forKey: .hasReachedFirstWayPoint)
+        try container.encode(hasReachedLastWayPoint, forKey: .hasReachedLastWayPoint)
+        try container.encode(lastPassedWayPointIndex, forKey: .lastPassedWayPointIndex)
+        try container.encode(percentCompleted, forKey: .percentCompleted)
+        try container.encode(executionRank, forKey: .executionRank)
+        try container.encode(isAMSL, forKey: .isAMSL)
     }
 
     /// Creates a deep copy of flight plan data settings.
@@ -365,15 +438,12 @@ public struct FlightPlanDataSetting: Codable {
         FlightPlanDataSetting.instantiate(with: toJSONString())
     }
 
-    /// Updates the `mavlinkCommands` field using `mavlinkDataFile`.
-    private mutating func updateMavlinkCommands() {
-        if let data = mavlinkDataFile,
-           let str = String(data: data, encoding: .utf8),
-           let commands = try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: str) {
-            self.mavlinkCommands = commands
-        } else {
-            self.mavlinkCommands = nil
-        }
+    /// Reset the properties representing the flight plan completion state.
+    private mutating func resetFlightPlanCompletionState() {
+        hasReachedFirstWayPoint = false
+        hasReachedLastWayPoint = false
+        lastPassedWayPointIndex = nil
+        percentCompleted = 0
     }
 }
 
@@ -427,6 +497,12 @@ extension FlightPlanDataSetting: Equatable {
         && lhs.uploadAttemptCount == rhs.uploadAttemptCount
         && lhs.lastUploadAttempt == rhs.lastUploadAttempt
         && lhs.recoveryResourceId == rhs.recoveryResourceId
+        && lhs.customRth == rhs.customRth
+        && lhs.rthReturnTarget == rhs.rthReturnTarget
+        && lhs.rthHeight == rhs.rthHeight
+        && lhs.rthEndBehaviour == rhs.rthEndBehaviour
+        && lhs.rthHoveringHeight == rhs.rthHoveringHeight
+        && lhs.isAMSL == rhs.isAMSL
     }
 }
 
@@ -460,6 +536,17 @@ extension FlightPlanDataSetting: CustomStringConvertible {
         + "pgyProjectId: \(pgyProjectId?.description ?? "-"), "
         + "uploadAttemptCount: \(uploadAttemptCount?.description ?? "-"), "
         + "lastUploadAttempt: \(lastUploadAttempt?.description ?? "-"), "
-        + "recoveryResourceId: \(recoveryResourceId?.description ?? "-")"
+        + "recoveryResourceId: \(recoveryResourceId?.description ?? "-"), "
+        + "hasReachedFirstWayPoint: \(hasReachedFirstWayPoint), "
+        + "hasReachedLastWayPoint: \(hasReachedLastWayPoint), "
+        + "lastPassedWayPointIndex: \(lastPassedWayPointIndex?.description ?? "-"), "
+        + "percentCompleted: \(percentCompleted), "
+        + "customRth: \(customRth), "
+        + "rthReturnTarget: \(rthReturnTarget), "
+        + "rthHeight: \(rthHeight?.description ?? "-"), "
+        + "rthEndBehaviour: \(rthEndBehaviour), "
+        + "rthHoveringHeight: \(rthHoveringHeight?.description ?? "-"), "
+        + "executionRank: \(executionRank?.description ?? "-"), "
+        + "isAMSL: \(isAMSL?.description ?? "-")"
     }
 }

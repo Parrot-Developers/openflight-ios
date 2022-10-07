@@ -96,8 +96,8 @@ private extension DashboardMyFlightsCell {
         gradientView.startColor = Constants.gradientStartColor
         gradientView.endColor = Constants.gradientEndColor
         gradientView.clipsToBounds = true
-        totalDistanceLabel.makeUp()
-        totalTimeLabel.makeUp()
+        totalDistanceLabel.makeUp(with: .current, color: .white)
+        totalTimeLabel.makeUp(with: .current, color: .white)
         resetLabels()
     }
 

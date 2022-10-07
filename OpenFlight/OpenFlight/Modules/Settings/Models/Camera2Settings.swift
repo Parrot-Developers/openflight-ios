@@ -39,6 +39,8 @@ enum CameraPreset {
     static let overexposure = SettingsOverexposure.preset
     static let videoencoding: Camera2VideoCodec = .h265
     static let dynamicHdrRange: Camera2DynamicRange = .hdr10
+    static let photoDynamicRange: Camera2DynamicRange = .sdr
+    static let videoDynamicRange: Camera2DynamicRange = .sdr
     static let startAudio: Camera2AudioRecordingMode = .drone
     static let photoSignature: Camera2DigitalSignature = .none
 }

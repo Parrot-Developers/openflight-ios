@@ -44,10 +44,10 @@ public enum CoreDataError: Error {
 public protocol CoreDataService: AnyObject {
     /// Batch delete all stored data entities in CoreData
     /// to use only when switch between users accounts
-    func batchDeleteData()
+    func batchDeleteData(completion: (() -> Void)?)
 
     /// Batch delete all stored data of users
-    func deleteUsersData()
+    func deleteUsersData(completion: (() -> Void)?)
 
     /// Batch delete all stored  data of other users with apcId
     func deleteAllOtherUsersData(withApcId apcId: String, completion: ((_ status: Bool) -> Void)?)
@@ -197,32 +197,40 @@ public class CoreDataServiceImpl: CoreDataService {
 
 // MARK: - Public
 extension CoreDataServiceImpl {
-    public func batchDeleteData() {
-        deleteAllUsersExceptAnonymous()
-        deleteUsersData()
+    public func batchDeleteData(completion: (() -> Void)?) {
+        deleteAllUsersExceptAnonymous(completion: { [unowned self] _ in
+            self.deleteUsersData(completion: completion)
+        })
     }
 
-    public func deleteUsersData() {
+    public func deleteUsersData(completion: (() -> Void)?) {
         var entityNames = persistentContainer.managedObjectModel.entities.compactMap({ $0.name })
         if let indexOfUserEntity = entityNames.firstIndex(of: UserParrot.entityName) {
             entityNames.remove(at: indexOfUserEntity)
         }
 
-        entityNames.forEach { entityName in
-            deleteAllData(ofEntityName: entityName)
-        }
+        deleteAllData(ofEntityNames: entityNames, completion: completion)
     }
 
     public func deleteAllOtherUsersData(withApcId apcId: String, completion: ((_ status: Bool) -> Void)?) {
         deleteAllOtherUsersExceptAnonymous(fromApcId: apcId)
+        let dispatchGroup = DispatchGroup()
+
         persistentContainer.managedObjectModel.entities
             .compactMap { $0.name }
             .filter { $0 != UserParrot.entityName}
             .forEach { [weak self] in
+                dispatchGroup.enter()
                 self?.deleteAllUsersDataForEntityName(entityName: $0,
                                                       withApcId: apcId,
-                                                      completion: completion)
+                                                      completion: { _ in
+                    dispatchGroup.leave()
+                })
             }
+
+        dispatchGroup.notify(queue: .main, execute: {
+            completion?(true)
+        })
     }
 }
 
@@ -283,16 +291,21 @@ internal extension CoreDataServiceImpl {
         }
     }
 
+    /*
+     BatchDelete should only be used as a wiped out (or when dealing with 10k+ records),
+        as batchDelete directly writes into the persistent store that bypasses any validation rules therefore relationships.
+     When merging into context, it can leave faulty relationships that can cause an error when contexts are trying to be saved.
+     */
     func batchDeleteAndSave(_ task: @escaping ((_ context: NSManagedObjectContext) -> NSFetchRequest<NSFetchRequestResult>?),
                             _ completion: ((Result<Void, Error>) -> Void)? = nil) {
-        guard let context = currentContext else {
+        guard let currentContext = currentContext else {
             ULog.e(.dataModelTag, "Error saveContext: No current context found !")
             completion?(.failure(CoreDataError.unknownContext))
             return
         }
 
-        context.perform { [unowned self] in
-            let request = task(context)
+        currentContext.perform { [unowned self] in
+            let request = task(currentContext)
 
             guard let request = request else {
                 completion?(.failure(CoreDataError.unableToDeleteObject))
@@ -303,7 +316,7 @@ internal extension CoreDataServiceImpl {
             deleteRequest.resultType = .resultTypeObjectIDs
 
             do {
-                let deleteResult = try context.execute(deleteRequest) as? NSBatchDeleteResult
+                let deleteResult = try currentContext.execute(deleteRequest) as? NSBatchDeleteResult
                 ULog.i(.dataModelTag, "Performing batchDelete")
 
                 // Extract the IDs of the deleted managed objectss from the request's result.
@@ -315,7 +328,7 @@ internal extension CoreDataServiceImpl {
                     // Therefore we need to merge changes into all contexts used in the app (especially the currentContext).
                     NSManagedObjectContext.mergeChanges(
                         fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
-                        into: [backgroundContext, context]
+                        into: [backgroundContext, currentContext]
                     )
 
                     completion?(.success())
@@ -450,46 +463,48 @@ internal extension CoreDataServiceImpl {
     }
 
     func deleteObjects<T: NSManagedObject>(_ objects: [T], completion: ((Result<Void, Error>) -> Void)? = nil) {
-        guard let context = currentContext else {
+        guard currentContext != nil else {
             completion?(.failure(CoreDataError.unknownContext))
             return
         }
 
-        objects.forEach { context.delete($0) }
+        var removedFlights: [FlightModel] = []
+        var removedProjects: [ProjectModel] = []
 
-        saveContext { [weak self] result in
+        performAndSave({ context in
+            if T.self is Flight.Type {
+                removedFlights = objects.compactMap { $0 as? Flight }.compactMap { $0.modelLite() }
+            }
+            if T.self is Project.Type {
+                removedProjects = objects.compactMap { $0 as? Project }.compactMap { $0.model() }
+            }
+
+            objects.forEach { context.delete($0) }
+            return true
+        }, { [unowned self] result in
             switch result {
             case .success:
                 if T.self is Flight.Type {
-                    guard let self = self else { return }
                     self.flightsDidChangeSubject.send()
-                    let flights = objects.compactMap { $0 as? Flight }
-                    let uuids = flights.compactMap(\.uuid)
-                    let flightModels = flights.compactMap { $0.modelLite() }
-                    if !uuids.isEmpty {
-                        self.flightsRemovedSubject.send(flightModels)
+                    if !removedFlights.isEmpty {
+                        self.flightsRemovedSubject.send(removedFlights)
                     }
                 }
                 if T.self is Project.Type {
-                    guard let self = self else { return }
                     self.projectsDidChangeSubject.send()
-                    let projects = objects.compactMap { $0 as? Project }
-                    let uuids = projects.compactMap(\.uuid)
-                    let projectModels = projects.compactMap { $0.model() }
-                    if !uuids.isEmpty {
-                        self.projectsRemovedSubject.send(projectModels)
+                    if !removedProjects.isEmpty {
+                        self.projectsRemovedSubject.send(removedProjects)
                     }
                 }
-                if T.self is PgyProject.Type { self?.pgyProjectsDidChangeSubject.send() }
-                if T.self is FlightPlan.Type { self?.flightPlansDidChangeSubject.send() }
-                if T.self is Thumbnail.Type { self?.thumbnailsDidChangeSubject.send() }
-                if T.self is DronesData.Type { self?.dronesDidChangeSubject.send() }
+                if T.self is PgyProject.Type { self.pgyProjectsDidChangeSubject.send() }
+                if T.self is FlightPlan.Type { self.flightPlansDidChangeSubject.send() }
+                if T.self is Thumbnail.Type { self.thumbnailsDidChangeSubject.send() }
+                if T.self is DronesData.Type { self.dronesDidChangeSubject.send() }
             case .failure:
                 break
             }
-
             completion?(result)
-        }
+        })
     }
 
     private func deleteAllUsersDataForEntityName(entityName: String,
@@ -539,21 +554,35 @@ internal extension CoreDataServiceImpl {
     }
 
     @discardableResult
-    func deleteAllData() -> Error? {
+    func deleteAllData(completion: (() -> Void)?) -> Error? {
         let entityNames = persistentContainer.managedObjectModel.entities.compactMap({ $0.name })
+        deleteAllData(ofEntityNames: entityNames, completion: completion)
 
-        var deleteError: Error?
-        entityNames.forEach { entityName in
-            if let error = deleteAllData(ofEntityName: entityName) {
-                deleteError = error
-            }
+        return nil
+    }
+
+    func deleteAllData(ofEntityNames entityNames: [String], completion: (() -> Void)?) {
+        guard !entityNames.isEmpty else {
+            completion?()
+            return
         }
 
-        return deleteError
+        let dispatchGroup = DispatchGroup()
+
+        entityNames.forEach { entityName in
+            dispatchGroup.enter()
+            deleteAllData(ofEntityName: entityName, completion: { _ in
+                dispatchGroup.leave()
+            })
+        }
+
+        dispatchGroup.notify(queue: .main, execute: {
+            completion?()
+        })
     }
 
     @discardableResult
-    func deleteAllData(ofEntityName entityName: String) -> Error? {
+    func deleteAllData(ofEntityName entityName: String, completion: ((_  status: Bool) -> Void)?) -> Error? {
         var deleteError: Error?
 
         batchDeleteAndSave({ _ in
@@ -581,9 +610,11 @@ internal extension CoreDataServiceImpl {
                 default:
                     break
                 }
+                completion?(true)
             case .failure(let error):
                 ULog.e(.dataModelTag, "An error is occured when batch delete entity in CoreData : \(error.localizedDescription)")
                 deleteError = error
+                completion?(false)
             }
         })
 
@@ -594,18 +625,20 @@ internal extension CoreDataServiceImpl {
     /// Migrate anonymous data to current logged user
     /// - Parameters:
     ///     - entityName: Name of the entity contains the data to migrate
-    ///     - completion: Empty block indicates when the process is finished
+    ///     - completion: Closure indicates when the process is finished with list of UUIDs that have been migrated successfully
     func migrateAnonymousDataToLoggedUser(for entityName: String,
-                                          _ completion: @escaping () -> Void) {
+                                          _ completion: @escaping (_ migratedUuids: [String]) -> Void) {
+        var migratedUuids: [String] = []
+
         guard let currentContext = currentContext else {
-            completion()
+            completion(migratedUuids)
             return
         }
 
         let currentUser = userService.currentUser
         guard currentUser.isConnected else {
             ULog.e(.dataModelTag, "User must be logged in")
-            completion()
+            completion(migratedUuids)
             return
         }
 
@@ -619,11 +652,18 @@ internal extension CoreDataServiceImpl {
             do {
                 if let requestResult = try currentContext.fetch(request) as? [NSManagedObject] {
                     if !requestResult.isEmpty {
+
                         requestResult.forEach { managedObject in
                             managedObject.setValue(currentUser.apcId, forKey: "apcId")
                             managedObject.setValue(0, forKey: "synchroStatus")
                             managedObject.setValue(Date(), forKey: "latestLocalModificationDate")
+
+                            if managedObject.entity.propertiesByName.keys.contains("uuid"),
+                               let uuid = managedObject.value(forKey: "uuid") as? String {
+                                migratedUuids.append(uuid)
+                            }
                         }
+
                     } else {
                         ULog.i(.dataModelTag, "No ANONYMOUS data found in: \(entityName)")
                     }
@@ -636,11 +676,12 @@ internal extension CoreDataServiceImpl {
 
         saveContext {
             if case .failure(let error) = $0 {
+                migratedUuids = []
                 ULog.e(.dataModelTag,
                        "Migrate ANONYMOUS \(entityName) data to current logged User save failed with error: \(error.localizedDescription)")
             }
 
-            completion()
+            completion(migratedUuids)
         }
     }
 

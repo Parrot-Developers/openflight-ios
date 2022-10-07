@@ -107,6 +107,7 @@ private extension BarButtonView {
         title.text = viewModel.title
         currentMode.text = viewModel.subtext
         subTitle.text = viewModel.subtitle
+        accessibilityValue = viewModel.subtitle
         updateModeView(with: viewModel)
         updateAlpha()
         updateIcon()

@@ -100,7 +100,11 @@ private extension GalleryMediaTitleView {
     /// - Parameters:
     ///    - model: model for the view.
     func update(with model: GalleryMedia?) {
-        imageView.image = model?.type.filterImage
+        // Check whether media is of `.bracketing` type AND has a DNG resource, as DNG bracketings
+        // are not meant to be considered as a type on their own, but still need to have their own picto.
+        imageView.image = model?.type == .bracketing && model?.hasDng == true ?
+        Asset.BottomBar.CameraModes.icCameraModeBracketingDNG.image :
+        model?.type.filterImage
         titleLabel.text = model?.title
         model?.mainMediaItem?.locationDetail { [weak self] locationDetail in
             self?.subtitleLabel.text = locationDetail

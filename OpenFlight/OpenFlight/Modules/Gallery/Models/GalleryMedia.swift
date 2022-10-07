@@ -119,6 +119,10 @@ struct GalleryMedia: Equatable {
     var bootDate: Date?
     var url: URL?
     var urls: [URL]?
+    /// The previewable resources' URLs: any non-DNG resources.
+    var previewableUrls: [URL]? {
+        urls?.filter { $0.pathExtension != MediaItem.Format.dng.description.uppercased() }
+    }
     var formattedSize: String {
         return StorageUtils.sizeForFile(size: size)
     }
@@ -139,8 +143,27 @@ struct GalleryMedia: Equatable {
     }
     var mediaResources: [MediaItem.Resource]? {
         guard let mediaItems = mediaItems else { return nil }
-
         return mediaItems.reduce([]) { $0 + sortedResources($1.resources) }
+    }
+    /// The previewable resources.
+    var previewableResources: [MediaItem.Resource]? {
+        guard let mediaItems = mediaItems else { return nil }
+        return mediaItems.reduce([]) { $0 + sortedResources($1.previewableResources) }
+    }
+    /// Whether the media has a DNG resource.
+    var hasDng: Bool {
+        switch source {
+        case .mobileDevice:
+            guard let dngUrls = urls?.filter({ $0.pathExtension == MediaItem.Format.dng.description.uppercased() }) else {
+                return false
+            }
+            return !dngUrls.isEmpty
+        default:
+            guard let dngResources = mediaResources?.filter({ $0.format == .dng }) else {
+                return false
+            }
+            return !dngResources.isEmpty
+        }
     }
 
     /// Returns the media resource for a reduced resource index (from `mediaResources` array).
@@ -154,6 +177,49 @@ struct GalleryMedia: Equatable {
               reducedResourceIndex < mediaResources.count  else { return nil }
 
         return mediaResources[reducedResourceIndex]
+    }
+
+    /// Returns an array containing the index of all linked resources based on a specific previewable resource's index.
+    /// Linked resources are DNG and JPG versions of a given capture. Implementation is however generic in order
+    /// to allow any further potential change.
+    ///
+    /// - Parameter previewableIndex: the index of the previewable resource
+    /// - Returns: the indexes of all linked resources (previewable AND non-previewable)
+    func linkedResourcesIndexes(for previewableIndex: Int) -> [Int] {
+        let resourcesCount: Int?
+        let previewablesCount: Int?
+
+        // Get resources counts according to media's source.
+        switch source {
+        case .droneSdCard, .droneInternal:
+            resourcesCount = mediaResources?.count
+            previewablesCount = previewableResources?.count
+        default:
+            resourcesCount = urls?.count
+            previewablesCount = previewableUrls?.count
+        }
+
+        guard let resourcesCount = resourcesCount,
+              let previewablesCount = previewablesCount else {
+            return []
+        }
+
+        if resourcesCount == previewablesCount {
+            // Media does not contain any non-previewable resources.
+            // => Return the single resource index `previewableIndex`.
+            return [previewableIndex]
+        }
+
+        // Get resources count multiplier in order to be able to gather all the non-previewable
+        // resources for `previewableIndex`.
+        // - In usual case, `mult` always equals 2, as a non-previewable resource is limited
+        //   to the DNG version of a capture.
+        // - Missing resources case needs however to be addressed, as a DNG+JPG download
+        //   can been interrupted, which could for example lead to a DNG version missing its
+        //   JPG version (hence the `.rounded(.up)`).
+        let mult = Int((Float(resourcesCount) / Float(max(1, previewablesCount))).rounded(.up))
+
+        return Array(mult * previewableIndex ..< mult * (previewableIndex + 1))
     }
 
     /// Returns the media item for a reduced resource index (from `mediaResources` array).
@@ -302,5 +368,12 @@ struct GalleryMedia: Equatable {
         sortedResources.insert(resource, at: 0)
 
         return sortedResources
+    }
+}
+
+extension MediaItem {
+    /// The `MediaItem` resources that can be previewed on the device: any non-DNG resources.
+    var previewableResources: [Resource] {
+        resources.filter { $0.format != .dng }
     }
 }

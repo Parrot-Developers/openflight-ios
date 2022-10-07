@@ -44,6 +44,7 @@ class FlightPlanTopBarViewController: UIViewController {
 
     public func set(projectTitle: String?) {
         projectTitleLabel.text = projectTitle
+        projectTitleLabel.isHidden = projectTitle == nil
     }
 
     public func set(title: String) {

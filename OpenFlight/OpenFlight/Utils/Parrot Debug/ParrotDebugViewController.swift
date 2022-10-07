@@ -33,7 +33,7 @@ import Combine
 import CoreGraphics
 
 /// Parrot Debug screen to activate, edit & share logs.
-class ParrotDebugViewController: UIViewController {
+public class ParrotDebugViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var informationsLabel: UILabel!
     @IBOutlet private weak var activateLogsLabel: UILabel!
@@ -42,6 +42,7 @@ class ParrotDebugViewController: UIViewController {
     @IBOutlet private weak var enableStreamRecord: UIButton!
     @IBOutlet private weak var sendDebugTagButton: UIButton!
     @IBOutlet private weak var sendDebugTagTextField: POFTextField!
+    @IBOutlet private weak var customMissionButton: UIButton!
 
     // MARK: - Private Properties
     private var drone: Drone?
@@ -52,6 +53,8 @@ class ParrotDebugViewController: UIViewController {
     private var currentLogDirectory: String? { ParrotDebug.currentLogDirectory?.lastPathComponent }
     private var refreshControl = UIRefreshControl()
     private weak var coordinator: ParrotDebugCoordinator?
+    private var viewModel: ParrotDebugProvider!
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
@@ -63,14 +66,15 @@ class ParrotDebugViewController: UIViewController {
     }
 
     // MARK: - Init
-    static func instantiate(coordinator: ParrotDebugCoordinator) -> ParrotDebugViewController {
+    public static func instantiate(coordinator: ParrotDebugCoordinator, viewModel: ParrotDebugProvider) -> ParrotDebugViewController {
         let viewController = StoryboardScene.ParrotDebug.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.viewModel = viewModel
         return viewController
     }
 
     // MARK: - Override Funcs
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
 
         activateLogsLabel.text = L10n.debugLogActivateLog
@@ -82,9 +86,17 @@ class ParrotDebugViewController: UIViewController {
         filesTableView.refreshControl = refreshControl
         refreshControl.addTarget(self, action: #selector(refreshFileList(_:)), for: .valueChanged)
         sendDebugTagTextField.setPlaceholderTitle("Debug tag...")
+
+        viewModel.shouldShowCustomMissionButton
+            .removeDuplicates()
+            .sink { [weak self] shouldShow in
+                guard let self = self else { return }
+                self.customMissionButton.isHidden = !shouldShow
+            }
+            .store(in: &cancellables)
     }
 
-    override func viewWillAppear(_ animated: Bool) {
+   public override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
 
         switchLog.isOn = currentLogDirectory != nil
@@ -95,11 +107,11 @@ class ParrotDebugViewController: UIViewController {
         super.viewWillAppear(animated)
     }
 
-    override var prefersStatusBarHidden: Bool {
+    public override var prefersStatusBarHidden: Bool {
         return true
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
+    public override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 }
@@ -276,7 +288,7 @@ private extension ParrotDebugViewController {
 
 // MARK: - UITableViewDelegate & UITableViewDataSource
 extension ParrotDebugViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return fileListUrls.count
     }
 
@@ -290,7 +302,7 @@ extension ParrotDebugViewController: UITableViewDelegate, UITableViewDataSource 
         }
     }
 
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    public func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: L10n.commonDelete) { [weak self] (_, _, _) in
             guard let self = self else { return }
             ParrotDebug.removeLogUrl(fileURL: self.fileListUrls[indexPath.row], srcVC: self) {
@@ -324,13 +336,13 @@ extension ParrotDebugViewController: UITableViewDelegate, UITableViewDataSource 
 
 // MARK: - UITextField delegate
 extension ParrotDebugViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+    public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         return textField.resignFirstResponder()
     }
 
-    func textField(_ textField: UITextField,
-                   shouldChangeCharactersIn range: NSRange,
-                   replacementString string: String) -> Bool {
+    public func textField(_ textField: UITextField,
+                          shouldChangeCharactersIn range: NSRange,
+                          replacementString string: String) -> Bool {
         if let tfCount = textField.text?.count {
             self.sendDebugTagButton.isEnabled = (tfCount + string.count) > 0
         }

@@ -129,7 +129,9 @@ public protocol FlightRepository: AnyObject {
 
     // MARK: __ Delete
     /// Delete all Flights in CoreData
-    func deleteAllFlights()
+    /// - Parameters:
+    ///    - completion: callback closure called when finished
+    func deleteAllFlights(completion: ((_ status: Bool) -> Void)?)
 
     /// Delete Flight in CoreData with a specified list of UUIDs
     /// - Parameter uuids: List of UUIDs to search
@@ -345,25 +347,29 @@ extension CoreDataServiceImpl: FlightRepository {
     }
 
     public func getAllModifiedFlights() -> [FlightModel] {
-        return getFlightsCD(withQuery: "latestLocalModificationDate != nil").map({ $0.model() })
+        let apcIdQuery = "apcId == '\(userService.currentUser.apcId)'"
+        return getFlightsCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").map({ $0.model() })
     }
 
     // MARK: __ Delete
-    public func deleteAllFlights() {
-        batchDeleteAndSave({ [unowned self] _ in
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Flight.entityName)
-            let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
-            fetchRequest.predicate = apcIdPredicate
+    public func deleteAllFlights(completion: ((_ status: Bool) -> Void)?) {
+        performAndSave({ [unowned self] _ in
+            let flights = getAllFlightsCD(toBeDeleted: false)
+            guard !flights.isEmpty else {
+                completion?(true)
+                return false
+            }
 
-            return fetchRequest
+            deleteObjects(flights)
+            return true
         }, { [unowned self] result in
             switch result {
             case .success:
-                flightsDidChangeSubject.send()
-                // Propagate the flights deletion event.
-                allFlightsRemovedSubject.send()
-            case .failure(let error):
-                ULog.e(.dataModelTag, "An error is occured when batch delete Flight in CoreData : \(error.localizedDescription)")
+                self.flightsDidChangeSubject.send()
+                self.allFlightsRemovedSubject.send()
+                completion?(true)
+            case .failure:
+                completion?(false)
             }
         })
     }
@@ -380,14 +386,11 @@ extension CoreDataServiceImpl: FlightRepository {
 
         var deletedFlights = [FlightModel]()
 
-        batchDeleteAndSave({ [unowned self] _ in
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Flight.entityName)
-            let uuidPredicate = NSPredicate(format: "uuid IN %@", uuids)
-            fetchRequest.predicate = uuidPredicate
-
-            deletedFlights = getFlights(withUuids: uuids)
-
-            return fetchRequest
+        performAndSave({ [unowned self] _ in
+            let flightsCD = getFlightsCD(withUuids: uuids)
+            deletedFlights = flightsCD.map({ $0.model() })
+            deleteObjects(flightsCD)
+            return true
         }, { [unowned self] result in
             switch result {
             case .success:
@@ -492,7 +495,8 @@ extension CoreDataServiceImpl: FlightRepository {
         guard let entityName = fetchRequest.entityName else {
             return
         }
-        migrateAnonymousDataToLoggedUser(for: entityName) {
+        migrateAnonymousDataToLoggedUser(for: entityName) { [unowned self] in
+            flightsAddedSubject.send(getFlights(withUuids: $0))
             completion()
         }
     }

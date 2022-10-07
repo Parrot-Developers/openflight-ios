@@ -37,7 +37,6 @@ public protocol FlightPlanManager {
     ///
     /// - Parameters:
     ///     - flightPlan: flight plan to be based on
-    ///     - persist: whether to save the flight plan in the database.
     /// - Returns: a new flight plan. The duplicated flight plan is in `.editable` state has
     ///            a new uuid & thumbnail and has the following fields cleared:
     ///            `lastMissionItemExecuted`,
@@ -52,8 +51,7 @@ public protocol FlightPlanManager {
     ///            `synchroStatus`
     ///            `fileSynchroStatus`
     ///            `fileSynchroDate`
-    func newFlightPlan(basedOn flightPlan: FlightPlanModel,
-                       save: Bool) -> FlightPlanModel
+    func newFlightPlan(basedOn flightPlan: FlightPlanModel) -> FlightPlanModel
 
     /// Deletes a flightPlan.
     ///
@@ -73,7 +71,23 @@ public protocol FlightPlanManager {
     ///   - flightPlan: flight plan
     ///   - lastMissionItemExecuted: last item executed
     ///   - recoveryResourceId: first resource identifier of media captured after the latest reached waypoint
+    /// - Returns: the updated flight pan
     func update(flightPlan: FlightPlanModel, lastMissionItemExecuted: Int, recoveryResourceId: String?) -> FlightPlanModel
+
+    /// Updates flightplan lastMissionItemExecuted
+    /// - Parameters:
+    ///   - flightPlan: flight plan
+    ///   - lastMissionItemExecuted: last item executed
+    ///   - recoveryResourceId: first resource identifier of media captured after the latest reached waypoint
+    ///   - databaseUpdateCompletion: the completion block called when data base has been updated
+    /// - Returns: the updated flight pan
+    ///
+    /// - Description: This method can be used, instead of the one without completion, to perform some actions (e.g. clear recoveryinfo)
+    ///                only when the database has been correctly updated.
+    func update(flightPlan: FlightPlanModel,
+                lastMissionItemExecuted: Int,
+                recoveryResourceId: String?,
+                databaseUpdateCompletion: ((_ status: Bool) -> Void)?) -> FlightPlanModel
 
     /// Updates flightplan `customTitle` and saves it in CoreData.
     ///
@@ -176,8 +190,7 @@ public class FlightPlanManagerImpl: FlightPlanManager {
 
     // MARK: - Public Functions
 
-    public func newFlightPlan(basedOn flightPlan: FlightPlanModel,
-                              save: Bool) -> FlightPlanModel {
+    public func newFlightPlan(basedOn flightPlan: FlightPlanModel) -> FlightPlanModel {
         var newFlightPlan = flightPlan
         if let dataSetting = flightPlan.dataSetting {
             newFlightPlan.dataSetting = dataSetting.copy()
@@ -210,11 +223,10 @@ public class FlightPlanManagerImpl: FlightPlanManager {
         newFlightPlan.dataSetting?.notPropagatedSettings = [:]
         newFlightPlan.dataSetting?.pgyProjectId = 0
 
-        if save {
-            persist(newFlightPlan,
-                    toSynchro: true,
-            withFileUploadNeeded: true)
-        }
+        let fpLog = " flight plan \(flightPlan.uuid) in project \(flightPlan.projectUuid) with thumbnail \(flightPlan.thumbnail?.uuid ?? "-")"
+        let newFpLog = " new flight plan \(newFlightPlan.uuid) in project \(newFlightPlan.projectUuid) with thumbnail \(newFlightPlan.thumbnail?.uuid ?? "-")"
+        ULog.d(.tag, "newFlightPlan based on \(fpLog) for \(newFpLog)")
+
         return newFlightPlan
     }
 
@@ -228,7 +240,9 @@ public class FlightPlanManagerImpl: FlightPlanManager {
     }
 
     public func editableFlightPlansFor(projectId: String) -> [FlightPlanModel] {
-        persistenceFlightPlan.getFlightPlans(withProjectUuid: projectId, withState: FlightPlanModel.FlightPlanState.editable)
+        let editableFps = persistenceFlightPlan.getFlightPlans(withProjectUuid: projectId, withState: FlightPlanModel.FlightPlanState.editable)
+        ULog.d(.tag, "editableFlightPlansFor for projectId \(projectId): \(editableFps)")
+        return editableFps
     }
 
     public func flightPlansForState(_ state: FlightPlanModel.FlightPlanState) -> [FlightPlanModel] {
@@ -271,20 +285,43 @@ public class FlightPlanManagerImpl: FlightPlanManager {
         return newFlightPlan
     }
 
-    public func update(flightPlan: FlightPlanModel, lastMissionItemExecuted: Int, recoveryResourceId: String?) -> FlightPlanModel {
+    public func update(flightPlan: FlightPlanModel,
+                       lastMissionItemExecuted: Int,
+                       recoveryResourceId: String?) -> FlightPlanModel {
+        update(flightPlan: flightPlan,
+               lastMissionItemExecuted: lastMissionItemExecuted,
+               recoveryResourceId: recoveryResourceId,
+               databaseUpdateCompletion: nil)
+    }
+
+    public func update(flightPlan: FlightPlanModel,
+                       lastMissionItemExecuted: Int,
+                       recoveryResourceId: String?,
+                       databaseUpdateCompletion: ((_ status: Bool) -> Void)?) -> FlightPlanModel {
         guard lastMissionItemExecuted >= flightPlan.lastMissionItemExecuted else {
             // update flightplan only if new value of `last mission item executed` is greater or equal to current value
             return flightPlan
         }
         var newFlightPlan = flightPlan
-        // If flight plan has reached its last waypoint, set his state as `.completed`.
-        if flightPlan.hasReachedLastWayPoint { newFlightPlan.state = .completed }
+        // The `lastMissionItemExecuted` must be set before checking hasReachedLastWayPoint
         newFlightPlan.lastMissionItemExecuted = Int64(lastMissionItemExecuted)
+
+        // Update flight plan completion state.
+        // The `state` field will be updated by the State Machine / Run Manager.
+        if let mavlinkCommands = flightPlan.mavlinkCommands {
+            newFlightPlan.hasReachedFirstWayPoint = mavlinkCommands.hasReachedFirstWayPoint(index: lastMissionItemExecuted)
+            newFlightPlan.hasReachedLastWayPoint = mavlinkCommands.hasReachedLastWayPoint(index: lastMissionItemExecuted)
+            newFlightPlan.lastPassedWayPointIndex = mavlinkCommands.lastPassedWayPointIndex(for: lastMissionItemExecuted)
+            let percentCompleted = mavlinkCommands.percentCompleted(for: lastMissionItemExecuted, flightPlan: newFlightPlan)
+            newFlightPlan.percentCompleted = percentCompleted
+        }
+
         newFlightPlan.recoveryResourceId = recoveryResourceId
         persistenceFlightPlan.saveOrUpdateFlightPlan(newFlightPlan,
                                                      byUserUpdate: true,
                                                      toSynchro: false,
-                                                     withFileUploadNeeded: false)
+                                                     withFileUploadNeeded: false,
+                                                     completion: databaseUpdateCompletion)
         return newFlightPlan
     }
 

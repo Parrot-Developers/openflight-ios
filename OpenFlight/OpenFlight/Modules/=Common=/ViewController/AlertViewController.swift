@@ -84,8 +84,6 @@ public final class AlertViewController: UIViewController {
             cancelButton.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
         }
     }
-    @IBOutlet private weak var cancelView: UIView!
-    @IBOutlet private weak var validateStackView: UIStackView!
     @IBOutlet private weak var validateButton: ActionButton! {
         didSet {
             validateButton.titleLabel?.adjustsFontSizeToFitWidth = true
@@ -214,10 +212,11 @@ public final class AlertViewController: UIViewController {
     /// - Parameters:
     ///     - animated: animated dismiss
     ///     - completion: completion block
-    func dismissAlert(animated: Bool = true, completion: (() -> Void)? = nil) {
+    public func dismissAlert(animated: Bool = true, completion: (() -> Void)? = nil) {
         self.view.backgroundColor = .clear
         self.dismiss(animated: animated, completion: completion)
     }
+
     @IBAction func closeButtonTouchedUpInside(_ sender: Any) {
         dismissAlert { [weak self] in
             self?.cancel()
@@ -325,8 +324,6 @@ private extension AlertViewController {
             closeButton.setImage(closeStyle.image.withRenderingMode(.alwaysTemplate), for: .normal)
         }
         closeButton.isHidden = closeButtonStyle == nil
-        cancelView.isHidden = cancelButton.isHidden
-        validateStackView.isHidden = validateButton.isHidden && secondaryActionButton.isHidden
     }
 
     /// Updates buttons stack view.

@@ -321,6 +321,7 @@ public enum Asset {
       ]
     }
     public enum TakeOff {
+      public static let icBatteryPoorConnectionAlert = ImageAsset(name: "icBatteryPoorConnectionAlert")
       public static let icDownloadAlert = ImageAsset(name: "icDownloadAlert")
       public static let icDroneCalibrationNeeded = ImageAsset(name: "icDroneCalibrationNeeded")
       public static let icDroneLowBattery = ImageAsset(name: "icDroneLowBattery")
@@ -339,6 +340,7 @@ public enum Asset {
       public static let icRefreshAlert = ImageAsset(name: "icRefreshAlert")
       public static let icRemoteUpdateAlert = ImageAsset(name: "icRemoteUpdateAlert")
       public static let allValues: [ImageAsset] = [
+        icBatteryPoorConnectionAlert,
         icDownloadAlert,
         icDroneCalibrationNeeded,
         icDroneLowBattery,
@@ -371,6 +373,7 @@ public enum Asset {
 
     public enum CameraModes {
       public static let icCameraModeBracketing = ImageAsset(name: "icCameraModeBracketing")
+      public static let icCameraModeBracketingDNG = ImageAsset(name: "icCameraModeBracketingDNG")
       public static let icCameraModeBurst = ImageAsset(name: "icCameraModeBurst")
       public static let icCameraModeGpsLapse = ImageAsset(name: "icCameraModeGpsLapse")
       public static let icCameraModePano = ImageAsset(name: "icCameraModePano")
@@ -379,6 +382,7 @@ public enum Asset {
       public static let icCameraModeVideo = ImageAsset(name: "icCameraModeVideo")
       public static let allValues: [ImageAsset] = [
         icCameraModeBracketing,
+        icCameraModeBracketingDNG,
         icCameraModeBurst,
         icCameraModeGpsLapse,
         icCameraModePano,
@@ -629,6 +633,7 @@ public enum Asset {
       public static let icSearch = ImageAsset(name: "icSearch")
       public static let icSettings = ImageAsset(name: "icSettings")
       public static let icSettingsMedium = ImageAsset(name: "icSettingsMedium")
+      public static let icThermometer = ImageAsset(name: "icThermometer")
       public static let icUndo = ImageAsset(name: "icUndo")
       public static let icWarningRed = ImageAsset(name: "icWarningRed")
       public static let icWarningWhite = ImageAsset(name: "icWarningWhite")
@@ -686,6 +691,7 @@ public enum Asset {
         icSearch,
         icSettings,
         icSettingsMedium,
+        icThermometer,
         icUndo,
         icWarningRed,
         icWarningWhite,
@@ -958,11 +964,13 @@ public enum Asset {
     public enum Player {
       public static let buttonPauseBig = ImageAsset(name: "buttonPauseBig")
       public static let buttonPlayBig = ImageAsset(name: "buttonPlayBig")
+      public static let buttonResetBig = ImageAsset(name: "buttonResetBig")
       public static let icSoundOff = ImageAsset(name: "icSoundOff")
       public static let icSoundOn = ImageAsset(name: "icSoundOn")
       public static let allValues: [ImageAsset] = [
         buttonPauseBig,
         buttonPlayBig,
+        buttonResetBig,
         icSoundOff,
         icSoundOn,
       ]
@@ -972,6 +980,7 @@ public enum Asset {
     public static let droneInternalMemory = ImageAsset(name: "droneInternalMemory")
     public static let droneSd = ImageAsset(name: "droneSd")
     public static let icBracketing = ImageAsset(name: "icBracketing")
+    public static let icBracketingDNG = ImageAsset(name: "icBracketingDNG")
     public static let icBurst = ImageAsset(name: "icBurst")
     public static let icDng = ImageAsset(name: "icDng")
     public static let icGPSLapse = ImageAsset(name: "icGPSLapse")
@@ -993,6 +1002,7 @@ public enum Asset {
       droneInternalMemory,
       droneSd,
       icBracketing,
+      icBracketingDNG,
       icBurst,
       icDng,
       icGPSLapse,
@@ -1082,6 +1092,7 @@ public enum Asset {
     public static let centerOnUser = ImageAsset(name: "centerOnUser")
     public static let mapDrone = ImageAsset(name: "mapDrone")
     public static let mapDroneDisconnected = ImageAsset(name: "mapDroneDisconnected")
+    public static let mapHome = ImageAsset(name: "mapHome")
     public static let poiBlackAndWhite = ImageAsset(name: "poi_black_and_white")
     public static let poiBlue = ImageAsset(name: "poi_blue")
     public static let poiGreen = ImageAsset(name: "poi_green")
@@ -1091,12 +1102,12 @@ public enum Asset {
     public static let poiPurple = ImageAsset(name: "poi_purple")
     public static let poiSelected = ImageAsset(name: "poi_selected")
     public static let poiYellow = ImageAsset(name: "poi_yellow")
-    public static let user = ImageAsset(name: "user")
     public static let allValues: [ImageAsset] = [
       centerOnDrone,
       centerOnUser,
       mapDrone,
       mapDroneDisconnected,
+      mapHome,
       poiBlackAndWhite,
       poiBlue,
       poiGreen,
@@ -1106,7 +1117,6 @@ public enum Asset {
       poiPurple,
       poiSelected,
       poiYellow,
-      user,
     ]
   }
   public enum MissionModes {
@@ -1175,12 +1185,14 @@ public enum Asset {
 
     public static let icOAActive = ImageAsset(name: "icOAActive")
     public static let icOADegraded = ImageAsset(name: "icOADegraded")
+    public static let icOADisabled = ImageAsset(name: "icOADisabled")
     public static let icOADisconnected = ImageAsset(name: "icOADisconnected")
     public static let icOAInactive = ImageAsset(name: "icOAInactive")
     public static let icOAUnwanted = ImageAsset(name: "icOAUnwanted")
     public static let allValues: [ImageAsset] = [
       icOAActive,
       icOADegraded,
+      icOADisabled,
       icOADisconnected,
       icOAInactive,
       icOAUnwanted,
@@ -1462,6 +1474,7 @@ public enum Asset {
     public static let iconSettingsBehaviour = ImageAsset(name: "iconSettingsBehaviour")
     public static let iconSettingsCamera = ImageAsset(name: "iconSettingsCamera")
     public static let iconSettingsCameraFill = ImageAsset(name: "iconSettingsCameraFill")
+    public static let iconSettingsDeveloper = ImageAsset(name: "iconSettingsDeveloper")
     public static let iconSettingsGeofence = ImageAsset(name: "iconSettingsGeofence")
     public static let iconSettingsInterface = ImageAsset(name: "iconSettingsInterface")
     public static let iconSettingsNetwork = ImageAsset(name: "iconSettingsNetwork")
@@ -1470,6 +1483,7 @@ public enum Asset {
       iconSettingsBehaviour,
       iconSettingsCamera,
       iconSettingsCameraFill,
+      iconSettingsDeveloper,
       iconSettingsGeofence,
       iconSettingsInterface,
       iconSettingsNetwork,

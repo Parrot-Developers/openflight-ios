@@ -151,7 +151,12 @@ open class StartedFlyingState: GKState {
             case .idle:
                 // Transient state
                 break
-            case .noFlightPlan, .ended, .paused:
+            case .noFlightPlan, .ended:
+                ULog.w(.tag, "Flightplan stopped while activating. runState: '\(runState)' state: '\(state)'")
+                activateTimer?.invalidate()
+                state = .finished
+                delegate?.flightPlanRunDidFinish(flightPlan: flightPlan, completed: false)
+            case .paused, .rth:
                 activateTimer?.invalidate()
                 ULog.w(.tag, "Inconsistent runState while activating runState: '\(runState)' state: '\(state)'")
             }
@@ -165,7 +170,7 @@ open class StartedFlyingState: GKState {
         case .playing(droneConnected: true, flightPlan: let flightPlan, rth: false):
             // Informs the State Machine that Flight Plan has been updated.
             delegate?.flightPlanRunDidUpdate(flightPlan: flightPlan)
-        case .paused(flightPlan: let flightPlan, startAvailability: _):
+        case .paused(droneConnected: true, flightPlan: let flightPlan, startAvailability: _):
             // Informs the State Machine Flight Plan is paused.
             delegate?.flightPlanRunDidPause(flightPlan: flightPlan)
         case .noFlightPlan, .activationError, .idle:
@@ -182,6 +187,11 @@ open class StartedFlyingState: GKState {
     open func setup(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand],
                     lastMissionItemExecuted: Int?, recoveryResourceId: String?, runningTime: TimeInterval?) {
         self.flightPlan = flightPlan
+        // Update the current FP's lastMissionItemExecuted if needed.
+        if let latestMissionItemExecuted = lastMissionItemExecuted,
+           latestMissionItemExecuted > Int(self.flightPlan.lastMissionItemExecuted) {
+            self.flightPlan.lastMissionItemExecuted = Int64(latestMissionItemExecuted)
+        }
         self.commands = commands
         if let lastMissionItemExecuted = lastMissionItemExecuted {
             lastMissionItemExecutedOnStart = lastMissionItemExecuted
@@ -199,8 +209,9 @@ open class StartedFlyingState: GKState {
         }
     }
 
-    open func stop() {
-        runManager.stop()
+    // If `forced` = `true`, the RTH, if enabled, will be aborted.
+    open func stop(forced: Bool = false) {
+        runManager.stop(forced: forced)
     }
 
     open func pause() {

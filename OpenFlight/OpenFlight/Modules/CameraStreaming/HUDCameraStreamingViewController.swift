@@ -47,6 +47,9 @@ public final class HUDCameraStreamingViewController: UIViewController {
     // MARK: - Internal Properties
     weak var delegate: HUDCameraStreamingViewControllerDelegate?
 
+    // MARK: - Public Properties
+    public var doNotPauseStreamOnDisappear: Bool = false
+
     // MARK: - Private Properties
     private var contentZone: CGRect = .zero
     private var cancellables = Set<AnyCancellable>()
@@ -90,6 +93,7 @@ public final class HUDCameraStreamingViewController: UIViewController {
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        streamView.overlayer = self
 
         if !Platform.isSimulator {
             setupViewModels()
@@ -110,9 +114,10 @@ public final class HUDCameraStreamingViewController: UIViewController {
 
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-
-        enableMonitoring(false)
-        streamView.contentZoneListener = nil
+        if !doNotPauseStreamOnDisappear {
+            enableMonitoring(false)
+            streamView.contentZoneListener = nil
+        }
     }
 
     public override var prefersStatusBarHidden: Bool {
@@ -259,6 +264,9 @@ private extension HUDCameraStreamingViewController {
     ///    - cameraLive: camera live from drone
     func onCameraLiveUpdate(_ cameraLive: CameraLive?) {
         streamView.setStream(stream: cameraLive)
+        if cameraLive == nil {
+            Services.hub.touchAndFly.frameUpdate(mediaInfoHandle: nil, metadataHandle: nil)
+        }
     }
 
     /// Updates the visibility of overexposure areas.
@@ -300,6 +308,7 @@ private extension HUDCameraStreamingViewController {
     /// Deinit stream.
     func deinitStream() {
         streamView.setStream(stream: nil)
+        Services.hub.touchAndFly.frameUpdate(mediaInfoHandle: nil, metadataHandle: nil)
     }
 }
 
@@ -324,5 +333,13 @@ extension HUDCameraStreamingViewController: ProposalAndTrackingDelegate {
 
     func didDeselectTarget() {
         trackingViewModel?.removeAllTargets()
+    }
+}
+
+extension HUDCameraStreamingViewController: Overlayer {
+
+    public func overlay(overlayContext: OverlayContext) {
+        Services.hub.touchAndFly.frameUpdate(mediaInfoHandle: overlayContext.mediaInfoHandle,
+                                             metadataHandle: overlayContext.frameMetadataHandle)
     }
 }

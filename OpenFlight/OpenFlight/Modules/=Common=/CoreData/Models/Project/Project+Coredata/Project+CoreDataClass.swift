@@ -39,7 +39,7 @@ public class Project: NSManagedObject {
 
     // MARK: - Utils
     func model() -> ProjectModel {
-        return ProjectModel(apcId: apcId,
+        var model = ProjectModel(apcId: apcId,
                             cloudId: Int(cloudId),
                             uuid: uuid,
                             title: title,
@@ -48,11 +48,14 @@ public class Project: NSManagedObject {
                             latestCloudModificationDate: latestCloudModificationDate,
                             lastUpdated: lastUpdated,
                             lastOpened: lastOpened,
+                            latestExecutionRank: latestExecutionRank?.intValue,
                             isLocalDeleted: isLocalDeleted,
                             synchroStatus: SynchroStatus(status: synchroStatus),
                             synchroError: SynchroError(rawValue: synchroError),
                             latestSynchroStatusDate: latestSynchroStatusDate,
                             latestLocalModificationDate: latestLocalModificationDate)
+        model.isProjectExecuted = hasExecutedFlightPlan()
+        return model
     }
 
     func modelWithFlightPlan() -> ProjectModel {
@@ -70,6 +73,34 @@ public class Project: NSManagedObject {
         return project
     }
 
+    func modelWithEditableFlightPlan() -> ProjectModel {
+        var project = model()
+
+        var flightPlanModels: [FlightPlanModel] = []
+
+        if let flightPlans = flightPlans {
+            flightPlanModels = flightPlans
+                .filter { $0.state == FlightPlanModel.FlightPlanState.editable.rawValue }
+                .sorted(by: { $0.lastUpdate > $1.lastUpdate })
+                .compactMap({ $0.model() })
+        }
+
+        project.flightPlans = flightPlanModels
+        return project
+    }
+
+    func hasExecutedFlightPlan() -> Bool {
+        if let flightPlans = flightPlans {
+            let flightPlan = flightPlans
+                .first { $0.state != FlightPlanModel.FlightPlanState.editable.rawValue && $0.hasReachedFirstWayPoint }
+            if flightPlan != nil {
+                return true
+            }
+        }
+
+        return false
+    }
+
     func update(fromProjectModel projectModel: ProjectModel) {
         apcId = projectModel.apcId
         cloudId = projectModel.cloudId > 0 ? Int64(projectModel.cloudId) : cloudId
@@ -77,6 +108,11 @@ public class Project: NSManagedObject {
         title = projectModel.title
         type = projectModel.type.rawValue
         latestCloudModificationDate = projectModel.latestCloudModificationDate
+        if let aLatestExecutionIndex = projectModel.latestExecutionRank {
+            latestExecutionRank = NSNumber(value: aLatestExecutionIndex)
+        } else {
+            latestExecutionRank = nil
+        }
 
         lastUpdated = projectModel.lastUpdated
         lastOpened = projectModel.lastOpened

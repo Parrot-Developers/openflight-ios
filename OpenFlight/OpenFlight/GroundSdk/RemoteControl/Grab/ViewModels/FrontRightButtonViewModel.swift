@@ -29,7 +29,6 @@
 
 import GroundSdk
 
-
 private extension ULogTag {
     static let tag = ULogTag(name: "FrontRightButtonViewModel")
 }
@@ -116,7 +115,6 @@ private extension FrontRightButtonViewModel {
             manualPilotingItf.land()
         default:
             ULog.e(.tag, "takeOffOrLandDrone action is other: \(manualPilotingItf.smartTakeOffLandAction.description)")
-            break
         }
     }
 }

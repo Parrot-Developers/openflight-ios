@@ -34,9 +34,9 @@ import GroundSdk
 final class FirmwareAndMissionsUpdateViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var progressView: FirmwareAndMissionProgressView!
+    @IBOutlet private weak var progressView: NormalizedCircleProgressView!
     @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet private weak var cancelButton: UIButton!
+    @IBOutlet private weak var cancelButton: InsetHitAreaButton!
     @IBOutlet private weak var reportView: UpdatingSuccessHeader!
     @IBOutlet private weak var continueView: UpdatingDoneFooter!
 
@@ -427,7 +427,7 @@ private extension FirmwareAndMissionsUpdateViewController {
     func reloadUI(finalRebootState: FirmwareAndMissionsManualRebootingState = .waiting, duration: TimeInterval? = nil) {
         dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: finalRebootState)
         if let duration = duration {
-            progressView.setFakeRebootProgress(progressEnd: dataSource.currentTotalProgress, duration: duration)
+            progressView.setFakeProgress(progressEnd: dataSource.currentTotalProgress, duration: duration)
         } else {
             progressView.update(currentProgress: dataSource.currentTotalProgress)
         }

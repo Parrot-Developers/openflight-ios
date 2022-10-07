@@ -160,7 +160,7 @@ private extension EditionSettingsViewController {
             .sink { [unowned self] state in
                 switch state {
                 case let .updateUndo(categoryFilter):
-                    self.undoButton.isHidden = categoryFilter == .common || categoryFilter == .image
+                    self.setUndoButtonVisibility(categoryFilter)
                     self.updateUndoButton()
                 case let .selectedGraphic(selectedGraphic):
                     setDeleteButtonVisibility(selectedGraphic?.deletable == true)
@@ -171,6 +171,22 @@ private extension EditionSettingsViewController {
                 bottomGradientView.isHidden = deleteButton.isHidden && undoButton.isHidden
             }
             .store(in: &cancellables)
+    }
+
+    /// Show or hide undo button according to current setting category.
+    ///
+    /// - Parameters:
+    ///   - category: the current setting catogory displayed
+    func setUndoButtonVisibility(_ category: FlightPlanSettingCategory?) {
+        switch category {
+        case .common,
+             .image,
+             .rth,
+             .custom:
+            self.undoButton.isHidden = true
+        default:
+            self.undoButton.isHidden = false
+        }
     }
 
     /// Updates undo button.

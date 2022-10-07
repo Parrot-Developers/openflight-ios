@@ -53,9 +53,21 @@ public extension String {
         return emailPredicate.evaluate(with: self)
     }
 
+    /// Returns if the string have a valid phone number format.
+    func validatePhoneNumber() -> Bool {
+        let phoneFormat = "^[0-9+]{0,1}+[0-9]{5,16}$"
+        let phonePredicate = NSPredicate(format: "SELF MATCHES %@", phoneFormat)
+        return phonePredicate.evaluate(with: self)
+    }
+
+    /// Returns `true` if phone or email is valid, `false`otherwise.
+    func isValidPhoneOrEmail() -> Bool {
+        validatePhoneNumber() || validateEmail()
+    }
+
     /// Returns if the string is empty.
-    func isEmptyOrWhitespace() -> Bool {
-        return self.trimmingCharacters(in: .whitespaces).isEmpty
+    var isEmptyOrWhitespace: Bool {
+        self.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     /// Returns a PasswordValidationState for the string.

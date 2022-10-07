@@ -34,9 +34,9 @@ import GroundSdk
 final class FirmwareUpdatingViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
-    @IBOutlet private weak var progressView: FirmwareAndMissionProgressView!
+    @IBOutlet private weak var progressView: NormalizedCircleProgressView!
     @IBOutlet private weak var tableView: UITableView!
-    @IBOutlet private weak var cancelButton: UIButton!
+    @IBOutlet private weak var cancelButton: InsetHitAreaButton!
     @IBOutlet private weak var reportView: UpdatingSuccessHeader!
     @IBOutlet private weak var continueView: UpdatingDoneFooter!
 
@@ -205,7 +205,7 @@ private extension FirmwareUpdatingViewController {
     /// Waits for reboot of the drone
     func waitForReboot() {
         cancelButton.isHidden = true
-        progressView.setFakeRebootProgress(duration: Constants.rebootDuration)
+        progressView.setFakeProgress(duration: Constants.rebootDuration)
     }
 
     /// Called when the app enters background.

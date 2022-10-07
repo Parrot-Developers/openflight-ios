@@ -42,6 +42,7 @@
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(0:00)" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" translatesAutoresizingMaskIntoConstraints="NO" id="LWo-KI-pe2">
                                     <rect key="frame" x="22" y="0.0" width="122" height="16"/>
                                     <color key="tintColor" name="default_text_color"/>
+                                    <accessibility key="accessibilityConfiguration" identifier="estimatedDuration"/>
                                     <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
                                     <color key="textColor" name="default_text_color"/>
                                     <nil key="highlightedColor"/>
@@ -60,6 +61,7 @@
                                 </imageView>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" verticalHuggingPriority="251" text="-" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" translatesAutoresizingMaskIntoConstraints="NO" id="WG1-fp-P3i">
                                     <rect key="frame" x="22" y="0.0" width="122" height="16"/>
+                                    <accessibility key="accessibilityConfiguration" identifier="estimatedDistance"/>
                                     <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="13"/>
                                     <color key="textColor" name="default_text_color"/>
                                     <nil key="highlightedColor"/>

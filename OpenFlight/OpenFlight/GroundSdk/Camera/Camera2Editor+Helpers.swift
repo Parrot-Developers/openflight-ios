@@ -103,7 +103,7 @@ private struct Constants {
         photoBracketing: .preset1ev,
         photoBurst: .burst10Over1s,
         photoDigitalSignature: CameraPreset.photoSignature,
-        photoDynamicRange: .hdr8,
+        photoDynamicRange: CameraPreset.photoDynamicRange,
         photoFileFormat: .jpeg,
         photoFormat: .rectilinear,
         photoGpslapseInterval: GpsLapseMode.preset.interval,
@@ -169,13 +169,17 @@ public extension Camera2Editor {
     /// - Parameters:
     ///   - currentConfig: curent camera configuration, used to set currently undefined parameters
     ///   - saveParams: `false` to not save configured parameters
-    func saveSettings(currentConfig: Camera2Config?, saveParams: Bool = true) {
+    ///   - disablePhotoSignature: whether the photo signature must be disabled whithout regarding user's choice
+    func saveSettings(currentConfig: Camera2Config?, saveParams: Bool = true, disablePhotoSignature: Bool = false) {
         let savedConfig = getStoredConfig()
 
         if saveParams {
             // save configured parameters
             saveConfiguredParams()
         }
+
+        // Always apply app's persistent settings.
+        applyAppPersistentSettings(disablePhotoSignature: disablePhotoSignature)
 
         if !complete,
            let config = currentConfig {
@@ -218,6 +222,18 @@ public extension Camera2Editor {
 
         // notify camera configuration watcher that the configuration has been applied
         cameraConfigWatcher.didApplyConfig(success: success)
+
+        let debugLog = "Updating camera editor with persistent settings:\n"
+        + "\t photoDigitalSignature: '\(self[Camera2Params.photoDigitalSignature]?.value?.description ?? "-")'"
+        + " (user choice: '\(UserDefaults.photoDigitalSignature)')\n"
+        + "\t photoDynamicRange: '\(self[Camera2Params.photoDynamicRange]?.value?.description ?? "-")'"
+        + " (user choice: '\(UserDefaults.photoDynamicRange)')\n"
+        + "\t videoRecordingCodec: '\(self[Camera2Params.videoRecordingCodec]?.value?.description ?? "-")'"
+        + " (user choice: '\(UserDefaults.videoRecordingCodec)')\n"
+        + "\t videoRecordingDynamicRange: '\(self[Camera2Params.videoRecordingDynamicRange]?.value?.description ?? "-")'"
+        + " (user choice: '\(UserDefaults.videoRecordingDynamicRange)')\n"
+        + "\t (Current Mode: '\(self[Camera2Params.mode]?.value?.description ?? "-")')"
+        ULog.d(.tag, debugLog)
     }
 }
 
@@ -520,6 +536,93 @@ private extension Camera2Editor {
         applyValueIfUndefined(Camera2Params.alignmentOffsetYaw, config.alignmentOffsetYaw)
         applyValueIfUndefined(Camera2Params.maximumIsoSensitivity, config.maximumIsoSensitivity)
         applyValueIfUndefined(Camera2Params.videoRecordingBitrate, config.videoRecordingBitrate)
+    }
+
+    /// Apply the persistent settings stored in the app.
+    ///
+    /// - Parameter disablePhotoSignature: whether the photo signature must be disabled whithout regarding user's choice
+    ///
+    /// - Description:
+    ///   This method allows to apply the settings chosen by the user without regarding the Drone state.
+    ///   This allows for exemple to set `photoDigitalSignature` state even if we are in `recording` mode.
+    ///   Current persistent settings are: *Photo Digital Signature*, *Dynamic Range*, *Video Encoding*.
+    func applyAppPersistentSettings(disablePhotoSignature: Bool) {
+
+        // -- Apply photo signature config.
+        applyValueNotForced(Camera2Params.photoDigitalSignature,
+                            disablePhotoSignature ? .none : UserDefaults.photoDigitalSignature)
+
+        // -- Apply video codec config.
+        applyValueNotForced(Camera2Params.videoRecordingCodec,
+                            UserDefaults.videoRecordingCodec)
+
+        // -- Apply Photo Dynamic Range config.
+        applyValueNotForced(Camera2Params.photoDynamicRange,
+                            UserDefaults.photoDynamicRange)
+
+        // -- Apply Video Dynamic Range config.
+        applyValueNotForced(Camera2Params.videoRecordingDynamicRange,
+                            UserDefaults.videoRecordingDynamicRange)
+    }
+}
+
+// MARK: Settings persisted in UserDefaults
+public extension UserDefaults {
+    // TODO: When almost all users will switched to the 7.4.0 app version, remove this `currentDroneHolder` patch with its wrong `Services` injection.
+    /// The photo digital signature setting persisted in the app.
+    static var photoDigitalSignature: Camera2DigitalSignature {
+        let presetValue = CameraPreset.photoSignature
+        guard let userPhotoSignatureSetting = Defaults.userPhotoSignatureSetting else {
+            // Set, if available, the current done's value to prevent overwriting his choice on an previous app version.
+            // If no value is avalable apply the preset value.
+            let currentValue = Services.hub.currentDroneHolder.drone.currentCamera?.config[Camera2Params.photoDigitalSignature]?.value
+            let value = currentValue ?? presetValue
+            Defaults.userPhotoSignatureSetting = value.rawValue
+            return value
+        }
+        return Camera2DigitalSignature(rawValue: userPhotoSignatureSetting) ?? presetValue
+    }
+
+    /// The video encoding setting persisted in the app.
+    static var videoRecordingCodec: Camera2VideoCodec {
+        let presetValue = CameraPreset.videoencoding
+        guard let userVideoCodecSetting = Defaults.userVideoCodecSetting else {
+            // Set, if available, the current done's value to prevent overwriting his choice on an previous app version.
+            // If no value is avalable apply the preset value.
+            let currentValue = Services.hub.currentDroneHolder.drone.currentCamera?.config[Camera2Params.videoRecordingCodec]?.value
+            let value = currentValue ?? presetValue
+            Defaults.userVideoCodecSetting = value.rawValue
+            return value
+        }
+        return Camera2VideoCodec(rawValue: userVideoCodecSetting) ?? presetValue
+    }
+
+    /// The photo dynamic range setting persisted in the app.
+    static var photoDynamicRange: Camera2DynamicRange {
+        let presetValue = CameraPreset.photoDynamicRange
+        guard let userDynamicRangeSetting = Defaults.photoDynamicRangeSetting else {
+            // Set, if available, the current done's value to prevent overwriting his choice on an previous app version.
+            // If no value is avalable apply the preset value.
+            let currentValue = Services.hub.currentDroneHolder.drone.currentCamera?.config[Camera2Params.photoDynamicRange]?.value
+            let value = currentValue ?? presetValue
+            Defaults.photoDynamicRangeSetting = value.rawValue
+            return value
+        }
+        return Camera2DynamicRange(rawValue: userDynamicRangeSetting) ?? presetValue
+    }
+
+    /// The video dynamic range setting persisted in the app.
+    static var videoRecordingDynamicRange: Camera2DynamicRange {
+        let presetValue = CameraPreset.videoDynamicRange
+        guard let userDynamicRangeSetting = Defaults.videoDynamicRangeSetting else {
+            // Set, if available, the current done's value to prevent overwriting his choice on an previous app version.
+            // If no value is avalable apply the preset value.
+            let currentValue = Services.hub.currentDroneHolder.drone.currentCamera?.config[Camera2Params.videoRecordingDynamicRange]?.value
+            let value = currentValue ?? presetValue
+            Defaults.videoDynamicRangeSetting = value.rawValue
+            return value
+        }
+        return Camera2DynamicRange(rawValue: userDynamicRangeSetting) ?? presetValue
     }
 }
 

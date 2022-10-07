@@ -31,7 +31,7 @@ import UIKit
 import Combine
 
 ///  Displays buttons with drone informations (calibration state, firmware version, etc).
-final class DroneDetailsButtonsViewController: UIViewController {
+final class DroneDetailsButtonsViewController: UIViewController, DroneDetailsMapViewProtocol {
     // MARK: - Outlets
     @IBOutlet private weak var mapButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var mapContainerView: UIView!
@@ -69,13 +69,17 @@ final class DroneDetailsButtonsViewController: UIViewController {
         bindToViewModel()
     }
 
+    // MARK: - Delegate
+    func dismissScreen() {
+        initMap()
+    }
 }
 
 // MARK: - Actions
 private extension DroneDetailsButtonsViewController {
     @IBAction func mapButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.map)
-        self.coordinator?.startMap()
+        self.coordinator?.startMap(delegate: self)
     }
 
     @IBAction func calibrationButtonTouchedUpInside(_ sender: Any) {
@@ -85,7 +89,7 @@ private extension DroneDetailsButtonsViewController {
 
     @IBAction func firmwareUpdateButtonTouchedUpInside(_ sender: Any) {
         logEvent(with: LogEvent.LogKeyDroneDetailsButtons.firmwareUpdate)
-        self.coordinator?.startFimwareAndAirSdkMissionsUpdate()
+        self.coordinator?.startFirmwareAndAirSdkMissionsUpdate()
     }
 
     @IBAction func cellularAccessButtonTouchedUpInside(_ sender: Any) {
@@ -104,14 +108,22 @@ private extension DroneDetailsButtonsViewController {
 
     /// Init map view controller.
     func initMap() {
-        let controller = MapViewController.instantiate(mapMode: .mapOnly)
-        addChild(controller)
-        mapViewController = controller
-        if let mapView = mapViewController?.view {
+        if mapViewController == nil {
+            let controller = MapViewController.instantiate(mapMode: .mapOnly)
+            addChild(controller)
+            mapViewController = controller
+        } else {
+            // forcing view will appear to refresh sceneView singleton.
+            mapViewController?.viewWillAppear(true)
+            mapViewController?.viewDidAppear(true)
+        }
+        guard let mapViewController = mapViewController else { return }
+
+        if let mapView = mapViewController.view {
             mapContainerView.addWithConstraints(subview: mapView)
         }
         mapContainerView.applyCornerRadius(Style.largeCornerRadius)
-        mapViewController?.didMove(toParent: self)
+        mapViewController.didMove(toParent: self)
     }
 
     /// Sets up initial view display.
@@ -174,10 +186,10 @@ private extension DroneDetailsButtonsViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$connectionState
-            .combineLatest(viewModel.$lastKnownPosition, viewModel.$mapThumbnail)
-            .sink { [unowned self] (connectionState, lastKnownPosition, mapThumbnail) in
-                let displayMap = connectionState == .connected && lastKnownPosition != nil
+        viewModel.$lastKnownPosition
+            .combineLatest(viewModel.$mapThumbnail)
+            .sink { [unowned self] (lastKnownPosition, mapThumbnail) in
+                let displayMap = lastKnownPosition != nil
                 mapContainerView.isHidden = !displayMap
                 mapButtonView.model?.mainImage = displayMap ? nil : mapThumbnail
             }

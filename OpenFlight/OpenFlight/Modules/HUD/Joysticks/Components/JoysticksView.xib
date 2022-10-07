@@ -22,10 +22,16 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ovP-YN-sQg" userLabel="LeftZone" customClass="JoystickView" customModule="OpenFlight" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="187.5" height="667"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    <accessibility key="accessibilityConfiguration" identifier="LeftJoystick">
+                        <bool key="isElement" value="YES"/>
+                    </accessibility>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fBL-38-Etd" userLabel="RightZone" customClass="JoystickView" customModule="OpenFlight" customModuleProvider="target">
                     <rect key="frame" x="187.5" y="0.0" width="187.5" height="667"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    <accessibility key="accessibilityConfiguration" identifier="RightJoystick">
+                        <bool key="isElement" value="YES"/>
+                    </accessibility>
                 </view>
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>

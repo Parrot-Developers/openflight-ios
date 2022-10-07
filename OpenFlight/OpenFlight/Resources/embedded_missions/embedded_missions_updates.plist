@@ -4,21 +4,21 @@
 <array>
 	<dict>
 		<key>embeddedPath</key>
-		<string>embedded_missions/com.parrot.missions.samples.hello_7.3.0.tar.gz</string>
+		<string>embedded_missions/com.parrot.missions.samples.hello_7.4.0.tar.gz</string>
 		<key>maxTargetVersion</key>
-		<string>7.3.99</string>
+		<string>7.4.99</string>
 		<key>md5</key>
-		<string>9314c5f27ac851f699b793138a78ab5c</string>
+		<string>ced8fa25caa14557d4b070c30b28fad5</string>
 		<key>minTargetVersion</key>
-		<string>7.3.0-rc15</string>
+		<string>7.4.0-rc6</string>
 		<key>name</key>
 		<string>Hello mission</string>
 		<key>size</key>
-		<integer>46257</integer>
+		<integer>46268</integer>
 		<key>uid</key>
 		<string>com.parrot.missions.samples.hello</string>
 		<key>version</key>
-		<string>7.3.0</string>
+		<string>7.4.0</string>
 	</dict>
 </array>
 </plist>

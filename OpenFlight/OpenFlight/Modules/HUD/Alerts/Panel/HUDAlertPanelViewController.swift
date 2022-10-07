@@ -217,7 +217,7 @@ extension HUDAlertPanelViewController: StopViewDelegate {
 
 // MARK: - HUDAlertPanelActionButtonDelegate
 extension HUDAlertPanelViewController: HUDAlertPanelActionButtonDelegate {
-    func startAction() {
-        alertViewModel.startAction()
+    func progressDidFinish() {
+        alertViewModel.progressDidFinish()
     }
 }

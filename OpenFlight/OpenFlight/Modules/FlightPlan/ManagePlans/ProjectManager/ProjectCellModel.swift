@@ -67,6 +67,6 @@ class ProjectCellModel {
             projectTypeIcon = nil
         }
 
-        hasExecutions =  !projectManager.executedFlightPlans(for: project).isEmpty
+        hasExecutions = project.isProjectExecuted
     }
 }

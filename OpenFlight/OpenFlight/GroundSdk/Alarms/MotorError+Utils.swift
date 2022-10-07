@@ -44,20 +44,4 @@ extension MotorError {
             return nil
         }
     }
-
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
-    /// Returns corresponding error for motor error.
-    var error: HUDAlertType? {
-        switch self {
-        case .batteryVoltage, .lipocells:
-            return HUDBannerCriticalAlertType.motorCutoutPowerSupply
-        case .temperature:
-            return HUDBannerCriticalAlertType.motorCutoutTemperature
-        case .mosfet, .securityMode, .stalled, .other:
-            return HUDBannerCriticalAlertType.motorCutout
-        default:
-            return nil
-        }
-    }
 }

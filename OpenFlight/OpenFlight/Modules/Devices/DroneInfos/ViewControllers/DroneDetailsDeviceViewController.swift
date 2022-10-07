@@ -57,6 +57,7 @@ final class DroneDetailsDeviceViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
         bindToViewModel()
     }
 
@@ -71,6 +72,11 @@ final class DroneDetailsDeviceViewController: UIViewController {
 
 // MARK: - Private Funcs
 private extension DroneDetailsDeviceViewController {
+    func setupUI() {
+        batteryLabel.makeUp(with: .current, color: .defaultTextColor)
+        nbSatelliteLabel.makeUp(with: .current, color: .defaultTextColor)
+    }
+
     /// Binds the UI element to their counterpart in the view model
     ///
     /// If a value is updated in the view model the UI will be updated too automaticaly
@@ -95,6 +101,7 @@ private extension DroneDetailsDeviceViewController {
         droneInfoViewModel.$batteryLevel
             .sink { [unowned self] batteryLevel in
                 batteryLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryLevel.currentValue)
+                batteryImageView.image = batteryLevel.batteryImage
             }
             .store(in: &cancellables)
     }

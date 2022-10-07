@@ -193,6 +193,17 @@ extension FlightExecutionDetailsStatusCell {
             }
             .store(in: &cancellables)
 
+        // Listen to action button isEnabled state.
+        viewModel.$isActionButtonEnabled
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                guard let self = self else { return }
+                // Update action button opacity according to its isEnabled state.
+                // Tap event is handled in tapGestureSubscriber.
+                self.actionButton.alphaWithEnabledState(isEnabled ?? true)
+            }
+            .store(in: &cancellables)
+
         viewModel.$actionButtonProgress
             .compactMap { $0 }
             .sink { [weak self] progress in
@@ -348,7 +359,7 @@ extension FlightExecutionDetailsStatusCell {
         if let action = action {
             tapGestureSubscriber = actionButton.tapGesturePublisher
                 .sink { [weak self] _ in
-                    guard let self = self else { return }
+                    guard let self = self, self.viewModel?.isActionButtonEnabled ?? true else { return }
                     action(self.viewModel?.coordinator)
                 }
         }

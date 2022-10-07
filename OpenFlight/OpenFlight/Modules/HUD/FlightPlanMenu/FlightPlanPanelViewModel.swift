@@ -175,12 +175,14 @@ final class FlightPlanPanelViewModel {
 
     public func showStream() {
         splitControls?.forceStream = true
+        splitControls?.streamViewController?.doNotPauseStreamOnDisappear = true
         splitControls?.displayMapOr3DasChild()
         splitControls?.updateCenterMapButtonStatus()
     }
 
     public func showMap() {
         splitControls?.forceStream = false
+        splitControls?.streamViewController?.doNotPauseStreamOnDisappear = true
         splitControls?.displayMapOr3DasChild()
         splitControls?.updateCenterMapButtonStatus()
     }
@@ -298,6 +300,8 @@ private extension FlightPlanPanelViewModel {
             case let .playing(_, _, rth) where rth:
                 if viewState == .rth { return }
                 viewState = .rth
+            case .rth:
+                viewState = .rth
             case .paused:
                 viewState = .paused
             default:
@@ -361,7 +365,7 @@ private extension FlightPlanPanelViewModel {
         // Ensure needed conditions are meet:
         //   • FP running state machine: `.unavailable`
         //   • Unavailability reason: `.pilotingItfUnavailable`
-        guard case .paused(_, .unavailable(.pilotingItfUnavailable(let reasons))) = runState
+        guard case .paused(_, _, .unavailable(.pilotingItfUnavailable(let reasons))) = runState
         else { return Set() }
         return reasons
     }
@@ -461,7 +465,7 @@ private extension FlightPlanPanelViewModel {
     func getEffectiveProgress(_ progress: Double, _ distance: Double) -> Double {
         if distance > 0 && progress < 0.01 {
             return 0.01
-        } else if progress >= 0.99 {
+        } else if progress >= 0.99 && progress < 1.0 {
             return 0.99
         } else {
             return progress
@@ -527,7 +531,7 @@ private extension FlightPlanPanelViewModel {
             buttonInfo = ButtonsInformation(startButtonState: .canPlay, startEnabled: false)
         case .flying:
             switch state.run {
-            case .paused(_, let startAvailability):
+            case .paused(_, _, let startAvailability):
                 var areEnabled = false
                 if case .available = startAvailability { areEnabled = true }
                 buttonInfo = ButtonsInformation(startButtonState: .paused, startEnabled: areEnabled)

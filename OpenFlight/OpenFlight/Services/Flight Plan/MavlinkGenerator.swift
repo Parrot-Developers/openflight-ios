@@ -153,9 +153,8 @@ private extension MavlinkGeneratorImpl {
         var currentSpeed: Double?
         var currentTilt: Double?
         var currentViewMode: MavlinkStandard.SetViewModeCommand.Mode?
-        var lastRoiCommand: MavlinkStandard.SetRoiLocationCommand?
+        var lastPoiCommand: MavlinkStandard.SetRoiLocationCommand?
         var didAddStartCaptureCommand = false
-        var shouldAddRoi = false
 
         // Insert first speed command based on first waypoint speed.
         if let firstSpeedCommand = flightPlan.dataSetting?.wayPoints.first?.speedMavlinkCommand {
@@ -176,31 +175,9 @@ private extension MavlinkGeneratorImpl {
                 currentSpeed = speed
             }
 
-            // Point of interest & View mode.
+            // POI & View mode affect the behavior of the trajectory so they are treated first.
             let viewMode = $0.viewModeCommand.mode
-            if $0.poiCommand != lastRoiCommand {
-                // Request ROI, but only add it on second point
-                // to preserve the previous view mode during translation.
-                // This ensures that the POI only starts on the requested waypoint.
-                shouldAddRoi = $0.poiCommand != nil
-
-                if lastRoiCommand != nil {
-                    // Switching to no point of interest.
-                    // Even between POIs, we want the ViewMode to be respected between them.
-                    commands.append(MavlinkStandard.SetRoiNoneCommand())
-                    commands.append($0.viewModeCommand)
-                    currentViewMode = viewMode
-                }
-
-                lastRoiCommand = $0.poiCommand
-                currentTilt = nil   // Tilt is not managed while on poi
-            } else if $0.poiCommand != nil {
-                // If poiCommand is still active and the same try to add the poiCommand
-                if let poiCommand = $0.poiCommand, shouldAddRoi {
-                    commands.append(poiCommand)
-                    shouldAddRoi = false
-                }
-            } else if viewMode != currentViewMode {
+            if viewMode != currentViewMode {
                 // Update view mode if needed when no point of interest is set.
                 commands.append($0.viewModeCommand)
                 currentViewMode = $0.viewModeCommand.mode
@@ -209,11 +186,28 @@ private extension MavlinkGeneratorImpl {
             // Insert navigate to waypoint command.
             commands.append($0.wayPointMavlinkCommand)
 
+            // POI changes must be added after waypoint has been reached.
+            // This preserves the previous view mode during translation and
+            // ensures that the POI only starts on the requested waypoint.
+            if $0.poiCommand != lastPoiCommand {
+                if let poiCommand = $0.poiCommand {
+                    commands.append(poiCommand)
+                    currentTilt = nil   // Tilt is not managed while on poi
+                    lastPoiCommand = $0.poiCommand
+                } else if lastPoiCommand != nil, $0.poiCommand == nil {
+                    // Switching to no point of interest.
+                    commands.append(MavlinkStandard.SetRoiNoneCommand())
+                    commands.append($0.viewModeCommand)
+                    currentViewMode = viewMode
+                    lastPoiCommand = $0.poiCommand
+                }
+            }
+
             $0.actions?.forEach {
                 // Only send tilt command if new tilt is different from current.
                 // Send tilt only for the first element of POI (before enabling POI)
                 guard $0.type == .tilt &&
-                        (lastRoiCommand == nil || shouldAddRoi) &&
+                        lastPoiCommand == nil &&
                         $0.angle != currentTilt else {
                     return
                 }
@@ -227,7 +221,10 @@ private extension MavlinkGeneratorImpl {
             }
 
             // Start capture if needed.
+            // A single waypoint mavlink does not require a media capture
             if !didAddStartCaptureCommand,
+               let wptCount = flightPlan.dataSetting?.wayPoints.count,
+               wptCount > 1,
                let captureCommand = flightPlan.dataSetting?.startCaptureCommand {
                 // Add delay command before starting capture.
                 let delay = Action.delayAction(delay: 0.0)

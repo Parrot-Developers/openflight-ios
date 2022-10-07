@@ -32,7 +32,7 @@ import ArcGIS
 /// Utility extension for `FlightPlanGraphicsOverlay` usage with Touch and Fly.
 extension FlightPlanGraphicsOverlay {
     // MARK: - Internal Properties
-    
+
     /// Returns Touch and Fly's waypoint graphic, if any.
     var touchAndFlyWayPointGraphic: FlightPlanWayPointGraphic? {
         return self.graphics

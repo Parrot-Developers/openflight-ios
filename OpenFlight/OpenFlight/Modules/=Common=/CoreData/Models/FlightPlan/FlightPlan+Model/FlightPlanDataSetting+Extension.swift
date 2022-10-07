@@ -261,6 +261,46 @@ extension FlightPlanDataSetting {
         self.disconnectionRth = disconnectionRth
     }
 
+    /// Sets up the use of custom return to home settings.
+    ///
+    /// - Parameters:
+    ///    - customRth: whether drone should use custom return to home settings
+    public mutating func setCustomRth(_ customRth: Bool) {
+        self.customRth = customRth
+    }
+
+    /// Sets up return to home return target.
+    ///
+    /// - Parameters:
+    ///    - rthReturnTarget: whether drone should return to take-off position or pilot position
+    public mutating func setRthReturnTarget(_ rthReturnTarget: Bool) {
+        self.rthReturnTarget = rthReturnTarget
+    }
+
+    /// Sets up return to home altitude.
+    ///
+    /// - Parameters:
+    ///    - rthHeight: return to home altitude
+    public mutating func setRthHeigh(_ rthHeight: Int) {
+        self.rthHeight = rthHeight
+    }
+
+    /// Sets up return to home end behaviour.
+    ///
+    /// - Parameters:
+    ///    - rthEndBehaviour: whether drone should do an hovering or a landing at the end of the return to home
+    public mutating func setRthEndBehaviour(_ rthEndBehaviour: Bool) {
+        self.rthEndBehaviour = rthEndBehaviour
+    }
+
+    /// Sets up return to home hovering altitude.
+    ///
+    /// - Parameters:
+    ///    - rthHoveringHeight: hovering altitude
+    public mutating func setRthHoveringHeight(_ rthHoveringHeight: Int) {
+        self.rthHoveringHeight = rthHoveringHeight
+    }
+
     /// Sets up initial relations between Flight Plan's objects.
     /// Should be called after creation.
     func setRelations() {

@@ -43,6 +43,10 @@ public protocol FlightPlanFilesManager {
     /// - Parameter flightPlan: flight plan
     func writeFile(of flightPlan: FlightPlanModel) throws
 
+    /// Writes mavlink file to export folder
+    /// - Parameter flightPlan: flight plan
+    func exportFile(of flightPlan: FlightPlanModel) throws
+
     /// Delete the mavlink file of the FP if it exists
     /// - Parameter flightPlan: flight plan
     func deleteMavlink(of flightPlan: FlightPlanModel)
@@ -63,6 +67,12 @@ open class FlightPlanFilesManagerImpl {
     private enum Constants {
         static let mavlinkExtension: String = "mavlink"
         static let tmpMavlinksFolderUrl: URL = FileManager.default.temporaryDirectory.appendingPathComponent("tmp-mavlinks", isDirectory: true)
+        static var exportedMavlinksFolderUrl: URL {
+            let fileManager = FileManager.default
+            let documentPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+            return documentPath.appendingPathComponent("mavlink")
+        }
+
     }
 
     init() {
@@ -75,6 +85,16 @@ open class FlightPlanFilesManagerImpl {
                 try FileManager.default.createDirectory(at: Constants.tmpMavlinksFolderUrl, withIntermediateDirectories: true, attributes: nil)
             } catch let error {
                 ULog.i(.tag, "Failed to create temporary mavlink files directory: " + error.localizedDescription)
+            }
+        }
+    }
+
+    private func createExportedMavlinksDirectory() {
+        if !FileManager.default.fileExists(atPath: Constants.exportedMavlinksFolderUrl.path) {
+            do {
+                try FileManager.default.createDirectory(at: Constants.exportedMavlinksFolderUrl, withIntermediateDirectories: true, attributes: nil)
+            } catch let error {
+                ULog.i(.tag, "Failed to create exported mavlink files directory: " + error.localizedDescription)
             }
         }
     }
@@ -96,12 +116,30 @@ extension FlightPlanFilesManagerImpl: FlightPlanFilesManager {
             .appendingPathExtension(Constants.mavlinkExtension)
     }
 
+    public func exportUrl(flightPlan: FlightPlanModel) -> URL {
+        Constants.exportedMavlinksFolderUrl
+            .appendingPathComponent(flightPlan.customTitle)
+            .appendingPathExtension(Constants.mavlinkExtension)
+    }
+
     public func isMavlinkUrl(_ url: URL?) -> Bool {
         url?.pathExtension == Constants.mavlinkExtension
     }
 
     public func writeFile(of flightPlan: FlightPlanModel) throws {
         let destination = defaultUrl(flightPlan: flightPlan)
+        if FileManager.default.fileExists(atPath: destination.path) {
+            try FileManager.default.removeItem(at: destination)
+        }
+        try flightPlan.dataSetting?.mavlinkDataFile?.write(to: destination)
+    }
+
+    public func exportFile(of flightPlan: FlightPlanModel) throws {
+        let destination = exportUrl(flightPlan: flightPlan)
+        if !FileManager.default.fileExists(atPath: Constants.exportedMavlinksFolderUrl.path) {
+            createExportedMavlinksDirectory()
+        }
+
         if FileManager.default.fileExists(atPath: destination.path) {
             try FileManager.default.removeItem(at: destination)
         }

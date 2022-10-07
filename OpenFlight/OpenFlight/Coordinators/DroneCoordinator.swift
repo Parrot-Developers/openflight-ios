@@ -28,15 +28,15 @@
 //    SUCH DAMAGE.
 
 /// Coordinator for drone details screens.
-public final class DroneCoordinator: Coordinator {
+open class DroneCoordinator: Coordinator {
     // MARK: - Public Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public weak var parentCoordinator: Coordinator?
 
-    private let services: ServiceHub
+    public let services: ServiceHub
 
-    init(services: ServiceHub) {
+    public init(services: ServiceHub) {
         self.services = services
     }
 
@@ -57,17 +57,9 @@ public final class DroneCoordinator: Coordinator {
         navigationController?.isNavigationBarHidden = true
         navigationController?.modalPresentationStyle = .fullScreen
     }
-}
-
-// MARK: - Drone Details Navigation
-extension DroneCoordinator {
-    /// Starts map (last known position).
-    func startMap() {
-        presentModal(viewController: DroneDetailsMapViewController.instantiate(coordinator: self))
-    }
 
     /// Starts calibration.
-    func startCalibration() {
+    open func startCalibration() {
         let droneCalibrationCoordinator = DroneCalibrationCoordinator(services: services)
         droneCalibrationCoordinator.parentCoordinator = self
         droneCalibrationCoordinator.delegate = self
@@ -77,16 +69,29 @@ extension DroneCoordinator {
     }
 
     /// Displays cellular information screen.
-    func displayDroneDetailsCellular() {
+    open func displayDroneDetailsCellular() {
         let viewModel = DroneDetailCellularViewModel(coordinator: self,
                                                      currentDroneHolder: services.currentDroneHolder,
                                                      cellularPairingService: services.drone.cellularPairingService,
                                                      connectedRemoteControlHolder: services.connectedRemoteControlHolder,
                                                      connectedDroneHolder: services.connectedDroneHolder,
                                                      networkService: services.systemServices.networkService,
-                                                     cellularService: services.drone.cellularService)
+                                                     cellularService: services.drone.cellularService,
+                                                     cellularSessionService: services.drone.cellularSessionService)
         let viewController = DroneDetailsCellularViewController.instantiate(viewModel: viewModel)
         presentModal(viewController: viewController)
+    }
+
+    /// Starts cellular support screen.
+    open func startCellularSupport() {}
+}
+
+// MARK: - Drone Details Navigation
+extension DroneCoordinator {
+    /// Starts map (last known position).
+    func startMap(delegate: DroneDetailsMapViewProtocol) {
+        let droneDetailsMapViewController = DroneDetailsMapViewController.instantiate(coordinator: self, delegate: delegate)
+        presentModal(viewController: droneDetailsMapViewController)
     }
 
     /// Displays reboot alert.
@@ -139,7 +144,7 @@ extension DroneCoordinator {
     }
 
     /// Starts the Firmware and AirSdk Missions updates process.
-    func startFimwareAndAirSdkMissionsUpdate() {
+    func startFirmwareAndAirSdkMissionsUpdate() {
         let coordinator = DroneFirmwaresCoordinator()
         coordinator.parentCoordinator = self
         coordinator.start()
@@ -150,8 +155,8 @@ extension DroneCoordinator {
 
 // MARK: - Delegate
 extension DroneCoordinator: DroneCalibrationCoordinatorDelegate {
-    func firmwareUpdateRequired() {
+    public func firmwareUpdateRequired() {
         dismissChildCoordinator()
-        startFimwareAndAirSdkMissionsUpdate()
+        startFirmwareAndAirSdkMissionsUpdate()
     }
 }

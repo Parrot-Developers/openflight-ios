@@ -69,19 +69,12 @@ extension Gimbal {
     /// Whether gimbal has errors.
     var hasErrors: Bool { !currentErrors.isEmpty }
 
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
-    /// Returns current alerts for gimbal.
-    var currentAlerts: [HUDAlertType] {
-        return currentErrors.isEmpty
-            ? []
-            : [HUDBannerCriticalAlertType.cameraError]
-    }
-
     /// Image error according to gimbal and front stereo calibration state.
     var errorImage: UIImage {
         return currentErrors.isEmpty
-        ? Asset.Drone.icGimbalOk.image
-        : Asset.Drone.icGimbalError.image
+            ? Asset.Drone.icGimbalOk.image
+            : currentErrors.contains(.critical)
+                ? Asset.Drone.icGimbalError.image
+                : Asset.Drone.icGimbalWarning.image
     }
 }

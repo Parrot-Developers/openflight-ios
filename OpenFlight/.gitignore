@@ -36,3 +36,7 @@ Reports
 # CocoaPods
 Pods/
 
+# Protobuf
+/OpenFlight/Resources/Protobuf/*.proto
+/OpenFlight/Resources/Protobuf/*.pb.swift
+/OpenFlight/Resources/Protobuf/parrot

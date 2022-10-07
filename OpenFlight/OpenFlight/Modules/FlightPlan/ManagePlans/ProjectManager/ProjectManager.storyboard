@@ -118,7 +118,7 @@
                                                                         <color key="tintColor" name="default_text_color"/>
                                                                         <color key="textColor" name="default_text_color"/>
                                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                                                        <textInputTraits key="textInputTraits"/>
+                                                                        <textInputTraits key="textInputTraits" keyboardType="alphabet"/>
                                                                         <userDefinedRuntimeAttributes>
                                                                             <userDefinedRuntimeAttribute type="image" keyPath="rightImage" value="iconEdit"/>
                                                                             <userDefinedRuntimeAttribute type="color" keyPath="rightColor">

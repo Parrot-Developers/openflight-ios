@@ -43,6 +43,9 @@ public protocol FlightPlanEditionService {
     /// Current flight plan publisher
     var currentFlightPlanPublisher: AnyPublisher<FlightPlanModel?, Never> { get }
 
+    /// Publisher telling when a flight plan just setted up.
+    var flightPlanSettedUpPublisher: AnyPublisher<FlightPlanModel, Never> { get }
+
     /// Current flight plan
     var currentFlightPlanValue: FlightPlanModel? { get }
 
@@ -216,6 +219,9 @@ public class FlightPlanEditionServiceImpl {
     private var cloudUpdatedFlightPlan: FlightPlanModel?
 
     private var currentFlightPlanSubject = CurrentValueSubject<FlightPlanModel?, Never>(nil)
+
+    private var flightPlanSettedUpSubject = PassthroughSubject<FlightPlanModel, Never>()
+
     private var currentFlightPlan: FlightPlanModel? {
         get {
             currentFlightPlanSubject.value
@@ -267,6 +273,11 @@ extension FlightPlanEditionServiceImpl {
         currentFlightPlanSubject.eraseToAnyPublisher()
     }
 
+    /// Publisher telling when a flight plan just setted up.
+    public var flightPlanSettedUpPublisher: AnyPublisher<FlightPlanModel, Never> {
+        flightPlanSettedUpSubject.eraseToAnyPublisher()
+    }
+
     /// - Parameters:
     ///    - mapPoint: location of the new waypoint
     ///    - index: index at which waypoint should be inserted
@@ -278,6 +289,7 @@ extension FlightPlanEditionServiceImpl {
               0 < index, index < dataSetting.wayPoints.endIndex,
               let previousWayPoint = dataSetting.wayPoints.elementAt(index: index - 1),
               let nextWayPoint = dataSetting.wayPoints.elementAt(index: index) else { return nil }
+        ULog.d(.tag, "inserting WP at \(index)")
 
         let tilt = (previousWayPoint.tilt + nextWayPoint.tilt) / 2.0
 
@@ -309,17 +321,20 @@ extension FlightPlanEditionServiceImpl {
     }
 
     public func setupFlightPlan(_ flightPlan: FlightPlanModel?) {
-        // Reset the current FP.
-        // It's especially needed when we setup the same project than the previous one (e.g. after an execution).
-        resetFlightPlan()
+        ULog.d(.tag, "setup flight plan to '\(flightPlan?.uuid ?? "")'")
         // Set the new FP.
         currentFlightPlan = flightPlan
+        // Inform listeners that a flight plan has been setted up in the edition service.
+        if let flightPlan = flightPlan {
+            flightPlanSettedUpSubject.send(flightPlan)
+        }
     }
 
     @discardableResult
     public func addWaypoint(_ wayPoint: WayPoint) -> Int {
         guard var flightplan = currentFlightPlan,
               var dataSetting = flightplan.dataSetting else { return 0 }
+        ULog.d(.tag, "adding new WP")
         let previous = dataSetting.wayPoints.last
         dataSetting.wayPoints.append(wayPoint)
         wayPoint.previousWayPoint = previous
@@ -335,6 +350,7 @@ extension FlightPlanEditionServiceImpl {
         guard var flightplan = currentFlightPlan,
               var dataSetting = flightplan.dataSetting,
               index < dataSetting.wayPoints.endIndex else { return nil }
+        ULog.d(.tag, "removing WP at \(index)")
         let wayPoint = dataSetting.wayPoints.remove(at: index)
         // Update previous and next waypoint yaw.
         let previous = wayPoint.previousWayPoint
@@ -353,6 +369,7 @@ extension FlightPlanEditionServiceImpl {
               var dataSetting = flightplan.dataSetting else {
                   return 0
               }
+        ULog.d(.tag, "adding PoiPoint")
         dataSetting.pois.append(poiPoint)
         flightplan.dataSetting = dataSetting
         currentFlightPlan = flightplan
@@ -366,6 +383,7 @@ extension FlightPlanEditionServiceImpl {
               index < dataSetting.pois.endIndex else {
                   return nil
               }
+        ULog.d(.tag, "removing PoiPoint at \(index)")
 
         dataSetting.wayPoints.forEach {
             guard let poiIndex = $0.poiIndex else { return }
@@ -397,6 +415,7 @@ extension FlightPlanEditionServiceImpl {
               var dataSetting = flightPlan.dataSetting else {
                   return
               }
+        ULog.d(.tag, "updating capture settings '\(type.key)' to '\(value)'")
         // Init captureSettings if needed.
         if dataSetting.captureSettings == nil {
             dataSetting.captureSettings = [:]
@@ -412,6 +431,7 @@ extension FlightPlanEditionServiceImpl {
     /// - Parameters:
     ///     - points: Polygon points
     public func updatePolygonPoints(points: [AGSPoint]) {
+        ULog.d(.tag, "updating polygon points")
         let polygonPoints: [PolygonPoint] = points.map({
             return PolygonPoint(coordinate: $0.toCLLocationCoordinate2D())
         })
@@ -433,6 +453,8 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
         guard var flightPlan = currentFlightPlan,
               flightPlan.type != type,
               var dataSetting = flightPlan.dataSetting else { return }
+
+        ULog.d(.tag, "updating flight plan type to '\(type)'")
 
         flightPlan.type = type
         if resetPolygonPoints {
@@ -457,6 +479,8 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     public func undo() {
         guard canUndo() else { return }
 
+        ULog.d(.tag, "undo")
+
         // Dump last.
         popUndoStack()
 
@@ -473,11 +497,13 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     public func popUndoStack() {
         guard !undoStack.isEmpty else { return }
 
+        ULog.d(.tag, "popping undo stack")
         undoStack.removeLast()
     }
 
     /// Reset undo stack.
     public func resetUndoStack() {
+        ULog.d(.tag, "reseting undo stack")
         resetUndoStack(to: currentFlightPlan?.dataSetting)
     }
 
@@ -487,6 +513,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     }
 
     public func appendCurrentStateToUndoStack() {
+        ULog.d(.tag, "appending current state to undo stack")
         appendUndoStack(with: currentFlightPlan?.dataSetting)
     }
 
@@ -508,11 +535,13 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     ///     - dataSetting: data setting to update.
     public func updateGlobalSettings(with dataSetting: FlightPlanDataSetting?) {
         guard let dataSetting = dataSetting?.toJSONString() else { return }
+        ULog.d(.tag, "updating global settings with undo stack tracking")
         popUndoStack()
         undoStack.append(dataSetting)
     }
 
     private func updateThumbnail(flightPlan: FlightPlanModel, completion: @escaping (ThumbnailModel) -> Void) {
+        ULog.d(.tag, "updating flight plan '\(flightPlan.uuid)' thumbnail requested")
         requester.requestThumbnail(flightPlan: flightPlan,
                                    thumbnailSize: FlightPlanThumbnailRequesterConstants.thumbnailSize) { [unowned self] thumbnailImage in
             let uuid = flightPlan.thumbnailUuid ?? UUID().uuidString
@@ -520,6 +549,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
                                            uuid: uuid,
                                            flightUuid: nil,
                                            thumbnailImage: thumbnailImage)
+            ULog.d(.tag, "flight plan '\(flightPlan.uuid)' thumbnail finished")
             completion(thumbnail)
         }
     }
@@ -531,6 +561,8 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     public func updateSettings(_ settings: [FlightPlanLightSetting]) {
         guard var flightPlan = currentFlightPlan,
         var dataSetting = flightPlan.dataSetting else { return }
+
+        ULog.d(.tag, "updating light settings")
 
         let diff = zip(dataSetting.settings, settings)
             .filter { $0.0 != $0.1 }
@@ -545,6 +577,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     public func updateDataSetting(_ setting: FlightPlanDataSetting?) {
         if let dataSetting = setting {
+            ULog.d(.tag, "updating global settings without undo stack tracking")
             currentFlightPlan?.dataSetting = dataSetting
         }
     }
@@ -554,6 +587,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
               let dataSetting = flightPlan.dataSetting else {
                   return
               }
+        ULog.d(.tag, "clearing current flight plan")
         flightPlan.dataSetting = cleared(flightPlanDataSetting: dataSetting)
         currentFlightPlan = flightPlan
     }
@@ -570,6 +604,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     public func resetFlightPlan() {
         if currentFlightPlan != nil {
+            ULog.d(.tag, "reseting current flight plan")
             currentFlightPlan = nil
         }
     }
@@ -577,6 +612,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     public func endEdition(completion: @escaping () -> Void) {
         guard var flightPlan = currentFlightPlan,
         var dataSetting = flightPlan.dataSetting else { return }
+        ULog.d(.tag, "ending edition of flight plan '\(flightPlan.uuid)'")
         flightPlan.lastUpdate = Date()
 
         // If we received some Cloud state updates from the server (e.g. cloudID), apply them to the current FP.
@@ -646,6 +682,8 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     public func rename(_ flightPlan: FlightPlanModel, title: String) {
         if flightPlan.uuid == currentFlightPlan?.uuid {
+            ULog.d(.tag,
+                   "renaming flight plan from '\(currentFlightPlan?.customTitle ?? "")' to '\(title)'")
             currentFlightPlan?.customTitle = title
         }
     }
@@ -664,6 +702,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
               var dataSetting = flightPlan.dataSetting else {
                   return
               }
+        ULog.d(.tag, "updating flight plan (pgy) with mavlink data")
         dataSetting.disablePhotoSignature = disablePhotoSignatureSetting
         // update the GSD settings
         if let currentGsdSettingIndex = dataSetting.settings
@@ -695,6 +734,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     public func freeSettingDidChange(key: String, value: String) {
         guard var flightPlan = currentFlightPlan,
               var dataSetting = flightPlan.dataSetting else { return }
+        ULog.d(.tag, "changing free setting '\(key)' to '\(value)'")
         dataSetting.freeSettings[key] = value
         flightPlan.dataSetting = dataSetting
         currentFlightPlan = flightPlan
@@ -717,6 +757,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
 
     /// Update the `modifiedFlightPlan`.
     public func updateModifiedFlightPlan(with flightPlan: FlightPlanModel?) {
+        ULog.d(.tag, "updating modified flight plan")
         updateFlightPlan(&modifiedFlightPlan, with: flightPlan)
     }
 
@@ -732,15 +773,14 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
     ///    - updatedFlightPlan: The Flight Plan to copy.
     ///
     /// - Note:
-    ///     `newFlightPlan(basedOn:save:)` is used to prevent keeping the same reference of FP properties like `DataSettings`.
+    ///     `newFlightPlan(basedOn:)` is used to prevent keeping the same reference of FP properties like `DataSettings`.
     ///     `DataSettings` is a class, this means affecting FPb to FPa then modifying FPb data settings will modify FPa datasettings.
     private func updateFlightPlan(_ flightPlan: inout FlightPlanModel?, with updatedFlightPlan: FlightPlanModel?) {
         guard let updatedFlightPlan = updatedFlightPlan else {
             flightPlan = nil
             return
         }
-        flightPlan = flightPlanManager.newFlightPlan(basedOn: updatedFlightPlan,
-                                                     save: false)
+        flightPlan = flightPlanManager.newFlightPlan(basedOn: updatedFlightPlan)
     }
 
     /// Listen when a Flight Plan has been updated by a server response.

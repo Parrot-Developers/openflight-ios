@@ -93,5 +93,6 @@ private extension TelemetryItemView {
         itemImageView.image = model?.image
         alertBackgroundView.backgroundColor = model?.backgroundColor
         alertBackgroundView.layer.borderColor = model?.borderColor.cgColor
+        accessibilityValue = attributedString.string
     }
 }

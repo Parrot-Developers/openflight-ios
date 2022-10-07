@@ -29,43 +29,13 @@
 
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "drone+Rth")
+}
+
 /// Utility extension for `Drone` Return Home Piloting Interface.
 public extension Drone {
     // MARK: - Public Properties
-
-    /// Whether drone is force landing.
-    var isForceLanding: Bool {
-        guard let alarms = getInstrument(Instruments.alarms),
-              let flyingIndicators = getInstrument(Instruments.flyingIndicators) else {
-            return false
-        }
-
-        // Check temperature force landing.
-        let isDroneEmergencyLanding = flyingIndicators.state == .emergencyLanding
-        let isTemperatureCritical = alarms.level(.batteryTooHot) == .critical ||
-        alarms.level(.batteryTooCold) == .critical
-
-        if isDroneEmergencyLanding && isTemperatureCritical {
-            return true
-        }
-
-        // Check low battery force landing.
-        let isDroneFlying = flyingIndicators.state == .flying
-        let isAutolandingAlarmOn = alarms.level(.automaticLandingBatteryIssue) == .critical &&
-        alarms.automaticLandingDelay == 0
-
-        if (isDroneFlying || isDroneEmergencyLanding) && isAutolandingAlarmOn {
-            return true
-        }
-
-        // Check iced propeller force landing.
-        if alarms.level(.icingLevel) == .critical {
-            return true
-        }
-
-        // No active force landing.
-        return false
-    }
 
     /// Returns true if drone is Returning Home.
     var isReturningHome: Bool {
@@ -87,12 +57,38 @@ public extension Drone {
 
     /// Cancels RTH.
     @discardableResult
-    func cancelReturnHome() -> Bool? {
-        return getPilotingItf(PilotingItfs.returnHome)?.deactivate()
+    func cancelReturnHome() -> Bool {
+        guard let returnHome = getPilotingItf(PilotingItfs.returnHome) else {
+            ULog.e(.tag, "PilotingItfs.returnHome is nil")
+            return false
+        }
+        let deactivated = returnHome.deactivate()
+        ULog.i(.tag, "Rth piloting interface deactivated: \(deactivated)")
+        return deactivated
     }
 
     /// Cancels Auto trigger RTH.
     func cancelAutoTriggerReturnHome() {
         getPilotingItf(PilotingItfs.returnHome)?.cancelAutoTrigger()
+    }
+
+    /// Returns true if drone is in a force landing
+    ///
+    ///  - Parameters:
+    ///     - alarms: alarms intrument
+    ///     - flyingIndicators: flying indicators intrument
+    func isForceLanding(alarms: Alarms?, flyingIndicators: FlyingIndicators?) -> Bool {
+        guard let alarms = alarms, let flyingIndicators = flyingIndicators else { return false }
+
+        let isDroneEmergencyLanding = flyingIndicators.state == .emergencyLanding
+        let isDroneFlying = flyingIndicators.state == .flying
+
+        let isAutolandingAlarmOn = alarms.level(.automaticLandingBatteryIssue) == .critical
+        || alarms.level(.automaticLandingBatteryTooHot) == .critical
+        || alarms.level(.automaticLandingBatteryTooCold) == .critical
+        || alarms.level(.automaticLandingPropellerIcingIssue) == .critical
+        let isDelayElapsed = alarms.automaticLandingDelay == 0
+
+        return (isDroneFlying || isDroneEmergencyLanding) && isAutolandingAlarmOn && isDelayElapsed
     }
 }

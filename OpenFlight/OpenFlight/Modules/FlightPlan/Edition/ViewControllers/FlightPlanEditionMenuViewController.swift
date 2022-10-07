@@ -132,6 +132,8 @@ final class FlightPlanEditionMenuViewController: UIViewController {
                 switch category {
                 case .custom(let title):
                     return title.uppercased()
+                case .rth:
+                    return L10n.flightPlanSettingsRthTitle.uppercased()
                 default:
                     return L10n.flightPlanSettingsTitle.uppercased()
                 }
@@ -265,15 +267,28 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
         }
     }
 
+    func getEditableState(category: FlightPlanSettingCategory, customRth: Bool) -> Bool {
+        guard category == FlightPlanSettingCategory.rth else { return true }
+        return customRth
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let type = dataSource[indexPath.section]
         switch type {
         case .settings(let category):
             let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsMenuTableViewCell
+            let customRth = fpSettings?
+                .first(where: { $0.key == ClassicFlightPlanSettingType.customRth.key })?
+                .currentValue == 0
+            let isEditable = getEditableState(category: category, customRth: customRth)
             if let categorizedSettings = fpSettings?.filter({ $0.category == category }) {
                 let setting = categorizedSettings[indexPath.row]
-                let showArrow = indexPath.row == (categorizedSettings.count / 2)
-                cell.setup(setting: setting, arrowVisibility: showArrow ? .visible : .invisible)
+                cell.setup(setting: setting,
+                           index: indexPath.row,
+                           numberOfRows: tableView.numberOfRows(inSection: indexPath.section),
+                           isEditable: isEditable,
+                           inEditionMode: true,
+                           customRth: customRth)
             }
             return cell
         case .image:
@@ -310,6 +325,12 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
         let type = dataSource[indexPath.section]
         switch type {
         case .settings(let category):
+            // If the setting category is rth & the custom RTH is disabled
+            // do not show the settings.
+            if category == FlightPlanSettingCategory.rth {
+                let customRth = fpSettings?.first(where: { $0.key == ClassicFlightPlanSettingType.customRth.key })
+                guard customRth?.currentValue == 0 else { return }
+            }
             menuDelegate?.showSettings(category: category)
         case .image:
             menuDelegate?.showSettings(category: .image)

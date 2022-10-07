@@ -30,6 +30,7 @@
 import CoreLocation
 import Combine
 import GroundSdk
+import SdkCore
 
 private extension ULogTag {
     static let tag = ULogTag(name: "TouchAndFlyService")
@@ -121,6 +122,7 @@ public protocol TouchAndFlyService: AnyObject {
     var poi: CLLocationCoordinate2D? { get }
     var wayPointSpeed: Double { get }
     var altitude: Double? { get }
+    var targetAltitude: Double { get }
     var target: TouchAndFlyTarget { get }
     func setWayPoint(_ location: CLLocationCoordinate2D, altitude: Double?)
     func moveWayPoint(to location: CLLocationCoordinate2D, altitude: Double?)
@@ -131,7 +133,11 @@ public protocol TouchAndFlyService: AnyObject {
     func clear()
     func start()
     func stop()
-    func setLocation(point: CGPoint) -> CLLocation?
+    func setPoiLocation(point: CGPoint) -> CLLocation?
+    func setWaypointLocation(point: CGPoint) -> CLLocation?
+
+    func frameUpdate(mediaInfoHandle: UnsafeRawPointer?, metadataHandle: UnsafeRawPointer?)
+
 }
 
 class TouchAndFlyServiceImpl {
@@ -142,6 +148,7 @@ class TouchAndFlyServiceImpl {
         static let defaultYawRotationSpeed = 20.0
         static let defaultWayPointAltitude = 20.0
         static let defaultPoiAltitude = 0.0
+        static let defaultNewPointDistance: Float = 100.0
     }
 
     typealias PoiItfState = (blocker: TouchAndFlyBlocker?, inProgress: Bool)
@@ -160,7 +167,7 @@ class TouchAndFlyServiceImpl {
     private var userLocationRef: Ref<UserLocation>?
     private var mainCameraRef: Ref<MainCamera2>?
 
-    private var sink: StreamSink?
+    private var frameCount: Int = 0
     private let runningStateSubject = CurrentValueSubject<TouchAndFlyRunningState, Never>(.noTarget(droneConnected: false))
     private let wayPointSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
     private let poiSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
@@ -176,12 +183,13 @@ class TouchAndFlyServiceImpl {
         .autoconnect()
         .eraseToAnyPublisher()
 
-    private var frame: SdkCoreFrame?
     private var oldFlyingState: FlyingIndicatorsFlyingState?
     private var startWpOfPoiAfterTakeOff: Bool = false
 
     /// Whether drone is in flying (or waiting) state.
     private var isDroneFlyingOrWaiting: Bool?
+
+    private let lic = SdkCoreLic()
 
     init(connectedDroneHolder: ConnectedDroneHolder,
          locationsTracker: LocationsTracker,
@@ -208,6 +216,55 @@ class TouchAndFlyServiceImpl {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    func frameUpdate(mediaInfoHandle: UnsafeRawPointer?, metadataHandle: UnsafeRawPointer?) {
+        lic.update(mediaInfo: mediaInfoHandle, metadata: metadataHandle)
+
+        if (frameCount % 100) == 0 {
+            ULog.i(.tag, "Frame ready count \(frameCount)")
+        }
+        frameCount = frameCount > Int.max - 1 ? 0 : frameCount + 1
+
+        switch target {
+        case .none:
+            streamElementSubject.value = .none
+        case .poi(let location, let altitude):
+            let takeOffAltitudeDrone = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
+            let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
+            let newAltitude = altitude + (absoluteAltitudeDrone - takeOffAltitudeDrone)
+            let newLocation = CLLocation(coordinate: location,
+                                       altitude: newAltitude,
+                                       horizontalAccuracy: 0, verticalAccuracy: 0, timestamp: Date())
+
+            if let location = lic.position(from: newLocation), location.horizontalDistance > 3.0 {
+                if (frameCount % 30) == 0 {
+                    ULog.d(.tag, "frameReady poi \(newLocation.coordinate),alt:\(newLocation.altitude) -> \(location)")
+                }
+
+                streamElementSubject.value = .poi(point: CGPoint(x: location.x, y: location.y), altitude: altitude)
+            } else {
+                streamElementSubject.value = .poi(point: .zero, altitude: altitude)
+            }
+
+        case .wayPoint(let location, let altitude, _):
+            let takeOffAltitudeDrone = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
+            let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
+            let newAltitude = altitude + (absoluteAltitudeDrone - takeOffAltitudeDrone)
+            let newLocation = CLLocation(coordinate: location,
+                                       altitude: newAltitude,
+                                       horizontalAccuracy: 0, verticalAccuracy: 0, timestamp: Date())
+
+            if let location = lic.position(from: newLocation), location.distance > 3.0 {
+                if (frameCount % 30) == 0 {
+                    ULog.d(.tag, "frameReady waypoint \(newLocation.coordinate),alt:\(newLocation.altitude) -> \(location)")
+                }
+
+                streamElementSubject.value = .waypoint(point: CGPoint(x: location.x, y: location.y), altitude: altitude)
+            } else {
+                streamElementSubject.value = .waypoint(point: .zero, altitude: altitude)
+            }
+        }
     }
 }
 
@@ -247,12 +304,9 @@ private extension TouchAndFlyServiceImpl {
     func listenCamera(drone: Drone) {
         mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] mainCamera2 in
             guard let self = self else { return }
-            guard let mainCamera2 = mainCamera2 else {
+            guard let _ = mainCamera2 else {
                 self.streamElementSubject.value = .none
                 return
-            }
-            if mainCamera2.mode == .photo {
-                self.streamElementSubject.value = .none
             }
         }
     }
@@ -265,19 +319,8 @@ private extension TouchAndFlyServiceImpl {
                   streamServer.enabled else {
                       // avoid issues when dismissing App and returning on it
                       self.cameraLiveRef = nil
-                      self.sink = nil
                       return
                   }
-
-            self.cameraLiveRef = streamServer.live { [weak self] liveStream in
-                guard let self = self else { return }
-                guard let liveStream = liveStream,
-                      self.sink == nil else {
-                          return
-                      }
-
-                self.sink = liveStream.openYuvSink(queue: DispatchQueue.main, listener: self)
-            }
         }
     }
 
@@ -368,7 +411,10 @@ private extension TouchAndFlyServiceImpl {
             let blocker = itf.availabilityIssues?.first.map(TouchAndFlyBlocker.from)
             poiItfState.value = (blocker: blocker, inProgress: inProgress)
 
-            guard let poi = itf.currentPointOfInterest else { return }
+            guard let poi = itf.currentPointOfInterest else {
+                poiSubject.value = nil
+                return
+            }
             poiSubject.value = CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
         }
     }
@@ -466,7 +512,7 @@ private extension TouchAndFlyServiceImpl {
             _ = guidedPilotingItfRef?.value?.deactivate()
             poiPilotingItfRef?.value?.start(latitude: location.latitude,
                                             longitude: location.longitude,
-                                            altitude: droneAltitude,
+                                            altitude: targetAltitude,
                                             mode: .freeGimbal)
         default:
             break
@@ -499,12 +545,6 @@ private extension TouchAndFlyServiceImpl {
             poiPilotingItfRef?.value?.start(latitude: location.latitude, longitude: location.longitude, altitude: altitude, mode: .lockedGimbal)
         }
     }
-
-    func distance(_ point1: CLLocationCoordinate2D, _ point2: CLLocationCoordinate2D) -> Double {
-        let loc1 = CLLocation(latitude: point1.latitude, longitude: point1.longitude)
-        let loc2 = CLLocation(latitude: point2.latitude, longitude: point2.longitude)
-        return loc1.distance(from: loc2)
-    }
 }
 
 extension TouchAndFlyServiceImpl: TouchAndFlyService {
@@ -527,16 +567,16 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
         locationsTracker.droneLocationPublisher
             .removeDuplicates()
             .combineLatest(runningStateSubject, targetPublisher, guidingStartCoordinates)
-            .map { [unowned self] (droneLocation, runningState, target, startCoordinates) -> Double? in
+            .map { (droneLocation, runningState, target, startCoordinates) -> Double? in
                 guard let startCoordinates = startCoordinates,
                       let droneCoordinates = droneLocation.coordinates?.coordinate,
                       case .running = runningState,
                       case .wayPoint(let targetLocation, _, _) = target else { return nil }
-                let totalDistance = distance(targetLocation, startCoordinates)
+                let totalDistance = targetLocation.distance(from: startCoordinates)
                 if totalDistance == 0 {
                     return 0
                 }
-                let remainingDistance = distance(droneCoordinates, targetLocation)
+                let remainingDistance = targetLocation.distance(from: droneCoordinates)
                 return max(0, min(1, 1 - remainingDistance / totalDistance))
             }
             .eraseToAnyPublisher()
@@ -589,7 +629,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
     /// User defined settings takes precedence if defined (after a user interaction).
     /// Current drone's altitude (if available) will be returned otherwise, as `altitude` value is reset
     /// to `nil` as soon as a WP is set on map.
-    private var targetAltitude: Double {
+    var targetAltitude: Double {
         altitude ?? droneAltitude
     }
 
@@ -679,9 +719,16 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
 
     func set(altitude: Double) {
         altitudeSubject.value = altitude
-        let isRunning = runningState == .running
-        if isRunning {
+        switch runningState {
+        case .running:
+            // WP or POI running => executeTarget.
             start()
+        case .ready:
+            // State is ready => watch WP in order to point to new altitude.
+            // (`watchWayPoint()` has no effect if target is not a WP.)
+            watchWayPoint()
+        default:
+            break
         }
     }
 
@@ -689,6 +736,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
         wayPointSubject.value = nil
         altitudeSubject.value = nil
         poiSubject.value = nil
+        streamElementSubject.value = .none
         guidingStartDate.value = nil
         guidingStartCoordinates.value = nil
     }
@@ -701,28 +749,22 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
     func stop() {
         ULog.i(.tag, "COMMAND Stop")
         clear()
+        guard poiPilotingItfRef?.value?.currentPointOfInterest != nil ||
+              guidedPilotingItfRef?.value?.currentDirective != nil else { return }
         _ = poiPilotingItfRef?.value?.deactivate()
         _ = guidedPilotingItfRef?.value?.deactivate()
     }
 
-    func setLocation(point: CGPoint) -> CLLocation? {
-        guard let location = wayPointSubject.value ?? poiSubject.value else {
-          return nil
-        }
+    func setPoiLocation(point: CGPoint) -> CLLocation? {
         let takeoffRelativeAltitude = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
         let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
-
         // Takeoff altitude above sea (in meters)
         let takeOffAltitude = absoluteAltitudeDrone - takeoffRelativeAltitude
         let locationAltitude = (altitudeSubject.value ?? 0) + takeOffAltitude
 
-        let location2D = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
-        let location3D = CLLocation(coordinate: location2D,
-                                    altitude: locationAltitude, horizontalAccuracy: 0,
-                                    verticalAccuracy: 0, timestamp: Date())
-
-        guard let newLocation = frame?.location(fromPosition: point, for: location3D,
-                                                considerFlatGround: poiSubject.value != nil) else {
+        guard let newLocation = lic.location(fromPosition: point, forAltitude: Float(locationAltitude)) else {
+            ULog.d(.tag, "Could not compute a new poi location. point:\(point), poi:\(String(describing: poiSubject.value))")
+            streamElementSubject.value = .none
             return nil
         }
         let finalLocation = CLLocation(coordinate: newLocation.coordinate,
@@ -730,7 +772,37 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
                                        horizontalAccuracy: newLocation.horizontalAccuracy,
                                        verticalAccuracy: newLocation.verticalAccuracy,
                                        timestamp: newLocation.timestamp)
+        return finalLocation
+    }
 
+    func setWaypointLocation(point: CGPoint) -> CLLocation? {
+        let takeoffRelativeAltitude = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
+        let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
+        // Takeoff altitude above sea (in meters)
+        let takeOffAltitude = absoluteAltitudeDrone - takeoffRelativeAltitude
+        let locationAltitude = (altitudeSubject.value ?? 0) + takeOffAltitude
+
+        var newLocation: CLLocation?
+        if let location = wayPointSubject.value {
+            let location2D = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
+            let location3D = CLLocation(coordinate: location2D,
+                                        altitude: locationAltitude, horizontalAccuracy: 0,
+                                        verticalAccuracy: 0, timestamp: Date())
+            newLocation = lic.location(fromPosition: point, for: location3D)
+        } else {
+            newLocation = lic.location(fromPosition: point, forDistance: Constants.defaultNewPointDistance)
+        }
+
+        guard let newLocation = newLocation else {
+            ULog.d(.tag, "Could not compute a new waypoint location. point:\(point), waypoint:\(String(describing: wayPointSubject.value))")
+            streamElementSubject.value = .none
+            return nil
+        }
+        let finalLocation = CLLocation(coordinate: newLocation.coordinate,
+                                       altitude: newLocation.altitude - takeOffAltitude,
+                                       horizontalAccuracy: newLocation.horizontalAccuracy,
+                                       verticalAccuracy: newLocation.verticalAccuracy,
+                                       timestamp: newLocation.timestamp)
         return finalLocation
     }
 }
@@ -767,52 +839,6 @@ private extension TouchAndFlyBlocker {
             return .droneTooCloseToGround
         case .droneAboveMaxAltitude:
             return .droneAboveMaxAltitude
-        }
-    }
-}
-
-extension TouchAndFlyServiceImpl: YuvSinkListener {
-    func didStart(sink: StreamSink) {}
-    func didStop(sink: StreamSink) {}
-
-    func frameReady(sink: StreamSink, frame: SdkCoreFrame) {
-        // do not create stream element if camera mode is not recording.
-        guard mainCameraRef?.value?.mode == .recording else {
-            streamElementSubject.value = .none
-            return
-        }
-
-        self.frame = frame
-        switch target {
-        case .none:
-            streamElementSubject.value = .none
-        case .poi(let location, let altitude):
-            let takeOffAltitudeDrone = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
-            let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
-            let newAltitude = altitude + (absoluteAltitudeDrone - takeOffAltitudeDrone)
-            let newLocation = CLLocation(coordinate: location,
-                                       altitude: newAltitude,
-                                       horizontalAccuracy: 0, verticalAccuracy: 0, timestamp: Date())
-            let location = frame.position(from: newLocation)
-            if location.distance > 3.0 {
-                streamElementSubject.value = .poi(point: CGPoint(x: location.x, y: location.y), altitude: altitude)
-            } else {
-                streamElementSubject.value = .poi(point: .zero, altitude: altitude)
-            }
-
-        case .wayPoint(let location, let altitude, _):
-            let takeOffAltitudeDrone = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
-            let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
-            let newAltitude = altitude + (absoluteAltitudeDrone - takeOffAltitudeDrone)
-            let newLocation = CLLocation(coordinate: location,
-                                       altitude: newAltitude,
-                                       horizontalAccuracy: 0, verticalAccuracy: 0, timestamp: Date())
-            let location = frame.position(from: newLocation)
-            if location.distance > 3.0 {
-                streamElementSubject.value = .waypoint(point: CGPoint(x: location.x, y: location.y), altitude: altitude)
-            } else {
-                streamElementSubject.value = .waypoint(point: .zero, altitude: altitude)
-            }
         }
     }
 }

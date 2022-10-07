@@ -93,6 +93,8 @@ private extension DroneDetailsViewController {
     func initView() {
         stackView.margins = Layout.infoContainerInnerMargins(isRegularSizeClass)
         modelLabel.text = L10n.droneDetailsDroneInfo
+        modelLabel.makeUp(with: .title, color: .defaultTextColor)
+        nameLabel.makeUp(with: .current, color: .secondaryTextColor)
         setupViewControllers()
         updateStackView()
     }

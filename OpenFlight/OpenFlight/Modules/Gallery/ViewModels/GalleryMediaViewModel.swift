@@ -32,8 +32,12 @@ import Combine
 
 // MARK: - Gallery Media Error
 enum GalleryMediaError: Error {
-    // Unable to get the media's preview image url
+    /// Unable to get the media's preview image url
     case mediaPreviewImageUrlNotFound
+    /// Unable to prefetch the resource.
+    case mediaPrefetchResourceNotFound
+    /// Generic prefetch error.
+    case mediaPrefetchError
 }
 
 // MARK: - Gallery Media Listener
@@ -397,6 +401,11 @@ extension GalleryMediaViewModel {
         internalViewModel?.cancelDownloads()
     }
 
+    /// Cancel previews downloads.
+    func cancelPreviewsDownloads() {
+        sdCardViewModel?.cancelPreviewsDownloads()
+    }
+
     /// Upload media resources.
     ///
     /// - Parameters:
@@ -503,6 +512,48 @@ extension GalleryMediaViewModel {
         }
     }
 
+    /// Deletes resources from a media based on an indexes array.
+    /// Note: the indexes array MUST contain resources belonging to the same media item.
+    ///
+    /// - Parameters:
+    ///    - indexes: the indexes of the resources to delete
+    ///    - media: the media containing the resources to delete
+    ///    - completion: the completion block called after deletion
+    func deleteResourcesAt(_ indexes: [Int], of media: GalleryMedia, completion: @escaping (Bool) -> Void) {
+        guard downloadStatus != .running else {
+            // Can't delete resources while downloading.
+            completion(false)
+            return
+        }
+
+        switch sourceType {
+        case .droneSdCard, .droneInternal:
+            // Ensure `mediaItem` and `resources` are valid.
+            // (Use first index for `mediaItem` check, as all indexes are supposed to point to same media item.)
+            guard let firstIndex = indexes.first,
+                  let item = media.mediaItem(for: firstIndex),
+                  let resources = media.mediaResources else {
+                completion(false)
+                return
+            }
+
+            let resourcesToDelete = indexes
+                .filter { $0 < resources.count }
+                .map { resources[$0] }
+            sdCardViewModel?.deleteResources(resourcesToDelete, of: item) { success in
+                completion(success)
+            }
+
+        case .mobileDevice:
+            deviceViewModel?.deleteResourcesAt(indexes, of: media) { success in
+                completion(success)
+            }
+
+        default:
+            return
+        }
+    }
+
     /// Set selected media types.
     ///
     /// - Parameters:
@@ -533,12 +584,13 @@ extension GalleryMediaViewModel {
         switch media.source {
         case .droneSdCard:
             guard let mediaItem = media.mediaItem(for: index),
-                  let mediaResource = media.mediaResource(for: index),
-                  downloadStatus != .running else {
+                  let mediaResource = media.mediaResource(for: index)
+            else {
+                completion(nil)
                 return
             }
 
-            sdCardViewModel?.downloadResource(media: mediaItem,
+            sdCardViewModel?.downloadPreviews(media: mediaItem,
                                               resources: [mediaResource],
                                               completion: { url in
                                                 completion(url)
@@ -547,6 +599,7 @@ extension GalleryMediaViewModel {
             guard let mediaItem = media.mediaItem(for: index),
                   let mediaResource = media.mediaResource(for: index),
                   downloadStatus != .running  else {
+                completion(nil)
                 return
             }
 
@@ -558,6 +611,7 @@ extension GalleryMediaViewModel {
         case .mobileDevice:
             guard let urls = media.urls,
                   urls.count > index else {
+                completion(nil)
                 return
             }
 
@@ -573,7 +627,8 @@ extension GalleryMediaViewModel {
     ///    - index: Media index in the gallery media array
     /// - Returns: gallery media.
     func getMedia(index: Int) -> GalleryMedia? {
-        if index < numberOfMedias {
+        if index >= 0,
+           index < numberOfMedias {
             return self.state.value.medias[index]
         }
         return nil
@@ -585,7 +640,8 @@ extension GalleryMediaViewModel {
     ///    - index: Media index in the sorted filtered media
     /// - Returns: gallery media.
     func getFilteredMedia(index: Int) -> GalleryMedia? {
-        guard index < state.value.filteredMedias.count else {
+        guard index >= 0,
+              index < state.value.filteredMedias.count else {
             return nil
         }
         return state.value.filteredMedias[index]
@@ -604,17 +660,53 @@ extension GalleryMediaViewModel {
     /// - Parameters:
     ///    - media: GalleryMedia
     /// - Returns: a gallery media.
-    func getMediaImageCount(_ media: GalleryMedia) -> Int {
+    func getMediaImageCount(_ media: GalleryMedia, previewableOnly: Bool = false) -> Int {
         switch media.source {
-        case .droneSdCard:
-            return media.mediaResources?.count ?? 0
-        case .droneInternal:
-            return media.mediaResources?.count ?? 0
+        case .droneSdCard, .droneInternal:
+            let resources = previewableOnly ? media.previewableResources : media.mediaResources
+            return resources?.count ?? 0
         case .mobileDevice:
-            return media.urls?.count ?? 0
+            let urls = previewableOnly ? media.previewableUrls : media.urls
+            return urls?.count ?? 0
         default:
             return 0
         }
+    }
+
+    /// Returns the URL of a given media resource if it has been downloaded or cached.
+    ///
+    /// - Parameters:
+    ///    - media: the media containing the resource to look for
+    ///    - index: the index of the resource to look for
+    /// - Returns: the URL of the resource if found, `nil` otherwise
+    func mediaResourceUrl(_ media: GalleryMedia?, at index: Int) -> URL? {
+        guard let media = media else { return nil }
+
+        if media.source == .mobileDevice {
+            guard let urls = media.previewableUrls, index < urls.count else { return nil }
+            // URLs are already stored in `GalleryMedia` object if source is device.
+            return urls[index]
+        }
+
+        guard let resources = media.previewableResources, index < resources.count else { return nil }
+
+        let resource = resources[index]
+        if resource.type == .panorama,
+           let url = AssetUtils.shared.panoramaResourceUrlForMediaId(media.uid) {
+            // Local panorama resource exists => use local url.
+            return url
+        }
+
+        if let url = resource.galleryURL(droneId: drone?.uid, mediaType: media.type),
+           resource.isDownloaded(droneId: drone?.uid, mediaType: media.type) {
+            // Resource has been downloaded to device => use local url.
+            return url
+        }
+
+        // Return cached image URL if any, nil otherwise.
+        return resources[index].cachedImgUrlExist(droneId: drone?.uid) ?
+        resources[index].cachedImgUrl(droneId: drone?.uid) :
+        nil
     }
 
     /// Get a media preview image url.
@@ -648,22 +740,36 @@ extension GalleryMediaViewModel {
         }
     }
 
+    /// Returns an array containing the URL of all linked resources based on a specific previewable resource's index.
+    ///
+    /// - Parameters:
+    ///    - media: the media containing the resources URLs to gather
+    ///    - previewableIndex: the previewable resource index to base the gathering on
+    /// - Returns: the array containing all linked resources
+    func getLinkedResourcesUrls(media: GalleryMedia, previewableIndex: Int) async -> [URL] {
+        // Gather all linked urls (previewable AND non-previewable) for media's previewable
+        // resource number `index`.
+        var linkedUrls = [URL]()
+        for index in media.linkedResourcesIndexes(for: previewableIndex) {
+            if let url = try? await getMediaPreviewImageUrl(media, index) {
+                linkedUrls.append(url)
+            }
+        }
+
+        return linkedUrls
+    }
+
     /// Get a media default index for image picker.
     ///
     /// - Parameters:
     ///    - media: GalleryMedia
     /// - Returns: default index for image picker.
     func getMediaImageDefaultIndex(_ media: GalleryMedia) -> Int {
-        guard media.type == .bracketing,
-              getMediaImageCount(media) > 0,
-              getMediaImageCount(media) % 2 != 0 else {
-            return 0
+        switch media.type {
+        case .bracketing:
+            return Int((Float(getMediaImageCount(media)) / 2).rounded(.up))
+        default: return 0
         }
-
-        let imageCount = getMediaImageCount(media)
-        let middleEntry = imageCount - (imageCount - 1) / 2
-
-        return middleEntry - 1
     }
 
     // Get available storage on current source, in giga bytes.
@@ -692,7 +798,7 @@ extension GalleryMediaViewModel {
     /// - returns async:
     ///    - The media's preview image's `URL`.
     func getMediaPreviewImageUrl(_ media: GalleryMedia, _ index: Int = 0) async throws -> URL {
-        return try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { continuation in
             getMediaPreviewImageUrl(media, index) { url in
                 // Throws an error if the completion block returns no url.
                 guard let url = url else {

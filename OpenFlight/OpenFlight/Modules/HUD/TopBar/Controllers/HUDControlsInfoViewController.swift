@@ -124,8 +124,10 @@ private extension HUDControlsInfoViewController {
             .sink { [unowned self] batteryLevel in
                 if let level = batteryLevel.currentValue {
                     controllerBatteryLevelLabel.attributedText = NSMutableAttributedString(withBatteryLevel: level)
+                    controllerBatteryLevelLabel.accessibilityValue = "\(level)"
                 } else {
                     controllerBatteryLevelLabel.text = Style.dash
+                    controllerBatteryLevelLabel.accessibilityValue = "-"
                 }
 
                 controllerBatteryAlertBackgroundView.backgroundColor =  batteryLevel.alertLevel.color
@@ -152,8 +154,10 @@ private extension HUDControlsInfoViewController {
             .sink { [unowned self] batteryLevel in
                 if let batteryValue = batteryLevel.currentValue {
                     droneBatteryLabel.attributedText = NSMutableAttributedString(withBatteryLevel: batteryValue)
+                    droneBatteryLabel.accessibilityValue = "\(batteryValue)"
                 } else {
                     droneBatteryLabel.text = Style.dash
+                    droneBatteryLabel.accessibilityValue = "-"
                 }
 
                 droneBatteryAlertBackgroundView.backgroundColor = batteryLevel.alertLevel.color

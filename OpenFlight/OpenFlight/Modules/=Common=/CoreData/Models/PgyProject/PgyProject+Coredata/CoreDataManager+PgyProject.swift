@@ -110,6 +110,11 @@ public protocol PgyProjectRepository: AnyObject {
     ///     - projectId: project ID to remove
     ///     - updateRelatedFlightPlan: update related FlightPlan if it exist
     func deletePgyProject(withProjectId projectId: Int64, updateRelatedFlightPlan: Bool)
+
+    /// Delete all PgyProject
+    /// - Parameters:
+    ///     - completion: callback closure with status when finished
+    func deleteAllPgyProjects(completion: ((_ status: Bool) -> Void)?)
 }
 
 extension CoreDataServiceImpl: PgyProjectRepository {
@@ -256,6 +261,25 @@ extension CoreDataServiceImpl: PgyProjectRepository {
             deletePgyProjectsCD(pgyProjects)
 
             return false
+        })
+    }
+
+    public func deleteAllPgyProjects(completion: ((_ status: Bool) -> Void)?) {
+        performAndSave({ [unowned self] _ in
+            let pgyProjectCDs = getAllPgyProjectsCD(toBeDeleted: false)
+            deleteObjects(pgyProjectCDs)
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                pgyProjectsDidChangeSubject.send()
+                ULog.i(.dataModelTag, "All pgy project deleted")
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error delete all PGY projects: \(error.localizedDescription)")
+                completion?(false)
+            }
         })
     }
 

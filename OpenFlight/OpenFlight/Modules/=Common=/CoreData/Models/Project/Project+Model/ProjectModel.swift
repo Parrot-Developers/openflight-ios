@@ -49,10 +49,12 @@ public struct ProjectModel {
     public var title: String?
     public var type: ProjectType
     public var latestCloudModificationDate: Date?
+    public var latestExecutionRank: Int?
 
     // MARK: __ Local
     public var lastUpdated: Date
     public var lastOpened: Date?
+    public var isProjectExecuted: Bool
 
     // MARK: __ Relationship
     public var flightPlans: [FlightPlanModel]?
@@ -74,14 +76,6 @@ public struct ProjectModel {
         self.type == ProjectType.classic
     }
 
-    public var lastExecution: FlightPlanModel? {
-        guard let flightPlans = flightPlans else { return nil }
-        return flightPlans
-            .filter { $0.state.isExecution }
-            .sorted { $0.lastFlightExecutionDate ?? Date.distantPast > $1.lastFlightExecutionDate ?? Date.distantPast}
-            .first
-    }
-
     public var editableFlightPlan: FlightPlanModel? {
         flightPlans?.first { $0.state == .editable }
     }
@@ -96,6 +90,7 @@ public struct ProjectModel {
                 latestCloudModificationDate: Date?,
                 lastUpdated: Date,
                 lastOpened: Date?,
+                latestExecutionRank: Int?,
                 isLocalDeleted: Bool,
                 synchroStatus: SynchroStatus?,
                 synchroError: SynchroError?,
@@ -108,12 +103,14 @@ public struct ProjectModel {
         self.title = title
         self.type = type
         self.latestCloudModificationDate = latestCloudModificationDate
+        self.latestExecutionRank = latestExecutionRank
 
         self.lastUpdated = lastUpdated
 
         self.lastOpened = lastOpened
 
         self.flightPlans = flightPlans
+        self.isProjectExecuted = false
 
         self.isLocalDeleted = isLocalDeleted
         self.latestSynchroStatusDate = latestSynchroStatusDate
@@ -134,6 +131,7 @@ extension ProjectModel {
                   latestCloudModificationDate: nil,
                   lastUpdated: Date(),
                   lastOpened: nil,
+                  latestExecutionRank: nil,
                   isLocalDeleted: false,
                   synchroStatus: .notSync,
                   synchroError: .noError,
@@ -146,7 +144,8 @@ extension ProjectModel {
                 uuid: String,
                 title: String?,
                 type: ProjectType,
-                latestCloudModificationDate: Date?) {
+                latestCloudModificationDate: Date?,
+                latestExecutionRank: Int?) {
         self.init(apcId: apcId,
                   cloudId: cloudId,
                   uuid: uuid,
@@ -156,6 +155,7 @@ extension ProjectModel {
                   latestCloudModificationDate: latestCloudModificationDate,
                   lastUpdated: latestCloudModificationDate ?? Date(),
                   lastOpened: nil,
+                  latestExecutionRank: latestExecutionRank,
                   isLocalDeleted: false,
                   synchroStatus: .synced,
                   synchroError: .noError,
@@ -173,14 +173,11 @@ extension ProjectModel {
                   latestCloudModificationDate: Date(),
                   lastUpdated: Date(),
                   lastOpened: nil,
+                  latestExecutionRank: nil,
                   isLocalDeleted: project.isLocalDeleted,
                   synchroStatus: .notSync,
                   synchroError: .noError,
                   latestSynchroStatusDate: nil,
                   latestLocalModificationDate: nil)
-    }
-
-    public func hasExecutedProject() -> Bool {
-        flightPlans?.contains(where: { $0.hasReachedFirstWayPoint }) == true
     }
 }

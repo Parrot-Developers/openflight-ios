@@ -669,8 +669,11 @@ struct Vmeta_Location {
 
   var longitude: Double = 0
 
-  /// Altitude above the WGS 84 ellipsoid (m) 
-  var altitude: Double = 0
+  /// Altitude above the WGS84 ellipsoid (m) (zero means unknown) 
+  var altitudeWgs84Ellipsoid: Double = 0
+
+  /// Altitude above the EGM96 geoid (AMSL) (m) (zero means unknown) 
+  var altitudeEgm96Amsl: Double = 0
 
   /// Horizontal and vertical location accuracy (m), zero means unknown 
   var horizontalAccuracy: Float = 0
@@ -680,6 +683,21 @@ struct Vmeta_Location {
   /// GPS Satellite vehicle count, only set if location comes at least
   /// partially from a GPS sensor 
   var svCount: UInt32 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+/// Generic 2 component vector 
+struct Vmeta_Vector2 {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var x: Float = 0
+
+  var y: Float = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -935,6 +953,26 @@ struct Vmeta_CameraMetadata {
   /// Clears the value of `localPosition`. Subsequent reads from it will return its default value.
   mutating func clearLocalPosition() {_uniqueStorage()._localPosition = nil}
 
+  /// Camera location 
+  var location: Vmeta_Location {
+    get {return _storage._location ?? Vmeta_Location()}
+    set {_uniqueStorage()._location = newValue}
+  }
+  /// Returns true if `location` has been explicitly set.
+  var hasLocation: Bool {return _storage._location != nil}
+  /// Clears the value of `location`. Subsequent reads from it will return its default value.
+  mutating func clearLocation() {_uniqueStorage()._location = nil}
+
+  /// Camera principal point normalized coordinates in picture [0; 1] 
+  var principalPoint: Vmeta_Vector2 {
+    get {return _storage._principalPoint ?? Vmeta_Vector2()}
+    set {_uniqueStorage()._principalPoint = newValue}
+  }
+  /// Returns true if `principalPoint` has been explicitly set.
+  var hasPrincipalPoint: Bool {return _storage._principalPoint != nil}
+  /// Clears the value of `principalPoint`. Subsequent reads from it will return its default value.
+  mutating func clearPrincipalPoint() {_uniqueStorage()._principalPoint = nil}
+
   /// Frame exposure time (ms) 
   var exposureTime: Float {
     get {return _storage._exposureTime}
@@ -1037,44 +1075,55 @@ struct Vmeta_AutomationMetadata {
 
   /// Current destination 
   var destination: Vmeta_Location {
-    get {return _destination ?? Vmeta_Location()}
-    set {_destination = newValue}
+    get {return _storage._destination ?? Vmeta_Location()}
+    set {_uniqueStorage()._destination = newValue}
   }
   /// Returns true if `destination` has been explicitly set.
-  var hasDestination: Bool {return self._destination != nil}
+  var hasDestination: Bool {return _storage._destination != nil}
   /// Clears the value of `destination`. Subsequent reads from it will return its default value.
-  mutating func clearDestination() {self._destination = nil}
+  mutating func clearDestination() {_uniqueStorage()._destination = nil}
 
   /// Tracking target location 
   var targetLocation: Vmeta_Location {
-    get {return _targetLocation ?? Vmeta_Location()}
-    set {_targetLocation = newValue}
+    get {return _storage._targetLocation ?? Vmeta_Location()}
+    set {_uniqueStorage()._targetLocation = newValue}
   }
   /// Returns true if `targetLocation` has been explicitly set.
-  var hasTargetLocation: Bool {return self._targetLocation != nil}
+  var hasTargetLocation: Bool {return _storage._targetLocation != nil}
   /// Clears the value of `targetLocation`. Subsequent reads from it will return its default value.
-  mutating func clearTargetLocation() {self._targetLocation = nil}
+  mutating func clearTargetLocation() {_uniqueStorage()._targetLocation = nil}
 
   /// Follow-me enabled 
-  var followMe: Bool = false
+  var followMe: Bool {
+    get {return _storage._followMe}
+    set {_uniqueStorage()._followMe = newValue}
+  }
 
   /// Look-at-me enabled 
-  var lookatMe: Bool = false
+  var lookatMe: Bool {
+    get {return _storage._lookatMe}
+    set {_uniqueStorage()._lookatMe = newValue}
+  }
 
   /// Angle-locked:
   /// false: NED (North-East-Down) absolute angle mode
   /// true: constant angle relative to the target movement 
-  var angleLocked: Bool = false
+  var angleLocked: Bool {
+    get {return _storage._angleLocked}
+    set {_uniqueStorage()._angleLocked = newValue}
+  }
 
   /// Current animation 
-  var animation: Vmeta_Animation = .animNone
+  var animation: Vmeta_Animation {
+    get {return _storage._animation}
+    set {_uniqueStorage()._animation = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _destination: Vmeta_Location? = nil
-  fileprivate var _targetLocation: Vmeta_Location? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 struct Vmeta_WifiLinkMetadata {
@@ -1512,7 +1561,8 @@ extension Vmeta_Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "latitude"),
     2: .same(proto: "longitude"),
-    3: .same(proto: "altitude"),
+    3: .standard(proto: "altitude_wgs84ellipsoid"),
+    7: .standard(proto: "altitude_egm96amsl"),
     5: .standard(proto: "horizontal_accuracy"),
     6: .standard(proto: "vertical_accuracy"),
     4: .standard(proto: "sv_count"),
@@ -1526,10 +1576,11 @@ extension Vmeta_Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularDoubleField(value: &self.latitude) }()
       case 2: try { try decoder.decodeSingularDoubleField(value: &self.longitude) }()
-      case 3: try { try decoder.decodeSingularDoubleField(value: &self.altitude) }()
+      case 3: try { try decoder.decodeSingularDoubleField(value: &self.altitudeWgs84Ellipsoid) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.svCount) }()
       case 5: try { try decoder.decodeSingularFloatField(value: &self.horizontalAccuracy) }()
       case 6: try { try decoder.decodeSingularFloatField(value: &self.verticalAccuracy) }()
+      case 7: try { try decoder.decodeSingularDoubleField(value: &self.altitudeEgm96Amsl) }()
       default: break
       }
     }
@@ -1542,8 +1593,8 @@ extension Vmeta_Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.longitude != 0 {
       try visitor.visitSingularDoubleField(value: self.longitude, fieldNumber: 2)
     }
-    if self.altitude != 0 {
-      try visitor.visitSingularDoubleField(value: self.altitude, fieldNumber: 3)
+    if self.altitudeWgs84Ellipsoid != 0 {
+      try visitor.visitSingularDoubleField(value: self.altitudeWgs84Ellipsoid, fieldNumber: 3)
     }
     if self.svCount != 0 {
       try visitor.visitSingularUInt32Field(value: self.svCount, fieldNumber: 4)
@@ -1554,16 +1605,58 @@ extension Vmeta_Location: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.verticalAccuracy != 0 {
       try visitor.visitSingularFloatField(value: self.verticalAccuracy, fieldNumber: 6)
     }
+    if self.altitudeEgm96Amsl != 0 {
+      try visitor.visitSingularDoubleField(value: self.altitudeEgm96Amsl, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Vmeta_Location, rhs: Vmeta_Location) -> Bool {
     if lhs.latitude != rhs.latitude {return false}
     if lhs.longitude != rhs.longitude {return false}
-    if lhs.altitude != rhs.altitude {return false}
+    if lhs.altitudeWgs84Ellipsoid != rhs.altitudeWgs84Ellipsoid {return false}
+    if lhs.altitudeEgm96Amsl != rhs.altitudeEgm96Amsl {return false}
     if lhs.horizontalAccuracy != rhs.horizontalAccuracy {return false}
     if lhs.verticalAccuracy != rhs.verticalAccuracy {return false}
     if lhs.svCount != rhs.svCount {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Vmeta_Vector2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Vector2"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "x"),
+    2: .same(proto: "y"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFloatField(value: &self.x) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self.y) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.x != 0 {
+      try visitor.visitSingularFloatField(value: self.x, fieldNumber: 1)
+    }
+    if self.y != 0 {
+      try visitor.visitSingularFloatField(value: self.y, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Vmeta_Vector2, rhs: Vmeta_Vector2) -> Bool {
+    if lhs.x != rhs.x {return false}
+    if lhs.y != rhs.y {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1918,6 +2011,8 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     2: .standard(proto: "base_quat"),
     3: .same(proto: "quat"),
     12: .standard(proto: "local_position"),
+    13: .same(proto: "location"),
+    14: .standard(proto: "principal_point"),
     4: .standard(proto: "exposure_time"),
     5: .standard(proto: "iso_gain"),
     6: .standard(proto: "awb_r_gain"),
@@ -1933,6 +2028,8 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     var _baseQuat: Vmeta_Quaternion? = nil
     var _quat: Vmeta_Quaternion? = nil
     var _localPosition: Vmeta_Vector3? = nil
+    var _location: Vmeta_Location? = nil
+    var _principalPoint: Vmeta_Vector2? = nil
     var _exposureTime: Float = 0
     var _isoGain: UInt32 = 0
     var _awbRGain: Float = 0
@@ -1951,6 +2048,8 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       _baseQuat = source._baseQuat
       _quat = source._quat
       _localPosition = source._localPosition
+      _location = source._location
+      _principalPoint = source._principalPoint
       _exposureTime = source._exposureTime
       _isoGain = source._isoGain
       _awbRGain = source._awbRGain
@@ -1987,6 +2086,8 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         case 10: try { try decoder.decodeSingularUInt64Field(value: &_storage._utcTimestamp) }()
         case 11: try { try decoder.decodeSingularUInt32Field(value: &_storage._utcTimestampAccuracy) }()
         case 12: try { try decoder.decodeSingularMessageField(value: &_storage._localPosition) }()
+        case 13: try { try decoder.decodeSingularMessageField(value: &_storage._location) }()
+        case 14: try { try decoder.decodeSingularMessageField(value: &_storage._principalPoint) }()
         default: break
         }
       }
@@ -2035,6 +2136,12 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       try { if let v = _storage._localPosition {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
       } }()
+      try { if let v = _storage._location {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+      } }()
+      try { if let v = _storage._principalPoint {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2050,6 +2157,8 @@ extension Vmeta_CameraMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         if _storage._baseQuat != rhs_storage._baseQuat {return false}
         if _storage._quat != rhs_storage._quat {return false}
         if _storage._localPosition != rhs_storage._localPosition {return false}
+        if _storage._location != rhs_storage._location {return false}
+        if _storage._principalPoint != rhs_storage._principalPoint {return false}
         if _storage._exposureTime != rhs_storage._exposureTime {return false}
         if _storage._isoGain != rhs_storage._isoGain {return false}
         if _storage._awbRGain != rhs_storage._awbRGain {return false}
@@ -2174,56 +2283,98 @@ extension Vmeta_AutomationMetadata: SwiftProtobuf.Message, SwiftProtobuf._Messag
     6: .same(proto: "animation"),
   ]
 
+  fileprivate class _StorageClass {
+    var _destination: Vmeta_Location? = nil
+    var _targetLocation: Vmeta_Location? = nil
+    var _followMe: Bool = false
+    var _lookatMe: Bool = false
+    var _angleLocked: Bool = false
+    var _animation: Vmeta_Animation = .animNone
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _destination = source._destination
+      _targetLocation = source._targetLocation
+      _followMe = source._followMe
+      _lookatMe = source._lookatMe
+      _angleLocked = source._angleLocked
+      _animation = source._animation
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._destination) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._targetLocation) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.followMe) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.lookatMe) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.angleLocked) }()
-      case 6: try { try decoder.decodeSingularEnumField(value: &self.animation) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._destination) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._targetLocation) }()
+        case 3: try { try decoder.decodeSingularBoolField(value: &_storage._followMe) }()
+        case 4: try { try decoder.decodeSingularBoolField(value: &_storage._lookatMe) }()
+        case 5: try { try decoder.decodeSingularBoolField(value: &_storage._angleLocked) }()
+        case 6: try { try decoder.decodeSingularEnumField(value: &_storage._animation) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._destination {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    try { if let v = self._targetLocation {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    if self.followMe != false {
-      try visitor.visitSingularBoolField(value: self.followMe, fieldNumber: 3)
-    }
-    if self.lookatMe != false {
-      try visitor.visitSingularBoolField(value: self.lookatMe, fieldNumber: 4)
-    }
-    if self.angleLocked != false {
-      try visitor.visitSingularBoolField(value: self.angleLocked, fieldNumber: 5)
-    }
-    if self.animation != .animNone {
-      try visitor.visitSingularEnumField(value: self.animation, fieldNumber: 6)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._destination {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._targetLocation {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      if _storage._followMe != false {
+        try visitor.visitSingularBoolField(value: _storage._followMe, fieldNumber: 3)
+      }
+      if _storage._lookatMe != false {
+        try visitor.visitSingularBoolField(value: _storage._lookatMe, fieldNumber: 4)
+      }
+      if _storage._angleLocked != false {
+        try visitor.visitSingularBoolField(value: _storage._angleLocked, fieldNumber: 5)
+      }
+      if _storage._animation != .animNone {
+        try visitor.visitSingularEnumField(value: _storage._animation, fieldNumber: 6)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: Vmeta_AutomationMetadata, rhs: Vmeta_AutomationMetadata) -> Bool {
-    if lhs._destination != rhs._destination {return false}
-    if lhs._targetLocation != rhs._targetLocation {return false}
-    if lhs.followMe != rhs.followMe {return false}
-    if lhs.lookatMe != rhs.lookatMe {return false}
-    if lhs.angleLocked != rhs.angleLocked {return false}
-    if lhs.animation != rhs.animation {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._destination != rhs_storage._destination {return false}
+        if _storage._targetLocation != rhs_storage._targetLocation {return false}
+        if _storage._followMe != rhs_storage._followMe {return false}
+        if _storage._lookatMe != rhs_storage._lookatMe {return false}
+        if _storage._angleLocked != rhs_storage._angleLocked {return false}
+        if _storage._animation != rhs_storage._animation {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

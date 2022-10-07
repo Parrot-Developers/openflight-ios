@@ -222,6 +222,7 @@ public extension FlightPlanPoiPointGraphic {
     func update(location: Location3D) {
         geometry = location.agsPoint
         refreshText(altitude: location.formattedAltitude)
+        applyRotation()
         self.symbol = getSymbol()
     }
 }

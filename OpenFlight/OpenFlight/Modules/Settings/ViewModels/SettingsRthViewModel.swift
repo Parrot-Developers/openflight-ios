@@ -39,7 +39,9 @@ final class SettingsRthViewModel: SettingsViewModelProtocol {
     // MARK: - Private Properties
 
     private var currentDroneHolder: CurrentDroneHolder
+    private var rthSettingsMonitor: RthSettingsMonitor
     private var cancellables = Set<AnyCancellable>()
+    private var returnHomePilotingRef: Ref<ReturnHomePilotingItf>?
     private var rth: ReturnHomePilotingItf?
 
     // MARK: - Internal Properties
@@ -60,11 +62,15 @@ final class SettingsRthViewModel: SettingsViewModelProtocol {
         return false
     }
 
-    // MARK: - Private Properties
-    private var returnHomePilotingRef: Ref<ReturnHomePilotingItf>?
-
-    init(currentDroneHolder: CurrentDroneHolder) {
+    // MARK: - Internal Funcs
+    /// Inits.
+    ///
+    ///  - Parameters:
+    ///         - currentDroneHolder: drone holder
+    ///         - rthSettingsMonitor: return home settings manager
+    init(currentDroneHolder: CurrentDroneHolder, rthSettingsMonitor: RthSettingsMonitor) {
         self.currentDroneHolder = currentDroneHolder
+        self.rthSettingsMonitor = rthSettingsMonitor
 
         currentDroneHolder.dronePublisher
             .sink { [weak self] drone in
@@ -81,12 +87,11 @@ final class SettingsRthViewModel: SettingsViewModelProtocol {
 
     /// Resets Return Home settings to default.
     func resetSettings() {
-        guard let returnHome = rth else { return }
-
-        returnHome.minAltitude?.value = RthPreset.defaultAltitude
-        returnHome.endingBehavior.behavior = RthPreset.defaultEndingBehavior
-        returnHome.endingHoveringAltitude?.value = RthPreset.defaultHoveringAltitude
-        returnHome.preferredTarget.target = RthPreset.rthType
+        let rthSettings = RthSettings(rthReturnTarget: RthPreset.rthType,
+                                      rthHeight: RthPreset.defaultAltitude,
+                                      rthEndBehaviour: RthPreset.defaultEndingBehavior,
+                                      rthHoveringHeight: RthPreset.defaultHoveringAltitude)
+        rthSettingsMonitor.updateUserRthSettings(rthSettings: rthSettings)
     }
 }
 
@@ -103,25 +108,26 @@ private extension SettingsRthViewModel {
 
     /// Returns a RTH preferred target model.
     func rthTargetModel(returnHome: ReturnHomePilotingItf?) -> DroneSettingModel? {
+        let userPreferredRthSettings = rthSettingsMonitor.getUserRthSettings()
         let homeTarget = returnHome?.preferredTarget
-        guard homeTarget?.target.isHomeAvailable == true else {
-            return DroneSettingModel(allValues: ReturnHomeTarget.allValues,
-                                     supportedValues: ReturnHomeTarget.allValues,
-                                     currentValue: RthPreset.rthType,
-                                     isUpdating: false) { rthTarget in
-                if let strongRthTarget = rthTarget as? ReturnHomeTarget {
-                    homeTarget?.target = strongRthTarget
-                }
-            }
-        }
+        let currentValue = homeTarget?.target.isHomeAvailable == true
+            ? userPreferredRthSettings.rthReturnTarget
+            : RthPreset.rthType
+        let isUpdating = homeTarget?.target.isHomeAvailable == true
+            ? homeTarget?.updating ?? false
+            : false
 
         return DroneSettingModel(allValues: ReturnHomeTarget.allValues,
                                  supportedValues: ReturnHomeTarget.allValues,
-                                 currentValue: homeTarget?.target,
-                                 isUpdating: homeTarget?.updating ?? false) { rthTarget in
-            if let strongRthTarget = rthTarget as? ReturnHomeTarget {
-                homeTarget?.target = strongRthTarget
-            }
+                                 currentValue: currentValue,
+                                 isUpdating: isUpdating) { [weak self] settingMode in
+            guard let self = self, let rthTarget = settingMode as? ReturnHomeTarget
+            else { return }
+            let rthSettings = RthSettings(rthReturnTarget: rthTarget,
+                                          rthHeight: userPreferredRthSettings.rthHeight,
+                                          rthEndBehaviour: userPreferredRthSettings.rthEndBehaviour,
+                                          rthHoveringHeight: userPreferredRthSettings.rthHoveringHeight)
+            self.rthSettingsMonitor.updateUserRthSettings(rthSettings: rthSettings)
         }
     }
 }

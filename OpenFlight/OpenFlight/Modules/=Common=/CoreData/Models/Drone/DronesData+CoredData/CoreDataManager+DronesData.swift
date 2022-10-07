@@ -77,6 +77,11 @@ public protocol DroneDataRepository: AnyObject {
     /// - Parameters:
     ///    - serials: List of serials to search
     func deleteDrones(withSerials serials: [String])
+
+    /// Delete all drones
+    /// - Parameters:
+    ///     - completion: callback closure with status when finished
+    func deleteAllDrones(completion: ((_ status: Bool) -> Void)?)
 }
 
 // MARK: - Implementation
@@ -115,54 +120,40 @@ extension CoreDataServiceImpl: DroneDataRepository {
     }
 
     public func saveOrUpdateDrones(fromDroneModels droneModels: [DroneModel]) {
-        droneModels.forEach { droneModel in
-            var dronesDataObj: DronesData?
-            if let existingDronesData = getDronesDataCD(withSerial: droneModel.droneSerial) {
-                dronesDataObj = existingDronesData
-            } else if let newDronesData = insertNewObject(entityName: DronesData.entityName) as? DronesData {
-                dronesDataObj = newDronesData
-            }
-
-            if let dronesData = dronesDataObj {
-                dronesData.update(fromDroneModel: droneModel)
-            }
-        }
-
-        saveContext { [unowned self] result in
-            switch result {
-            case .success:
-                dronesDidChangeSubject.send()
-            case .failure(let error):
-                ULog.e(.dataModelTag, "Error saveOrUpdateDrones - error: \(error.localizedDescription)")
-            }
-        }
+        saveOrUpdateDrones(droneModels, completion: nil)
     }
 
     public func saveOrUpdateDrones(_ droneModels: [DroneModel], completion: ((_ status: Bool) -> Void)?) {
+        let droneSerials = droneModels.compactMap { $0.droneSerial }
 
-        droneModels.forEach { droneModel in
-            var dronesDataObj: DronesData?
-            if let existingDronesData = getDronesDataCD(withSerial: droneModel.droneSerial) {
-                dronesDataObj = existingDronesData
-            } else if let newDronesData = insertNewObject(entityName: DronesData.entityName) as? DronesData {
-                dronesDataObj = newDronesData
+        performAndSave({ [unowned self] _ in
+            let droneDatas = getDronesDatasCD(withSerials: droneSerials)
+
+            droneModels.forEach { droneModel in
+                var dronesDataObj: DronesData?
+                if let existingDronesData = droneDatas.first(where: { $0.droneSerial == droneModel.droneSerial }) {
+                    dronesDataObj = existingDronesData
+                } else if let newDronesData = insertNewObject(entityName: DronesData.entityName) as? DronesData {
+                    dronesDataObj = newDronesData
+                }
+
+                if let dronesData = dronesDataObj {
+                    dronesData.update(fromDroneModel: droneModel)
+                }
             }
 
-            if let dronesData = dronesDataObj {
-                dronesData.update(fromDroneModel: droneModel)
-            }
-        }
-
-        saveContext { [unowned self] result in
+            return true
+        }, { [unowned self] result in
             switch result {
             case .success:
                 dronesDidChangeSubject.send()
                 completion?(true)
             case .failure(let error):
-                ULog.e(.dataModelTag, "Error saveOrUpdateDrones - error: \(error.localizedDescription)")
+                ULog.e(.dataModelTag,
+                       "Error saveOrUpdateDronesDatas with serials: \(droneSerials.joined(separator: ", ")) - error: \(error)")
                 completion?(false)
             }
-        }
+        })
     }
 
     // MARK: __ Get
@@ -189,6 +180,22 @@ extension CoreDataServiceImpl: DroneDataRepository {
             deleteDronesDatasCD(dronesDatas)
 
             return false
+        })
+    }
+
+    public func deleteAllDrones(completion: ((_ status: Bool) -> Void)?) {
+        performAndSave({ [unowned self] _ in
+            deleteObjects(getAllDronesDatasCD())
+            return true
+        }, { result in
+            switch result {
+            case .success:
+                ULog.i(.dataModelTag, "All drones deleted")
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deleting all drones: \(error.localizedDescription)")
+                completion?(false)
+            }
         })
     }
 }

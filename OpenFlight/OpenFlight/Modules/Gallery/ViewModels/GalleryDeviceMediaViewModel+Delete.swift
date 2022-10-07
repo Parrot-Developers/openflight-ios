@@ -51,4 +51,20 @@ extension GalleryDeviceMediaViewModel {
     func deleteResourceAt(_ index: Int, of media: GalleryMedia, completion: @escaping (Bool) -> Void) {
         completion(AssetUtils.shared.removeResourceAt(index, of: media))
     }
+
+    /// Deletes some resources from a media.
+    ///
+    /// - Parameters:
+    ///    - indexes: the index of the resources to delete
+    ///    - media: the media containing the resources to delete
+    ///    - completion: the completion block called after deletion
+    func deleteResourcesAt(_ indexes: [Int], of media: GalleryMedia, completion: @escaping (Bool) -> Void) {
+        var success = true
+        for index in indexes {
+            if !AssetUtils.shared.removeResourceAt(index, of: media) {
+                success = false
+            }
+        }
+        completion(success)
+    }
 }

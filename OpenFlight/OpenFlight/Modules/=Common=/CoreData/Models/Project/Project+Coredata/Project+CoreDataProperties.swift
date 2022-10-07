@@ -51,6 +51,7 @@ extension Project {
     @NSManaged public var latestLocalModificationDate: Date?
     @NSManaged public var synchroError: Int16
     @NSManaged public var lastOpened: Date?
+    @NSManaged public var latestExecutionRank: NSNumber?
 
     // MARK: - Relationship
 

@@ -33,8 +33,8 @@ import Reusable
 // MARK: - Protocol
 /// Action button delegate when an animation is finished.
 public protocol HUDAlertPanelActionButtonDelegate: AnyObject {
-    /// Starts an action at the end of the animation.
-    func startAction()
+    /// Called at the end of the animation.
+    func progressDidFinish()
 }
 
 /// Custom action button for HUD's alert panel.
@@ -276,6 +276,6 @@ private extension HUDAlertPanelActionButton {
 // MARK: - CircleProgressViewDelegate
 extension HUDAlertPanelActionButton: CircleProgressViewDelegate {
     func animationProgressFinished() {
-        delegate?.startAction()
+        delegate?.progressDidFinish()
     }
 }

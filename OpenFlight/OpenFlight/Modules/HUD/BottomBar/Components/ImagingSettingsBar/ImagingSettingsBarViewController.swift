@@ -61,6 +61,7 @@ final class ImagingSettingsBarViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var delegate: BottomBarContainerDelegate?
+    private weak var bottomBarService: HudBottomBarService?
     private var cameraModeViewModel = CameraModeViewModel()
     // TODO injection
     private var autoModeViewModel = ImagingBarAutoModeViewModel(
@@ -89,9 +90,11 @@ final class ImagingSettingsBarViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
-    static func instantiate(delegate: BottomBarContainerDelegate? = nil) -> ImagingSettingsBarViewController {
+    static func instantiate(delegate: BottomBarContainerDelegate? = nil,
+                            bottomBarService: HudBottomBarService?) -> ImagingSettingsBarViewController {
         let imagingSettingsBarVc = StoryboardScene.ImagingSettingsBar.initialScene.instantiate()
         imagingSettingsBarVc.delegate = delegate
+        imagingSettingsBarVc.bottomBarService = bottomBarService
 
         return imagingSettingsBarVc
     }
@@ -110,6 +113,12 @@ final class ImagingSettingsBarViewController: UIViewController {
                                   framerateItemViewModel]
         setupViewModels()
         initUI()
+
+        bottomBarService?.modePublisher.sink { [weak self] mode in
+            guard mode != .levelTwoOpened else { return }
+            self?.deselectAllViewModels()
+        }
+        .store(in: &cancellables)
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {

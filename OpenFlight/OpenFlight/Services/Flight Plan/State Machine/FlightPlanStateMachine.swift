@@ -227,6 +227,7 @@ open class FlightPlanStateMachineImpl {
 
     public func flightPlanRunDidTimeout(flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Timeout '\(flightPlan.uuid)' resetting everything")
+        runManager.handleTimeout(flightPlan: flightPlan)
         flightPlanRunDidFinish(flightPlan: flightPlan, completed: false)
     }
 
@@ -395,14 +396,6 @@ extension FlightPlanStateMachineImpl: InitializingStateDelegate {
 extension FlightPlanStateMachineImpl: ResumableStateDelegate {
     public func flightPlanIsResumable(_ flightPlan: FlightPlanModel, startAvailability: FlightPlanStartAvailability) {
         ULog.i(.tag, "In resumable state '\(flightPlan.uuid)' with availability \(startAvailability)")
-        if case .unavailable = startAvailability {
-            // FP is unavailable => we do not want to switch to resumable state, as FP can
-            // not be actually resumed yet. Spec is to switch back to editable state.
-            reset()
-            goToEditableState(flightPlan: flightPlan)
-            return
-        }
-
         statePrivate.send(.resumable(flightPlan, startAvailability: startAvailability))
     }
 }
@@ -416,17 +409,17 @@ extension FlightPlanStateMachineImpl: EditableStateDelegate {
 
 extension FlightPlanStateMachineImpl: StartedNotFlyingStateDelegate {
 
-    open func handleMavlinkGenerationError(flightPlan: FlightPlanModel, _ error: MavlinkGenerationError) {
+    public func handleMavlinkGenerationError(flightPlan: FlightPlanModel, _ error: MavlinkGenerationError) {
         ULog.e(.tag, "Mavlink generation error for '\(flightPlan.uuid)': \(error.localizedDescription)")
         goToEditableState(flightPlan: flightPlan)
     }
 
-    open func handleMavlinkSendingError(flightPlan: FlightPlanModel, _ error: MavlinkDroneSenderError) {
+    public func handleMavlinkSendingError(flightPlan: FlightPlanModel, _ error: MavlinkDroneSenderError) {
         ULog.e(.tag, "Mavlink sending error for '\(flightPlan.uuid)': \(error.localizedDescription)")
         goToEditableState(flightPlan: flightPlan)
     }
 
-    open func handleMavlinkSendingSuccess(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand]) {
+    public func handleMavlinkSendingSuccess(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand]) {
         ULog.i(.tag, "Mavlink sending success for '\(flightPlan.uuid)'")
         guard stateMachine.canEnterState(StartedFlyingState.self),
               let startedFlyingState = stateMachine.state(forClass: StartedFlyingState.self) else { return }
@@ -435,19 +428,19 @@ extension FlightPlanStateMachineImpl: StartedNotFlyingStateDelegate {
         enter(StartedFlyingState.self)
     }
 
-    open func mavlinkGenerationStarted(flightPlan: FlightPlanModel) {
+    public func mavlinkGenerationStarted(flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Mavlink generation started for '\(flightPlan.uuid)'")
         statePrivate.send(.startedNotFlying(flightPlan, mavlinkStatus: .generating))
     }
 
-    open func mavlinkSendingStarted(flightPlan: FlightPlanModel) {
+    public func mavlinkSendingStarted(flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Mavlink sending started for '\(flightPlan.uuid)'")
         statePrivate.send(.startedNotFlying(flightPlan, mavlinkStatus: .sending))
     }
 }
 
 extension FlightPlanStateMachineImpl: StartedFlyingStateDelegate {
-    open func flightPlanRunDidUpdate(flightPlan: FlightPlanModel) {
+    public func flightPlanRunDidUpdate(flightPlan: FlightPlanModel) {
         ULog.i(.tag, "flightPlanRunDidUpdate for '\(flightPlan.uuid)', lastMissionItemExecuted : \(flightPlan.lastMissionItemExecuted)")
         statePrivate.send(.flying(flightPlan))
     }
@@ -576,7 +569,7 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
             goToEditableState(flightPlan: flightPlan)
         } else if let startedFlying = state as? StartedFlyingState {
             startedFlying.stop()
-            goToEditableState(flightPlan: flightPlan)
+            // Do not force to editableState in case an RTH is necessary
         } else if state is ResumableState {
             goToEditableState(flightPlan: flightPlan)
         }
@@ -596,7 +589,8 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
                 startedNotFlying.stop()
             }
             if let startedFlying = currentState as? StartedFlyingState {
-                startedFlying.stop()
+                // In case of a reset, we don't want to execute the RTH (`forced` = true).
+                startedFlying.stop(forced: true)
                 // `StartedFlyingState.stop()` will stop the FP then reopen/reset it.
                 // We should not continue to prevent overwritting the state with Idle.
                 return
@@ -631,7 +625,7 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
         // Start by resetting the state machine.
         reset()
         // Ensure catched FP has valid mavlink commands.
-        guard let commands = flightPlan.dataSetting?.mavlinkCommands else {
+        guard let commands = flightPlan.mavlinkCommands else {
             ULog.e(.tag, "Can't catchUp '\(flightPlan.uuid)' that doesn't carry its mavlink commands")
             return
         }

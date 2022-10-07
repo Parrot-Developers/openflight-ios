@@ -170,6 +170,8 @@ private extension SettingsViewController {
             controller = StoryboardScene.SettingsGeofenceViewController.initialScene.instantiate()
         case .network:
             controller = StoryboardScene.SettingsNetworkViewController.initialScene.instantiate()
+        case .developer:
+            controller = StoryboardScene.SettingsDeveloperViewController.initialScene.instantiate()
         }
 
         if let controller = controller as? SettingsContentViewController {

@@ -170,11 +170,20 @@ public class FlightPlanRecoveryInfoServiceImpl {
             // The Local FP is updated with the recovery information.
             // Then we check if the last FP's way point has been reached
             // to handle, if necessary, the FP as 'finished offline'.
-            updateFlightPlanFromRecoveryInfo(flightPlan, recoveryInfo: recoveryInfo, isPaused: pilotingItf.isPaused)
+            updateFlightPlanFromRecoveryInfo(flightPlan,
+                                             recoveryInfo: recoveryInfo,
+                                             isPaused: pilotingItf.isPaused) { success in
+                guard success else {
+                    ULog.e(.tag, "Unable to store the updated flight plan in data base. Do not send the clear recovery command.")
+                    return
+                }
+                // Recovery is correctly handled. Ask the drone to clear it.
+                pilotingItf.clearRecoveryInfo()
+            }
+        } else {
+            // The piloting interface is not active, the recovery info can be cleared.
+            pilotingItf.clearRecoveryInfo()
         }
-
-        // The piloting interface is not active, the recovery info can be cleared.
-        pilotingItf.clearRecoveryInfo()
     }
 
     /// Update flight plan when receiving recovery information.
@@ -185,18 +194,21 @@ public class FlightPlanRecoveryInfoServiceImpl {
     ///    - flightPlan: flight plan
     ///    - recoveryInfo: recovery info
     ///    - isPaused: whether the piloting interface is paused
+    ///    - databaseUpdateCompletion: the completion block called when data base has been updated
     private func updateFlightPlanFromRecoveryInfo(_ flightPlan: FlightPlanModel,
                                                   recoveryInfo: RecoveryInfo,
-                                                  isPaused: Bool) {
+                                                  isPaused: Bool,
+                                                  databaseUpdateCompletion: ((_ status: Bool) -> Void)? = nil) {
         ULog.d(.tag, "updatePassedFlightPlan '\(flightPlan.uuid)'")
         let flightPlan = flightPlanManager.update(flightPlan: flightPlan,
                                                   lastMissionItemExecuted: Int(recoveryInfo.latestMissionItemExecuted),
-                                                  recoveryResourceId: recoveryInfo.resourceId)
+                                                  recoveryResourceId: recoveryInfo.resourceId,
+                                                  databaseUpdateCompletion: databaseUpdateCompletion)
         // Check if the current FP:
         //  • is currently flying or stopped
         //  • has reached the last way point (completed)
         //  • the RTH has not been paused (e.g by an over-piloting)
-        // In case of all conditions are met, FP is handled as finished of line.
+        // In case of all conditions are met, FP is handled as finished offline.
         guard [.flying, .stopped].contains(flightPlan.state),
               flightPlan.hasReachedLastWayPoint,
               !isPaused else { return }

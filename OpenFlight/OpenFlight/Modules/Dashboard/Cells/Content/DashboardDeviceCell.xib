@@ -140,6 +140,9 @@
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <accessibility key="accessibilityConfiguration" identifier="MPP">
+                            <bool key="isElement" value="YES"/>
+                        </accessibility>
                         <constraints>
                             <constraint firstItem="Tk9-7r-Ns1" firstAttribute="leading" secondItem="emZ-eg-iYF" secondAttribute="leading" constant="5" id="4h4-RJ-Egh">
                                 <variation key="heightClass=regular-widthClass=regular" constant="10"/>

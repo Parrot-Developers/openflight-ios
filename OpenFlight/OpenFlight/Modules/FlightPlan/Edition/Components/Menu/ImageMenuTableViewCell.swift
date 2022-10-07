@@ -56,8 +56,15 @@ struct ImageMenuCellProvider {
 /// Image menu table view cell.
 final class ImageMenuTableViewCell: MainTableViewCell, NibReusable {
     // MARK: - Outlets
+    @IBOutlet private weak var imageBackground: UIView!
     @IBOutlet private weak var modeImage: UIImageView!
     @IBOutlet private weak var imageLabel: UILabel!
+
+    // MARK: - Enums
+    enum Constants {
+        static let horizontalLayoutMargin: CGFloat = 10
+        static let verticalLayoutMargin: CGFloat = 17
+    }
 
     // MARK: - Override Funcs
     override func awakeFromNib() {
@@ -116,5 +123,11 @@ internal extension ImageMenuTableViewCell {
         }
 
         imageLabel.text = settingDescription
+        imageBackground.layer.cornerRadius = Style.largeFitCornerRadius
+        imageBackground.addShadow()
+        imageBackground.layoutMargins = UIEdgeInsets(top: Constants.verticalLayoutMargin,
+                                                     left: Constants.horizontalLayoutMargin,
+                                                     bottom: Constants.verticalLayoutMargin,
+                                                     right: Constants.horizontalLayoutMargin)
     }
 }

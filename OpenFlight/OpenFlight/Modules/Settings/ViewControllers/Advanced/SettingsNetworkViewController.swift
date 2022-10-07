@@ -98,11 +98,12 @@ extension SettingsNetworkViewController {
         networkViewModel.$isNotFlying
             .removeDuplicates()
             .combineLatest(networkViewModel.wifiAccessPointPublisher,
-                           networkViewModel.wifiScannerPublisher,
-                           networkViewModel.networkControlPublisher)
-            .combineLatest(networkViewModel.$isEditing, networkViewModel.driPublisher)
-            .sink { [weak self] (arg0, isEditing, _) in
-                let (isNotFlying, _, _, _) = arg0
+                           networkViewModel.wifiScannerPublisher)
+            .combineLatest(networkViewModel.$isEditing,
+                           networkViewModel.isChannelsEnabledPublisher,
+                           networkViewModel.driPublisher)
+            .sink { [weak self] (arg0, isEditing, _, _) in
+                let (isNotFlying, _, _) = arg0
                 guard let self = self else { return }
                 if !isEditing {
                     self.updateDataSource(isNotFlying)
@@ -113,6 +114,7 @@ extension SettingsNetworkViewController {
         networkViewModel.infoHandler = { [weak self] _ in
             self?.coordinator?.startDriInfoScreen()
         }
+
         // Inital data source update.
         updateDataSource(networkViewModel.isNotFlying)
     }

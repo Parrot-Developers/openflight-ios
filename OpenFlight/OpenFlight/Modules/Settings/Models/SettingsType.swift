@@ -41,6 +41,7 @@ enum SettingsType {
     case rth
     case camera
     case network
+    case developer
 }
 
 // MARK: - Internal functions
@@ -77,6 +78,9 @@ extension SettingsType {
         case .network:
             section = SettingsSection(title: L10n.settingsAdvancedCategoryConnection,
                                       icon: Asset.Settings.iconSettingsNetwork.image.withRenderingMode(.alwaysTemplate))
+        case .developer:
+            section = SettingsSection(title: L10n.settingsAdvancedCategoryDeveloper,
+                                      icon: Asset.Settings.iconSettingsDeveloper.image.withRenderingMode(.alwaysTemplate))
         case .quick:
             section = SettingsSection(title: L10n.settingsCategoryQuick,
                                       icon: UIImage()) // no image requied

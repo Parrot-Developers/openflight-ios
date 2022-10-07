@@ -58,7 +58,6 @@ final class SettingValuesChoiceTableViewCell: SidePanelSettingTableViewCell, Nib
     func fill(with settingType: FlightPlanSettingType?) {
 
         setCellType(with: settingType)
-        setSettingControlType(with: settingType)
 
         self.settingType = settingType
         titleLabel.text = settingType?.valueToDisplay().uppercased()
@@ -101,18 +100,22 @@ final class SettingValuesChoiceTableViewCell: SidePanelSettingTableViewCell, Nib
         self.disableView.isHidden = !mustDisable
     }
 
+    /// Configures the cell setting type according to the provided parameter.
+    /// This will adjust the stackView's height accordingly.
+    ///
+    /// - Parameter settingType: the setting type to configure the cell with
     func setCellType(with settingType: FlightPlanSettingType?) {
-        cellSettingType = .textSegments
         guard let settingType = settingType,
-              !(settingType.valueImages?.isEmpty ?? true) else { return }
-        cellSettingType = settingType.allValues.count > 3
+              !(settingType.valueImages?.isEmpty ?? true) else {
+            // Setting has no images => Set type to `.textSegments`.
+            settingValuesStackView.settingType = .textSegments
+            return
+        }
+
+        // Setting has images => Set type according to the number of values.
+        settingValuesStackView.settingType = settingType.allValues.count > 3
         ? .textAndIconSegmentsLarge
         : .textAndIconSegments
-    }
-
-    func setSettingControlType(with settingType: FlightPlanSettingType?) {
-        settingValuesStackView
-            .isTwoSegmentsSegmentedControl = settingType?.allValues.count ?? 0 == 2
     }
 }
 
@@ -125,7 +128,7 @@ private extension SettingValuesChoiceTableViewCell {
     @objc func settingValueButtonTouchedUpInside(sender: UIButton) {
         updateType(tag: sender.tag)
         guard let key = settingType?.key else { return }
-        
+
         switch key {
         case ClassicFlightPlanSettingType.imageMode.key,
              ClassicFlightPlanSettingType.resolution.key,

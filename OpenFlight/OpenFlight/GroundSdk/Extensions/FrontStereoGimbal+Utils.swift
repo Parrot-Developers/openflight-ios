@@ -39,7 +39,9 @@ extension FrontStereoGimbal {
     /// Image error according to gimbal and front stereo calibration state.
     var errorImage: UIImage {
         return currentErrors.isEmpty
-        ? Asset.Drone.icDroneStereoVisionOk.image
-        : Asset.Drone.icDroneStereoVisionError.image
+            ? Asset.Drone.icDroneStereoVisionOk.image
+            : currentErrors.contains(.critical)
+                ? Asset.Drone.icDroneStereoVisionError.image
+                : Asset.Drone.icDroneStereoVisionWarning.image
     }
 }

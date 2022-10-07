@@ -57,9 +57,6 @@ final class GalleryMediaBrowsingViewModel {
     /// The panorama generation status.
     @Published private(set) var panoramaGenerationStatus: GalleryPanoramaStepStatus = .inactive
 
-    /// The array containing media resources urls.
-    var mediaUrls: [URL?] = []
-
     /// The image to display for sound state.
     var videoSoundButtonImage: UIImage? {
         isVideoMuted
@@ -129,16 +126,11 @@ final class GalleryMediaBrowsingViewModel {
     ///   - media: The displayed media.
     ///   - index: The index of the displayed media.
     ///   - count: The number of resources of the displayed media.
-    ///   - resetUrls: Reset mediaUrls array if `true`.
     func didDisplayMedia(_ media: GalleryMedia? = nil,
                          index: Int,
-                         count: Int,
-                         resetUrls: Bool = true) {
+                         count: Int) {
         mediaIndex = index
         resourcesCount = count
-
-        guard let media = media, resetUrls else { return }
-        resetMediaUrls(media: media)
     }
 
     /// Updates resource index.
@@ -156,45 +148,11 @@ final class GalleryMediaBrowsingViewModel {
         self.isLoading = isLoading
     }
 
-    /// Resets media urls array.
-    ///
-    /// - Parameters:
-    ///   - media: The current media.
-    func resetMediaUrls(media: GalleryMedia?) {
-        if media?.source == .mobileDevice,
-           let urls = media?.urls {
-            // We already know the urls on device.
-            mediaUrls = urls
-        } else {
-            mediaUrls = Array.init(repeating: nil, count: resourcesCount)
-        }
-    }
-
-    /// Updates media url array for a given resource index.
-    ///
-    /// - Parameters:
-    ///   - url: The URL to update.
-    ///   - index: The index of the URL to update.
-    func didLoadUrl(_ url: URL?, at index: Int) {
-        guard index < mediaUrls.count else { return }
-        mediaUrls[index] = url
-    }
-
     /// Updates panorama generation status.
     ///
     /// - Parameters:
     ///   - status: The panorama generation status to update.
     func didUpdatePanoramaGeneration(_ status: GalleryPanoramaStepStatus) {
         panoramaGenerationStatus = status
-        mediaUrls[0] = nil // Force panorama resource reloading in gallery.
-    }
-
-    /// Updates urls array after a resource deletion has been performed.
-    ///
-    /// - Parameters:
-    ///   - index: The index of the resource that has been deleted.
-    func didDeleteResourceAt(_ index: Int) {
-        guard index < mediaUrls.count else { return }
-        mediaUrls.remove(at: index)
     }
 }

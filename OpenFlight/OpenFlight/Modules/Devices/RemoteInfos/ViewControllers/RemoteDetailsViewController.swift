@@ -91,6 +91,8 @@ private extension RemoteDetailsViewController {
     func initView() {
         stackView.margins = Layout.infoContainerInnerMargins(isRegularSizeClass)
         modelLabel.text = L10n.remoteDetailsControllerInfos
+        modelLabel.makeUp(with: .title, color: .defaultTextColor)
+        nameLabel.makeUp(with: .current, color: .secondaryTextColor)
         setupViewControllers()
         updateStackView()
     }

@@ -126,7 +126,6 @@ enum GallerySourceType: CaseIterable {
     }
 }
 
-
 /// Extension for debug description.
 extension GallerySourceType: CustomStringConvertible {
     var description: String {

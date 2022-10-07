@@ -30,6 +30,7 @@
 import Foundation
 import CoreLocation
 import Combine
+import GroundSdk
 
 protocol FlightExecutionDetailsSettingsCellProvider {
     var settings: [FlightPlanExecutionViewModel.ExecutionSetting] { get }
@@ -55,6 +56,7 @@ open class FlightPlanExecutionViewModel {
     }
 
     let flightPlan: FlightPlanModel
+    private let mavlinkCommands: [MavlinkStandard.MavlinkCommand]?
     private weak var coordinator: FlightPlanExecutionDetailsCoordinator?
     private let flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider
     private weak var flightRepository: FlightRepository?
@@ -63,6 +65,7 @@ open class FlightPlanExecutionViewModel {
     private let flightService: FlightService
     private let navigationStack: NavigationStackService
     private let flightPlanManager: FlightPlanManager
+    private let startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher
 
     init(flightPlan: FlightPlanModel,
          flightRepository: FlightRepository,
@@ -72,7 +75,8 @@ open class FlightPlanExecutionViewModel {
          flightPlanUiStateProvider: FlightPlanUiStateProvider,
          flightService: FlightService,
          navigationStack: NavigationStackService,
-         flightPlanManager: FlightPlanManager) {
+         flightPlanManager: FlightPlanManager,
+         startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher) {
         self.flightPlan = flightPlanRepository.getFlightPlan(withUuid: flightPlan.uuid) ?? flightPlan
         self.coordinator = coordinator
         self.flightPlanExecutionDetailsSettingsProvider = flightPlanExecutionDetailsSettingsProvider
@@ -82,6 +86,8 @@ open class FlightPlanExecutionViewModel {
         self.flightService = flightService
         self.navigationStack = navigationStack
         self.flightPlanManager = flightPlanManager
+        self.startAvailabilityWatcher = startAvailabilityWatcher
+        self.mavlinkCommands = self.flightPlan.mavlinkCommands
     }
 
     /// Back button tapped.
@@ -127,7 +133,8 @@ open class FlightPlanExecutionViewModel {
                                                        date: date,
                                                        location: location,
                                                        flights: flights,
-                                                       flightService: flightService)
+                                                       flightService: flightService,
+                                                       mavlinkCommands: mavlinkCommands)
     }
 
     var actions: [FlightDetailsActionCellModel] {
@@ -142,16 +149,18 @@ open class FlightPlanExecutionViewModel {
                                                      coordinator: coordinator)
     }
 
-    var flightPlanUiStateProviderPublisher: AnyPublisher<FlightPlanStateUiParameters, Never> {
+    var flightPlanUiPublisher: AnyPublisher<(FlightPlanStateUiParameters, FlightPlanStartAvailability), Never> {
         flightPlanUiStateProvider
             .uiStatePublisher(for: flightPlan)
+            .combineLatest(startAvailabilityWatcher.availabilityForSendingMavlinkPublisher)
             .eraseToAnyPublisher()
     }
 
     /// Flights trajectories points.
     public var flightsPoints: [[TrajectoryPoint]] {
         guard let flightRepository = flightRepository,
-              let flightPlanAndFlightLinks = flightPlan.flightPlanFlights
+              let flightPlanAndFlightLinks = flightPlan.flightPlanFlights,
+              let mavlinkCommands = mavlinkCommands
         else { return [] }
 
         let flightUuids = flightPlanAndFlightLinks.map({ $0.flightUuid })
@@ -159,7 +168,7 @@ open class FlightPlanExecutionViewModel {
         return flightRepository.getFlights(withUuids: flightUuids)
             .compactMap { flightService.gutma(flight: $0) }
             .map { gutma in
-                gutma.flightPlanPoints(flightPlan)
+                gutma.flightPlanPoints(flightPlan, mavlinkCommands: mavlinkCommands)
             }
     }
 
@@ -183,6 +192,7 @@ struct FlightPlanExecutionInfoCellProviderImpl: FlightPlanExecutionInfoCellProvi
     let location: CLLocationCoordinate2D
     let flights: [FlightModel]
     let flightService: FlightService
+    let mavlinkCommands: [MavlinkStandard.MavlinkCommand]?
 
     var summaryProvider: FlightDetailsSummaryViewProvider {
         // An execution can span multiple flights. The (duration,power,distance)
@@ -194,11 +204,11 @@ struct FlightPlanExecutionInfoCellProviderImpl: FlightPlanExecutionInfoCellProvi
                                   photoCount: 0,
                                   videoCount: 0)) { sum, flight in
             let gutma = flightService.gutma(flight: flight)
-            let duration = gutma?.flightPlanDuration(flightPlan) ?? 0
-            let battery = gutma?.flightPlanBatteryConsumption(flightPlan) ?? 0
-            let distance = gutma?.flightPlanDistance(flightPlan) ?? 0
-            let photoCount = gutma?.flightPlanPhotoCount(flightPlan) ?? 0
-            let videoCount = gutma?.flightPlanVideoCount(flightPlan) ?? 0
+            let duration = gutma?.flightPlanDuration(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
+            let battery = gutma?.flightPlanBatteryConsumption(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
+            let distance = gutma?.flightPlanDistance(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
+            let photoCount = gutma?.flightPlanPhotoCount(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
+            let videoCount = gutma?.flightPlanVideoCount(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
             return (duration: sum.duration + duration,
                     battery: sum.battery + battery,
                     distance: sum.distance + distance,

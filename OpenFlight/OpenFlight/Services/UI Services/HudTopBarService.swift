@@ -37,9 +37,6 @@ public protocol HudTopBarService: AnyObject {
 
     var showTopBarPublisher: AnyPublisher<Bool, Never> { get }
 
-    var isBackButtonDisplayed: Bool { get }
-    var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> { get }
-
     /// Method to call when a back action is needed.
     func goBack()
 
@@ -72,13 +69,6 @@ extension HudTopBarServiceImpl: HudTopBarService {
 
     public var showTopBarPublisher: AnyPublisher<Bool, Never> {
         status.eraseToAnyPublisher()
-    }
-
-    public var isBackButtonDisplayed: Bool { navigationStackService.startedToNavigate }
-
-    public var isBackButtonDisplayedPublisher: AnyPublisher<Bool, Never> {
-        navigationStackService.startedToNavigatePublisher
-            .eraseToAnyPublisher()
     }
 
     public func goBack() { goBackSubject.send() }

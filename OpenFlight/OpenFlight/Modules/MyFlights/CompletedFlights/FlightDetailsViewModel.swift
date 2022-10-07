@@ -83,7 +83,7 @@ open class FlightDetailsViewModel {
                 listenRemovableStorage(drone: drone)
             }
             .store(in: &cancellables)
-        if let name = name, name.isEmptyOrWhitespace() {
+        if let name = name, name.isEmptyOrWhitespace {
             CLGeocoder().reverseGeocodeLocation(flight.location) { [weak self] (placemarks: [CLPlacemark]?, error: Error?) in
                 guard let place = placemarks?.first, error == nil,
                       let strongSelf = self,

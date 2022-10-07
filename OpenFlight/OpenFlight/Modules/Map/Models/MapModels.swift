@@ -79,7 +79,7 @@ extension MapMode {
     /// Whether auto scroll on user or drone location is supported in this mode.
     var autoScrollSupported: Bool {
         switch self {
-        case .flightPlanEdition:
+        case .flightPlanEdition, .droneDetails, .myFlights, .mapOnly:
             return false
         default:
             return true
@@ -88,7 +88,7 @@ extension MapMode {
 }
 
 /// State for center location.
-public enum MapCenterState {
+public enum MapCenterState: String {
     case drone
     case user
     case project

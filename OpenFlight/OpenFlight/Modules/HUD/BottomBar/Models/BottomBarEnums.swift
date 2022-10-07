@@ -30,7 +30,7 @@
 // MARK: - Internal Enums
 
 /// Represents bottom bar open/close mode.
-enum BottomBarMode {
+public enum BottomBarMode {
     /// Bar is closed.
     case closed
     /// Level one bar is openened.

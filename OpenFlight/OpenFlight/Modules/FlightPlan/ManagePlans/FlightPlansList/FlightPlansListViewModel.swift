@@ -272,7 +272,7 @@ final class FlightPlansListViewModel {
 extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
 
     func flightPlanExecutions(ofProject project: ProjectModel) -> [FlightPlanModel] {
-        manager.executedFlightPlans(for: project)
+        manager.getExecutedFlightPlans(ofProject: project)
     }
 
     func selectProject(_ project: ProjectModel) {

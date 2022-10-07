@@ -46,7 +46,7 @@ public enum Occupancy {
 
     public enum Storage {
         public static let maxDropFrameForUpdate = 4
-        public static let chunkSize = Int32(30)
+        public static let chunkSize = Int32(32)
         public static let maximumChunkQueries = UInt(6)
     }
 

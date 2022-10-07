@@ -95,10 +95,14 @@ final class MavlinkToFlightPlanParser {
             }
         }
 
-        let newDataSetting = dataSetting(fromFlightPlan: flightPlan,
-                                         takeOffActions: takeOffActions,
-                                         pois: pois,
-                                         waypoints: waypoints)
+        guard let newDataSetting = dataSetting(fromFlightPlan: flightPlan,
+                                               takeOffActions: takeOffActions,
+                                               pois: pois,
+                                               waypoints: waypoints)
+        else {
+            ULog.e(.tag, "Unable to create flight plan data settings")
+            return nil
+        }
         return derivedFligthPlan(fromFlightPlan: flightPlan, dataSetting: newDataSetting)
     }
 
@@ -131,7 +135,10 @@ final class MavlinkToFlightPlanParser {
             var currentWaypoint: WayPoint?
             var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
             var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
-
+            var isAMSL: Bool = false
+            if let command = commands.first {
+                isAMSL = command.frame == .global
+            }
             for command in commands {
                 switch command {
                 case is MavlinkStandard.StartVideoCaptureCommand:
@@ -139,6 +146,8 @@ final class MavlinkToFlightPlanParser {
                 case is MavlinkStandard.CameraTriggerDistanceCommand:
                     captureModeEnum = .gpsLapse
                 case is MavlinkStandard.CameraTriggerIntervalCommand:
+                    captureModeEnum = .timeLapse
+                case is MavlinkStandard.StartPhotoCaptureCommand:
                     captureModeEnum = .timeLapse
                 case let roiCommand as MavlinkStandard.SetRoiLocationCommand:
                     let newPoi = PoiPoint(roiMavLinkCommand: roiCommand)
@@ -168,19 +177,28 @@ final class MavlinkToFlightPlanParser {
                 }
             }
 
-            var newDataSetting = dataSetting(fromFlightPlan: flightPlan,
-                                             takeOffActions: takeOffActions,
-                                             pois: pois,
-                                             waypoints: waypoints)
+            guard var newDataSetting = dataSetting(fromFlightPlan: flightPlan,
+                                                   takeOffActions: takeOffActions,
+                                                   pois: pois,
+                                                   waypoints: waypoints)
+            else {
+                ULog.e(.tag, "Unable to create flight plan data settings")
+                return nil
+            }
             newDataSetting.captureMode = captureModeEnum.rawValue
+            newDataSetting.isAMSL = isAMSL
             return derivedFligthPlan(fromFlightPlan: flightPlan, dataSetting: newDataSetting)
         }
 
     static private func dataSetting(fromFlightPlan flightPlan: FlightPlanModel,
                                     takeOffActions: [Action],
                                     pois: [PoiPoint],
-                                    waypoints: [WayPoint]) -> FlightPlanDataSetting {
-        var newDataSetting = flightPlan.dataSetting!
+                                    waypoints: [WayPoint]) -> FlightPlanDataSetting? {
+        guard var newDataSetting = flightPlan.dataSetting
+        else {
+            ULog.e(.tag, "Missing flight plan data settings")
+            return nil
+        }
         newDataSetting.takeoffActions = takeOffActions
         newDataSetting.pois = pois
         newDataSetting.wayPoints = waypoints

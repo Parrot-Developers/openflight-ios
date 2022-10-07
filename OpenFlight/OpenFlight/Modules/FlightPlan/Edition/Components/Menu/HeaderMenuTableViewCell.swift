@@ -34,20 +34,24 @@ import Combine
 /// Header menu TableViewCell.
 final class HeaderMenuTableViewCell: UITableViewHeaderFooterView, NibReusable {
     // MARK: - Outlets
-    @IBOutlet private weak var separatorView: UIView!
     @IBOutlet private weak var sectionTitle: UILabel!
     @IBOutlet private weak var bottomConstraint: NSLayoutConstraint!
     @IBOutlet private weak var topConstraint: NSLayoutConstraint!
     @IBOutlet private weak var leadingConstraint: NSLayoutConstraint!
     private var tapGestureSubscriberHandle: AnyCancellable?
 
+    // MARK: - Enums
+    enum Constants {
+        static let bottomSpacing: CGFloat = 5.0
+        static let topSpacing: CGFloat = 18.0
+    }
+
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        separatorView.backgroundColor = ColorName.defaultTextColor20.color
         sectionTitle.makeUp(with: .caps, color: .disabledTextColor)
-        bottomConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
-        topConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
+        bottomConstraint.constant = Constants.bottomSpacing
+        topConstraint.constant = Constants.topSpacing
         leadingConstraint.constant = Layout.mainPadding(isRegularSizeClass)
     }
 
@@ -66,7 +70,7 @@ final class HeaderMenuTableViewCell: UITableViewHeaderFooterView, NibReusable {
             topConstraint.constant = 0
         } else {
             sectionTitle.isHidden = false
-            topConstraint.constant = Layout.mainSpacing(isRegularSizeClass)
+            topConstraint.constant = Constants.topSpacing
         }
 
         if let action = action {

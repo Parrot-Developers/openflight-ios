@@ -167,9 +167,7 @@ public class AcademyApiServiceImpl: AcademyApiService {
 
     // MARK: - Properties
 
-    public var baseURL: String {
-        return AcademyURL.prodBaseURL
-    }
+    public var baseURL: String { AcademyURL.prodBaseURL }
 
     public var canPerformAcademyRequest: Bool = true
 
@@ -234,6 +232,7 @@ public extension AcademyApiServiceImpl {
         case authenticationError
         case accessDenied
         case preconditionFailed
+        case resourceNotCreated
         case cancelled
 
         var isError4xx: Bool {
@@ -282,7 +281,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+        guard let url = URL(string: baseURL + endpoint) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -308,7 +307,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+        guard let url = URL(string: baseURL + endpoint) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -328,7 +327,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+        guard let url = URL(string: baseURL + endpoint) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -362,7 +361,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + endpoint) else {
+        guard let url = URL(string: baseURL + endpoint) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -562,7 +561,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
+        guard let url = URL(string: baseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -588,7 +587,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue) else {
+        guard let url = URL(string: baseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }
@@ -618,7 +617,7 @@ public extension AcademyApiServiceImpl {
             return
         }
 
-        guard let url = URL(string: AcademyURL.prodBaseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
+        guard let url = URL(string: baseURL + DroneAcademyEndPoints.commonPairingEndpoint.rawValue + "/" + commonName) else {
             completion(nil, AcademyApiManagerError.badURL)
             return
         }

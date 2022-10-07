@@ -33,7 +33,7 @@ import GroundSdk
 /// Class to manage debug logs.
 public class ParrotDebug {
     // MARK: - Public Properties
-    static var currentLogDirectory: URL?
+    public static var currentLogDirectory: URL?
 
     // MARK: - Private Properties
     private static let debugTag = ULogTag(name: "ParrotDebug")
@@ -189,6 +189,11 @@ public extension ParrotDebug {
             archiveUrl = tmpUrl
         }
         return archiveUrl
+    }
+
+    /// Check if app is launched bu XCUITest
+    static func isUiTest() -> Bool {
+        ProcessInfo.processInfo.environment["isUITest"] == "1"
     }
 }
 

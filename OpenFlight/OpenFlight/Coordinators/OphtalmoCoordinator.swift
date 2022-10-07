@@ -59,5 +59,4 @@ public final class OphtalmoCoordinator: Coordinator {
         settingsCoordinator.startSettingType = type
         presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
     }
-
 }

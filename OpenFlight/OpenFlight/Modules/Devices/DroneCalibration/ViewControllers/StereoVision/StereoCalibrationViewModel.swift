@@ -43,6 +43,8 @@ public final class StereoCalibrationViewModel {
     private enum Constants {
         static let timerTolerance: TimeInterval = 0.2
         static let timerValue: TimeInterval = 10.0
+        static let countDownDuration: Int = 3
+        static let countDownInterval: TimeInterval = 1.0
     }
 
     // MARK: - Published Properties
@@ -50,8 +52,14 @@ public final class StereoCalibrationViewModel {
     // Stereo calibration controller publishers
 
     @Published private(set) var calibrationEnded: CalibrationEndedState?
-    @Published private(set) var calibrationButtonIsEnable: Bool = false
+    @Published private(set) var isCalibrationButtonEnabled: Bool = false
     @Published private(set) var warningText: String?
+    @Published private(set) var calibrationMessage: String = L10n.loveCalibrationSetupMessage
+    @Published private(set) var subtitle: String?
+    @Published private(set) var subtitleColor: UIColor = ColorName.defaultTextColor.color
+    @Published private(set) var isCalibrationButtonHidden: Bool = false
+    @Published private(set) var animationImages: [UIImage]?
+    @Published private(set) var countdownMessage: String?
 
     // Progress view publishers
 
@@ -62,6 +70,7 @@ public final class StereoCalibrationViewModel {
     @Published private(set) var finishedButtonHighlighted: Bool = true
     @Published private(set) var calibrationTitleHidden: Bool = false
     @Published private(set) var missionStateHidden: Bool = false
+    @Published private(set) var calibrationHandLandingImageHidden: Bool = true
     @Published private(set) var calibrationCompleteImageHidden: Bool = true
     @Published private(set) var calibrationTitleColor: UIColor = ColorName.defaultTextColor.color
     @Published private(set) var landingButtonHidden: Bool = true
@@ -71,11 +80,13 @@ public final class StereoCalibrationViewModel {
     @Published private(set) var calibrationResultHidden: Bool = true
     @Published private(set) var calibrationErrorText: String?
     @Published private(set) var calibrationErrorHidden: Bool = true
+    @Published private(set) var shouldHideMessageLabel: Bool = false
 
     private var alertTimer: Timer?
+    private var countdown: Int?
 
     var calibrationPercentage: AnyPublisher<Float?, Never> { ophtalmoService.calibrationPercentagePublisher }
-    var calibrationStatus: AnyPublisher<OpthamoMissionCalibrationStatus?, Never> {
+    var calibrationStatus: AnyPublisher<OpthalmoMissionCalibrationStatus?, Never> {
         ophtalmoService.calibrationStatusPublisher
     }
     var calibrationStateMessage: AnyPublisher<String?, Never> {
@@ -101,6 +112,7 @@ public final class StereoCalibrationViewModel {
     private var calibrationAltitude: Float = 0
     unowned let ophtalmoService: OphtalmoService
     private var droneStateRef: Ref<DeviceState>?
+    private var timer: Timer?
 
     init(coordinator: DroneCalibrationCoordinator?, ophtalmoService: OphtalmoService) {
         self.coordinator = coordinator
@@ -134,18 +146,9 @@ public final class StereoCalibrationViewModel {
         ophtalmoService.unregisterListener()
         alertTimer?.invalidate()
         alertTimer = nil
+        timer?.invalidate()
+        timer = nil
         droneStateRef = nil
-    }
-
-    /// Starts watcher for drone state.
-    ///
-    /// - Parameter drone: the current drone
-    func listenDroneState() {
-        droneStateRef = connectedDroneHolder.drone?.getState { [unowned self] droneState in
-            if droneState?.connectionState == .disconnected {
-                askingForBack()
-            }
-        }
     }
 }
 
@@ -165,114 +168,6 @@ extension StereoCalibrationViewModel {
         manualPiloting.land()
     }
 
-    /// Listens the ophtalmo service to update if the calibration screen should be dismissed
-    func updateShouldGoBack() {
-        ophtalmoService
-            .calibrationEndedPublisher
-            .compactMap { $0 }
-            .removeDuplicates()
-            .combineLatest(ophtalmoService.isFlyingPublisher.removeDuplicates())
-            .sink { [unowned self] (calibrationEnded, isFlying) in
-                if calibrationEnded == .aborted {
-                    shouldHideProgressView = true
-                    if !isFlying {
-                       askingForBack()
-                    }
-                }
-            }
-            .store(in: &cancellables)
-    }
-
-    /// Listens the calibration status to update the different publishers
-    func updateWithCalibrationStatus() {
-        ophtalmoService
-            .calibrationStatusPublisher
-            .compactMap { $0 }
-            .removeDuplicates()
-            .combineLatest(ophtalmoService.isFlyingPublisher.removeDuplicates(),
-                           ophtalmoService.endLandingPublisher.removeDuplicates())
-            .sink { [unowned self] (status, isFlying, endIsLanding) in
-                switch status {
-                case .ok:
-                    calibrationTitleHidden = true
-                    calibrationResultText = L10n.loveCalibrationOk
-                    calibrationResultHidden = false
-                    calibrationResultColor = ColorName.highlightColor.color
-                    shouldHideProgressView = true
-                    stopButtonHidden = true
-                    finishedButtonHighlighted = true
-                    missionStateHidden = true
-
-                    if isFlying {
-                        if endIsLanding {
-                            landingButtonHidden = true
-                        } else {
-                            landingButtonHidden = false
-                            calibrationCompleteImageHidden = true
-                        }
-                    } else {
-                        landingButtonHidden = true
-                        calibrationCompleteImageHidden = false
-                        finishedButtonHidden = false
-                    }
-
-                case .ko:
-                    calibrationTitleHidden = true
-                    calibrationResultText = L10n.loveCalibrationKo
-                    calibrationResultHidden = false
-                    calibrationResultColor = ColorName.errorColor.color
-                    shouldHideProgressView = true
-                    stopButtonHidden = true
-                    finishedButtonHighlighted = false
-                    missionStateHidden = true
-
-                    if isFlying {
-                        landingButtonHidden = false
-                    } else {
-                        landingButtonHidden = true
-                        finishedButtonHidden = false
-                        calibrationCompleteImageHidden = true
-                        calibrationErrorHidden = false
-                        calibrationErrorText = L10n.loveCalibrationKoAdvice
-                    }
-
-                case .aborted:
-                    calibrationTitleHidden = false
-                    shouldHideProgressView = true
-                    stopButtonHidden = true
-                    missionStateHidden = true
-                    calibrationErrorHidden = false
-                    calibrationErrorText = L10n.loveCalibrationDone
-
-                    if isFlying {
-                        calibrationTitleColor = ColorName.defaultTextColor.color
-                        calibrationTitle = L10n.loveCalibrationAborted
-                    } else {
-                        askingForBack()
-                    }
-
-                case .inProgress:
-                    calibrationTitleHidden = true
-
-                default:
-                    return
-                }
-            }
-            .store(in: &cancellables)
-
-    }
-
-    /// Listens the opthalmo service to update the warning text
-    func updateWarningText() {
-        ophtalmoService
-            .isFlyingPublisher
-            .combineLatest(ophtalmoService.gpsStrengthPublisher)
-            .sink { [unowned self] (isFlying, gpsStrength) in
-                warningTextWith(isFlying: isFlying, gpsStrength: gpsStrength)
-            }
-            .store(in: &cancellables)
-    }
-
     // MARK: - Mission
 
     /// Starts the ophtalmo mission.
@@ -287,7 +182,7 @@ extension StereoCalibrationViewModel {
 
     /// Starts the stereo vision sensor calibration.
     ///
-    /// - Parameter altitude: The altitude the drone will fly up to
+    /// - Parameter altitude: the altitude the drone will fly up to
     func startCalibration(altitude: Float = 0) {
         calibrationAltitude = altitude
         ophtalmoService.startCalibration(altitude: altitude)
@@ -301,16 +196,16 @@ extension StereoCalibrationViewModel {
 
     // MARK: - Navigation
 
-    /// Dissmisses the view
+    /// Dismisses the view.
     func back() {
         Services.hub.currentMissionManager.provider.mission.defaultMode.missionActivationModel.startMission()
         coordinator?.back()
         ophtalmoCoordinator?.dismiss()
     }
 
-    /// User asked for the back action
+    /// User asked for the back action.
     func askingForBack() {
-        if ophtalmoService.isFlyingValue {
+        if ophtalmoService.isFlying {
             if alertTimer == nil {
                 ophtalmoService.updateErrorAlert(.cannotStop)
                 alertTimer = Timer.scheduledTimer(withTimeInterval: Constants.timerValue, repeats: false) { [weak self] _ in
@@ -346,41 +241,196 @@ extension StereoCalibrationViewModel {
     }
 
     /// Dismisses the progress view.
-    /// - Parameter endState: The ended state of the calibration
-    ///
     /// Changing the calibrationEndedState triggers an action in the parent view controller.
+    ///
+    /// - Parameter endState: the ended state of the calibration
     func dismissProgressView(endState: CalibrationEndedState) {
         calibrationEnded = endState
     }
 
+    /// Stops the hand launch.
+    func stop() {
+        guard ophtalmoService.handLaunchState == .ready else { return }
+        landDrone()
+    }
+}
+
+// MARK: - Private Funcs
+
+private extension StereoCalibrationViewModel {
+
+    /// Starts watcher for drone state.
+    func listenDroneState() {
+        droneStateRef = connectedDroneHolder.drone?.getState { [unowned self] droneState in
+            if droneState?.connectionState == .disconnected {
+                askingForBack()
+            }
+        }
+    }
+
+    /// Listens the ophtalmo service to update if the calibration screen should be dismissed
+    func updateShouldGoBack() {
+        ophtalmoService
+            .calibrationEndedPublisher
+            .compactMap { $0 }
+            .removeDuplicates()
+            .combineLatest(ophtalmoService.isFlyingPublisher.removeDuplicates())
+            .sink { [unowned self] (calibrationEnded, isFlying) in
+                if calibrationEnded == .aborted {
+                    shouldHideProgressView = true
+                    if !isFlying {
+                       askingForBack()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Listens the calibration status to update the different publishers
+    func updateWithCalibrationStatus() {
+        ophtalmoService
+            .calibrationStatusPublisher
+            .compactMap { $0 }
+            .removeDuplicates()
+            .combineLatest(ophtalmoService.isFlyingPublisher.removeDuplicates(),
+                           ophtalmoService.endLandingPublisher.removeDuplicates(),
+                           ophtalmoService.isHandLandingPublisher.removeDuplicates())
+            .sink { [unowned self] (status, isFlying, endIsLanding, isHandLanding) in
+                switch status {
+                case .ok:
+                    calibrationTitleHidden = true
+                    calibrationResultText = isHandLanding ? L10n.alertHandLandLanding : L10n.loveCalibrationOk
+                    calibrationResultHidden = false
+                    calibrationResultColor = ColorName.highlightColor.color
+                    shouldHideProgressView = true
+                    stopButtonHidden = true
+                    finishedButtonHighlighted = true
+                    missionStateHidden = true
+                    if isFlying {
+                        if endIsLanding {
+                            landingButtonHidden = true
+                        } else {
+                            landingButtonHidden = isHandLanding
+                            calibrationCompleteImageHidden = true
+                        }
+                        calibrationHandLandingImageHidden = !isHandLanding
+                    } else {
+                        landingButtonHidden = true
+                        calibrationCompleteImageHidden = false
+                        calibrationHandLandingImageHidden = true
+                        finishedButtonHidden = false
+                    }
+
+                case .ko:
+                    calibrationTitleHidden = true
+                    calibrationResultText = isHandLanding ? L10n.alertHandLandLanding : L10n.loveCalibrationKo
+                    calibrationResultHidden = false
+                    calibrationResultColor = isHandLanding ? ColorName.highlightColor.color : ColorName.errorColor.color
+                    shouldHideProgressView = true
+                    stopButtonHidden = true
+                    finishedButtonHighlighted = false
+                    missionStateHidden = true
+
+                    if isFlying {
+                        landingButtonHidden = false
+                        calibrationHandLandingImageHidden = !isHandLanding
+                    } else {
+                        landingButtonHidden = true
+                        finishedButtonHidden = false
+                        calibrationCompleteImageHidden = true
+                        calibrationErrorHidden = false
+                        calibrationErrorText = L10n.loveCalibrationKoAdvice
+                    }
+
+                case .aborted:
+                    calibrationTitleHidden = false
+                    shouldHideProgressView = true
+                    stopButtonHidden = true
+                    missionStateHidden = true
+                    calibrationResultText = isHandLanding ? L10n.alertHandLandLanding : nil
+                    calibrationResultHidden = !isHandLanding
+                    calibrationResultColor = ColorName.highlightColor.color
+                    calibrationErrorHidden = false
+                    calibrationErrorText = L10n.loveCalibrationDone
+
+                    if isFlying {
+                        calibrationTitleColor = ColorName.defaultTextColor.color
+                        calibrationTitle = L10n.loveCalibrationAborted
+                        calibrationHandLandingImageHidden = !isHandLanding
+                    } else {
+                        askingForBack()
+                    }
+
+                case .inProgress:
+                    calibrationTitleHidden = true
+
+                default:
+                    return
+                }
+            }
+            .store(in: &cancellables)
+
+    }
+
+    /// Listens the opthalmo service to update the warning text
+    func updateWarningText() {
+        ophtalmoService.isFlyingPublisher
+            .removeDuplicates()
+            .sink { [unowned self] in
+                calibrationMessage = $0 ? L10n.loveCalibrationSetupMessageInflight : L10n.loveCalibrationSetupMessage
+            }
+            .store(in: &cancellables)
+
+        ophtalmoService
+            .isFlyingPublisher
+            .combineLatest(ophtalmoService.handLaunchStatePublisher,
+                           ophtalmoService.gpsStrengthPublisher)
+            .sink { [unowned self] (_, handLaunchState, gpsStrength) in
+                updateView(handLaunchState: handLaunchState,
+                           gpsStrength: gpsStrength)
+            }
+            .store(in: &cancellables)
+
+        ophtalmoService.handLaunchStatePublisher
+            .removeDuplicates()
+            .sink { [unowned self] handLaunchState in
+                switch handLaunchState {
+                case .unavailable, .available:
+                    resetCountdown()
+                case .ready:
+                    startCountdown()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     // MARK: - Message Configuration
 
-    /// Updates the warning message.
+    /// Updates view.
+    ///
     /// - Parameters:
-    ///   - isFlying: The drone flying state.
-    ///   - gpsStrength: The drone gps strength.
-    func warningTextWith(isFlying: Bool, gpsStrength: GpsStrength) {
-        if isFlying {
-            calibrationButtonIsEnable = false
-            warningText = L10n.loveCalibrationFlying
-            return
-        }
-
+    ///   - handLaunchState: the hand launch state
+    ///   - gpsStrength: the drone gps strength
+    func updateView(handLaunchState: OphtalmoHandLaunchState, gpsStrength: GpsStrength) {
         if gpsStrength == .notFixed || gpsStrength == .none || gpsStrength == .fixed1on5 {
-            calibrationButtonIsEnable = false
+            isCalibrationButtonEnabled = false
             warningText = L10n.loveCalibrationGps
+            shouldHideMessageLabel = true
+            updateHandLaunchView(.unavailable)
             return
         }
 
-        calibrationButtonIsEnable = true
+        isCalibrationButtonEnabled = true
         warningText = nil
+        updateHandLaunchView(handLaunchState)
+        shouldHideMessageLabel = isCalibrationButtonHidden
     }
 
     /// Changes the label to match the corresponding step.
     ///
     /// - Parameter state: the current state of the calibration
     /// - Returns : A string representing the current state of the mission
-    func changeMissionLabel(state: OpthamoMissionCalibrationStep) -> String? {
+    func changeMissionLabel(state: OpthalmoMissionCalibrationStep) -> String? {
         switch state {
         case .idle:
             break
@@ -402,5 +452,47 @@ extension StereoCalibrationViewModel {
             break
         }
         return nil
+    }
+
+    /// Update screen from hand launch state.
+    ///
+    /// - Parameter handLaunchState: the current state of the hand launch
+    func updateHandLaunchView(_ handLaunchState: OphtalmoHandLaunchState) {
+        subtitle = handLaunchState.subtitle
+        subtitleColor = handLaunchState.subtitleColor
+        isCalibrationButtonHidden = handLaunchState.isCalibrationButtonsHidden
+        let isAnimationVisible = handLaunchState.isCalibrationButtonsHidden && countdown == 0
+        animationImages = isAnimationVisible ? Asset.Alertes.HandLaunch.Animation.allValues.compactMap { $0.image } : nil
+        countdownMessage = countdown == 0 ? L10n.alertHandLaunchLaunch : countdown?.description
+    }
+
+    /// Resets countdown.
+    func resetCountdown() {
+        countdown = nil
+        timer?.invalidate()
+        timer = nil
+        updateView(handLaunchState: ophtalmoService.handLaunchState,
+                   gpsStrength: ophtalmoService.gpsStrength)
+    }
+
+    /// Starts countdown.
+    func startCountdown() {
+        guard timer == nil else { return }
+
+        countdown = Constants.countDownDuration
+        updateView(handLaunchState: ophtalmoService.handLaunchState,
+                   gpsStrength: ophtalmoService.gpsStrength)
+        timer = Timer.scheduledTimer(withTimeInterval: Constants.countDownInterval, repeats: true, block: { [weak self] _ in
+            guard let self = self else { return }
+            if let lastCountdown = self.countdown, lastCountdown > 0 {
+                self.countdown = lastCountdown - Int(Constants.countDownInterval)
+            } else {
+                self.countdown = 0
+                self.timer?.invalidate()
+                self.timer = nil
+            }
+            self.updateView(handLaunchState: self.ophtalmoService.handLaunchState,
+                            gpsStrength: self.ophtalmoService.gpsStrength)
+        })
     }
 }

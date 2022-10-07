@@ -35,7 +35,7 @@ private extension ULogTag {
     static let tag = ULogTag(name: "CellularService")
 }
 
-protocol CellularService: AnyObject {
+public protocol CellularService: AnyObject {
     var cellularStatusPublisher: AnyPublisher<DetailsCellularStatus, Never> { get }
     var operatorNamePublisher: AnyPublisher<String?, Never> { get }
     var isCellularAvailablePublisher: AnyPublisher<Bool, Never> { get }

@@ -95,7 +95,7 @@ public class FlightPlanEditionViewController: UIViewController {
     }
 
     private func bindViewModel() {
-        viewModel.$viewState
+        viewModel.viewStatePublisher
             .compactMap({ $0 })
             .sink { [unowned self] state in
                 switch state {
@@ -123,6 +123,7 @@ public class FlightPlanEditionViewController: UIViewController {
         backButtonPublisher?.sink { [weak self] in
             guard let self = self else { return }
             if let viewState = self.viewModel.viewState,
+               viewState != .closeSettings,
                viewState != .settingsLeadConstraint {
                 // Edition view state differs from main panel.
                 // => Close setting.
@@ -197,6 +198,15 @@ public class FlightPlanEditionViewController: UIViewController {
         exitEdition()
     }
 
+    /// Closes settings panel.
+    public func closeSettings() {
+        // Close building height picker if needed.
+        // This is required in order to prevent picker from being presented on
+        // non-PGY settings panels (e.g. `.image`, `.rth`…).
+        editionSettingsCoordinator?.dismissBuildingHeightPickerIfNeeded(closeSettings: false)
+        viewModel.closeSettings()
+    }
+
     private func exitEdition() {
         navigationController?.popViewController(animated: true)
         panelCoordinator?.showHudControls(show: true)
@@ -226,9 +236,30 @@ public class FlightPlanEditionViewController: UIViewController {
         }
 
         // User attempts to leave the view with pending changes.
-        // A confirmation popup is shown asking to save or abort modification.
-        // When the user confirms is choice, the corresponding completion is called and editing mode is leaved.
-        panelCoordinator?.saveChangesPopup(cancel: leaveWhitoutSave, validate: saveChanges)
+        // A confirmation popup is shown asking to wants to save, abandon modifications, or stay in the editor.
+        saveChangesPopup(leaveWithoutSave: leaveWhitoutSave, validate: saveChanges)
+    }
+
+    /// Shows alert asking if the user wants to save, not save or stay in the editor
+    ///
+    ///  - Parameters:
+    ///    - leaveWithoutSave: executed when the user chooses to leave edition without saving
+    ///    - validate: executed when the user chooses to save
+    private func saveChangesPopup(leaveWithoutSave: @escaping () -> Void, validate: @escaping () -> Void) {
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       style: .default2) // do nothing, stay in the editor
+        let validateAction = AlertAction(title: L10n.commonSave,
+                                         style: .validate,
+                                         actionHandler: validate)
+        let secondaryAction = AlertAction(title: L10n.commonDoNotSave,
+                                          style: .destructive,
+                                          actionHandler: leaveWithoutSave)
+
+        showAlert(title: L10n.flightPlanDiscardChangesTitle,
+                  message: L10n.flightPlanDiscardChangesDescription,
+                  cancelAction: cancelAction,
+                  validateAction: validateAction,
+                  secondaryAction: secondaryAction)
     }
 }
 
@@ -267,11 +298,6 @@ private extension FlightPlanEditionViewController {
     /// Opens settings panel.
     func openSettings(categoryFilter: FlightPlanSettingCategory? = nil) {
         self.viewModel?.refreshContentSettings(categoryFilter: categoryFilter)
-    }
-
-    /// Closes settings panel.
-    func closeSettings() {
-        viewModel.closeSettings()
     }
 
     /// Deselects currently selected graphic.

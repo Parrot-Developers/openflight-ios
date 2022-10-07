@@ -49,11 +49,6 @@ public protocol PanoramaService: AnyObject {
     /// Publisher for ongoing panorama.
     var panoramaOngoingPublisher: AnyPublisher<Bool, Never> { get }
 
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
-    /// Publisher for panorama alerts.
-    var alertsPublisher: AnyPublisher<[HUDAlertType], Never> { get }
-
     /// Starts a panorama photo capture.
     ///
     /// - Parameters:
@@ -67,14 +62,6 @@ public protocol PanoramaService: AnyObject {
 /// Implementation of `PanoramaService`.
 public class PanoramaServiceImpl {
 
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove constants.
-    // MARK: - Private Enums
-    private enum Constants {
-        /// Panorama alerts reset delay in seconds.
-        static let alertsResetDelay = 3
-    }
-
     // MARK: Private properties
     /// Current drone holder service.
     private unowned let currentDroneHolder: CurrentDroneHolder
@@ -82,16 +69,8 @@ public class PanoramaServiceImpl {
     private let bamService: BannerAlertManagerService
     /// Whether current camera capture mode is a panorama mode.
     private var panoramaModeActiveSubject = CurrentValueSubject<Bool, Never>(false)
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
-    /// Panorama alerts subject.
-    private var alertsSubject = PassthroughSubject<[HUDAlertType], Never>()
     /// Ongoing panorama subject.
     private var panoramaOngoingSubject = CurrentValueSubject<Bool, Never>(false)
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
-    /// Alerts reset task.
-    private var alertsReset: AnyCancellable?
     /// Reference to drone flying indicators instrument.
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     /// Reference to animation piloting interface.
@@ -116,10 +95,6 @@ public class PanoramaServiceImpl {
 
 // MARK: PanoramaService protocol conformance
 extension PanoramaServiceImpl: PanoramaService {
-
-    public var alertsPublisher: AnyPublisher<[HUDAlertType], Never> {
-        alertsSubject.eraseToAnyPublisher()
-    }
 
     public var panoramaModeActivePublisher: AnyPublisher<Bool, Never> {
         panoramaModeActiveSubject.eraseToAnyPublisher()
@@ -168,18 +143,6 @@ extension PanoramaServiceImpl: PanoramaService {
            !currentDroneHolder.drone.isStateFlying {
             ULog.i(.tag, "Cannot start panorama: drone not flying")
             bamService.show(AdviceBannerAlert.takeOff)
-
-            alertsReset?.cancel()
-            // notify take off required alert
-            alertsSubject.send([HUDBannerAdviceslertType.takeOff])
-            // reset alert after a delay
-            alertsReset = Just(true)
-                .delay(for: .seconds(Constants.alertsResetDelay), scheduler: DispatchQueue.main)
-                .sink { [unowned self] _ in
-                    alertsSubject.send([])
-                }
-            // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-            // TODO: Remove code.
         } else {
             ULog.i(.tag, "Start panorama \(mode.rawValue)")
             // start panorama animation
@@ -218,10 +181,6 @@ private extension PanoramaServiceImpl {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
             if flyingIndicators?.state == .flying {
                 bamService.hide(AdviceBannerAlert.takeOff)
-                // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-                // TODO: Remove code.
-                // reset take off required alert
-                alertsSubject.send([])
             }
         }
     }

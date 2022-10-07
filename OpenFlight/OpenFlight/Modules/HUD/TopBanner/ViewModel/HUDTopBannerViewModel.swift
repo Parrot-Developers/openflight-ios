@@ -83,9 +83,6 @@ final class HUDTopBannerViewModel {
     private var preciseHomeRef: Ref<PreciseHome>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
-    private let alertBannerViewModel = HUDAlertBannerViewModel()
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
     private var shouldShowHomeSetInfo: Bool = false
     private var isAutoModeActive: Bool = false
     private let autoModeViewModel: ImagingBarAutoModeViewModel
@@ -103,7 +100,6 @@ final class HUDTopBannerViewModel {
         exposureLockService = Services.hub.drone.exposureLockService
         autoModeViewModel = ImagingBarAutoModeViewModel(exposureLockService: exposureLockService)
         currentDroneHolder = Services.hub.currentDroneHolder
-        listenAlertBannerViewModel()
 
         currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
@@ -187,26 +183,6 @@ private extension HUDTopBannerViewModel {
         returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] _ in
             self?.updateHomeStates(drone: drone)
         }
-    }
-
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove function.
-    /// Starts watcher for banner alerts.
-    func listenAlertBannerViewModel() {
-        alertBannerViewModel.state.valueChanged = { [weak self] state in
-            self?.updateAlertDisplay(state)
-        }
-        updateAlertDisplay(alertBannerViewModel.state.value)
-    }
-
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove function.
-    /// Update alert display state.
-    ///
-    /// - Parameters:
-    ///    - alertBannerState: current alert banner state
-    func updateAlertDisplay(_ alertBannerState: HUDAlertBannerState) {
-        isDisplayingAlert = alertBannerState.alert != nil
     }
 
     /// Updates auto mode state.

@@ -40,14 +40,4 @@ extension CopterMotors {
             .map { AnyBannerAlert($0) }
             .sorted()
     }
-
-    // [Banner Alerts] Legacy code is temporarily kept for validation purpose only.
-    // TODO: Remove property.
-    /// Returns current alerts for motors.
-    var currentErrors: [HUDAlertType] {
-        return motorsCurrentlyInError
-            .compactMap { latestError(onMotor: $0) }
-            .uniques
-            .compactMap { $0.error }
-    }
 }

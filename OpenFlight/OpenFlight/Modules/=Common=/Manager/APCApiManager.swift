@@ -49,7 +49,7 @@ private extension APCApiManager {
 
     /// APC URLs.
     enum APCApiManagerURL {
-        static let baseURL = "https://accounts.parrot.com"
+        static let baseURL = "https://accounts-api.parrot.com"
     }
 
     /// APC parameters.

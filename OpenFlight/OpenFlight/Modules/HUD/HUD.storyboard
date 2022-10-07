@@ -132,6 +132,13 @@
                                     <constraint firstAttribute="height" constant="240" id="NDQ-rT-gDg"/>
                                 </constraints>
                             </view>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kUe-Ja-cJc">
+                                <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="closeBottomBarButtonTouchedUpInside:" destination="APi-HC-E6C" eventType="touchUpInside" id="TVU-cW-Wa2"/>
+                                </connections>
+                            </button>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pPJ-Rm-w9A" userLabel="Right Panel Container View">
                                 <rect key="frame" x="1124" y="0.0" width="200" height="768"/>
                                 <constraints>
@@ -190,6 +197,7 @@
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hqR-3H-dlh" userLabel="Center Map Button" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="8" y="8" width="51" height="51"/>
+                                        <accessibility key="accessibilityConfiguration" label="Center Map"/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="hqR-3H-dlh" secondAttribute="height" multiplier="1:1" id="C54-6v-GRb"/>
                                             <constraint firstAttribute="height" constant="51" id="tsy-pL-rKy"/>
@@ -250,9 +258,6 @@
                                     <constraint firstAttribute="height" constant="80" id="H9b-m5-Ntc"/>
                                     <constraint firstAttribute="width" priority="750" constant="500" id="qLX-8J-AbE"/>
                                 </constraints>
-                                <connections>
-                                    <segue destination="5fd-eQ-Ik8" kind="embed" id="BxW-RO-FKA"/>
-                                </connections>
                             </containerView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="K5N-tg-fmo" customClass="PassThroughView" customModule="OpenFlight" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="40" width="1124" height="728"/>
@@ -274,6 +279,7 @@
                             <constraint firstItem="v2w-Kq-0vQ" firstAttribute="leading" secondItem="Lqv-oO-3r6" secondAttribute="trailing" id="0Om-Xf-RDS"/>
                             <constraint firstItem="h11-4c-rQ2" firstAttribute="leading" secondItem="IGY-PF-fXN" secondAttribute="leading" id="1GY-NI-fug"/>
                             <constraint firstItem="UFz-hs-tS3" firstAttribute="top" secondItem="ZTK-Yx-Qpf" secondAttribute="bottom" id="2pV-hO-AeB"/>
+                            <constraint firstAttribute="bottom" secondItem="Y6a-LS-7X1" secondAttribute="bottom" id="48q-Gp-hKi"/>
                             <constraint firstAttribute="bottom" secondItem="v2w-Kq-0vQ" secondAttribute="bottom" id="4D7-va-2zU"/>
                             <constraint firstItem="FPd-si-j9L" firstAttribute="leading" secondItem="IGY-PF-fXN" secondAttribute="leading" id="5Mc-uD-hPK"/>
                             <constraint firstItem="pPJ-Rm-w9A" firstAttribute="leading" secondItem="ZTK-Yx-Qpf" secondAttribute="trailing" id="5VL-JE-S5Y"/>
@@ -290,12 +296,15 @@
                             <constraint firstItem="FPd-si-j9L" firstAttribute="top" secondItem="IGY-PF-fXN" secondAttribute="top" id="JOa-sC-TPk"/>
                             <constraint firstAttribute="bottom" secondItem="Lqv-oO-3r6" secondAttribute="bottom" id="JP0-qq-LqZ"/>
                             <constraint firstItem="G0Y-Yq-3Of" firstAttribute="top" secondItem="IGY-PF-fXN" secondAttribute="top" id="Lup-xz-IS2"/>
+                            <constraint firstAttribute="trailing" secondItem="Y6a-LS-7X1" secondAttribute="trailing" id="M9N-KT-Fi0"/>
                             <constraint firstAttribute="bottom" secondItem="Y6a-LS-7X1" secondAttribute="bottom" id="N3K-pF-IPb"/>
                             <constraint firstItem="XGe-F0-rzg" firstAttribute="top" secondItem="zS0-cb-r83" secondAttribute="top" id="OaS-Xc-gNd"/>
                             <constraint firstItem="D2y-RL-kY3" firstAttribute="centerX" secondItem="zS0-cb-r83" secondAttribute="centerX" id="OyA-Fm-DcV"/>
                             <constraint firstItem="pPJ-Rm-w9A" firstAttribute="leading" secondItem="yQI-6E-ytt" secondAttribute="trailing" constant="-4" id="PYT-4l-ll9"/>
                             <constraint firstAttribute="bottom" secondItem="FPd-si-j9L" secondAttribute="bottom" id="SCF-oV-KSU"/>
+                            <constraint firstItem="Y6a-LS-7X1" firstAttribute="leading" secondItem="IGY-PF-fXN" secondAttribute="leading" id="Sgz-o8-mQ3"/>
                             <constraint firstAttribute="bottom" secondItem="UFz-hs-tS3" secondAttribute="bottom" priority="750" id="Tif-Qr-6fW"/>
+                            <constraint firstItem="Y6a-LS-7X1" firstAttribute="top" secondItem="IGY-PF-fXN" secondAttribute="top" id="TrC-mU-dXo"/>
                             <constraint firstItem="RwT-Vd-Zj8" firstAttribute="bottom" secondItem="Imz-R2-kNk" secondAttribute="bottom" id="U31-8I-4vw"/>
                             <constraint firstItem="bYj-wS-qx1" firstAttribute="top" secondItem="IGY-PF-fXN" secondAttribute="top" constant="45" id="Ujr-jw-njH"/>
                             <constraint firstItem="RwT-Vd-Zj8" firstAttribute="trailing" secondItem="Imz-R2-kNk" secondAttribute="trailing" id="VY2-lx-G2J"/>
@@ -353,6 +362,7 @@
                         <outlet property="cameraSlidersLeadingConstraint" destination="e0s-NH-clL" id="U65-nc-4bD"/>
                         <outlet property="centerButtonBottomConstraint" destination="2pV-hO-AeB" id="l0k-yD-k5f"/>
                         <outlet property="centerButtonHeightConstraint" destination="tsy-pL-rKy" id="1Dh-lK-9x0"/>
+                        <outlet property="closeBottomBarButton" destination="kUe-Ja-cJc" id="tfX-HV-QUP"/>
                         <outlet property="dismissMissionLauncherButton" destination="Y6a-LS-7X1" id="Bnq-sc-uSH"/>
                         <outlet property="indicatorContainerView" destination="7hw-J5-nSF" id="ssx-CQ-c3d"/>
                         <outlet property="infoBannerTopConstraint" destination="Ujr-jw-njH" id="09x-b7-viq"/>
@@ -425,14 +435,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sn0-qY-Tu5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-42" y="566"/>
-        </scene>
-        <!--HUDTopBanner-->
-        <scene sceneID="0jK-be-tu5">
-            <objects>
-                <viewControllerPlaceholder storyboardName="HUDTopBanner" id="5fd-eQ-Ik8" sceneMemberID="viewController"/>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="tR8-NM-Y3U" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="505" y="80"/>
         </scene>
         <!--HUDTopBar-->
         <scene sceneID="J4u-Lp-HcM">

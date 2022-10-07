@@ -213,12 +213,15 @@ private extension PhotoLapseModeViewModel {
     /// - Parameters:
     ///      - camera: current camera
     func updateMode(withCamera camera: Camera2) {
-        guard camera.photoCapture?.state.isStarted == true else { return }
-
         let copy = state.value.copy()
         let currentCameraMode = CameraUtils.computeCameraMode(camera: camera)
-        copy.isGpslapseInProgress = currentCameraMode == .gpslapse
-        copy.isTimelapseInProgress = currentCameraMode == .timelapse
+        if camera.photoCapture?.state.isStarted == true {
+            copy.isGpslapseInProgress = currentCameraMode == .gpslapse
+            copy.isTimelapseInProgress = currentCameraMode == .timelapse
+        } else {
+            copy.isGpslapseInProgress = false
+            copy.isTimelapseInProgress = false
+        }
         state.set(copy)
     }
 

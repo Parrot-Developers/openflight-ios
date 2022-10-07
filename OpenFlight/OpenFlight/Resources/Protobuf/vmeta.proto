@@ -240,8 +240,11 @@ message Location {
 	double latitude = 1;
 	double longitude = 2;
 
-	/* Altitude above the WGS 84 ellipsoid (m) */
-	double altitude = 3;
+	/* Altitude above the WGS84 ellipsoid (m) (zero means unknown) */
+	double altitude_wgs84ellipsoid = 3;
+
+	/* Altitude above the EGM96 geoid (AMSL) (m) (zero means unknown) */
+	double altitude_egm96amsl = 7;
 
 	/* Horizontal and vertical location accuracy (m), zero means unknown */
 	float horizontal_accuracy = 5;
@@ -250,6 +253,12 @@ message Location {
 	/* GPS Satellite vehicle count, only set if location comes at least
 	 * partially from a GPS sensor */
 	uint32 sv_count = 4;
+}
+
+/* Generic 2 component vector */
+message Vector2 {
+	float x = 1;
+	float y = 2;
 }
 
 /* Generic 3 component vector */
@@ -376,6 +385,12 @@ message CameraMetadata {
 	 * the Drone.local_position metadata should be used instead.
 	 */
 	Vector3 local_position = 12;
+
+	/* Camera location */
+	Location location = 13;
+
+	/* Camera principal point normalized coordinates in picture [0; 1] */
+	Vector2 principal_point = 14;
 
 	/* Frame exposure time (ms) */
 	float exposure_time = 4;

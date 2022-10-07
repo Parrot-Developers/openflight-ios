@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import Reusable
+import Combine
 
 /// Custom view which display left and right Joystick.
 
@@ -38,6 +39,7 @@ final class JoysticksView: UIView, NibOwnerLoadable {
 
     // MARK: - Private Properties
     private let viewModel = JoysticksTypeViewModel()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     required init?(coder aDecoder: NSCoder) {
@@ -55,18 +57,22 @@ final class JoysticksView: UIView, NibOwnerLoadable {
 private extension JoysticksView {
     func commonInitJoysticks() {
         self.loadNibContent()
-        viewModel.state.valueChanged = { [weak self] state in
-            self?.updateJoysticks(joysticksTypeState: state)
-        }
-        updateJoysticks(joysticksTypeState: viewModel.state.value)
+
+        bindViewModel()
     }
 
-    /// Update each joystick's type regarding state.
-    ///
-    /// - Parameters:
-    ///     - joysticksTypeState: type of joysticks
-    func updateJoysticks(joysticksTypeState: JoysticksTypeState) {
-        leftJoystickView.joystickType = joysticksTypeState.leftJoystickType
-        rightJoystickView.joystickType = joysticksTypeState.rightJoystickType
+    /// Binds the view model.
+    func bindViewModel() {
+        viewModel.$leftJoystickType
+            .sink { [weak self] in
+                self?.leftJoystickView.joystickType = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$rightJoystickType
+            .sink { [weak self] in
+                self?.rightJoystickView.joystickType = $0
+            }
+            .store(in: &cancellables)
     }
 }

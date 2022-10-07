@@ -34,37 +34,87 @@ struct FlightPlanTestModel: Codable {
     var uuid: String
     var type: String
     var dataSetting: FlightPlanDataSetting?
+
+    func flightPlanModel() -> FlightPlanModel {
+        var fpm = FlightPlanModel(apcId: "", type: type, uuid: uuid,
+                                  version: "", customTitle: "", thumbnailUuid: nil,
+                                  projectUuid: "", dataStringType: "",
+                                  dataString: nil, pgyProjectId: nil,
+                                  state: .unknown, lastMissionItemExecuted: nil,
+                                  mediaCount: nil, uploadedMediaCount: nil,
+                                  lastUpdate: Date(), synchroStatus: nil,
+                                  fileSynchroStatus: 0, fileSynchroDate: nil,
+                                  latestSynchroStatusDate: nil, cloudId: nil,
+                                  parrotCloudUploadUrl: nil, isLocalDeleted: false,
+                                  latestCloudModificationDate: nil,
+                                  uploadAttemptCount: nil, lastUploadAttempt: nil,
+                                  thumbnail: nil, flightPlanFlights: nil,
+                                  latestLocalModificationDate: nil,
+                                  synchroError: nil)
+        var dataSetting = self.dataSetting
+        dataSetting?.mavlinkDataFile = nil
+        fpm.dataSetting = dataSetting
+        return fpm
+    }
 }
 
 /// Use this class to export flight plans as files used for unit tests.
 class FlightPlanExporter {
+    /// Recreates the test files for the mavlink generator.
+    ///
+    /// Reads each .flightplan file and recreates its mavlink data.
+    /// Exports the files to a new flightplan folder that can be used to replace the old one.
+    static func reexport() {
+        let flightPlanFilesManager = Services.hub.flightPlan.filesManager
+
+        // urls for test data
+        guard let urls = Bundle.main.urls(forResourcesWithExtension: "flightplan", subdirectory: "") else { return }
+        for url in urls {
+            do {
+                let data = try Data(contentsOf: url)
+                var flightPlan = try JSONDecoder().decode(FlightPlanTestModel.self, from: data)
+                // Delete previously generated mavlink
+                flightPlanFilesManager.deleteMavlink(of: flightPlan.flightPlanModel())
+                flightPlan.dataSetting?.mavlinkDataFile = nil
+                FlightPlanExporter.export(flightPlan: flightPlan.flightPlanModel(), filename: url.lastPathComponent)
+            } catch {}
+        }
+
+    }
 
     /// Exports all flight plans currently in the repository.
     /// Stores them as files in the document directory of the app
-    static func export() {
-        let flightPlans = Services.hub.repos.flightPlan.getAllFlightPlans()
-        for flightPlan in flightPlans {
-            var flightPlan = flightPlan
-            // if no mavlink data yet, try to generate it
-            if flightPlan.dataSetting?.mavlinkDataFile == nil {
-                guard let data = FlightPlanExporter.generateMavlink(for: flightPlan) else {
-                    continue
-                }
-                flightPlan.dataSetting?.mavlinkDataFile = data
-            }
-            let fpExport = FlightPlanTestModel(
-                uuid: flightPlan.uuid,
-                type: flightPlan.type,
-                dataSetting: flightPlan.dataSetting)
-            do {
-                let data = try JSONEncoder().encode(fpExport)
-                var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                url.appendPathComponent("flightplans")
-                try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
-                url.appendPathComponent("\(fpExport.uuid).flightplan")
-                try data.write(to: url)
-            } catch { }
+    static func exportRepository() {
+    let flightPlans = Services.hub.repos.flightPlan.getAllFlightPlans()
+    for flightPlan in flightPlans {
+        FlightPlanExporter.export(flightPlan: flightPlan)
         }
+    }
+
+    /// Export a flightplan to a file for tests.
+    static func export(flightPlan: FlightPlanModel, filename: String? = nil) {
+        var flightPlan = flightPlan
+        // if no mavlink data yet, try to generate it
+        if flightPlan.dataSetting?.mavlinkDataFile == nil {
+            guard let data = FlightPlanExporter.generateMavlink(for: flightPlan) else {
+                return
+            }
+            flightPlan.dataSetting?.mavlinkDataFile = data
+        }
+        let fpExport = FlightPlanTestModel(
+            uuid: flightPlan.uuid,
+            type: flightPlan.type,
+            dataSetting: flightPlan.dataSetting)
+        do {
+            let data = try JSONEncoder().encode(fpExport)
+            var url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            url.appendPathComponent("flightplans")
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+
+            let filename = filename ?? "\(fpExport.uuid).flightplan"
+            url.appendPathComponent(filename)
+            try data.write(to: url)
+        } catch { }
     }
 
     private static func generateMavlink(for flightPlan: FlightPlanModel) -> Data? {
@@ -87,14 +137,18 @@ class FlightPlanExporter {
         }
     }
 
+    /// Generates MAVLink commands from given flightPlan.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: Flight Plan to generate to MAVLink
+    /// - Returns: array of MAVLink commands
     private static func generateMavlinkCommands(for flightPlan: FlightPlanModel) -> [MavlinkStandard.MavlinkCommand] {
         var commands = [MavlinkStandard.MavlinkCommand]()
         var currentSpeed: Double?
         var currentTilt: Double?
         var currentViewMode: MavlinkStandard.SetViewModeCommand.Mode?
-        var lastRoiCommand: MavlinkStandard.SetRoiLocationCommand?
+        var lastPoiCommand: MavlinkStandard.SetRoiLocationCommand?
         var didAddStartCaptureCommand = false
-        var shouldAddRoi = false
 
         // Insert first speed command based on first waypoint speed.
         if let firstSpeedCommand = flightPlan.dataSetting?.wayPoints.first?.speedMavlinkCommand {
@@ -115,31 +169,9 @@ class FlightPlanExporter {
                 currentSpeed = speed
             }
 
-            // Point of interest & View mode.
+            // POI & View mode affect the behavior of the trajectory so they are treated first.
             let viewMode = $0.viewModeCommand.mode
-            if $0.poiCommand != lastRoiCommand {
-                // Request ROI, but only add it on second point
-                // to preserve the previous view mode during translation.
-                // This ensures that the POI only starts on the requested waypoint.
-                shouldAddRoi = $0.poiCommand != nil
-
-                if lastRoiCommand != nil {
-                    // Switching to no point of interest.
-                    // Even between POIs, we want the ViewMode to be respected between them.
-                    commands.append(MavlinkStandard.SetRoiNoneCommand())
-                    commands.append($0.viewModeCommand)
-                    currentViewMode = viewMode
-                }
-
-                lastRoiCommand = $0.poiCommand
-                currentTilt = nil   // Tilt is not managed while on poi
-            } else if $0.poiCommand != nil {
-                // If poiCommand is still active and the same try to add the poiCommand
-                if let poiCommand = $0.poiCommand, shouldAddRoi {
-                    commands.append(poiCommand)
-                    shouldAddRoi = false
-                }
-            } else if viewMode != currentViewMode {
+            if viewMode != currentViewMode {
                 // Update view mode if needed when no point of interest is set.
                 commands.append($0.viewModeCommand)
                 currentViewMode = $0.viewModeCommand.mode
@@ -148,14 +180,31 @@ class FlightPlanExporter {
             // Insert navigate to waypoint command.
             commands.append($0.wayPointMavlinkCommand)
 
+            // POI changes must be added after waypoint has been reached.
+            // This preserves the previous view mode during translation and
+            // ensures that the POI only starts on the requested waypoint.
+            if $0.poiCommand != lastPoiCommand {
+                if let poiCommand = $0.poiCommand {
+                    commands.append(poiCommand)
+                    currentTilt = nil   // Tilt is not managed while on poi
+                    lastPoiCommand = $0.poiCommand
+                } else if lastPoiCommand != nil, $0.poiCommand == nil {
+                    // Switching to no point of interest.
+                    commands.append(MavlinkStandard.SetRoiNoneCommand())
+                    commands.append($0.viewModeCommand)
+                    currentViewMode = viewMode
+                    lastPoiCommand = $0.poiCommand
+                }
+            }
+
             $0.actions?.forEach {
                 // Only send tilt command if new tilt is different from current.
                 // Send tilt only for the first element of POI (before enabling POI)
                 guard $0.type == .tilt &&
-                        (lastRoiCommand == nil || shouldAddRoi) &&
+                        lastPoiCommand == nil &&
                         $0.angle != currentTilt else {
-                            return
-                        }
+                    return
+                }
                 // Insert all waypoint actions commands.
                 commands.append($0.mavlinkCommand)
 
@@ -166,7 +215,10 @@ class FlightPlanExporter {
             }
 
             // Start capture if needed.
+            // A single waypoint mavlink does not require a media capture
             if !didAddStartCaptureCommand,
+               let wptCount = flightPlan.dataSetting?.wayPoints.count,
+               wptCount > 1,
                let captureCommand = flightPlan.dataSetting?.startCaptureCommand {
                 // Add delay command before starting capture.
                 let delay = Action.delayAction(delay: 0.0)
@@ -191,6 +243,7 @@ class FlightPlanExporter {
             commands.append(delayReturnToLaunchCommand)
             commands.append(returnToLaunchCommand)
         }
+
         return commands
     }
 }

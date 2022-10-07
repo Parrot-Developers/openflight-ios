@@ -344,12 +344,32 @@ private extension GalleryPanoramaViewModel {
         galleryMediaViewModel?.refreshMedias(source: .mobileDevice)
         galleryMediaViewModel?.mediaBrowsingViewModel.didUpdatePanoramaGeneration(.active)
 
-        guard let mediaFromDevice = mediaFromDevice,
-              let type = mediaFromDevice.type.toPanoramaType,
-              let mediaUrls = mediaFromDevice.urls,
-              let mediaFolderPath = mediaFromDevice.folderPath,
-              let mainMediaUrl = mediaFromDevice.url?.lastPathComponent else {
-            ULog.e(.tag, "Failed to start panorama generation: missing preconditions")
+        guard let mediaFromDevice = mediaFromDevice else {
+            ULog.e(.tag, "Failed to start panorama generation: media from device not found")
+            updateCurrentStep(with: .failure)
+            return
+        }
+
+        guard let type = mediaFromDevice.type.toPanoramaType else {
+            ULog.e(.tag, "Failed to start panorama generation: panorama type not found")
+            updateCurrentStep(with: .failure)
+            return
+        }
+
+        guard let mediaUrls = mediaFromDevice.urls else {
+            ULog.e(.tag, "Failed to start panorama generation: media urls not found")
+            updateCurrentStep(with: .failure)
+            return
+        }
+
+        guard let mediaFolderPath = mediaFromDevice.folderPath else {
+            ULog.e(.tag, "Failed to start panorama generation: media folder path not found")
+            updateCurrentStep(with: .failure)
+            return
+        }
+
+        guard let mainMediaUrl = mediaFromDevice.url?.lastPathComponent else {
+            ULog.e(.tag, "Failed to start panorama generation: main media url not found")
             updateCurrentStep(with: .failure)
             return
         }

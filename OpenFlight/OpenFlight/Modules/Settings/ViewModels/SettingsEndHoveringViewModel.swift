@@ -30,6 +30,7 @@
 import Foundation
 import GroundSdk
 import SwiftyUserDefaults
+import Combine
 
 /// State for in `SettingsEndHoveringViewModel`.
 final class SettingsEndHoveringState: ViewModelState, EquatableState, Copying {
@@ -74,7 +75,7 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
     /// Returns the setting entry for end Hovering altitude.
     var endHoveringAltitudeEntry: SettingEntry {
         let isHovering = state.value.isHovering == true
-        return SettingEntry(setting: returnHomePilotingRef?.value?.endingHoveringAltitude,
+        return SettingEntry(setting: endHoveringAltitudeModel(),
                             title: L10n.commonHovering,
                             unit: UnitType.distance,
                             defaultValue: Float(RthPreset.defaultHoveringAltitude),
@@ -82,7 +83,20 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
     }
 
     // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
     private var returnHomePilotingRef: Ref<ReturnHomePilotingItf>?
+    private var returnHome: ReturnHomePilotingItf?
+    var rthSettingsMonitor: RthSettingsMonitor
+
+    // MARK: - Internal Funcs
+    /// Init.
+    ///
+    /// - Parameters:
+    ///     - rthSettingsMonitor: return home settings manager
+    init(rthSettingsMonitor: RthSettingsMonitor) {
+        self.rthSettingsMonitor = rthSettingsMonitor
+        super.init()
+    }
 
     // MARK: - Deinit
     deinit {
@@ -92,6 +106,7 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
         listenReturnHome(drone)
+        listenUserRthSettings()
     }
 }
 
@@ -99,25 +114,67 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
 private extension SettingsEndHoveringViewModel {
     /// Starts watcher for Return Home.
     func listenReturnHome(_ drone: Drone) {
-        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] returnHome in
-            let copy = state.value.copy()
-            copy.hoveringAltitude = returnHome?.endingHoveringAltitude?.value
-            copy.isHovering = returnHome?.endingBehavior.behavior == .hovering
-            state.set(copy)
+        returnHomePilotingRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] returnHome in
+            guard let self = self else { return }
+            self.returnHome = returnHome
         }
+    }
+
+    /// Watches user rth settings
+    func listenUserRthSettings() {
+        rthSettingsMonitor.userPreferredRthSettingsPublisher.sink { [weak self] rthSettings in
+            guard let self = self else { return }
+            let copy = self.state.value.copy()
+            copy.hoveringAltitude = rthSettings.rthHoveringHeight
+            copy.isHovering = rthSettings.rthEndBehaviour == .hovering
+            self.state.set(copy)
+        }
+        .store(in: &cancellables)
     }
 
     /// Returns a setting model for end Hovering mode.
     func endHoveringModel() -> DroneSettingModel {
-        let endingBehavior = returnHomePilotingRef?.value?.endingBehavior
+        let userSettings = rthSettingsMonitor.getUserRthSettings()
 
         return DroneSettingModel(allValues: ReturnHomeEndingBehavior.allValues,
                                  supportedValues: ReturnHomeEndingBehavior.allValues,
-                                 currentValue: endingBehavior?.behavior,
+                                 currentValue: userSettings.rthEndBehaviour,
                                  isUpdating: false) { [weak self] mode in
-            if let mode = mode as? ReturnHomeEndingBehavior {
-                self?.returnHomePilotingRef?.value?.endingBehavior.behavior = mode
-            }
+            guard let self = self,
+                  let mode = mode as? ReturnHomeEndingBehavior
+            else { return }
+
+            let rthSettings = RthSettings(rthReturnTarget: userSettings.rthReturnTarget,
+                                          rthHeight: userSettings.rthHeight,
+                                          rthEndBehaviour: mode,
+                                          rthHoveringHeight: userSettings.rthHoveringHeight)
+            self.rthSettingsMonitor.updateUserRthSettings(rthSettings: rthSettings)
         }
+    }
+
+    func endHoveringAltitudeModel() -> HoveringAltitudeModel {
+        let userSettings = rthSettingsMonitor.getUserRthSettings()
+        let endingHoveringAltitude = returnHome?.endingHoveringAltitude
+        return HoveringAltitudeModel(min: endingHoveringAltitude?.min ?? RthPreset.minAltitude,
+                                     max: endingHoveringAltitude?.max ?? RthPreset.maxAltitude,
+                                     value: userSettings.rthHoveringHeight)
+    }
+}
+
+/// Dedicated model for hovering altitude settings.
+class HoveringAltitudeModel: DoubleSetting {
+    var updating: Bool
+    /// Setting minimum value.
+    var min: Double
+    /// Setting maximum value.
+    var max: Double
+    /// Setting current value.
+    var value: Double
+
+    init(min: Double, max: Double, value: Double, updating: Bool = false) {
+        self.min = min
+        self.max = max
+        self.value = value
+        self.updating = updating
     }
 }

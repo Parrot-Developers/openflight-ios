@@ -57,10 +57,15 @@ struct GalleryMediaFullScreenCellModel {
 
 /// A class for displaying a full screen gallery media collectionView cell.
 final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibReusable {
+    /// The cell model.
     var model: GalleryMediaFullScreenCellModel? {
-        didSet {
-            update()
-        }
+        didSet { update() }
+    }
+    /// The loading status.
+    /// Exposed in order to be able to reload only active cell in `GalleryImageViewController`.
+    /// (Needed because downloader currently only reports media-level - not resource-level - info).
+    var isLoading: Bool = true {
+        didSet { updateLoadingState() }
     }
     weak var delegate: GalleryMediaFullScreenCellDelegate?
 
@@ -68,8 +73,6 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
     @IBOutlet private weak var loadingImageView: UIImageView!
     @IBOutlet private weak var scrollView: UIScrollView!
     @IBOutlet private weak var imageView: UIImageView!
-    @IBOutlet private weak var zoomableImageWidthConstraint: NSLayoutConstraint!
-    @IBOutlet private weak var zoomableImageHeightConstraint: NSLayoutConstraint!
     @IBOutlet private weak var generatePanoramaButton: ActionButton!
     @IBOutlet private weak var expectedResourcesErrorInfoView: MainBannerInfoView!
     @IBOutlet private weak var showImmersivePanoramaButton: UIButton!
@@ -87,19 +90,6 @@ final class GalleryMediaFullScreenCollectionViewCell: UICollectionViewCell, NibR
     }
     private var canShowImmersivePanorama: Bool {
         model?.hasShowImmersivePanoramaButton == true && !isLoading
-    }
-    private var isLoading: Bool = true {
-        didSet {
-            loadingImageView.isHidden = !isLoading
-            if isLoading {
-                loadingImageView.startRotate()
-                delegate?.fullScreenCellDidStartLoading()
-            } else {
-                loadingImageView.stopRotate()
-                delegate?.fullScreenCellDidStopLoading()
-            }
-            updateState()
-        }
     }
     private var otherDownloadCancellable: AnyCancellable?
     private var otherDownloadRunning: Bool = false
@@ -132,8 +122,8 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
         if otherDownloadCancellable == nil, let viewModel = model?.galleryMediaViewModel {
             otherDownloadCancellable = viewModel.$downloadProgress
                 .combineLatest(viewModel.$downloadStatus)
-                .sink { (progress, status) in
-                    self.otherDownloadRunning = status == .running && progress != nil
+                .sink { [weak self] (progress, status) in
+                    self?.otherDownloadRunning = status == .running && progress != nil
                 }
         }
         if let previousUrl = previousUrl, previousUrl != model?.url?.absoluteString {
@@ -166,6 +156,19 @@ internal extension GalleryMediaFullScreenCollectionViewCell {
         expectedResourcesErrorInfoView.model = .init(icon: Asset.Gallery.mediaCorrupted.image,
                                                      iconTintColor: ColorName.errorColor.color,
                                                      title: L10n.galleryPanoramaGenerationErrorMissingPhotos)
+        updateState()
+    }
+
+    /// Updates cell loading state and informs delegate accordingly.
+    func updateLoadingState() {
+        loadingImageView.isHidden = !isLoading
+        if isLoading {
+            loadingImageView.startRotate()
+            delegate?.fullScreenCellDidStartLoading()
+        } else {
+            loadingImageView.stopRotate()
+            delegate?.fullScreenCellDidStopLoading()
+        }
         updateState()
     }
 

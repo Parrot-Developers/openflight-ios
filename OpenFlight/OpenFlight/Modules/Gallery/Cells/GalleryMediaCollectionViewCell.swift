@@ -123,7 +123,11 @@ internal extension GalleryMediaCollectionViewCell {
         self.media = media
         self.delegate = delegate
 
-        typeImage.image = media.type.image
+        // Check whether media is of `.bracketing` type AND has a DNG resource, as DNG bracketings
+        // are not meant to be considered as a type on their own, but still need to have their own picto.
+        typeImage.image = media.type == .bracketing && media.hasDng ?
+        Asset.Gallery.icBracketingDNG.image :
+        media.type.image
         downloadButton.model = DownloadButtonModel(title: media.formattedSize,
                                                    state: media.downloadState)
         downloadButton.isHidden = media.source == .mobileDevice
@@ -134,5 +138,7 @@ internal extension GalleryMediaCollectionViewCell {
         internalStorageIcon.applyCornerRadius(Style.mediumCornerRadius)
         internalStorageIcon.isHidden = media.source != .droneInternal
         nameLabel.text = media.cellTitle
+        accessibilityLabel = nameLabel.text ?? ""
+        accessibilityValue = media.type.stringValue
     }
 }

@@ -28,21 +28,31 @@
 //    SUCH DAMAGE.
 
 /// Coordinator for Parrot Debug part.
-final public class ParrotDebugCoordinator: Coordinator {
+open class ParrotDebugCoordinator: Coordinator {
     // MARK: - Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public weak var parentCoordinator: Coordinator?
 
+    public unowned var services: ServiceHub
+
+    public init(services: ServiceHub) {
+        self.services = services
+    }
+
     // MARK: - Public Funcs
-    public func start() {
-        let viewController = ParrotDebugViewController.instantiate(coordinator: self)
+    open func start() {
+        let viewModel = ParrotDebugViewModel()
+        let viewController = ParrotDebugViewController.instantiate(coordinator: self, viewModel: viewModel)
         // Prevents not fullscreen presentation style since iOS 13.
         viewController.modalPresentationStyle = .fullScreen
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
         navigationController?.modalPresentationStyle = .fullScreen
     }
+
+    /// Shows custom mission debug screen
+    open func showCustomMissionDebug() {}
 }
 
 // MARK: - Parrot Debug Navigation
@@ -59,11 +69,5 @@ extension ParrotDebugCoordinator {
         if let dashboardCoordinator = self.parentCoordinator as? DashboardCoordinator {
             dashboardCoordinator.startPhotogrammetryDebug()
         }
-    }
-
-    /// Shows custom mission debug screen
-    func showCustomMissionDebug() {
-        let viewController = CustomMissionDebugViewController.instantiate(coordinator: self)
-        presentModal(viewController: viewController)
     }
 }

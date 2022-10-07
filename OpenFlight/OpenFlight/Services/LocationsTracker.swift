@@ -41,6 +41,8 @@ public protocol LocationsTracker: AnyObject {
     var userLocationPublisher: AnyPublisher<OrientedLocation, Never> { get }
     /// Drone location publisher
     var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> { get }
+    /// Return home location publisher
+    var returnHomeLocationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> { get }
     /// Drone gps fixed publisher
     var droneGpsFixedPublisher: AnyPublisher<Bool, Never> { get }
     /// User location
@@ -326,6 +328,10 @@ extension LocationsTrackerImpl: LocationsTracker {
         droneLocationSubject.combineLatest(droneHeadingSubject)
             .map { OrientedLocation(coordinates: $0.0, heading: $0.1) }
             .eraseToAnyPublisher()
+    }
+
+    var returnHomeLocationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> {
+        returnHomeLocationSubject.eraseToAnyPublisher()
     }
 
     var droneGpsFixedPublisher: AnyPublisher<Bool, Never> { isDroneGpsFixedSubject.eraseToAnyPublisher() }

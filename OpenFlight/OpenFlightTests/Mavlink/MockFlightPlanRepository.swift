@@ -70,10 +70,6 @@ class MockFlightPlanRepository: FlightPlanRepository {
         // do nothing
     }
 
-    func resetFlightPlansCloudId(withUuids uuids: [String]) {
-        // do nothing
-    }
-
     func getFlightPlan(withUuid uuid: String) -> FlightPlanModel? {
         // do nothing
         return nil
@@ -120,6 +116,11 @@ class MockFlightPlanRepository: FlightPlanRepository {
         return nil
     }
 
+    func getExecutedFlightPlansCount(withProjectUuid projectUuid: String, excludedUuids: [String]) -> Int {
+        // do nothing
+        return 0
+    }
+
     func getAllFlightPlansCount() -> Int {
         // do nothing
         return 0
@@ -140,6 +141,15 @@ class MockFlightPlanRepository: FlightPlanRepository {
         return []
     }
 
+    func getFlightPlansCount(withVersions: [String]) -> Int {
+        // do nothing
+        return 0
+    }
+
+    func getFlightPlans(withVersions: [String], _ completion: @escaping (([FlightPlanModel]) -> Void)) {
+        // do nothing
+    }
+
     func deleteOrFlagToDeleteFlightPlans(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?) {
         // do nothing
     }
@@ -153,6 +163,14 @@ class MockFlightPlanRepository: FlightPlanRepository {
     }
 
     func deleteFlightPlans(withUuids uuids: [String], completion: ((Bool) -> Void)?) {
+        // do nothing
+    }
+
+    func deleteFlightPlans(withExcludedStates excludedStates: [String], completion: ((_ status: Bool) -> Void)?) {
+        // do nothing
+    }
+
+    func removeCloudIdForAllFlightPlans(completion: ((_ status: Bool) -> Void)?) {
         // do nothing
     }
 

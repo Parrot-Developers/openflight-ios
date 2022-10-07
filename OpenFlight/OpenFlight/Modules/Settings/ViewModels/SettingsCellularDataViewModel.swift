@@ -78,8 +78,9 @@ final class SettingsCellularDataViewModel {
             .combineLatest(flyingIndicatorPublisher)
             .sink { [weak self] (cellular, flyingIndicator) in
                 guard let self = self else { return }
+                let cellularAvailability = cellular?.cellularAvailability ?? .cellularOff
                 let cellularAvailabilityEnabled = !(flyingIndicator?.flyingState == .flying
-                                                    && cellular?.cellularAvailability == .cellularOn)
+                                                    && cellularAvailability == .cellularOn)
                 self.cellularAccessEntryPublisher.send(SettingEntry(setting: self.cellularAvailabilityModel(with: cellular),
                                                                title: L10n.droneDetailsCellularAccess,
                                                                isEnabled: cellularAvailabilityEnabled,

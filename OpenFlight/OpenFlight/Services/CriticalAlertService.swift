@@ -63,6 +63,7 @@ class CriticalAlertServiceImpl {
     /// References to instruments and peripherals.
     private var takeoffChecklistRef: Ref<TakeoffChecklist>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var alarmsRef: Ref<Alarms>?
     /// Takeoff request observer.
     private var takeoffRequestObserver: Any?
     /// Critical alert.
@@ -120,6 +121,7 @@ private extension CriticalAlertServiceImpl {
                 isDroneConnected = true
                 listenTakeoffChecklist(drone: drone)
                 listenFlyingIndicators(drone: drone)
+                listenAlarms(drone: drone)
             }
             .store(in: &cancellables)
     }
@@ -215,6 +217,23 @@ private extension CriticalAlertServiceImpl {
     func listenFlyingIndicators(drone: Drone) {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicators in
             isDroneFlying = flyingIndicators?.state == .flying
+        }
+    }
+
+    /// Listens to alarms instrument changes.
+    ///
+    /// - Parameter drone: drone to monitor
+    func listenAlarms(drone: Drone) {
+        alarmsRef = drone.getInstrument(Instruments.alarms) { [weak self] alarms in
+            guard let self = self, let alarms = alarms else { return }
+
+            // Publish `.obstacleAvoidanceFreeze` popup if corresponding alarm is on.
+            // Do not dismiss if alarm goes off, as popup is meant to be acknowledged by user.
+            if alarms.isOn(.obstacleAvoidanceFreeze) {
+                self.otherAlerts.update(.obstacleAvoidanceFreeze,
+                                        shouldAdd: true)
+                self.publish()
+            }
         }
     }
 

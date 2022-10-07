@@ -50,7 +50,8 @@ final class SettingsChooseChannelCell: MainTableViewCell, NibReusable {
     func configureCell(viewModel: SettingsNetworkViewModel) {
         self.viewModel = viewModel
 
-        viewModel.$channelsOccupations.removeDuplicates()
+        viewModel.$channelsOccupations
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
                 self.channelView.channelsOccupations = $0
@@ -59,7 +60,8 @@ final class SettingsChooseChannelCell: MainTableViewCell, NibReusable {
             }
             .store(in: &cancellables)
 
-        viewModel.$channelsOccupationIsEnabled.removeDuplicates()
+        viewModel.isChannelsEnabledPublisher
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
                 self.gridView.alphaWithEnabledState($0)
@@ -67,14 +69,25 @@ final class SettingsChooseChannelCell: MainTableViewCell, NibReusable {
             }
             .store(in: &cancellables)
 
-        viewModel.$currentChannel.removeDuplicates()
+        viewModel.$channelsOccupationIsEnabled
+            .removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.gridView.alphaWithEnabledState($0)
+                self.gridView.isUserInteractionEnabled = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$currentChannel
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
                 self.gridView.currentChannel = $0
             }
             .store(in: &cancellables)
 
-        viewModel.$channelUpdating.removeDuplicates()
+        viewModel.$channelUpdating
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
                 self.gridView.currentChannelUpdating = $0

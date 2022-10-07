@@ -108,6 +108,7 @@
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <accessibility key="accessibilityConfiguration" label="Medias"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="gGd-vS-s1V" secondAttribute="bottom" constant="5" id="PFa-FJ-2n7">
                                 <variation key="heightClass=regular-widthClass=regular" constant="10"/>

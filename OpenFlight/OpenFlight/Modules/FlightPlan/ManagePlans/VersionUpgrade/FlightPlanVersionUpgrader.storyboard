@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="Y6W-OH-hqX">
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Flight Plan Version Upgrader View Controller-->
+        <scene sceneID="s0d-6b-0kx">
+            <objects>
+                <viewController id="Y6W-OH-hqX" customClass="FlightPlanVersionUpgraderViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="p8D-HS-DkA"/>
+                        <viewControllerLayoutGuide type="bottom" id="WXn-dQ-BQB"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="rmg-4A-A6E">
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Ver-ft-feg" userLabel="Main Stack View">
+                                <rect key="frame" x="0.0" y="0.0" width="896" height="394"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ibn-Qr-ts0" userLabel="Top Bar" customClass="DeviceNavigationView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="896" height="56"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8O9-XC-1uv">
+                                                <rect key="frame" x="72" y="14.5" width="41" height="27"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <state key="normal" title="Cancel">
+                                                    <color key="titleColor" name="default_text_color"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="cancelButtonTouchedUpInside:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="uQs-Ir-Gmv"/>
+                                                </connections>
+                                            </button>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4eE-Jt-cZW">
+                                                <rect key="frame" x="427" y="18.5" width="42" height="19"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="8O9-XC-1uv" firstAttribute="leading" secondItem="Ibn-Qr-ts0" secondAttribute="leadingMargin" constant="20" id="QSu-le-tqi"/>
+                                            <constraint firstItem="4eE-Jt-cZW" firstAttribute="centerX" secondItem="Ibn-Qr-ts0" secondAttribute="centerX" id="Qil-9E-yYo"/>
+                                            <constraint firstItem="8O9-XC-1uv" firstAttribute="centerY" secondItem="Ibn-Qr-ts0" secondAttribute="centerY" id="TAq-Ef-DDV"/>
+                                            <constraint firstAttribute="height" constant="56" placeholder="YES" id="roa-bM-wYV"/>
+                                            <constraint firstItem="4eE-Jt-cZW" firstAttribute="centerY" secondItem="Ibn-Qr-ts0" secondAttribute="centerY" id="yAZ-mu-0ie"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="55G-Io-NVw">
+                                        <rect key="frame" x="0.0" y="56" width="896" height="338"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="99h-kc-Qbu" customClass="FlightPlanVersionUpgraderProgressView" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="448" height="338"/>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </view>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="VSq-q1-6LI">
+                                                <rect key="frame" x="448" y="159" width="448" height="20.5"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MmB-mK-xAz">
+                                                        <rect key="frame" x="0.0" y="0.0" width="448" height="20.5"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                        <variation key="heightClass=regular-widthClass=compact" axis="vertical"/>
+                                    </stackView>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" name="default_bgcolor"/>
+                        <constraints>
+                            <constraint firstItem="Ver-ft-feg" firstAttribute="leading" secondItem="rmg-4A-A6E" secondAttribute="leading" id="61t-E0-Dln"/>
+                            <constraint firstAttribute="bottom" secondItem="Ver-ft-feg" secondAttribute="bottom" constant="20" id="LJD-2D-4mJ"/>
+                            <constraint firstItem="Ver-ft-feg" firstAttribute="top" secondItem="rmg-4A-A6E" secondAttribute="top" id="gFg-y9-bU5"/>
+                            <constraint firstAttribute="trailing" secondItem="Ver-ft-feg" secondAttribute="trailing" id="mZP-4H-ZWY"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="8O9-XC-1uv" id="rN3-aC-GyK"/>
+                        <outlet property="descriptionLabel" destination="MmB-mK-xAz" id="Hv3-x8-Ha9"/>
+                        <outlet property="progressView" destination="99h-kc-Qbu" id="lAG-R3-Yep"/>
+                        <outlet property="titleLabel" destination="4eE-Jt-cZW" id="bem-eX-gkj"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="139" y="139"/>
+        </scene>
+    </scenes>
+    <resources>
+        <namedColor name="default_bgcolor">
+            <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <namedColor name="default_text_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+    </resources>
+</document>

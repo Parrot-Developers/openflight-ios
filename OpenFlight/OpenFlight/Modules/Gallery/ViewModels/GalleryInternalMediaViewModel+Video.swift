@@ -79,7 +79,7 @@ extension GalleryInternalMediaViewModel: GalleryVideoCompatible {
               position < streamingCurrentReplay.duration else {
             return false
         }
-        
+
         return streamingCurrentReplay.seekTo(position: position)
     }
 

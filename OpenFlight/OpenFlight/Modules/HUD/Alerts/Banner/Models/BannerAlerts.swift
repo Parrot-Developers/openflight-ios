@@ -35,7 +35,8 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
     case motorCutoutTemperature
     case motorCutoutPowerSupply
     case forceLandingLowBattery
-    case forceLandingTemperature
+    case forceLandingBatteryTooCold
+    case forceLandingBatteryTooHot
     case forceLandingIcedPropeller
     case wontReachHome
     case batteryGaugeUpdateRequired
@@ -61,6 +62,8 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
     case cameraError
     case needCalibration
     case stereoCameraDecalibrated
+    case rthIcedPropeller
+    case rthPoorBatteryConnection
 
     public var severity: BannerAlertSeverity { .critical }
 
@@ -76,7 +79,8 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
                 .strongImuVibration:
             return Asset.Common.Icons.icDroneSmall.image
         case .forceLandingLowBattery,
-                .forceLandingTemperature,
+                .forceLandingBatteryTooCold,
+                .forceLandingBatteryTooHot,
                 .forceLandingIcedPropeller:
             return Asset.Common.Icons.icWarningWhite.image
         case .tooMuchWind,
@@ -91,6 +95,8 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
             return Asset.Telemetry.icGeofence.image
         case .cameraError:
             return Asset.Common.Icons.iconCamera.image
+        case .rthIcedPropeller:
+            return Asset.Common.Icons.icDroneSmall.image
         default:
             return nil
         }
@@ -104,9 +110,12 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
             return L10n.alertMotorCutoutTemperature
         case .motorCutoutPowerSupply:
             return L10n.alertMotorCutoutPowerSupply
-        case .forceLandingLowBattery,
-                .forceLandingTemperature:
-            return L10n.alertAutoLanding
+        case .forceLandingLowBattery:
+            return L10n.alertAutolandingBatteryTooLow
+        case .forceLandingBatteryTooCold:
+            return L10n.alertAutolandingBatteryTooCold
+        case .forceLandingBatteryTooHot:
+            return L10n.alertAutolandingBatteryTooHot
         case .forceLandingIcedPropeller:
             return L10n.alertAutolandingPropellerFault
         case .wontReachHome:
@@ -157,6 +166,10 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
             return L10n.droneDetailsCalibrationRequired
         case .stereoCameraDecalibrated:
             return L10n.alertStereoSensorsNotCalibrated
+        case .rthIcedPropeller:
+            return L10n.alertPropellerFault
+        case .rthPoorBatteryConnection:
+            return L10n.alertPoorBatteryConnection
         }
     }
 }
@@ -165,7 +178,6 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
 
 public enum WarningBannerAlert: Int, BannerAlert, Equatable {
 
-    case rthIcedPropeller
     case lowAndPerturbedWifi
     case obstacleAvoidanceDroneStucked
     case obstacleAvoidanceBlindMotionDirection
@@ -181,14 +193,26 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
 
     public var content: BannerAlertContent { .init(icon: icon, title: title) }
 
+    public var behavior: BannerAlertBehavior {
+        switch self {
+        case .obstacleAvoidanceDroneStucked,
+                .obstacleAvoidanceBlindMotionDirection:
+            // Specific case: use severity's default behavior without any 'on' or 'snooze' duration.
+            return BannerAlertBehavior(feedbackType: severity.feedbackType,
+                                       systemSoundId: severity.systemSoundId)
+        default:
+            // Use severity's default behavior.
+            return severity.behavior
+        }
+    }
+
     public var priority: Int { rawValue }
 
     private var icon: UIImage? {
         switch self {
         case .lowAndPerturbedWifi:
             return Asset.Common.Icons.icWifi.image
-        case .imuVibration,
-                .rthIcedPropeller:
+        case .imuVibration:
             return Asset.Common.Icons.icDroneSmall.image
         case .droneGpsKo,
                 .userDeviceGpsKo:
@@ -200,8 +224,6 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
 
     private var title: String {
         switch self {
-        case .rthIcedPropeller:
-            return L10n.alertPropellerFault
         case .lowAndPerturbedWifi:
             return L10n.alertLowAndPerturbedWifi
         case .obstacleAvoidanceDroneStucked:
@@ -258,8 +280,7 @@ public enum HomeAlert: Int, BannerAlert, Equatable {
 
     public var style: BannerAlertStyle {
         .init(titleColor: UIColor.black,
-              backgroundColor: ColorName.highlightColor.color,
-              vPadding: BannerAlertConstants.compactPadding)
+              backgroundColor: ColorName.highlightColor.color)
     }
 
     public var behavior: BannerAlertBehavior {
@@ -299,8 +320,7 @@ public enum ExposureAlert: Int, BannerAlert, Equatable {
 
     public var style: BannerAlertStyle {
         .init(titleColor: UIColor.black,
-              backgroundColor: ColorName.yellowSea.color,
-              vPadding: BannerAlertConstants.compactPadding)
+              backgroundColor: ColorName.yellowSea.color)
     }
 
     public var behavior: BannerAlertBehavior {
@@ -359,7 +379,7 @@ public extension AnyBannerAlert {
             CriticalBannerAlert.headingLockedKoEarthMagnetic,
             CriticalBannerAlert.tooMuchWind,
             CriticalBannerAlert.stereoCameraDecalibrated,
-            WarningBannerAlert.rthIcedPropeller
+            CriticalBannerAlert.rthIcedPropeller
         ]
     }
 
@@ -383,6 +403,11 @@ public extension AnyBannerAlert {
     }
 
     private static var autoLandingAlerts: [CriticalBannerAlert] {
-        [.forceLandingTemperature, .forceLandingLowBattery]
+        [
+            .forceLandingBatteryTooCold,
+            .forceLandingBatteryTooHot,
+            .forceLandingLowBattery,
+            .forceLandingIcedPropeller
+        ]
     }
 }

@@ -234,6 +234,7 @@ final class GallerySDMediaViewModel: DroneStateViewModel<GallerySDMediaState> {
     var availableSpace: Double {
         return self.state.value.availableSpace
     }
+    var previewDownloadRequest: Ref<MediaDownloader>?
     var downloadRequest: Ref<MediaDownloader>?
     var uploadRequest: Ref<ResourceUploader>?
     var deleteRequest: Ref<MediaDeleter>?

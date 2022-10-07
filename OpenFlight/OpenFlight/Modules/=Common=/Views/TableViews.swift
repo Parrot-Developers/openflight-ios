@@ -146,10 +146,14 @@ public enum SidePanelSettingType {
     case textAndIconSegments        // SegmentedControls with picto
     case textAndIconSegmentsLarge   // SegmentedControls with picto and more than 3 segments
 
-    func cellHeight(_ isRegularSizeClass: Bool) -> CGFloat {
+    /// Returns the setting height according to its type.
+    ///
+    /// - Parameter isRegularSizeClass: whether the device has a regular size class
+    /// - Returns: the height of the setting
+    func height(_ isRegularSizeClass: Bool) -> CGFloat {
         self == .textSegments
-        ? Layout.sidePanelSettingShortTableViewCellHeight(isRegularSizeClass)
-        : Layout.sidePanelSettingLargeTableViewCellHeight(isRegularSizeClass)
+        ? Layout.sidePanelSettingTextSegmentsHeight(isRegularSizeClass)
+        : Layout.sidePanelSettingShortPictoSegmentsHeight(isRegularSizeClass)
     }
 }
 
@@ -161,9 +165,7 @@ public class SidePanelSettingTableViewCell: UITableViewCell {
     }
 
     /// The setting type.
-    var cellSettingType: SidePanelSettingType = .textSegments {
-        didSet { updateHeight() }
-    }
+    var cellSettingType: SidePanelSettingType = .textSegments
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -180,7 +182,6 @@ public class SidePanelSettingTableViewCell: UITableViewCell {
         insetsLayoutMarginsFromSafeArea = false
         preservesSuperviewLayoutMargins = false
         updateMargins()
-        updateHeight()
     }
 
     private func updateMargins() {
@@ -189,17 +190,6 @@ public class SidePanelSettingTableViewCell: UITableViewCell {
                                           left: enabledMargins.contains(.left) ? margins.left : 0,
                                           bottom: enabledMargins.contains(.bottom) ? margins.bottom : 0,
                                           right: enabledMargins.contains(.right) ? margins.right : 0)
-    }
-
-    private func updateHeight() {
-        // Disable all height constraints already configured (previously or via the storyboard)
-        contentView.constraints
-            .filter { $0.firstAttribute == .height }
-            .forEach { $0.isActive = false }
-        // Activate the new constraint
-        contentView.heightAnchor
-            .constraint(equalToConstant: cellSettingType.cellHeight(isRegularSizeClass))
-            .isActive = true
     }
 }
 

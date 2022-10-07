@@ -74,6 +74,8 @@ public enum HUDCriticalAlertType: Comparable {
     case batteryLevel
     case highTemperature
     case lowTemperature
+    case batteryPoorConnection
+    case obstacleAvoidanceFreeze
     case batteryUsbPortConnection
     case cellularModemFirmwareUpdate
     case insufficientStorageSpace
@@ -110,16 +112,18 @@ public enum HUDCriticalAlertType: Comparable {
         case .batteryLevel:                 return 8
         case .highTemperature:              return 9
         case .lowTemperature:               return 10
-        case .batteryUsbPortConnection:     return 11
-        case .cellularModemFirmwareUpdate:  return 12
-        case .insufficientStorageSpace:     return 13
-        case .insufficientStorageSpeed:     return 14
-        case .sdCardNeedsFormat:            return 15
-        case .sdCardNotDetected:            return 16
-        case .droneAndVehicleGpsKo:         return 17
-        case .droneGpsKo:                   return 18
-        case .vehicleGpsKo:                 return 19
-        case .droneTooFar:                  return 20
+        case .batteryPoorConnection:        return 11
+        case .batteryUsbPortConnection:     return 12
+        case .obstacleAvoidanceFreeze:      return 13
+        case .cellularModemFirmwareUpdate:  return 14
+        case .insufficientStorageSpace:     return 15
+        case .insufficientStorageSpeed:     return 16
+        case .sdCardNeedsFormat:            return 17
+        case .sdCardNotDetected:            return 18
+        case .droneAndVehicleGpsKo:         return 19
+        case .droneGpsKo:                   return 20
+        case .vehicleGpsKo:                 return 21
+        case .droneTooFar:                  return 22
         }
     }
 
@@ -147,6 +151,8 @@ public enum HUDCriticalAlertType: Comparable {
             return lowTemperature
         case .batteryTooHot:
             return highTemperature
+        case .batteryPoorConnection:
+            return .batteryPoorConnection
         case .batteryUsbPortConnection:
             return batteryUsbPortConnection
         case .cellularModemFirmwareUpdate:
@@ -209,6 +215,10 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertHighTemperatureTitle
         case .lowTemperature:
             return L10n.takeoffAlertLowTemperatureTitle
+        case .batteryPoorConnection:
+            return L10n.takeoffAlertPoorBatteryConnectionTitle
+        case .obstacleAvoidanceFreeze:
+            return L10n.alertOaFreezeTitle
         case .batteryUsbPortConnection:
             return L10n.takeoffAlertUsbConnectionTitle
         case .cellularModemFirmwareUpdate:
@@ -243,6 +253,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .batteryLevel,
              .highTemperature,
              .lowTemperature,
+             .batteryPoorConnection,
              .batteryUsbPortConnection:
             return Asset.Common.Icons.icBattery.image
         case .insufficientStorageSpace:
@@ -271,6 +282,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .batteryLevel,
              .highTemperature,
              .lowTemperature,
+             .batteryPoorConnection,
              .batteryUsbPortConnection,
              .insufficientStorageSpace,
              .insufficientStorageSpeed,
@@ -331,6 +343,10 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return Asset.Alertes.TakeOff.icHighTemperatureAlert.image
         case .lowTemperature:
             return Asset.Alertes.TakeOff.icLowTemperatureAlert.image
+        case .batteryPoorConnection:
+            return Asset.Alertes.TakeOff.icBatteryPoorConnectionAlert.image
+        case .obstacleAvoidanceFreeze:
+            return Asset.ObstacleAvoidance.icOADisabled.image
         case .batteryUsbPortConnection:
             return Asset.Alertes.TakeOff.icDroneUSB.image
         case .cellularModemFirmwareUpdate:
@@ -374,6 +390,10 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertHighTemperatureDescription
         case .lowTemperature:
             return L10n.takeoffAlertLowTemperatureDescription
+        case .batteryPoorConnection:
+            return L10n.takeoffAlertPoorBatteryConnectionDescription
+        case .obstacleAvoidanceFreeze:
+            return L10n.alertOaFreezeDescription
         case .batteryUsbPortConnection:
             return L10n.takeoffAlertUsbConnectionDescription
         case .cellularModemFirmwareUpdate:
@@ -426,7 +446,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
 
     var actionButtonTitleColor: ColorName? {
         switch self {
-        case .droneInclination,
+        case .obstacleAvoidanceFreeze,
+             .droneInclination,
              .updateOngoing,
              .batteryUsbPortConnection,
              .cellularModemFirmwareUpdate,
@@ -446,6 +467,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .batteryLevel,
              .highTemperature,
              .lowTemperature,
+             .batteryPoorConnection,
              .droneAndVehicleGpsKo,
              .droneGpsKo,
              .vehicleGpsKo,
@@ -461,7 +483,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .droneAndRemoteUpdateRequired,
              .droneCalibrationRequired:
             return .highlightColor
-        case .insufficientStorageSpace,
+        case .obstacleAvoidanceFreeze,
+             .insufficientStorageSpace,
              .insufficientStorageSpeed,
              .sdCardNotDetected,
              .sdCardNeedsFormat:
