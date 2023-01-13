@@ -1,17 +1,16 @@
-
 source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '13.0'
 
 target 'OpenFlightApp' do
     use_frameworks!
-    pod 'GroundSdk', '~> 7.4.0'
-    pod 'ArsdkEngine', '~> 7.4.0'
-    pod 'SdkCore', '~> 7.4.0'
-    pod 'OpenFlightCore', '~> 7.4.0'
+    pod 'GroundSdk', '~> 7.5.0'
+    pod 'ArsdkEngine', '~> 7.5.0'
+    pod 'SdkCore', '~> 7.5.0'
+    pod 'OpenFlightCore', '~> 7.5.0'
     pod 'Reusable'
     pod 'SwiftyUserDefaults'
     pod 'KeychainAccess'
     pod 'ReachabilitySwift'
-    pod 'lottie-ios'
+    pod 'lottie-ios', '3.3.0'
     pod 'ArcGIS-Runtime-SDK-iOS'
 end

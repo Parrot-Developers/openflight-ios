@@ -43,10 +43,21 @@ open class DroneCoordinator: Coordinator {
     // MARK: - Public Funcs
     /// Starts drone coordinator.
     public func start() {
-        let buttonsViewController = DroneDetailsButtonsViewController.instantiate(coordinator: self)
+        let buttonsViewModel = DroneDetailsButtonsViewModel(coordinator: self,
+                                                            currentDroneHolder: services.currentDroneHolder,
+                                                            cellularPairingService: services.drone.cellularPairingService,
+                                                            connectedRemoteControlHolder: services.connectedRemoteControlHolder,
+                                                            connectedDroneHolder: services.connectedDroneHolder,
+                                                            networkService: services.systemServices.networkService,
+                                                            cellularService: services.drone.cellularService,
+                                                            cellularSessionService: services.drone.cellularSessionService,
+                                                            locationsTracker: services.locationsTracker)
+        let buttonsViewController = DroneDetailsButtonsViewController.instantiate(coordinator: self,
+                                                                                  viewModel: buttonsViewModel)
         let deviceViewController = DroneDetailsDeviceViewController.instantiate(coordinator: self)
-        let viewModel = DroneDetailsInformationsViewModel(currentDroneHolder: services.currentDroneHolder, connectedDroneHolder: services.connectedDroneHolder)
-        let informationViewController = DroneDetailsInformationsViewController.instantiate(viewModel: viewModel)
+        let informationViewModel = DroneDetailsInformationsViewModel(currentDroneHolder: services.currentDroneHolder,
+                                                                     connectedDroneHolder: services.connectedDroneHolder)
+        let informationViewController = DroneDetailsInformationsViewController.instantiate(viewModel: informationViewModel)
         let viewController = DroneDetailsViewController.instantiate(coordinator: self,
                                                                     deviceViewController: deviceViewController,
                                                                     informationViewController: informationViewController,
@@ -117,13 +128,6 @@ extension DroneCoordinator {
     func displayCellularPinCode() {
         let viewModel = CellularAccessCardPinViewModel(coordinator: self, detailsCellularIsSource: true)
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(viewModel: viewModel))
-    }
-
-    /// Displays cellular debug logs.
-    func displayCellularDebug() {
-        let viewModel = CellularDebugLogsViewModel(coordinator: self)
-        let viewController = CellularDebugLogsViewController.instantiate(viewModel: viewModel)
-        navigationController?.present(viewController, animated: true, completion: nil)
     }
 
     /// Dismisses current coordinator.

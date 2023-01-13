@@ -116,7 +116,11 @@ public final class HUDAlertPanelReturnHomeState: DevicesConnectionState, AlertPa
         return currentAlert != nil
     }
     private var shouldShowRthAlert: Bool {
-        state == .available && countdown != 0 // Need to close alert when countdown has reached 0.
+        state == .available
+        // Need to close alert when countdown has reached 0.
+        && countdown != 0
+        // Alert must not be shown when an FP execution is currently running
+        && Services.hub.flightPlan.activeFlightPlanWatcher.activeFlightPlanState.isInactive
     }
     private var shouldShowAutolandingAlert: Bool {
         currentAlert == .autoLandingAlert && countdown != 0 // Need to close alert when countdown has reached 0.

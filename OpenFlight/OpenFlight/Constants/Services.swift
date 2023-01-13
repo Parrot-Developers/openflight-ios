@@ -47,6 +47,7 @@ public enum RequestHeaderFields {
 enum ServicesConstants {
     /// ArcGIS license key.
     static let arcGisLicenseKey: String = "runtimelite,1000,rud8241485735,none,PM0RJAY3FL9BY7ZPM158"
+
     /// APC secret key.
     static let apcSecretKey: String = "g%2SW+m,cc9|eDQBgK:qTS2l=;[O~f@W"
     /// Academy secret key.

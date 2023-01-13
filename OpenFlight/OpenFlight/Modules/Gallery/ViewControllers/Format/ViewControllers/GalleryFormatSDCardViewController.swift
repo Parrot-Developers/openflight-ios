@@ -52,22 +52,21 @@ final class GalleryFormatSDCardViewController: UIViewController {
     @IBOutlet private weak var thirdStepView: GalleryFormatSDCardStepView!
 
     // MARK: - Private Properties
-    private weak var coordinator: GalleryCoordinator?
-    private var viewModel: GalleryFormatSDCardViewModel?
+    /// The formatting view model.
+    private var viewModel: GalleryFormatSDCardViewModel!
+    /// The cancellables.
     private var cancellables = Set<AnyCancellable>()
+    /// The confirmation alert. Needs to be able to be dynamically dismissed if formatting state changes.
     private var confirmationAlert: AlertViewController?
 
     // MARK: - Setup
-    /// Instantiate view controller.
+    /// Instantiates view controller.
     ///
-    /// - Parameters:
-    ///     - coordinator: gallery coordinator
-    ///     - viewModel: gallery view model
-    /// - Returns: a GalleryFormatSDCardViewController.
-    static func instantiate(coordinator: GalleryCoordinator, viewModel: GalleryMediaViewModel) -> GalleryFormatSDCardViewController {
+    /// - Parameter viewModel: the formatting view model
+    /// - Returns: a `GalleryFormatSDCardViewController`
+    static func instantiate(viewModel: GalleryFormatSDCardViewModel) -> GalleryFormatSDCardViewController {
         let viewController = StoryboardScene.GalleryFormatSDCard.initialScene.instantiate()
-        viewController.coordinator = coordinator
-        viewController.viewModel = GalleryFormatSDCardViewModel(galleryViewModel: viewModel)
+        viewController.viewModel = viewModel
 
         return viewController
     }
@@ -79,7 +78,6 @@ final class GalleryFormatSDCardViewController: UIViewController {
         setupUI()
         setupChoicesModels()
         bindViewModel()
-        setupViewModel()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -104,12 +102,12 @@ private extension GalleryFormatSDCardViewController {
 
     /// Function called when the back button is clicked.
     @IBAction func backButtonTouchedUpInside(_ sender: Any) {
-        dismissView()
+        close()
     }
 
     /// Function called when the background button is clicked.
     @IBAction func backgroundButtonTouchedUpInside(_ sender: Any) {
-        dismissView()
+        close()
     }
 }
 
@@ -138,53 +136,59 @@ private extension GalleryFormatSDCardViewController {
 
     /// Binds the views to the view model.
     func bindViewModel() {
-        viewModel?.$isFlying
-            .sink { [unowned self] isFlying in
-                if isFlying {
-                    secondaryLabel.text = L10n.galleryMediaFormatSdCardLandDroneInstructions
-                    quickFormatChoiceView.isEnabled = false
-                    fullFormatChoiceView.isEnabled = false
-                    choicesStackView.alpha = 0.7
-                    confirmationAlert?.dismissAlert()
-                    confirmationAlert = nil
-                } else {
-                    secondaryLabel.text = L10n.galleryFormatDataErased
-                    quickFormatChoiceView.isEnabled = true
-                    fullFormatChoiceView.isEnabled = true
-                    choicesStackView.alpha = 1
-                }
+        viewModel.$canClose.removeDuplicates()
+            .sink { [weak self] canClose in
+                self?.updateCloseModalState(canClose: canClose)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$formattingState
+            .sink { [weak self] state in
+                self?.updateFormattingState(with: state)
             }
             .store(in: &cancellables)
     }
 
     /// Sets up models associated with the choices view.
     func setupChoicesModels() {
-        self.quickFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatQuick.image,
-                                                                          text: L10n.galleryFormatQuick,
-                                                                          textColor: ColorName.defaultTextColor)
-        self.fullFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatFull.image,
-                                                                         text: L10n.galleryFormatFull,
-                                                                         textColor: ColorName.defaultTextColor)
-        self.firstStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icErasing.image,
-                                                                text: L10n.galleryFormatErasingPartition,
-                                                                textColor: ColorName.disabledTextColor)
-        self.secondStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icReset.image,
-                                                                 text: L10n.galleryFormatResetting,
-                                                                 textColor: ColorName.disabledTextColor)
-        self.thirdStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icCreate.image,
-                                                                text: L10n.galleryFormatCreatingPartition,
-                                                                textColor: ColorName.disabledTextColor)
+        quickFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatQuick.image,
+                                                                     text: L10n.galleryFormatQuick,
+                                                                     textColor: ColorName.defaultTextColor)
+        fullFormatChoiceView.model = GalleryFormatSDCardChoiceModel(image: Asset.Common.Icons.icSdCardFormatFull.image,
+                                                                    text: L10n.galleryFormatFull,
+                                                                    textColor: ColorName.defaultTextColor)
+        firstStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icErasing.image,
+                                                           text: L10n.galleryFormatErasingPartition,
+                                                           textColor: ColorName.disabledTextColor)
+        secondStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icReset.image,
+                                                            text: L10n.galleryFormatResetting,
+                                                            textColor: ColorName.disabledTextColor)
+        thirdStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icCreate.image,
+                                                           text: L10n.galleryFormatCreatingPartition,
+                                                           textColor: ColorName.disabledTextColor)
     }
 
-    /// Sets up main view model.
-    func setupViewModel() {
-        viewModel?.startListeningToFormattingProgress({ [weak self] step, progress, formattingState in
-            guard let self = self else { return }
+    /// Updates UI according to formatting state.
+    ///
+    /// - Parameter state: the formatting state
+    func updateFormattingState(with state: StorageFormattingState) {
+        switch state {
+        case .unavailable(let reason):
+            // Formatting is unavailable => disable interaction and update UI.
+            secondaryLabel.text = reason.message
+            choicesStackView.alphaWithEnabledState(false)
+            confirmationAlert?.dismissAlert()
+            confirmationAlert = nil
 
-            // Update close modal capability according to formatting state.
-            self.updateCloseModalState(canClose: formattingState != .inProgress)
+        case .available(let status):
+            // Formatting is available => enable default UI.
+            secondaryLabel.text = L10n.galleryFormatDataErased
+            choicesStackView.alphaWithEnabledState(true)
 
-            switch step {
+            guard let status = status else { return }
+
+            // Formatting process is ongoing => Update status.
+            switch status.step {
             case .partitioning:
                 self.firstStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icErasing.image,
                                                                         text: L10n.galleryFormatErasingPartition,
@@ -196,13 +200,25 @@ private extension GalleryFormatSDCardViewController {
             case .creatingFs:
                 self.thirdStepView.model = GalleryFormatSDCardStepModel(image: Asset.Gallery.Format.icCreate.image,
                                                                         text: L10n.galleryFormatCreatingPartition,
-                                                                        textColor: ColorName.highlightColor)
+                                                                            textColor: ColorName.highlightColor)
             }
-            self.circleProgressView.setProgress(progress)
-            if formattingState == .done {
-                self.dismissView(showToast: true)
+
+            circleProgressView.setProgress(viewModel.displayedProgress(for: status))
+
+            if state.isComplete {
+                // Stop listening to updates.
+                cancellables.removeAll()
+
+                // Slightly delay view closing in order to ensure 100 % completion remains visible
+                // for a reasonable time.
+                DispatchQueue.main.asyncAfter(deadline: .now() + Style.transitionAnimationDuration) {
+                    self.close(message: L10n.galleryFormatComplete)
+                }
             }
-        })
+
+        case .unknown:
+            break
+        }
     }
 
     /// Shows a format confirmation popup.
@@ -237,11 +253,6 @@ private extension GalleryFormatSDCardViewController {
     /// - Parameters:
     ///    - type: formatting type
     func startFormatting(_ type: FormattingType) {
-        guard let viewModel = viewModel,
-            viewModel.canFormat else {
-                return
-        }
-
         // Formatting will start, disable modal closing ability as formatting cannot be interrupted.
         updateCloseModalState(canClose: false)
 
@@ -249,19 +260,19 @@ private extension GalleryFormatSDCardViewController {
         formattingView.isHidden = false
         viewModel.selectedFormattingType = type
         formattingImageView.image = type == .quick ? Asset.Common.Icons.icSdCardFormatQuick.image : Asset.Common.Icons.icSdCardFormatFull.image
-        self.primaryLabel.text = L10n.galleryFormatFormatting
-        self.secondaryLabel.text = nil
+        primaryLabel.text = L10n.galleryFormatFormatting
+        secondaryLabel.text = nil
+
         viewModel.format()
     }
 
-    /// Called when the view needs to be dismissed.
+    /// Closes screen with optional toast message.
     ///
     /// - Parameters:
-    ///     - showToast: boolean to determine if we need to show the formatting toast message
-    ///     - duration: display duration
-    func dismissView(showToast: Bool = false, duration: Double = Style.longAnimationDuration) {
-        viewModel?.stopListeningToFormattingProgress()
-        self.view.backgroundColor = .clear
-        self.coordinator?.dismissFormatSDCardScreen(showToast: showToast, duration: duration)
+    ///    - message: the toast message to display (if any)
+    ///    - duration: the toast message duration (relevant only if `message` is non-`nil`)
+    func close(message: String? = nil, duration: TimeInterval = Style.longAnimationDuration) {
+        view.backgroundColor = .clear
+        viewModel.close(message: message, duration: duration)
     }
 }

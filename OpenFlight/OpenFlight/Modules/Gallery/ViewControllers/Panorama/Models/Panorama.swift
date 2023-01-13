@@ -112,7 +112,7 @@ enum PanoramaMediaType: String, CaseIterable {
         case .vertical:
             return .vertical
         case .sphere:
-            return .sphere
+            return .sphereBack
         case .superWide:
             return .superWide
         }

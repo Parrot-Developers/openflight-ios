@@ -51,6 +51,9 @@ struct ClassicMission: MissionProvider {
                                                         isCameraShutterButtonEnabled: true,
                                                         isTargetOnStream: false)
     static var manualMode = MissionMode(configurator: manualModeConf,
+                                        customMapProvider: {
+                                            StoryboardScene.PilotingMap.initialScene.instantiate()
+                                        },
                                         bottomBarLeftStack: { () -> [UIView] in
                                             return [BehaviourModeView()]
                                         },

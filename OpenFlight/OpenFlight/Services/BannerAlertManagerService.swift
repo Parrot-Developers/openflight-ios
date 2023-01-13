@@ -294,7 +294,7 @@ private extension BannerAlertManagerServiceImpl {
 
         // Log any new active banner by subtracting `previousBanners` content from current array.
         for banner in Set(banners).subtracting(previousBanners) {
-            var info = [LogEvent.AlertKey.message: banner.description.replacingOccurrences(of: "\"", with: ""),
+            var info = [LogEvent.AlertKey.banner: banner.description,
                         LogEvent.AlertKey.severity: banner.severity.description]
             if let onDuration = banner.behavior.onDuration {
                 info[LogEvent.AlertKey.onDuration] = onDuration.description

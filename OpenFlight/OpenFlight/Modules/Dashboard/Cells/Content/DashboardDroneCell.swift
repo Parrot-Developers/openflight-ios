@@ -35,7 +35,8 @@ import Reusable
 class DashboardDroneCell: UICollectionViewCell, NibReusable {
     // MARK: - Outlets
     @IBOutlet private weak var gpsStatusImageView: UIImageView!
-    @IBOutlet private weak var networkImageView: UIImageView!
+    @IBOutlet private weak var callularStatusImageView: UIImageView!
+    @IBOutlet private weak var driStateImageView: UIImageView!
     @IBOutlet private weak var wifiStatusImageView: UIImageView!
     @IBOutlet private weak var deviceImageView: UIImageView!
     @IBOutlet private weak var nameDeviceLabel: UILabel!
@@ -114,6 +115,7 @@ private extension DashboardDroneCell {
         bindDroneName()
         bindCellularStrength()
         bindDeviceState()
+        bindDriState()
     }
 
     /// Binds the battery from the view model to battery label
@@ -130,7 +132,7 @@ private extension DashboardDroneCell {
     func bindWifiStrength() {
         viewModel?.$wifiStrength
             .sink { [unowned self] wifiStrength in
-                wifiStatusImageView.image = wifiStrength?.signalIcon
+                wifiStatusImageView.image = wifiStrength.signalIcon
             }
             .store(in: &cancellables)
     }
@@ -157,7 +159,7 @@ private extension DashboardDroneCell {
     func bindCellularStrength() {
         viewModel?.$cellularStrength
             .sink { [unowned self] cellularStrength in
-                networkImageView.image = cellularStrength.signalIcon
+                callularStatusImageView.image = cellularStrength.signalIcon
             }
             .store(in: &cancellables)
     }
@@ -179,9 +181,19 @@ private extension DashboardDroneCell {
             .store(in: &cancellables)
     }
 
+
+    /// Binds the dri state from the view model to the dri imageView
+    func bindDriState() {
+        viewModel?.$driState
+            .sink { [unowned self] driState in
+                driStateImageView.image = driState.driIcon
+            }
+            .store(in: &cancellables)
+    }
+
     /// This method is used to clean UI before setting value from the state.
     func cleanViews() {
-        networkImageView.image = nil
+        callularStatusImageView.image = nil
         batteryLevelImageView.image = nil
         nameDeviceLabel.text = nil
         batteryValueLabel.text = nil

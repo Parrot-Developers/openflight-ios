@@ -41,6 +41,7 @@ public protocol HUDCameraStreamingViewControllerDelegate: AnyObject {
 public final class HUDCameraStreamingViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var snowView: SnowView!
+    @IBOutlet private weak var gridView: GridView!
     @IBOutlet public weak var touchView: TouchStreamView!
     @IBOutlet private weak var streamView: StreamView!
 
@@ -49,6 +50,7 @@ public final class HUDCameraStreamingViewController: UIViewController {
 
     // MARK: - Public Properties
     public var doNotPauseStreamOnDisappear: Bool = false
+    public var isMiniStreamView: Bool = false
 
     // MARK: - Private Properties
     private var contentZone: CGRect = .zero
@@ -69,12 +71,8 @@ public final class HUDCameraStreamingViewController: UIViewController {
             clearTrackingAndProposalsView()
         }
     }
-
-    // MARK: - Private Enums
-    private enum Constants {
-        static let streamMiniatureBorderWidth: CGFloat = 2.0
-        static let streamMiniatureBorderColor: UIColor = .white
-    }
+    // TODO: wrong injection
+    private let touchStreamViewModel = TouchStreamViewModel(touchAndFlyService: Services.hub.touchAndFly)
 
     // MARK: - Setup
     public static func instantiate() -> HUDCameraStreamingViewController {
@@ -110,6 +108,7 @@ public final class HUDCameraStreamingViewController: UIViewController {
         streamView.contentZoneListener = { [weak self] contentZone in
             self?.updateContentZone(to: contentZone)
         }
+        touchStreamViewModel.toggleView(true)
     }
 
     public override func viewWillDisappear(_ animated: Bool) {
@@ -118,6 +117,7 @@ public final class HUDCameraStreamingViewController: UIViewController {
             enableMonitoring(false)
             streamView.contentZoneListener = nil
         }
+        touchStreamViewModel.toggleView(false)
     }
 
     public override var prefersStatusBarHidden: Bool {
@@ -127,22 +127,6 @@ public final class HUDCameraStreamingViewController: UIViewController {
 
 // MARK: - Internal Funcs
 extension HUDCameraStreamingViewController {
-
-    /// Add a border to the stream view.
-    func addBorder() {
-        borderView?.removeFromSuperview()
-        let borderView = UIView(frame: view.frame)
-        borderView.setBorder(borderColor: Constants.streamMiniatureBorderColor,
-                             borderWidth: Constants.streamMiniatureBorderWidth)
-        view.addSubview(borderView)
-        self.borderView = borderView
-    }
-
-    /// Removes the border of the stream view.
-    func removeBorder() {
-        borderView?.removeFromSuperview()
-        borderView = nil
-    }
 
     /// Stops the stream (⚠️ only works after viewDidAppear).
     func stopStream() {
@@ -162,6 +146,9 @@ private extension HUDCameraStreamingViewController {
 
     /// Sets up view models associated with the view.
     func setupViewModels() {
+        touchView.viewModel = touchStreamViewModel
+        touchView.listen()
+
         cameraStreamingViewModel.state.valueChanged = { [weak self] state in
             self?.onStateUpdate(state)
         }
@@ -170,12 +157,24 @@ private extension HUDCameraStreamingViewController {
         cameraStreamingViewModel.$cameraLive
             .sink { [unowned self] cameraLive in
                 onCameraLiveUpdate(cameraLive)
-            }.store(in: &cancellables)
+            }
+            .store(in: &cancellables)
 
         cameraStreamingViewModel.$snowVisible
             .sink { [unowned self] snowVisible in
                 snowView.isHidden = !snowVisible
-            }.store(in: &cancellables)
+            }
+            .store(in: &cancellables)
+
+        cameraStreamingViewModel.$gridDisplayType
+            .removeDuplicates()
+            .combineLatest(cameraStreamingViewModel.$cameraLive)
+            .sink { [unowned self] gridDisplayType, cameraLive in
+                gridView.gridDisplayType = gridDisplayType
+                gridView.update(frame: contentZone)
+                gridView.isHidden = isMiniStreamView || cameraLive == nil || gridDisplayType == .none
+            }
+            .store(in: &cancellables)
 
         listenMissionMode()
     }
@@ -220,10 +219,6 @@ private extension HUDCameraStreamingViewController {
             view.addSubview(proposalAndTrackingView)
         }
         trackingViewModel?.state.valueChanged = { [weak self] state in
-            if let currentTilt = state.tilt {
-                self?.proposalAndTrackingView?.updateTilt(currentTilt)
-            }
-
             if let trackingInfo = state.trackingInfo {
                 self?.proposalAndTrackingView?.trackInfoDidChange(trackingInfo)
             }
@@ -288,6 +283,7 @@ private extension HUDCameraStreamingViewController {
 
         delegate?.didUpdate(contentZone: frame)
         proposalAndTrackingView?.updateFrame(frame)
+        gridView.update(frame: frame)
         touchView.update(frame: frame)
         contentZone = frame
     }
@@ -307,6 +303,7 @@ private extension HUDCameraStreamingViewController {
 
     /// Deinit stream.
     func deinitStream() {
+        touchView.viewModel = nil
         streamView.setStream(stream: nil)
         Services.hub.touchAndFly.frameUpdate(mediaInfoHandle: nil, metadataHandle: nil)
     }

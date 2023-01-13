@@ -39,8 +39,9 @@ public enum TouchStreamStateMachineEvent {
     case began(_ location: CGPoint)
     case moved(_ location: CGPoint)
     case ended(_ location: CGPoint)
-    case cancelled(_ location: CGPoint)
+    case cancelled
     case updated(_ element: StreamElement)
+    case runningStateUpdated(_ state: TouchAndFlyRunningState)
 }
 
 /// States of the state machine.
@@ -67,6 +68,7 @@ private enum Constants {
     static let dragMinimumOffset = 5.0
     static let altitudeOffsetRatio = 15.0
     static let longTapDelay = 0.5
+    static let minimumVisibleDistance = 3.0
 }
 
 protocol TouchStreamStateMachineView {
@@ -133,14 +135,15 @@ class TouchStreamStateMachine {
     ///   - event: the event
     func process(event: TouchStreamStateMachineEvent) {
         switch (currentState, event) {
-        case (.empty, .began):
-            processEmptyBegan()
+        case (.empty, .began(let location)):
+            processEmptyBegan(location)
             currentState = .dragNew
         case (.dragNew, .moved(let location)):
             currentState = processDragNewMoved(location)
         case (.dragNew, .ended(let location)):
             currentState = processDragNewEnded(location)
         case (.dragNew, .cancelled):
+            processDragCancelled()
             currentState = .empty
         case (.longTap, .moved):
             currentState = .longTap
@@ -176,6 +179,8 @@ class TouchStreamStateMachine {
         case (_, .updated):
             // ignore updated when in any drag state
             return
+        case (_, .runningStateUpdated(let state)):
+            currentState = processRunningStateUpdated(state)
         default:
             ULog.e(.tag, "unhandled event \(event) for state \(currentState) ")
         }
@@ -195,7 +200,8 @@ class TouchStreamStateMachine {
     }
 
     /// Processes the began event on the empty state
-    private func processEmptyBegan() {
+    private func processEmptyBegan(_ location: CGPoint) {
+        originalDragPoint = location
         startTime = Date(timeIntervalSinceNow: 0)
     }
 
@@ -239,13 +245,7 @@ class TouchStreamStateMachine {
         view.clearAxis()
         let location = view.clampedLocation(location: location, objectSize: Constants.outsideCircle)
         view.updateGraphic(type: .waypoint, size: Constants.outsideCircle, location: location)
-        // Depending on drag direction, either the stream point coordinates will be updated, or only its altitude will be updated.
-        switch dragDirection {
-        case .undefined:
-            break
-        case .horizontal, .vertical:
-            _ = view.saveWaypointLocation(location, dragDirection: dragDirection)
-        }
+        _ = view.saveWaypointLocation(location, dragDirection: dragDirection)
         dragDirection = .undefined
     }
 
@@ -279,7 +279,7 @@ class TouchStreamStateMachine {
         let now = Date(timeIntervalSinceNow: 0)
         if now.timeIntervalSince(startTime) > Constants.longTapDelay {
             // display a poi (will be created at the end of the tap)
-            let location = view.clampedLocation(location: location, objectSize: Constants.diamondSize)
+            let location = view.clampedLocation(location: originalDragPoint ?? location, objectSize: Constants.diamondSize)
             view.createPoi(altitude: 0)
             view.updateGraphic(type: .poi, size: Constants.diamondSize, location: location)
             newPoiLocation = location
@@ -308,8 +308,16 @@ class TouchStreamStateMachine {
     /// - Parameter location: the location of the event
     /// - Returns: the new state
     private func processDragNewEnded(_ location: CGPoint) -> TouchStreamStateMachineState {
+
         let location = view.clampedLocation(location: location, objectSize: Constants.outsideCircle)
-        if view.saveWaypointLocation(location, dragDirection: .undefined) {
+        let now = Date(timeIntervalSinceNow: 0)
+        if let startTime = startTime, now.timeIntervalSince(startTime) > Constants.longTapDelay {
+            if  view.savePoiLocation(location) {
+                return .poi
+            } else {
+                return .empty
+            }
+        } else if view.saveWaypointLocation(location, dragDirection: .undefined) {
             return .waypoint
         } else {
             return .empty
@@ -331,27 +339,47 @@ class TouchStreamStateMachine {
         case .none:
             view.clear()
             return .empty
-        case .waypoint(.zero, _):
+        case .waypoint(.zero, _, _):
             view.clearWayPoint()
             return .empty
-        case .waypoint(let location, let altitude):
-            var location = view.pointInStreamView(point: location)
-            location = view.clampedLocation(location: location, objectSize: Constants.outsideCircle)
-            view.createWaypoint(altitude: altitude)
-            view.updateGraphic(type: .waypoint, size: Constants.outsideCircle, location: location)
+        case .waypoint(let location, let altitude, let distance):
+            if distance > Constants.minimumVisibleDistance {
+                var location = view.pointInStreamView(point: location)
+                location = view.clampedLocation(location: location, objectSize: Constants.outsideCircle)
+                view.createWaypoint(altitude: altitude)
+                view.updateGraphic(type: .waypoint, size: Constants.outsideCircle, location: location)
+            } else {
+                // Don't display waypoint when too close to drone.
+                view.clearWayPoint()
+            }
             return .waypoint
-        case .poi(.zero, _):
+        case .poi(.zero, _, _):
             view.clearPoi()
             return .empty
-        case .poi(let location, let altitude):
-            view.createPoi(altitude: altitude)
-            var location = view.pointInStreamView(point: location)
-            location = view.clampedLocation(location: location, objectSize: Constants.diamondSize)
-            view.updateGraphic(type: .poi, size: Constants.diamondSize, location: location)
+        case .poi(let location, let altitude, let distance):
+            if distance > Constants.minimumVisibleDistance {
+                view.createPoi(altitude: altitude)
+                var location = view.pointInStreamView(point: location)
+                location = view.clampedLocation(location: location, objectSize: Constants.diamondSize)
+                view.updateGraphic(type: .poi, size: Constants.diamondSize, location: location)
+            } else {
+                // Don't display POI when too close to drone.
+                view.clearPoi()
+            }
             return .poi
         case .user(let location):
             view.updateUser(location: location)
         }
         return currentState
+    }
+
+    private func processRunningStateUpdated(_ state: TouchAndFlyRunningState) -> TouchStreamStateMachineState {
+        switch state {
+        case .blocked, .noTarget:
+            view.clear()
+            return .empty
+        default:
+            return currentState
+        }
     }
 }

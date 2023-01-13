@@ -31,7 +31,7 @@ import UIKit
 import GroundSdk
 
 /// Model for calibration choice view.
-struct CalibrationChoiceModel {
+public struct CalibrationChoiceModel {
 
     // MARK: - Internal Properties
     /// Calibration image.
@@ -57,7 +57,7 @@ struct CalibrationChoiceModel {
     ///    - subtitle: Calibration subtitle.
     ///    - subtitleColor: Calibration subtitle color.
     ///    - backgroundColor: Calibration background color.
-    init(image: UIImage,
+    public init(image: UIImage,
          title: String,
          titleColor: UIColor = ColorName.defaultTextColor.color,
          subtitle: String? = nil,

@@ -28,11 +28,15 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 
 /// Settings content sub class dedicated to controls settings.
 final class SettingsControlsViewController: SettingsContentViewController {
     // MARK: - Private Properties
-    private let controlsViewModel = ControlsViewModel()
+    private let controlsViewModel = ControlsViewModel(currentDroneHolder: Services.hub.currentDroneHolder,
+                                                      currentRemoteControlHolder: Services.hub.currentRemoteControlHolder,
+                                                      remoteControlUpdater: Services.hub.remoteControlUpdater)
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
@@ -74,11 +78,12 @@ private extension SettingsControlsViewController {
     /// Sets up view model.
     func setupViewModel() {
         // Setup view model.
-        controlsViewModel.state.valueChanged = { [weak self] state in
-            self?.updateDataSource(state)
-        }
-        // Inital data source update.
-        updateDataSource(controlsViewModel.state.value)
+        controlsViewModel.$state
+            .removeDuplicates()
+            .sink { [weak self] in
+                self?.updateDataSource($0)
+            }
+            .store(in: &cancellables)
     }
 
     /// Configure Control Mode Cell.

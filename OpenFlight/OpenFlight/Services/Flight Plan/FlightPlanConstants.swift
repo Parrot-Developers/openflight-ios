@@ -34,4 +34,8 @@ import Foundation
 public enum FlightPlanConstants {
     public static let defaultDroneModel: Drone.Model = .anafi2
     public static let timerTolerance: TimeInterval = 0.2
+    // Int.min doesn't work for zIndex order.
+    public static let minZIndex: Int = -10000
+    // Int.max doesn't work for zIndex order.
+    public static let maxZIndex: Int = 10000
 }

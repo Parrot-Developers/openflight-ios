@@ -51,11 +51,9 @@ final class DashboardMediasSubCell: UICollectionViewCell, NibReusable {
 internal extension DashboardMediasSubCell {
     /// Setup cell.
     ///
-    /// - Parameters:
-    ///    - media: Gallery Media
-    ///    - index: image index
-    func setup(media: GalleryMedia, index: Int) {
-        viewModel = GalleryMediaThumbnailViewModel(media: media, index: index)
+    /// - Parameter media: the gallery media
+    func setup(media: GalleryMedia) {
+        viewModel = GalleryMediaThumbnailViewModel(media: media, index: media.defaultResourceIndex)
         viewModel?.getThumbnail { [weak self] image in
             self?.thumbnailImageView.image = image
         }

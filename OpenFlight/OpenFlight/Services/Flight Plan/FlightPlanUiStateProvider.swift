@@ -214,7 +214,7 @@ private extension FlightPlanModel.FlightPlanState {
         switch self {
         case .stopped:
             // clamp value so that 99.nn is not displayed as 100
-            return L10n.flightPlanAlertStoppedAt((0.0 ... 99.49).clamp(flightPlan.percentCompleted).asPercent(maximumFractionDigits: 0))
+            return L10n.flightPlanAlertStoppedAt((1.0 ... 99.49).clamp(flightPlan.percentCompleted).asPercent(maximumFractionDigits: 0))
         case .flying:
             return L10n.flightPlanAlertStoppedAt(flightPlan.percentCompleted.asPercent(maximumFractionDigits: 0))
         case .completed:
@@ -293,7 +293,7 @@ private extension FlightPlanModel.FlightPlanState {
         switch self {
         case .stopped:
             // clamp value so that 99.nn is not displayed as 100
-            return L10n.flightPlanHistoryExecutionIncompleteAtDescription((0.0 ... 99.49).clamp(flightPlan.percentCompleted).asPercent(maximumFractionDigits: 0))
+            return L10n.flightPlanHistoryExecutionIncompleteAtDescription((1.0 ... 99.49).clamp(flightPlan.percentCompleted).asPercent(maximumFractionDigits: 0))
         case .flying:
             return L10n.flightPlanHistoryExecutionIncompleteAtDescription(flightPlan.percentCompleted.asPercent(maximumFractionDigits: 0))
         case .completed:

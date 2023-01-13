@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -27,16 +27,16 @@
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="yEN-en-3AP">
                                 <rect key="frame" x="5" y="5" width="130" height="130"/>
                                 <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalCentering" translatesAutoresizingMaskIntoConstraints="NO" id="mnY-nl-w85">
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="mnY-nl-w85">
                                         <rect key="frame" x="0.0" y="0.0" width="130" height="20"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="SGd-z4-3g7">
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillProportionally" spacing="3" translatesAutoresizingMaskIntoConstraints="NO" id="SGd-z4-3g7">
                                                 <rect key="frame" x="0.0" y="0.0" width="31.5" height="20"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icBatteryNone" translatesAutoresizingMaskIntoConstraints="NO" id="Mey-k4-q5o">
                                                         <rect key="frame" x="0.0" y="0.0" width="5" height="20"/>
                                                     </imageView>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="90%" lineBreakMode="characterWrap" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="07t-X8-uhr">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="center" verticalHuggingPriority="251" text="90%" lineBreakMode="characterWrap" baselineAdjustment="alignBaselines" minimumScaleFactor="0.69999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="07t-X8-uhr">
                                                         <rect key="frame" x="8" y="0.0" width="23.5" height="20"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                         <color key="textColor" name="default_text_color"/>
@@ -45,7 +45,11 @@
                                                 </subviews>
                                             </stackView>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icGpsNone" translatesAutoresizingMaskIntoConstraints="NO" id="hld-fw-Iyj">
-                                                <rect key="frame" x="52.5" y="0.0" width="20" height="20"/>
+                                                <rect key="frame" x="37" y="0.0" width="20" height="20"/>
+                                            </imageView>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDriDeactivated" translatesAutoresizingMaskIntoConstraints="NO" id="HUm-PL-9ti" userLabel="Dri State Image View">
+                                                <rect key="frame" x="62.5" y="0.0" width="20" height="20"/>
+                                                <color key="tintColor" name="default_text_color"/>
                                             </imageView>
                                             <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3UP-9v-u8a">
                                                 <rect key="frame" x="88" y="0.0" width="42" height="20"/>
@@ -121,10 +125,6 @@
                                         <variation key="heightClass=regular-widthClass=regular" spacing="7"/>
                                     </stackView>
                                 </subviews>
-                                <constraints>
-                                    <constraint firstItem="mnY-nl-w85" firstAttribute="leading" secondItem="yEN-en-3AP" secondAttribute="leading" id="Nou-mm-FAL"/>
-                                    <constraint firstAttribute="trailing" secondItem="mnY-nl-w85" secondAttribute="trailing" id="fz8-fa-qeo"/>
-                                </constraints>
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -159,11 +159,12 @@
             <connections>
                 <outlet property="batteryLevelImageView" destination="Mey-k4-q5o" id="stE-94-zf2"/>
                 <outlet property="batteryValueLabel" destination="07t-X8-uhr" id="5N2-jt-zu2"/>
+                <outlet property="callularStatusImageView" destination="kjP-6A-mox" id="BiM-Ka-Vrm"/>
                 <outlet property="deviceImageView" destination="vJJ-Cm-IRY" id="9yk-Ys-VqW"/>
                 <outlet property="deviceStateButton" destination="hSZ-wD-AcC" id="huM-GQ-a3e"/>
+                <outlet property="driStateImageView" destination="HUm-PL-9ti" id="ubS-hW-r3z"/>
                 <outlet property="gpsStatusImageView" destination="hld-fw-Iyj" id="kvq-H3-267"/>
                 <outlet property="nameDeviceLabel" destination="tK4-XF-c9C" id="WX8-XM-6Ax"/>
-                <outlet property="networkImageView" destination="kjP-6A-mox" id="BiM-Ka-Vrm"/>
                 <outlet property="wifiStatusImageView" destination="mAd-hy-Yos" id="KYx-PY-I5S"/>
             </connections>
             <point key="canvasLocation" x="137.59999999999999" y="154.72263868065968"/>
@@ -172,6 +173,7 @@
     <resources>
         <image name="ic4GOffline" width="20" height="20"/>
         <image name="icBatteryNone" width="5" height="10"/>
+        <image name="icDriDeactivated" width="20" height="20"/>
         <image name="icDrone" width="40" height="40"/>
         <image name="icGpsNone" width="20" height="20"/>
         <image name="icWifiOffline" width="22" height="20"/>

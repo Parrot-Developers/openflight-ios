@@ -36,6 +36,7 @@ extension FlightPlanDataSetting {
     private enum Constants {
         static let readOnlyFreeSettingsKey = "read-only"
         static let pgyProjectDeletedKey = "pgy-project-deleted"
+        static let timeLapse1s = 1000
     }
 
     var pgyProjectDeleted: Bool {
@@ -234,6 +235,17 @@ extension FlightPlanDataSetting {
             .count
     }
 
+    /// Whether the current FP settings allow changing the photo signature state.
+    var isPhotoSignatureSupported: Bool {
+        // Digital signature is only available for Photo modes.
+        guard captureModeEnum != .video else { return false }
+        // Signature is disabled for FP time lapse in 12Mp with interval < 1s (e.g. 12Mp/0.5s).
+        if photoResolution == .res12MegaPixels,
+           captureModeEnum == .timeLapse,
+           timeLapseCycle ?? 0 < Constants.timeLapse1s { return false }
+        return true
+    }
+
     // MARK: - Public Funcs
     /// Sets up global continue mode.
     ///
@@ -243,6 +255,13 @@ extension FlightPlanDataSetting {
         self.shouldContinue = shouldContinue
         // FIXME: for now, specific continue mode for each segment is not supported.
         self.wayPoints.forEach { $0.shouldContinue = shouldContinue }
+    }
+
+    /// Sets up Photo Digital Signature.
+    ///
+    /// - Parameter isPhotoSignatureEnabled: whether the photo digital signature is enabled
+    public mutating func setPhotoDigitalSignature(_ isPhotoSignatureEnabled: Bool) {
+        self.isPhotoSignatureEnabled = isPhotoSignatureEnabled
     }
 
     /// Sets up return to home on last point setting.
@@ -334,10 +353,26 @@ extension FlightPlanDataSetting {
         if captureSettings == nil { captureSettings = [:] }
         // Save value.
         captureSettings?[type.rawValue] = value
+
+        // If the current selected setting prevents to use the photo signature,
+        // disable it if not yet done.
+        if type.isImpactingPhotoSignature {
+            disablePhotoSignature = !isPhotoSignatureSupported
+        }
     }
 
     var maxAltitude: Double {
         let maxWayPointAltitude = wayPoints.max { lhs, rhs in lhs.altitude < rhs.altitude }
         return maxWayPointAltitude?.altitude ?? 0.0
+    }
+}
+
+// MARK: ClassicFlightPlanSettingType helpers.
+extension ClassicFlightPlanSettingType {
+    /// Whether  the setting change impacts the photo digital signature.
+    var isImpactingPhotoSignature: Bool {
+        [Self.photoResolution,
+         Self.timeLapseCycle]
+            .contains(self)
     }
 }

@@ -38,7 +38,7 @@ enum GutmaConstants {
     static let dateFormatFile: String = "yyyy-MM-dd'T'HH:mm:ssZ"
     static let extensionName: String = "gutma"
     static let unknownCoordinate: Double = 500
-    static let firstVesionWithAsml: String = "1.0.1"
+    static let firstVesionWithAmsl: String = "1.0.1"
     static let eventInfoFlightPlan: String = "FLIGHTPLAN"
     static let eventTypeFlightPlan: String = "CONTROLLER_FLIGHTPLAN"
     static let eventStepMissionItem: String = "MISSION_ITEM"
@@ -117,13 +117,13 @@ extension Gutma {
         exchange?.message?.flightLogging?.flightPlanPoints(flightPlan, mavlinkCommands: mavlinkCommands) ?? []
     }
 
-    /// Whether file contains point with altitudes in ASML coordinates.
-    var hasAsmlAltitude: Bool {
-        // compare file version with first version containing ASML altitudes
+    /// Whether file contains point with altitudes in AMSL coordinates.
+    var hasAmslAltitude: Bool {
+        // compare file version with first version containing AMSL altitudes
         if let parrotVersion = exchange?.message?.file?.parrotVersion,
            let version = FirmwareVersion.parse(versionStr: parrotVersion),
-           let firstVesionWithAsml = FirmwareVersion.parse(versionStr: GutmaConstants.firstVesionWithAsml) {
-            return !(version < firstVesionWithAsml)
+           let firstVesionWithAmsl = FirmwareVersion.parse(versionStr: GutmaConstants.firstVesionWithAmsl) {
+            return !(version < firstVesionWithAmsl)
         }
         return false
     }

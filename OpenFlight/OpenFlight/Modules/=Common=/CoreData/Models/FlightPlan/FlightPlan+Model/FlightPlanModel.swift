@@ -193,7 +193,7 @@ public struct FlightPlanModel {
                 projectUuid: String,
                 dataStringType: String,
                 dataString: String?,
-                pgyProjectId: Int64?,
+                pgyProjectId: Int64? = nil,
                 state: FlightPlanState,
                 lastMissionItemExecuted: Int64?,
                 mediaCount: Int16?,
@@ -207,7 +207,7 @@ public struct FlightPlanModel {
                 parrotCloudUploadUrl: String? = nil,
                 isLocalDeleted: Bool = false,
                 latestCloudModificationDate: Date? = nil,
-                uploadAttemptCount: Int16? = 0,
+                uploadAttemptCount: Int16? = nil,
                 lastUploadAttempt: Date? = nil,
                 thumbnail: ThumbnailModel?,
                 flightPlanFlights: [FlightPlanFlightsModel]? = nil,
@@ -240,24 +240,18 @@ public struct FlightPlanModel {
         self.latestLocalModificationDate = latestLocalModificationDate
         self.synchroError = synchroError
 
-        // Update the FP execution state from the data settings.
-        if let dataSetting = self.dataSetting {
-            self.hasReachedFirstWayPoint = dataSetting.hasReachedFirstWayPoint
-            self.hasReachedLastWayPoint = dataSetting.hasReachedLastWayPoint
-            self.lastPassedWayPointIndex = dataSetting.lastPassedWayPointIndex
-            self.percentCompleted = dataSetting.percentCompleted
-            self.executionRank = dataSetting.executionRank
-        } else {
-            self.hasReachedFirstWayPoint = false
-            self.hasReachedLastWayPoint = false
-            self.lastPassedWayPointIndex = nil
-            self.percentCompleted = 0
-            self.executionRank = nil
+        // PGY properties are handled by `dataSetting`.
+        // Only overwrite them if specified in parameters (when created from local data base).
+        // TODO: Should not be available in parameters. Handle it during Tchouri integration.
+        if let pgyProjectId = pgyProjectId {
+            self.pgyProjectId = pgyProjectId
         }
-
-        self.pgyProjectId = pgyProjectId ?? 0
-        self.uploadAttemptCount = uploadAttemptCount ?? 0
-        self.lastUploadAttempt = lastUploadAttempt
+        if let uploadAttemptCount = uploadAttemptCount {
+            self.uploadAttemptCount = uploadAttemptCount
+        }
+        if let lastUploadAttempt = lastUploadAttempt {
+            self.lastUploadAttempt = lastUploadAttempt
+        }
     }
 }
 
@@ -279,7 +273,6 @@ extension FlightPlanModel {
                   projectUuid: projectUuid,
                   dataStringType: "json",
                   dataString: dataSetting.toJSONString(),
-                  pgyProjectId: nil,
                   state: state,
                   lastMissionItemExecuted: nil,
                   mediaCount: 0,
@@ -292,8 +285,6 @@ extension FlightPlanModel {
                   parrotCloudUploadUrl: nil,
                   isLocalDeleted: false,
                   latestCloudModificationDate: nil,
-                  uploadAttemptCount: nil,
-                  lastUploadAttempt: nil,
                   thumbnail: nil,
                   flightPlanFlights: [],
                   latestLocalModificationDate: Date(),
@@ -319,7 +310,6 @@ extension FlightPlanModel {
                   projectUuid: flightPlan.projectUuid,
                   dataStringType: flightPlan.dataStringType,
                   dataString: dataSetting?.toJSONString(),
-                  pgyProjectId: flightPlan.pgyProjectId,
                   state: state,
                   lastMissionItemExecuted: 0,
                   mediaCount: 0,
@@ -333,8 +323,6 @@ extension FlightPlanModel {
                   parrotCloudUploadUrl: nil,
                   isLocalDeleted: false,
                   latestCloudModificationDate: nil,
-                  uploadAttemptCount: 0,
-                  lastUploadAttempt: nil,
                   thumbnail: nil,
                   flightPlanFlights: [],
                   latestLocalModificationDate: Date(),
@@ -465,6 +453,12 @@ extension FlightPlanModel {
         // Checking Data Settings.
         return dataSetting == flightPlan.dataSetting
     }
+
+    /// Whether the Flight Plan has been created from an imported Mavlink.
+    ///
+    /// - Description: The current implementation uses the flight plan `DataSetting`'s `readOnly` field
+    ///                to indicate if it has been created by a Mavlink import (when `readOnly` = `true`).
+    var hasImportedMavlink: Bool { dataSetting?.readOnly == true }
 }
 
 // MARK: - Model Versioning

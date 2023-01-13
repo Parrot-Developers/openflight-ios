@@ -30,6 +30,10 @@
 import UIKit
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: URL(fileURLWithPath: #file).lastPathComponent)
+}
+
 // MARK: - Internal Enums
 /// Enum containing photo formats.
 
@@ -204,6 +208,7 @@ extension Camera2Params {
     private static func currentCameraConfig() -> Camera2Config? {
         // TODO very wrong to access a service here
         guard let camera = Services.hub.currentDroneHolder.drone.currentCamera else {
+            ULog.d(.tag, "`mainCamera2` peripheral missing on drone: \(Services.hub.currentDroneHolder.drone.uid)")
             return nil
         }
         return camera.config
@@ -229,8 +234,9 @@ extension Camera2Params {
     ///
     /// - Returns: supported video recording framerates
     static func supportedRecordingResolution() -> [Camera2RecordingResolution] {
-        guard let config = currentCameraConfig(),
-              let overallSupportedValues = config[Camera2Params.videoRecordingResolution]?.overallSupportedValues else {
+        guard let config = currentCameraConfig() else { return [] }
+        guard let overallSupportedValues = config[Camera2Params.videoRecordingResolution]?.overallSupportedValues else {
+            ULog.d(.tag, "`videoRecordingResolution` missing in config: \(config)")
             return []
         }
 

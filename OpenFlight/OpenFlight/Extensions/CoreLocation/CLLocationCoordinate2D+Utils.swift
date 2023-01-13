@@ -104,6 +104,23 @@ public extension CLLocationCoordinate2D {
 
         return radiansBearing.toDegrees()
     }
+
+    /// Returns a new coordinate moved by specified distance and  bearing.
+    ///
+    /// - Parameters:
+    ///    - distance: the distance in meters
+    ///    - bearing: the bearing in degrees [-180:180]
+    ///
+    /// - Note: Bearing examples:
+    ///             • *0*: North
+    ///             • *-90*: West
+    ///             • *90*: East
+    ///             • *180*: South
+    ///             • *-45*: 45° N-W
+    func moved(distance: CLLocationDistance, bearing: CLLocationDegrees) -> Self {
+        let location = CLLocation(latitude: latitude, longitude: longitude)
+        return location.moved(distance: distance, bearing: bearing).coordinate
+    }
 }
 
 /// Extension for `CLLocationCoordinateD2` conformance to `Equatable`.

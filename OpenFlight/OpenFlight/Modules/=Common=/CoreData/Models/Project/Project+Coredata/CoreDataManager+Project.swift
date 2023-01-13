@@ -163,6 +163,13 @@ public protocol ProjectRepository: AnyObject {
     /// - Returns List of ProjectModels
     func getProjectsWithEditable(offset: Int, limit: Int, withType type: String?) -> [ProjectModel]
 
+    /// Get ProjectModels with title that contains (case and diacritic insensitive) the specified String
+    /// - Parameters:
+    ///    - title: String to search in project's title
+    ///    - excludeUuids: Array of UUID to exclude
+    /// - Returns Search result with a list of project's title
+    func getProjectsTitle(like title: String, excludeUuids: [String]?) -> [String]
+
     /// Get ProjectModels from all Projects in CoreData
     /// - Returns List of ProjectModels
     func getAllProjects() -> [ProjectModel]
@@ -174,6 +181,10 @@ public protocol ProjectRepository: AnyObject {
     /// Get all ProjectModels locally modified from Projects in CoreData
     /// - Returns:  List of ProjectModels
     func getAllModifiedProjects() -> [ProjectModel]
+
+    /// Get all synchronized projects UUIDs
+    /// - Returns: List of UUIDs
+    func getAllSynchronizedProjectsUuids() -> [String]
 
     /// Get projects that are considered odd
     ///     - projects with no editable flight plan
@@ -214,6 +225,13 @@ public protocol ProjectRepository: AnyObject {
     ///     (Same rule is used for flight plan filghts, thumbnail, etc.)
     func deleteProjects(withUuids uuids: [String])
     func deleteProjects(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?)
+
+    /// Delete all projects
+    /// - Note:
+    ///     `Delete Rule` for Project's flight plans is set to `Cascade`.
+    ///     It means deleting the project will delete its flight plans.
+    ///     (Same rule is used for flight plan filghts, thumbnail, etc.)
+    func deleteAllProjects(completion: ((_ status: Bool) -> Void)?)
 
     /// Remove CloudId and SynchroStatus for all Projects
     /// - Parameters:
@@ -503,7 +521,7 @@ extension CoreDataServiceImpl: ProjectRepository {
     }
 
     public func getProjects(withUuids uuids: [String]) -> [ProjectModel] {
-        return getProjectsCD(withUuids: uuids).map({ $0.modelWithEditableFlightPlan() })
+        return getProjectsCD(withUuids: uuids).compactMap({ $0.modelWithEditableFlightPlan() })
     }
 
     public func getProjectWithEditable(withUuid uuid: String) -> ProjectModel? {
@@ -515,7 +533,7 @@ extension CoreDataServiceImpl: ProjectRepository {
     }
 
     public func getProjects(withType type: String) -> [ProjectModel] {
-        return getProjectsCD(withType: type, toBeDeleted: false).map({ $0.model() })
+        return getProjectsCD(withType: type, toBeDeleted: false).compactMap({ $0.model() })
     }
 
     public func getAllProjectsCount() -> Int {
@@ -531,34 +549,29 @@ extension CoreDataServiceImpl: ProjectRepository {
     }
 
     public func getProjectsWithEditable(withType type: String?) -> [ProjectModel] {
-        return getProjectsWithEditableCD(withType: type, toBeDeleted: false).map({ $0.modelWithEditableFlightPlan() })
+        return getProjectsWithEditableCD(withType: type, toBeDeleted: false).compactMap({ $0.modelWithEditableFlightPlan() })
     }
 
     public func getProjectsWithEditable(offset: Int, limit: Int, withType type: String?) -> [ProjectModel] {
-        return getProjectsWithEditableCD(offset: offset, limit: limit, withType: type, toBeDeleted: false).map({ $0.modelWithEditableFlightPlan() })
+        return getProjectsWithEditableCD(offset: offset, limit: limit, withType: type, toBeDeleted: false).compactMap({ $0.modelWithEditableFlightPlan() })
+    }
+
+    public func getProjectsTitle(like title: String, excludeUuids: [String]?) -> [String] {
+        getProjectsCD(withTitleLike: title, excludeUuids: excludeUuids).compactMap {
+            $0.title
+        }
     }
 
     public func getAllProjects() -> [ProjectModel] {
-        return getAllProjectsCD(toBeDeleted: false).map({ $0.model() })
+        return getAllProjectsCD(toBeDeleted: false).compactMap({ $0.model() })
     }
 
     public func getAllProjectsToBeDeleted() -> [ProjectModel] {
-        return getAllProjectsCD(toBeDeleted: true).map({ $0.model() })
+        return getAllProjectsCD(toBeDeleted: true).compactMap({ $0.model() })
     }
 
     public func getExecutedProjectsWithLatestExecution(offset: Int, limit: Int, withType: ProjectType?) -> [ProjectModel] {
         let projectsCD = getExecutedProjectsCD(offset: offset, limit: limit, withType: withType?.rawValue, toBeDeleted: false)
-            .sorted { project1, project2 in
-                let date1 = project1.flightPlans?
-                    .compactMap { $0.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() }
-                    .max()
-                let date2 = project2.flightPlans?
-                    .compactMap { $0.flightPlanFlights?.compactMap { $0.ofFlight?.startTime }.max() }
-                    .max()
-                guard let date1 = date1 else { return false }
-                guard let date2 = date2 else { return true }
-                return date1 > date2
-            }
 
         var projects: [ProjectModel] = []
 
@@ -584,7 +597,11 @@ extension CoreDataServiceImpl: ProjectRepository {
 
     public func getAllModifiedProjects() -> [ProjectModel] {
         let apcIdQuery = "apcId == '\(userService.currentUser.apcId)'"
-        return getProjectsCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").map({ $0.model() })
+        return getProjectsCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").compactMap({ $0.model() })
+    }
+
+    public func getAllSynchronizedProjectsUuids() -> [String] {
+        getAllSynchronizedProjectsCD().compactMap({ $0.uuid })
     }
 
     public func getOddProjects(_ completion: @escaping (([ProjectModel]) -> Void)) {
@@ -604,7 +621,7 @@ extension CoreDataServiceImpl: ProjectRepository {
               }
 
         return flightPlans
-            .map({ $0.model() })
+            .compactMap({ $0.model() })
     }
 
     public func getExecutedFlightPlans(ofProject projectModel: ProjectModel) -> [FlightPlanModel] {
@@ -708,6 +725,29 @@ extension CoreDataServiceImpl: ProjectRepository {
         deleteProjects(withUuids: uuids, completion: nil)
     }
 
+    public func deleteAllProjects(completion: ((_ status: Bool) -> Void)?) {
+        performAndSave({ [unowned self] _ in
+            let projects = getAllProjectsCD(toBeDeleted: false)
+            guard !projects.isEmpty else {
+                completion?(true)
+                return false
+            }
+
+            deleteObjects(projects)
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                self.projectsDidChangeSubject.send()
+                self.allProjectsRemovedSubject.send()
+                completion?(true)
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deleteAllProjects error: \(error.localizedDescription)")
+                completion?(false)
+            }
+        })
+    }
+
     public func deleteProjects(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?) {
         guard !uuids.isEmpty else {
             completion?(true)
@@ -718,7 +758,7 @@ extension CoreDataServiceImpl: ProjectRepository {
 
         performAndSave({ [unowned self] _ in
             let projectsCD = getProjectsCD(withUuids: uuids)
-            deletedProjects = projectsCD.map({ $0.model() })
+            deletedProjects = projectsCD.compactMap({ $0.model() })
             deleteObjects(projectsCD)
             return true
         }, { [unowned self] result in
@@ -904,6 +944,33 @@ internal extension CoreDataServiceImpl {
         return fetch(request: fetchRequest)
     }
 
+    func getProjectsCD(withTitleLike title: String, excludeUuids: [String]?) -> [Project] {
+        guard !title.isEmpty else {
+            return []
+        }
+
+        let fetchRequest = Project.fetchRequest()
+        var subPredicateList = [NSPredicate]()
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let titlePredicate = NSPredicate(format: "title CONTAINS[cd] %@", title)
+        subPredicateList.append(titlePredicate)
+
+        let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: false))
+        subPredicateList.append(parrotToBeDeletedPredicate)
+
+        if let excludeUuids = excludeUuids, !excludeUuids.isEmpty {
+            let excludeUuidsPredicate = NSPredicate(format: "NOT (uuid IN %@)", excludeUuids)
+            subPredicateList.append(excludeUuidsPredicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+
+        return fetch(request: fetchRequest)
+    }
+
     func deleteProjectsCD(_ projects: [Project]) {
         guard !projects.isEmpty else {
             return
@@ -958,6 +1025,23 @@ private extension CoreDataServiceImpl {
         }
 
         return fetchRequest
+    }
+
+    func getAllSynchronizedProjectsCD() -> [Project] {
+        let fetchRequest = Project.fetchRequest()
+
+        var subPredicateList: [NSPredicate] = []
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let cloudIdPredicate =  NSPredicate(format: "cloudId > 0")
+        subPredicateList.append(cloudIdPredicate)
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
+
+        return fetch(request: fetchRequest)
     }
 
     func getProjectsFetchRequest(withType type: String, toBeDeleted: Bool?) -> NSFetchRequest<Project> {

@@ -29,29 +29,30 @@
 
 import UIKit
 import Combine
+import CoreLocation
+import ArcGIS
 
 ///  Displays buttons with drone informations (calibration state, firmware version, etc).
-final class DroneDetailsButtonsViewController: UIViewController, DroneDetailsMapViewProtocol {
+final class DroneDetailsButtonsViewController: AGSMapViewController, DroneDetailsMapViewProtocol {
     // MARK: - Outlets
     @IBOutlet private weak var mapButtonView: DeviceDetailsButtonView!
-    @IBOutlet private weak var mapContainerView: UIView!
     @IBOutlet private weak var calibrationButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var firmwareUpdateButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var cellularAccessButtonView: DeviceDetailsButtonView!
     @IBOutlet private weak var batteryButtonView: DeviceDetailsButtonView!
 
     // MARK: - Private Properties
-    private var mapViewController: MapViewController?
-    private var viewModel = DroneDetailsButtonsViewModel()
     private var firmwareAndMissionsInteractorListener: FirmwareAndMissionsListener?
+    private var viewModel: DroneDetailsButtonsViewModel!
     private weak var coordinator: DroneCoordinator?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneCoordinator) -> DroneDetailsButtonsViewController {
+    static func instantiate(coordinator: DroneCoordinator,
+                            viewModel: DroneDetailsButtonsViewModel) -> DroneDetailsButtonsViewController {
         let viewController = StoryboardScene.DroneDetailsButtons.initialScene.instantiate()
         viewController.coordinator = coordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
@@ -65,13 +66,24 @@ final class DroneDetailsButtonsViewController: UIViewController, DroneDetailsMap
         super.viewDidLoad()
 
         initUI()
-        initMap()
         bindToViewModel()
     }
 
     // MARK: - Delegate
     func dismissScreen() {
-        initMap()
+    }
+
+    override func getCenter(completion: @escaping(AGSViewpoint?) -> Void) {
+        if let coordinate = viewModel.lastKnownPosition?.coordinate {
+            completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate),
+                                    scale: CommonMapConstants.cameraDistanceToCenterLocation))
+        } else {
+            completion(nil)
+        }
+    }
+
+    override func defaultCenteringDone() {
+        initDisplayMap()
     }
 }
 
@@ -106,24 +118,17 @@ private extension DroneDetailsButtonsViewController {
 // MARK: - Private Funcs
 private extension DroneDetailsButtonsViewController {
 
-    /// Init map view controller.
-    func initMap() {
-        if mapViewController == nil {
-            let controller = MapViewController.instantiate(mapMode: .mapOnly)
-            addChild(controller)
-            mapViewController = controller
-        } else {
-            // forcing view will appear to refresh sceneView singleton.
-            mapViewController?.viewWillAppear(true)
-            mapViewController?.viewDidAppear(true)
-        }
-        guard let mapViewController = mapViewController else { return }
-
-        if let mapView = mapViewController.view {
-            mapContainerView.addWithConstraints(subview: mapView)
-        }
-        mapContainerView.applyCornerRadius(Style.largeCornerRadius)
-        mapViewController.didMove(toParent: self)
+    /// Init display of map
+    func initDisplayMap() {
+        viewModel.$lastKnownPosition
+            .combineLatest(viewModel.$mapThumbnail)
+            .sink { [weak self] (lastKnownPosition, mapThumbnail) in
+                guard let self = self else { return }
+                let displayMap = lastKnownPosition != nil
+                self.mapView.isHidden = !displayMap
+                self.mapButtonView.model?.mainImage = displayMap ? nil : mapThumbnail
+            }
+            .store(in: &cancellables)
     }
 
     /// Sets up initial view display.
@@ -144,13 +149,12 @@ private extension DroneDetailsButtonsViewController {
 
     /// Binds the views to the view model
     func bindToViewModel() {
-        viewModel.$cellularStatus
-            .removeDuplicates()
-            .combineLatest(viewModel.cellularButtonSubtitlePublisher)
-            .sink { [unowned self] (cellularStatus, cellularButtonSubtitle) in
-                // Cellular button.
-                cellularAccessButtonView.model?.subtitle = cellularButtonSubtitle
-                cellularAccessButtonView.model?.subtitleColor = cellularStatus.detailsTextColor
+        viewModel.operatorName
+            .combineLatest(viewModel.connectionStatusColor, viewModel.cellularLinkState)
+            .sink { [unowned self] (operatorName, connectionStatusColor, cellularLinkState) in
+
+                cellularAccessButtonView.model?.subtitle = operatorName ?? cellularLinkState ?? L10n.commonNotConnected
+                cellularAccessButtonView.model?.subtitleColor = connectionStatusColor
             }
             .store(in: &cancellables)
 
@@ -186,51 +190,42 @@ private extension DroneDetailsButtonsViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$lastKnownPosition
-            .combineLatest(viewModel.$mapThumbnail)
-            .sink { [unowned self] (lastKnownPosition, mapThumbnail) in
-                let displayMap = lastKnownPosition != nil
-                mapContainerView.isHidden = !displayMap
-                mapButtonView.model?.mainImage = displayMap ? nil : mapThumbnail
-            }
-            .store(in: &cancellables)
-
         viewModel.calibrationSubtitle
-            .sink { [unowned self] calibrationSubtitle in
-                calibrationButtonView.model?.subtitle = calibrationSubtitle
+            .sink { [weak self] calibrationSubtitle in
+                self?.calibrationButtonView.model?.subtitle = calibrationSubtitle
             }
             .store(in: &cancellables)
 
         viewModel.calibrationTitleColor
-            .sink { [unowned self] calibrationTitleColor in
-                calibrationButtonView.model?.titleColor = calibrationTitleColor
-                calibrationButtonView.model?.mainImageTintColor = calibrationTitleColor
+            .sink { [weak self] calibrationTitleColor in
+                self?.calibrationButtonView.model?.titleColor = calibrationTitleColor
+                self?.calibrationButtonView.model?.mainImageTintColor = calibrationTitleColor
             }
             .store(in: &cancellables)
 
         viewModel.calibrationSubtitleColor
-            .sink { [unowned self] calibrationSubtitleColor in
-                calibrationButtonView.model?.subtitleColor = calibrationSubtitleColor
+            .sink { [weak self] calibrationSubtitleColor in
+                self?.calibrationButtonView.model?.subtitleColor = calibrationSubtitleColor
             }
             .store(in: &cancellables)
 
         viewModel.calibrationBackgroundColor
-            .sink { [unowned self] calibrationBackgroundColor in
-                calibrationButtonView.model?.backgroundColor = calibrationBackgroundColor
+            .sink { [weak self] calibrationBackgroundColor in
+                self?.calibrationButtonView.model?.backgroundColor = calibrationBackgroundColor
             }
             .store(in: &cancellables)
 
         viewModel.calibrationTitleColor
-            .sink { [unowned self] calibrationTitleColor in
-                calibrationButtonView.model?.titleColor = calibrationTitleColor
-                calibrationButtonView.model?.mainImageTintColor = calibrationTitleColor
+            .sink { [weak self] calibrationTitleColor in
+                self?.calibrationButtonView.model?.titleColor = calibrationTitleColor
+                self?.calibrationButtonView.model?.mainImageTintColor = calibrationTitleColor
             }
             .store(in: &cancellables)
 
         viewModel.isCalibrationButtonAvailable
-            .sink { [unowned self] isCalibrationButtonAvailable in
-                calibrationButtonView.isEnabled = isCalibrationButtonAvailable
-                calibrationButtonView.alphaWithEnabledState(isCalibrationButtonAvailable)
+            .sink { [weak self] isCalibrationButtonAvailable in
+                self?.calibrationButtonView.isEnabled = isCalibrationButtonAvailable
+                self?.calibrationButtonView.alphaWithEnabledState(isCalibrationButtonAvailable)
             }
             .store(in: &cancellables)
 

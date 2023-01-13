@@ -77,7 +77,7 @@ final class TargetView: UIView {
     // MARK: - Internal Properties
     var state: TargetState = .drawing {
         didSet {
-            self.drawState()
+            drawState()
         }
     }
 
@@ -131,17 +131,14 @@ final class TargetView: UIView {
     ///    - targetId: the target ID returned by the drone
     ///    - state: the target state
     ///    - delegate: proposal delegate
-    ///    - tilt: gimbal tilt
     init(frame: CGRect,
          targetId: UInt = 0,
          state: TargetState = .drawing,
-         delegate: ProposalDelegate? = nil,
-         tilt: Double = 0.0) {
+         delegate: ProposalDelegate? = nil) {
         super.init(frame: frame)
         self.uid = targetId
         self.delegate = delegate
         self.state = state
-        self.tilt = tilt
         commonInit()
     }
 
@@ -185,6 +182,7 @@ private extension TargetView {
     /// Base init for the view.
     func commonInit() {
         clipsToBounds = false
+        accessibilityIdentifier = "tracking"
     }
 
     /// Adds tap gesture to the view.
@@ -221,6 +219,7 @@ private extension TargetView {
 
     /// Updates the view with the current state.
     func drawState() {
+        accessibilityValue = state == .locked ? "1" : "0"
         removeLayers()
         removeCloseButton()
         removeTapGesture()

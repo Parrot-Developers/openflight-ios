@@ -45,6 +45,15 @@ extension URL {
         return String(self.lastPathComponent.prefix(AssetUtils.Constants.prefixLength))
     }
 
+    /// The drone UID extracted from first URL component (requires a valid media URL path).
+    var droneUid: String {
+        mediaRelativeUrl?.droneUid ?? ""
+    }
+
+    /// The resource ID extracted from URL last component.
+    /// Based on SDK spec.
+    var resId: String { lastPathComponent }
+
     /// Adds query parameters to a given URL.
     ///
     /// - Parameters:

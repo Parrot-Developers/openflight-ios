@@ -27,6 +27,8 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// swiftlint:disable file_length
+
 import Foundation
 import GroundSdk
 import ArcGIS
@@ -80,6 +82,13 @@ struct ClassicFlightPlanProvider: FlightPlanProvider {
         }
     }
 
+    @MainActor
+    func graphics(for flightPlan: FlightPlanModel,
+                  mapMode: MapMode,
+                  graphicsMode: FlightPlanGraphicsMode) async -> FlightPlanGraphicsGenerationResult {
+        await flightPlan.dataSetting?.graphics(for: mapMode, graphicsMode: graphicsMode) ?? .empty
+    }
+
     func hasFlightPlanType(_ type: String) -> Bool {
         return type == typeKey
     }
@@ -120,6 +129,10 @@ public enum ClassicFlightPlanType: String, FlightPlanType, CaseIterable {
 
     public var missionMode: MissionMode { FlightPlanMissionMode.standard.missionMode }
 
+    public var isAmslReferenceSupported: Bool {
+        // The Classic Flight Plan type doesn't support the 'above mean sea level' altitude reference.
+        false
+    }
 }
 
 /// Setting types for Classic Flight Plan.
@@ -141,6 +154,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     case rthHeight
     case rthEndBehaviour
     case rthHoveringHeight
+    case photoDigitalSignature
 
     // MARK: - Internal Properties
     public var title: String {
@@ -179,6 +193,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return L10n.settingsRthEndByTitle
         case .rthHoveringHeight:
             return L10n.flightPlanSettingsRthHoveringAltitude
+        case .photoDigitalSignature:
+            return L10n.settingsCameraPhotoDigitalSignature
         }
     }
 
@@ -199,7 +215,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .gpsLapseDistance,
              .exposure,
              .whiteBalance,
-             .photoResolution:
+             .photoResolution,
+             .photoDigitalSignature:
             return nil
         case .customRth:
             return L10n.flightPlanSettingsRthCustomShort
@@ -226,7 +243,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             let resolution = dataSetting.resolution
             return Camera2Params.supportedRecordingFramerate(for: resolution).indices.map { $0 }
         case .imageMode:
-            return FlightPlanCaptureMode.allCases.indices.map { $0 }
+           return FlightPlanCaptureMode.availableModes(for: flightPlan).indices.map { $0 }
         case .resolution:
             return Camera2Params.supportedRecordingResolution().indices.map { $0 }
         case .timeLapseCycle:
@@ -269,7 +286,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .lastPointRth,
              .disconnectionRth,
              .obstacleAvoidance,
-             .customRth:
+             .customRth,
+             .photoDigitalSignature:
             return [L10n.commonYes, L10n.commonNo]
         case .framerate:
             guard let resolution = flightPlan?.dataSetting?.resolution else { return nil }
@@ -278,7 +296,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
         case .resolution:
             return Camera2Params.supportedRecordingResolution().map { $0.title }
         case .imageMode:
-            return FlightPlanCaptureMode.allCases.map { $0.title }
+            return FlightPlanCaptureMode.availableModes(for: flightPlan).map { $0.title }
         case .timeLapseCycle:
             guard let resolution = flightPlan?.dataSetting?.photoResolution else { return [] }
 
@@ -306,7 +324,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
     public var valueImages: [UIImage]? {
         switch self {
         case .imageMode:
-            return FlightPlanCaptureMode.allCases.map { $0.image }
+            return FlightPlanCaptureMode.availableModes(for: currentFlightPlan).map { $0.image }
         case .whiteBalance:
             return Camera2WhiteBalanceMode.availableModes.compactMap { $0.image }
         default:
@@ -341,7 +359,7 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             return Camera2Params.supportedRecordingResolution().firstIndex(of: resolution)
         case .imageMode:
             let mode = dataSetting.captureModeEnum
-            return FlightPlanCaptureMode.allCases.firstIndex(where: { $0 == mode })
+            return FlightPlanCaptureMode.availableModes(for: flightPlan).firstIndex(where: { $0 == mode })
         case .gpsLapseDistance:
             guard let value = dataSetting.gpsLapseDistance else {
                 return allValues.first ?? 0
@@ -381,6 +399,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
             guard let endingHoveringAltitude = returnHomePilotingItfs?.endingHoveringAltitude?.value
             else { return nil }
             return Int(endingHoveringAltitude)
+        case .photoDigitalSignature:
+            return dataSetting.isPhotoSignatureEnabled ? 0 : 1
         }
     }
 
@@ -396,7 +416,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .obstacleAvoidance,
              .customRth,
              .rthReturnTarget,
-             .rthEndBehaviour:
+             .rthEndBehaviour,
+             .photoDigitalSignature:
             return .choice
         case .framerate,
              .gpsLapseDistance,
@@ -443,7 +464,8 @@ public enum ClassicFlightPlanSettingType: String, FlightPlanSettingType, CaseIte
              .timeLapseCycle,
              .exposure,
              .photoResolution,
-             .whiteBalance:
+             .whiteBalance,
+             .photoDigitalSignature:
             return .image
         case .rthReturnTarget,
              .rthHeight,
@@ -527,8 +549,11 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
                 dataSetting.resolution = allValues[value]
                 dataSetting.framerate = Camera2RecordingFramerate.defaultFramerate
             }
-        case ClassicFlightPlanSettingType.imageMode.key where value < FlightPlanCaptureMode.allCases.count:
-            dataSetting.captureModeEnum = FlightPlanCaptureMode.allCases[value]
+        case ClassicFlightPlanSettingType.imageMode.key:
+            let availableModes = FlightPlanCaptureMode.availableModes(for: currentFlightPlan)
+            if value < availableModes.count {
+                dataSetting.captureModeEnum = availableModes[value]
+            }
         case ClassicFlightPlanSettingType.photoResolution.key where value < Camera2PhotoResolution.availableResolutions.count:
             dataSetting.photoResolution =  Camera2PhotoResolution.resolutionForIndex(value)
         case ClassicFlightPlanSettingType.exposure.key where value < Camera2EvCompensation.availableValues.count:
@@ -562,6 +587,8 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
             dataSetting.setRthReturnTarget(value)
         case ClassicFlightPlanSettingType.rthEndBehaviour.key:
             dataSetting.setRthEndBehaviour(value)
+        case ClassicFlightPlanSettingType.photoDigitalSignature.key:
+            dataSetting.setPhotoDigitalSignature(value)
         default:
             break
         }
@@ -606,6 +633,10 @@ final class ClassicFlightPlanSettingsProvider: FlightPlanSettingsProvider {
         planSettings.append(ClassicFlightPlanSettingType.exposure.toFlightPlanSetting())
         planSettings.append(ClassicFlightPlanSettingType.whiteBalance
                                 .toFlightPlanSetting())
+
+        if flightPlan.dataSetting?.isPhotoSignatureSupported == true {
+            planSettings.append(ClassicFlightPlanSettingType.photoDigitalSignature.toFlightPlanSetting())
+        }
 
         return planSettings
     }

@@ -31,16 +31,6 @@ import UIKit
 import GroundSdk
 import Combine
 
-// MARK: - Protocols
-/// Delegate used to discuss with main controller.
-protocol GalleryMediaViewDelegate: AnyObject {
-    /// Called when an action was triggered by the multiple selection.
-    func multipleSelectionActionTriggered()
-    /// Called when the multiple selection is enabled from here.
-    func multipleSelectionEnabled()
-    func didUpdateMediaSelection(count: Int, size: UInt64)
-}
-
 /// Displays medias.
 
 final class GalleryMediaViewController: UIViewController {
@@ -48,25 +38,11 @@ final class GalleryMediaViewController: UIViewController {
     @IBOutlet private weak var collection: UICollectionView!
 
     // MARK: - Private Properties
-    private var dataSource: [(key: Date, medias: [GalleryMedia])] = []
-    private weak var coordinator: GalleryCoordinator?
-    private weak var viewModel: GalleryMediaViewModel?
-    private var loadingMedias: [GalleryMedia] = []
-    private var unsortedMedias: [GalleryMedia] {
-        dataSource.map({ $0.medias }).flatMap({ $0 })
-    }
-    private var selectedMedias: [GalleryMedia] = [] {
-        didSet {
-            delegate?.didUpdateMediaSelection(count: selectedMedias.count,
-                                              size: selectedMediasSize)
-        }
-    }
-    private var selectedMediasSize: UInt64 {
-        return selectedMedias.reduce(0) { $0 + $1.size }
-    }
+    private var viewModel: GalleryViewModel!
+    private var cancellables = Set<AnyCancellable>()
+    private var dataSource: [(date: Date, medias: [GalleryMedia])] = []
 
-    // MARK: - Internal Properties
-    weak var delegate: GalleryMediaViewDelegate?
+    private var selectedMedias: [GalleryMedia] = []
 
     // MARK: - Private Enums
     private enum Constants {
@@ -78,19 +54,13 @@ final class GalleryMediaViewController: UIViewController {
         static let collectionViewInsets: UIEdgeInsets = .init(top: 0, left: 0, bottom: 12, right: 0)
     }
 
-    // MARK: - Publishers
-    @Published var isSharingMedia = false
-
     // MARK: - Setup
-    /// Instantiate view controller.
+    /// Instantiates view controller.
     ///
-    /// - Parameters:
-    ///     - coordinator: gallery coordinator
-    ///     - viewModel: gallery view model
-    /// - Returns: a GalleryMediaViewController.
-    static func instantiate(coordinator: GalleryCoordinator, viewModel: GalleryMediaViewModel) -> GalleryMediaViewController {
+    /// - Parameter viewModel: the gallery view model
+    /// - Returns: a `GalleryMediaViewController`
+    static func instantiate(viewModel: GalleryViewModel) -> GalleryMediaViewController {
         let viewController = StoryboardScene.GalleryComponentsViewController.galleryMediaViewController.instantiate()
-        viewController.coordinator = coordinator
         viewController.viewModel = viewModel
 
         return viewController
@@ -100,29 +70,41 @@ final class GalleryMediaViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.view.backgroundColor = .clear
         setupCollection()
-    }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+        viewModel.$filteredMediaData
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] list in
+            guard let self = self else { return }
+            self.dataSource = list
+            self.collection.reloadData()
+        }
+        .store(in: &cancellables)
 
-        viewModel?.refreshMedias(source: viewModel?.sourceType)
-    }
+        viewModel.$activeActionTypes
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink { [weak self] types in
+                self?.updateSelectionMode(isEnabled: types.contains(.select))
+            }
+            .store(in: &cancellables)
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
-        return true
-    }
+        viewModel.selectedMediaUidsPublisher.removeDuplicates()
+            .combineLatest(viewModel.downloadIdsPublisher)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.collection.reloadData()
+            }
+            .store(in: &cancellables)
 
-    /// Update display when orientation changed.
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-
-        collection.reloadData()
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        return true
+        viewModel.storageSourceTypePublisher
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                guard let self = self, !self.dataSource.isEmpty else { return }
+                self.collection.scrollToItem(at: .init(item: 0, section: 0), at: .centeredVertically, animated: false)
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -142,100 +124,14 @@ private extension GalleryMediaViewController {
         longPressGesture.minimumPressDuration = Constants.longPressDuration
         longPressGesture.delaysTouchesBegan = true
         collection.addGestureRecognizer(longPressGesture)
+        collection.contentInset = .init(top: 0, left: 0, bottom: 0, right: Layout.mainSpacing(isRegularSizeClass))
     }
 
     /// Handle download.
     ///
-    /// - Parameters:
-    ///     - medias: list of medias to download
+    /// - Parameter medias: list of medias to download
     func handleDownload(_ medias: [GalleryMedia]) {
-        loadingMedias = medias
-        viewModel?.downloadMedias(loadingMedias, completion: { [weak self] success in
-            guard success else { return }
-
-            self?.handleDownloadEnd()
-        })
-    }
-
-    /// Handle download end.
-    func handleDownloadEnd() {
-        let medias = loadingMedias.compactMap({ $0.mainMediaItem })
-        guard medias.first(where: { $0.isDownloaded == false }) == nil else { return }
-
-        medias.forEach { media in
-            if let index = selectedMedias.firstIndex(where: { $0.uid == media.uid }) {
-                selectedMedias[index].downloadState = .downloaded
-            }
-        }
-        loadingMedias.removeAll()
-        viewModel?.refreshMedias()
-    }
-
-    /// Handle delete.
-    ///
-    /// - Parameters:
-    ///     - medias: list of medias to delete
-    func handleDelete(_ medias: [GalleryMedia]) {
-        viewModel?.deleteMedias(medias, completion: { [weak self] success in
-            guard success else {
-                DispatchQueue.main.async {
-                    self?.showDeleteAlert(count: medias.count) { self?.handleDelete(medias) }
-                }
-                return
-            }
-
-            self?.viewModel?.refreshMedias()
-        })
-    }
-
-    /// Handle delete media selection.
-    func deleteSelection() {
-        let medias = selectedMedias
-        delegate?.multipleSelectionActionTriggered()
-        handleDelete(medias)
-    }
-
-    /// Handle share.
-    func handleShare(srcView: UIView) {
-        // Inform the processing started.
-        isSharingMedia = true
-        Task {
-            // Get list of selected media's urls.
-            let urls = await selectedMediaPreviewImageUrls()
-            // Update the UI in the main thread.
-            DispatchQueue.main.async { [weak self] in
-                // Display the sharing screen.
-                self?.coordinator?.showSharingScreen(fromView: srcView, items: urls)
-                // Sharing process finished.
-                self?.isSharingMedia = false
-            }
-        }
-    }
-
-    /// Get the list of selected media's urls.
-    ///
-    /// - returns async:
-    ///    - The selected medias' preview images `[URL]`.
-    func selectedMediaPreviewImageUrls() async -> [URL] {
-        // Generate a list of media/url-indexes tuple.
-        let mediaIndexTuples = selectedMedias
-            .compactMap { media in
-                // Get list of media and url index tuples.
-                media.urls?
-                    .enumerated()
-                    .map {(media, $0.offset)}
-            }
-            // Reduce tuples
-            .reduce([], +)
-        // Get urls for each tuples.
-        var urls = [URL]()
-        for mediaIndexTuple in mediaIndexTuples {
-            if let url = try? await viewModel?.getMediaPreviewImageUrl(mediaIndexTuple.0,
-                                                                       mediaIndexTuple.1) {
-                urls.append(url)
-            }
-        }
-        return urls
+        viewModel.download(medias: medias)
     }
 
     /// Handle long press on collection view cell.
@@ -244,13 +140,15 @@ private extension GalleryMediaViewController {
     ///     - longPress: reference to the gesture recognizer
     @objc func handleLongPress(longPress: UILongPressGestureRecognizer) {
         guard collection.allowsMultipleSelection == false,
-              let delegate = delegate,
               let indexPath = collection.indexPathForItem(at: longPress.location(in: collection)) else {
             return
         }
 
-        delegate.multipleSelectionEnabled()
-        collectionView(collection, didSelectItemAt: indexPath)
+        viewModel.setSelectMode(true)
+
+        DispatchQueue.main.async {
+            self.collectionView(self.collection, didSelectItemAt: indexPath)
+        }
     }
 }
 
@@ -266,13 +164,13 @@ extension GalleryMediaViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as GalleryMediaCollectionViewCell
-        guard let viewModel = viewModel else { return cell }
 
         let media = dataSource[indexPath.section].medias[indexPath.row]
         cell.setup(media: media,
-                   index: viewModel.getMediaImageDefaultIndex(media),
                    delegate: self,
-                   selected: selectedMedias.first(where: { $0.uid == media.uid }) != nil)
+                   selected: viewModel.isSelected(uid: media.uid),
+                   actionState: viewModel.actionState(of: media),
+                   isDownloadAvailable: !viewModel.isActionActive(.select))
 
         return cell
     }
@@ -284,7 +182,7 @@ extension GalleryMediaViewController: UICollectionViewDataSource {
             let cell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader,
                                                                        for: indexPath,
                                                                        viewType: GalleryMediaCollectionReusableView.self)
-            let date = Array(dataSource)[indexPath.section].key
+            let date = Array(dataSource)[indexPath.section].date
             cell.setup(date: date)
             return cell
         }
@@ -296,21 +194,8 @@ extension GalleryMediaViewController: UICollectionViewDataSource {
 // MARK: - CollectionView Delegate
 extension GalleryMediaViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let viewModel = viewModel else { return }
-
         let media = dataSource[indexPath.section].medias[indexPath.row]
-
-        if collectionView.allowsMultipleSelection {
-            if let index = selectedMedias.firstIndex(where: { $0.uid == media.uid }) {
-                selectedMedias.remove(at: index)
-            } else {
-                selectedMedias.append(media)
-            }
-
-            collectionView.reloadData()
-        } else if let index = viewModel.state.value.filteredMedias.firstIndex(of: media) {
-            coordinator?.showMediaPlayer(viewModel: viewModel, index: index)
-        }
+        viewModel.didSelectMedia(media)
     }
 }
 
@@ -399,104 +284,11 @@ extension GalleryMediaViewController: GalleryMediaCellDelegate {
     }
 }
 
-// MARK: - GalleryView Delegate
-extension GalleryMediaViewController: GalleryViewDelegate {
-    func stateDidChange(state: GalleryMediaState) {
-        dataSource = state.mediasByDate
-        collection.reloadData()
-    }
-
-    func multipleSelectionDidChange(enabled: Bool) {
-        collection.allowsMultipleSelection = enabled
-        if !collection.allowsMultipleSelection {
-            selectedMedias.removeAll()
-            collection.reloadData()
-        }
-    }
-
-    func sourceDidChange(source: GallerySourceType) {
-        if collection.allowsMultipleSelection {
-            selectedMedias.removeAll()
-            collection.reloadData()
-        }
-
-        viewModel?.setSourceType(type: source)
-        viewModel?.setSelectedMediaTypes(types: [])
-        viewModel?.refreshMedias()
-    }
-}
-
-// MARK: - Gallery Selection View Delegate.
-extension GalleryMediaViewController: GallerySelectionDelegate {
-    func mustDeleteSelection() {
-        let fromDrone = selectedMedias.contains { $0.source != .mobileDevice }
-        if fromDrone, viewModel?.downloadStatus == .running {
-            // Can't delete medias while downloading.
-            let cancelAction = AlertAction(title: L10n.ok,
-                                           style: .default2,
-                                           isActionDelayedAfterDismissal: false) {}
-            showAlert(title: L10n.error,
-                      message: L10n.galleryRemoveDroneMemoryDownloading,
-                      cancelAction: cancelAction)
-            return
-        }
-
-        let deleteAction = AlertAction(title: L10n.commonDelete,
-                                       style: .destructive,
-                                       isActionDelayedAfterDismissal: false,
-                                       actionHandler: { [weak self] in
-                                        self?.deleteSelection()
-                                       })
-        let cancelAction = AlertAction(title: L10n.cancel,
-                                       style: .default2,
-                                       actionHandler: {})
-        let message: String = viewModel?.sourceType.deleteConfirmMessage(count: selectedMedias.count) ?? ""
-        showAlert(title: L10n.commonDelete,
-                  message: message,
-                  cancelAction: cancelAction,
-                  validateAction: deleteAction)
-    }
-
-    func mustDownloadSelection() {
-        let medias = selectedMedias
-        delegate?.multipleSelectionEnabled()
-        handleDownload(medias)
-    }
-
-    func mustShareSelection(srcView: UIView) {
-        handleShare(srcView: srcView)
-    }
-
-    func mustSelectAll() {
-        selectedMedias = unsortedMedias
-        collection.reloadData()
-    }
-
-    func mustDeselectAll() {
-        selectedMedias.removeAll()
-        collection.reloadData()
-    }
-}
-
 private extension GalleryMediaViewController {
-    /// Shows an alert when delete process fails.
-    ///
-    /// - Parameters:
-    ///     - count: Selected medias count (used for plural or singular message selection).
-    ///     - retryAction: Delete retry action to perform.
-    func showDeleteAlert(count: Int, retryAction: @escaping () -> Void) {
-        let retryAction = AlertAction(title: L10n.commonRetry,
-                                      style: .destructive,
-                                      isActionDelayedAfterDismissal: false,
-                                      actionHandler: retryAction)
-        let cancelAction = AlertAction(title: L10n.cancel,
-                                       style: .default2,
-                                       isActionDelayedAfterDismissal: false) {}
-        let message: String = viewModel?.sourceType.deleteErrorMessage(count: count) ?? ""
-
-        showAlert(title: L10n.error,
-                  message: message,
-                  cancelAction: cancelAction,
-                  validateAction: retryAction)
+    func updateSelectionMode(isEnabled: Bool) {
+        collection.allowsMultipleSelection = isEnabled
+        DispatchQueue.main.async {
+            self.collection.reloadData()
+        }
     }
 }

@@ -58,7 +58,7 @@ public struct SettingsSegment {
 /// Defines a group of segment model.
 public struct SettingsSegmentModel {
     let segments: [SettingsSegment]
-    let selectedIndex: Int
+    var selectedIndex: Int
     let isBoolean: Bool
 
     var nextIndex: Int {

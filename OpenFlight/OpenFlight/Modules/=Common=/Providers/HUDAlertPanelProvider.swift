@@ -27,9 +27,17 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+/// Protocol used to provide methods to show/hide alert panel.
+public protocol AlertPanelDelegate: AnyObject {
+    /// Shows alert panel view.
+    func showAlertPanel()
+    /// Hides alert panel view.
+    func hideAlertPanel()
+}
+
 /// Class used to provide a parent panel view controller which contains some properties.
 open class AlertPanelViewController: UIViewController {
-    public weak var delegate: HUDAlertPanelDelegate?
+    public weak var delegate: AlertPanelDelegate?
 }
 
 /// Manager which handles alert panel view controller.

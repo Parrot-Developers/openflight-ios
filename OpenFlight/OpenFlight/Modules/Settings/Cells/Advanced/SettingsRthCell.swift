@@ -229,7 +229,7 @@ private extension SettingsRthActionView {
         let altitude = SettingsGridView.computeExponentialLike(value: altitudePercent,
                                                                max: viewModel.maxAltitude,
                                                                min: viewModel.minAltitude)
-        infoLabel.text = UnitHelper.stringDistanceWithDouble(Double(altitude))
+        infoLabel.text = UnitHelper.stringDistanceWithDouble(altitude)
         infoLabel.frame = CGRect(x: gridXCenter + Constants.margin,
                                  y: (location.y + (revertPosition / 2)) - Constants.labelSize.height / 2,
                                  width: Constants.labelSize.width,
@@ -242,7 +242,8 @@ private extension SettingsRthActionView {
 
         // Save new altitude if needed.
         if shouldSaveValue {
-            viewModel.saveRth(altitude: altitude)
+            let convertedAltitude = UnitHelper.roundedDistanceWithDouble(altitude)
+            viewModel.saveRth(altitude: convertedAltitude)
         }
     }
 

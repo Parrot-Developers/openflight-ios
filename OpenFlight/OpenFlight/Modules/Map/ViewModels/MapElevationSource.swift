@@ -39,7 +39,7 @@ private extension ULogTag {
 public class MapElevationSource: AGSArcGISTiledElevationSource {
 
     /// Whether elevation is loaded.
-    @Published var elevationLoaded: Bool = false
+    @Published public var elevationLoaded: Bool = false
 
     /// Whether elevation load failed and should be retried.
     @Published private var retry = false

@@ -165,6 +165,10 @@ public protocol FlightPlanRepository: AnyObject {
     /// - Returns:  List of FlightPlanModels
     func getAllModifiedFlightPlans() -> [FlightPlanModel]
 
+    /// Get all synchronized flightplans UUIDs
+    /// - Returns: List of UUIDs
+    func getAllSynchronizedFlightPlansUuids() -> [String]
+
     /// Get count of FlightPlans with specified versions
     func getFlightPlansCount(withVersions: [String]) -> Int
 
@@ -190,12 +194,6 @@ public protocol FlightPlanRepository: AnyObject {
     /// - Parameter uuids: List of  UUIDs to search
     func deleteFlightPlans(withUuids uuids: [String])
     func deleteFlightPlans(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?)
-
-    /// Delete FlightPlans in CoreData with excluded state
-    /// - Parameters:
-    ///    - excludedStates: List of states to be excluded
-    ///    - completion: the completion block with the deletion status (`true` in case of successful deletion)
-    func deleteFlightPlans(withExcludedStates excludedStates: [String], completion: ((_ status: Bool) -> Void)?)
 
     /// Remove CloudId and SynchroStatus for all FlightPlan
     /// - Parameters:
@@ -531,6 +529,10 @@ extension CoreDataServiceImpl: FlightPlanRepository {
         return getFlightPlansCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").map({ $0.model() })
     }
 
+    public func getAllSynchronizedFlightPlansUuids() -> [String] {
+        getAllSynchronizedFlightPlansCD().compactMap { $0.uuid }
+    }
+
     // MARK: __ Delete
     public func deleteOrFlagToDeleteFlightPlans(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?) {
         guard !uuids.isEmpty else {
@@ -616,7 +618,7 @@ extension CoreDataServiceImpl: FlightPlanRepository {
     }
 
     public func deleteFlightPlans(withUuids uuids: [String]) {
-        deleteFlights(withUuids: uuids, completion: nil)
+        deleteFlightPlans(withUuids: uuids, completion: nil)
     }
 
     public func deleteFlightPlans(withUuids uuids: [String], completion: ((_ status: Bool) -> Void)?) {
@@ -633,27 +635,6 @@ extension CoreDataServiceImpl: FlightPlanRepository {
             case .success:
                 flightPlansDidChangeSubject.send()
                 ULog.i(.dataModelTag, "FlightPlans Deleted. uuids: (\(uuids.joined(separator: ",")))")
-                completion?(true)
-            case .failure(let error):
-                ULog.e(.dataModelTag, "Error deleteFlightPlan with UUIDs error: \(error.localizedDescription)")
-                completion?(false)
-            }
-        })
-    }
-
-    public func deleteFlightPlans(withExcludedStates excludedStates: [String], completion: ((_ status: Bool) -> Void)?) {
-        guard !excludedStates.isEmpty else {
-            completion?(true)
-            return
-        }
-
-        performAndSave({ [unowned self] _ in
-            deleteObjects(getFlightPlansCD(withExcludedStates: excludedStates, toBeDeleted: false))
-            return true
-        }, { result in
-            switch result {
-            case .success:
-                ULog.i(.dataModelTag, "FlightPlans Deleted. excludedTypes: (\(excludedStates.joined(separator: ",")))")
                 completion?(true)
             case .failure(let error):
                 ULog.e(.dataModelTag, "Error deleteFlightPlan with UUIDs error: \(error.localizedDescription)")
@@ -782,7 +763,7 @@ internal extension CoreDataServiceImpl {
     func getFlightPlanCD(withPgyProjectId pgyProjectId: Int64) -> FlightPlan? {
         let fetchRequest = FlightPlan.fetchRequest()
 
-        let pgyProjectIdPredicate = NSPredicate(format: "pgyProjectId == %@", "\(pgyProjectId)")
+        let pgyProjectIdPredicate = NSPredicate(format: "pgyProjectId == %i", pgyProjectId)
         fetchRequest.predicate = pgyProjectIdPredicate
 
         let lastUpdateSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: false)
@@ -791,6 +772,18 @@ internal extension CoreDataServiceImpl {
         fetchRequest.fetchLimit = 1
 
         return fetch(request: fetchRequest).first
+    }
+
+    func getFlightPlansCD(withPgyProjectIds pgyProjectIds: [Int64]) -> [FlightPlan] {
+        let fetchRequest = FlightPlan.fetchRequest()
+
+        let pgyProjectIdPredicate = NSPredicate(format: "pgyProjectId IN %@", pgyProjectIds)
+        fetchRequest.predicate = pgyProjectIdPredicate
+
+        let lastUpdateSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: false)
+        fetchRequest.sortDescriptors = [lastUpdateSortDesc]
+
+        return fetch(request: fetchRequest)
     }
 
     func getFlightPlansCD(withProjectUuid projectUuid: String, withState: String?) -> [FlightPlan] {
@@ -877,33 +870,6 @@ internal extension CoreDataServiceImpl {
         return fetch(request: fetchRequest)
     }
 
-    func getFlightPlansCD(withExcludedStates excludedStates: [String], toBeDeleted: Bool?) -> [FlightPlan] {
-        guard !excludedStates.isEmpty else {
-            return getAllFlightPlansCD(toBeDeleted: toBeDeleted)
-        }
-
-        let fetchRequest = FlightPlan.fetchRequest()
-        var subPredicateList = [NSPredicate]()
-
-        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
-        subPredicateList.append(apcIdPredicate)
-
-        let excludingStatePredicate = NSPredicate(format: "NOT (state IN %@)", excludedStates)
-        subPredicateList.append(excludingStatePredicate)
-
-        if let toBeDeleted = toBeDeleted {
-            let toBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
-            subPredicateList.append(toBeDeletedPredicate)
-        }
-
-        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
-
-        let lastUpdateSortDesc = NSSortDescriptor(key: "lastUpdate", ascending: false)
-        fetchRequest.sortDescriptors = [lastUpdateSortDesc]
-
-        return fetch(request: fetchRequest)
-    }
-
     func getExecutedFlightPlansCountCD(withProjectUuid projectUuid: String, excludedUuids: [String]) -> Int {
         let fetchRequest = FlightPlan.fetchRequest()
         var subPredicateList = [NSPredicate]()
@@ -948,6 +914,23 @@ internal extension CoreDataServiceImpl {
         fetchRequest.sortDescriptors = [lastUpdatedSortDesc]
 
         return fetch(request: fetchRequest, completion: completion)
+    }
+
+    func getAllSynchronizedFlightPlansCD() -> [FlightPlan] {
+        let fetchRequest = FlightPlan.fetchRequest()
+
+        var subPredicateList: [NSPredicate] = []
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let cloudIdPredicate =  NSPredicate(format: "cloudId > 0")
+        subPredicateList.append(cloudIdPredicate)
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
+
+        return fetch(request: fetchRequest)
     }
 
     // MARK: __ Delete

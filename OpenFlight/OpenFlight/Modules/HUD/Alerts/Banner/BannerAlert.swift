@@ -86,7 +86,7 @@ public struct AnyBannerAlert: BannerAlert, CustomStringConvertible {
     public var priority: Int { banner.priority }
 
     public var description: String {
-        "\"\(content.title)\""
+        String(describing: banner)
     }
 
     /// Constructor.
@@ -289,7 +289,10 @@ public struct BannerAlertBehavior: Hashable {
 extension BannerAlertSeverity {
     public var style: BannerAlertStyle {
         switch self {
-        case .mandatory, .critical:
+        case .mandatory:
+            return .init(titleColor: .black,
+                         backgroundColor: ColorName.highlightColor.color)
+        case .critical:
             return .init(titleColor: .white,
                          backgroundColor: ColorName.errorColor.color)
         case .warning:

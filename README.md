@@ -1,5 +1,13 @@
 ![OpenFlight](https://developer.parrot.com/img/openflight@2x.png "OpenFlight")
 
+**Get an ARCGIS Key (in order to display the map)**
+Get a new Key : [https://developers.arcgis.com/](https://developers.arcgis.com/)
+
+Put your Api Key here : AppDelegate.swift, L74
+// ARCGIS KEY - Openflight
+AGSArcGISRuntimeEnvironment.apiKey = "put your key here"
+
+
 # **Install with pods**
 
 _CocoaPods is a dependency manager for Swift and Objective-C Cocoa projects. It has over 30 thousand libraries and is used in over 1.9 million apps. CocoaPods can help you scale your projects elegantly._ [https://cocoapods.org](https://cocoapods.org/)

@@ -51,6 +51,7 @@ public enum FlightPlanStartAvailability: Equatable, CustomStringConvertible {
     case available(Bool)
     case unavailable(FlightPlanStartUnavailableReason)
     case alreadyRunning
+    case firstWayPointTooFar
 
     public var description: String {
         switch self {
@@ -58,6 +59,8 @@ public enum FlightPlanStartAvailability: Equatable, CustomStringConvertible {
             return ".available(rth is \(isRthActive ? "" : "not ")active)"
         case .alreadyRunning:
             return ".alreadyRunning"
+        case .firstWayPointTooFar:
+            return ".firstWayPointTooFar"
         case .unavailable(let reason):
             return ".unavailable(\(reason.description))"
         }
@@ -69,6 +72,11 @@ public protocol FlightPlanStartAvailabilityWatcher {
     var availabilityForSendingMavlinkPublisher: AnyPublisher<FlightPlanStartAvailability, Never> { get }
     var availabilityForRunning: FlightPlanStartAvailability { get }
     var availabilityForSendingMavlink: FlightPlanStartAvailability { get }
+
+    /// Changes the 'first way point too far' blocker state.
+    ///
+    /// - Parameter enabled: whether the blocker is enabled
+    func enableFirstWayPointTooFarBlocker(_ enabled: Bool)
 }
 
 public class FlightPlanStartAvailabilityWatcherImpl {
@@ -78,6 +86,7 @@ public class FlightPlanStartAvailabilityWatcherImpl {
     private var unavailabilityReasons = Set<FlightPlanUnavailabilityReason>()
     private var droneConnected = false
     private var isRthActive = false
+    private var isFirstWayPointTooFar = false
     private var availabilityForSendingMavlinkSubject = CurrentValueSubject<FlightPlanStartAvailability, Never>(.unavailable(.droneDisconnected))
     private var availabilityForRunningSubject = CurrentValueSubject<FlightPlanStartAvailability, Never>(.unavailable(.droneDisconnected))
     private let rthService: RthService!
@@ -138,6 +147,11 @@ public class FlightPlanStartAvailabilityWatcherImpl {
             availabilityForRunningSubject.value = .unavailable(.droneDisconnected)
             return
         }
+        guard !isFirstWayPointTooFar else {
+            availabilityForSendingMavlinkSubject.value = .firstWayPointTooFar
+            availabilityForRunningSubject.value = .firstWayPointTooFar
+            return
+        }
         switch pilotingItfState {
         case .idle:
             availabilityForSendingMavlinkSubject.value = .available(isRthActive)
@@ -170,4 +184,10 @@ extension FlightPlanStartAvailabilityWatcherImpl: FlightPlanStartAvailabilityWat
     public var availabilityForSendingMavlink: FlightPlanStartAvailability { availabilityForSendingMavlinkSubject.value }
 
     public var availabilityForRunning: FlightPlanStartAvailability { availabilityForRunningSubject.value }
+
+    public func enableFirstWayPointTooFarBlocker(_ enabled: Bool) {
+        isFirstWayPointTooFar = enabled
+        publishNewState()
+    }
+
 }

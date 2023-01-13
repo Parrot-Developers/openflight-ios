@@ -155,6 +155,7 @@ class TouchAndFlyServiceImpl {
     typealias GuidingItfState = (blocker: TouchAndFlyBlocker?, inProgress: Bool)
 
     private let locationsTracker: LocationsTracker
+    private let bamService: BannerAlertManagerService
 
     private var cancellables = Set<AnyCancellable>()
     private var guidedPilotingItfRef: Ref<GuidedPilotingItf>?
@@ -183,7 +184,8 @@ class TouchAndFlyServiceImpl {
         .autoconnect()
         .eraseToAnyPublisher()
 
-    private var oldFlyingState: FlyingIndicatorsFlyingState?
+    private var latestFlyingState: FlyingIndicatorsFlyingState?
+    private var latestBlocker: TouchAndFlyBlocker?
     private var startWpOfPoiAfterTakeOff: Bool = false
 
     /// Whether drone is in flying (or waiting) state.
@@ -193,8 +195,10 @@ class TouchAndFlyServiceImpl {
 
     init(connectedDroneHolder: ConnectedDroneHolder,
          locationsTracker: LocationsTracker,
-         currentMissionManager: CurrentMissionManager) {
+         currentMissionManager: CurrentMissionManager,
+         bamService: BannerAlertManagerService) {
         self.locationsTracker = locationsTracker
+        self.bamService = bamService
         connectedDroneHolder.dronePublisher
             .sink { [unowned self] in listenDrone(drone: $0) }
             .store(in: &cancellables)
@@ -236,15 +240,15 @@ class TouchAndFlyServiceImpl {
             let newLocation = CLLocation(coordinate: location,
                                        altitude: newAltitude,
                                        horizontalAccuracy: 0, verticalAccuracy: 0, timestamp: Date())
-
-            if let location = lic.position(from: newLocation), location.horizontalDistance > 3.0 {
+            do {
+                let location = try lic.position(from: newLocation)
+                streamElementSubject.value = .poi(point: CGPoint(x: location.x, y: location.y), altitude: altitude, distance: location.distance)
                 if (frameCount % 30) == 0 {
                     ULog.d(.tag, "frameReady poi \(newLocation.coordinate),alt:\(newLocation.altitude) -> \(location)")
                 }
-
-                streamElementSubject.value = .poi(point: CGPoint(x: location.x, y: location.y), altitude: altitude)
-            } else {
-                streamElementSubject.value = .poi(point: .zero, altitude: altitude)
+            } catch {
+                // could not compute position
+                streamElementSubject.value = .poi(point: .zero, altitude: altitude, distance: .zero)
             }
 
         case .wayPoint(let location, let altitude, _):
@@ -255,14 +259,15 @@ class TouchAndFlyServiceImpl {
                                        altitude: newAltitude,
                                        horizontalAccuracy: 0, verticalAccuracy: 0, timestamp: Date())
 
-            if let location = lic.position(from: newLocation), location.distance > 3.0 {
+            do {
+                let location = try lic.position(from: newLocation)
+                streamElementSubject.value = .waypoint(point: CGPoint(x: location.x, y: location.y), altitude: altitude, distance: location.distance)
                 if (frameCount % 30) == 0 {
                     ULog.d(.tag, "frameReady waypoint \(newLocation.coordinate),alt:\(newLocation.altitude) -> \(location)")
                 }
-
-                streamElementSubject.value = .waypoint(point: CGPoint(x: location.x, y: location.y), altitude: altitude)
-            } else {
-                streamElementSubject.value = .waypoint(point: .zero, altitude: altitude)
+            } catch {
+                // could not compute position
+                streamElementSubject.value = .waypoint(point: .zero, altitude: altitude, distance: .zero)
             }
         }
     }
@@ -304,7 +309,7 @@ private extension TouchAndFlyServiceImpl {
     func listenCamera(drone: Drone) {
         mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] mainCamera2 in
             guard let self = self else { return }
-            guard let _ = mainCamera2 else {
+            guard mainCamera2 != nil else {
                 self.streamElementSubject.value = .none
                 return
             }
@@ -339,14 +344,19 @@ private extension TouchAndFlyServiceImpl {
                 self.clear()
             }
 
+            if itf.flyingState == .none {
+                // When landed, update the current guideditf state (could be disabled during landing).
+                self.guidingItfState.value = (blocker:self.latestBlocker, inProgress: false)
+            }
+
             self.isDroneFlyingOrWaiting = itf.flyingState.isFlyingOrWaiting
 
-            if self.isDroneFlyingOrWaiting == true, self.oldFlyingState == .takingOff {
+            if self.isDroneFlyingOrWaiting == true, self.latestFlyingState == .takingOff {
                 self.startWpOfPoiAfterTakeOff = true
             } else {
                 self.startWpOfPoiAfterTakeOff = false
             }
-            self.oldFlyingState = itf.flyingState
+            self.latestFlyingState = itf.flyingState
         }
     }
 
@@ -358,7 +368,13 @@ private extension TouchAndFlyServiceImpl {
             }
 
             let blocker = itf.unavailabilityReasons?.first.map(TouchAndFlyBlocker.from)
+            self.latestBlocker = blocker
 
+            if blocker == .droneNotFlying && latestFlyingState == .landing {
+                // When landing, the blocker droneNotFlying is enabled, but we ignore it to keep the running state ready.
+                guidingItfState.value = (blocker: nil, inProgress: false)
+                return
+            }
             guard itf.state != .unavailable else {
                 guidingItfState.value = (blocker: blocker, inProgress: false)
                 return
@@ -369,22 +385,25 @@ private extension TouchAndFlyServiceImpl {
                 // a new WP set before takeOff to be erased at takeOff because it would be
                 // mistaken with a reached target point.
                 // => Ensure drone is actually flying before removing active WP.
-                ULog.i(.tag, "Fight did finish with success: \(info.wasSuccessful)")
+                ULog.i(.tag, "Flight did finish with success: \(info.wasSuccessful)")
                 wayPointSubject.value = nil
             }
 
             var inProgress = false
             if let directive = itf.currentDirective as? LocationDirective {
                 inProgress = true
+                let newLocation = CLLocationCoordinate2D(latitude: directive.latitude, longitude: directive.longitude)
+                if wayPointSubject.value != newLocation {
+                    ULog.i(.tag, "listenGuidedPilotingItf: new waypoint location: \(newLocation)")
+                }
                 // Ensure we hold the right values for the current piloting
-                wayPointSubject.value = CLLocationCoordinate2D(latitude: directive.latitude, longitude: directive.longitude)
+                wayPointSubject.value = newLocation
                 guidingStartCoordinates.value = locationsTracker.droneLocation.coordinates?.coordinate
                 wayPointSpeedSubject.value = directive.speed?.horizontalSpeed ?? wayPointSpeed
                 altitudeSubject.value = directive.altitude
             }
 
             guidingItfState.value = (blocker: blocker, inProgress: inProgress)
-
         }
     }
 
@@ -411,11 +430,10 @@ private extension TouchAndFlyServiceImpl {
             let blocker = itf.availabilityIssues?.first.map(TouchAndFlyBlocker.from)
             poiItfState.value = (blocker: blocker, inProgress: inProgress)
 
-            guard let poi = itf.currentPointOfInterest else {
-                poiSubject.value = nil
-                return
+            if let poi = itf.currentPointOfInterest {
+                poiSubject.value = CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
+                altitudeSubject.value = poi.altitude
             }
-            poiSubject.value = CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
         }
     }
 
@@ -596,7 +614,6 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
 
     var targetPublisher: AnyPublisher<TouchAndFlyTarget, Never> {
         wayPointSubject
-            .removeDuplicates()
             .combineLatest(poiSubject, altitudeSubject, wayPointSpeedSubject)
             .map { [unowned self] _ in target }
             .eraseToAnyPublisher()
@@ -639,6 +656,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
     ///    - location: the location
     ///    - altitude: the altitude
     func moveWayPoint(to location: CLLocationCoordinate2D, altitude: Double? = nil) {
+        ULog.d(.tag, "move waypoint to location:\(location) altitude:\(String(describing: altitude))")
         poiSubject.value = nil
         wayPointSubject.value = location
         if let altitude = altitude {
@@ -762,17 +780,28 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
         let takeOffAltitude = absoluteAltitudeDrone - takeoffRelativeAltitude
         let locationAltitude = (altitudeSubject.value ?? 0) + takeOffAltitude
 
-        guard let newLocation = lic.location(fromPosition: point, forAltitude: Float(locationAltitude)) else {
-            ULog.d(.tag, "Could not compute a new poi location. point:\(point), poi:\(String(describing: poiSubject.value))")
+        do {
+            bamService.hide(AdviceBannerAlert.unableToComputePoi)
+            let newLocation = try lic.location(fromPosition: point, forAltitude: Float(locationAltitude))
+            let finalLocation = CLLocation(coordinate: newLocation.coordinate,
+                                           altitude: newLocation.altitude - takeOffAltitude,
+                                           horizontalAccuracy: newLocation.horizontalAccuracy,
+                                           verticalAccuracy: newLocation.verticalAccuracy,
+                                           timestamp: newLocation.timestamp)
+            return finalLocation
+        } catch let error as SdkCoreLicError {
+            ULog.d(.tag, "*** Could not compute a new poi location. point:\(point), poi:\(String(describing: poiSubject.value)), error:\(error.code)")
+            if error.code == .outOfRange {
+                bamService.show(AdviceBannerAlert.unableToComputePoi)
+            }
+            streamElementSubject.value = .none
+            return nil
+        } catch {
+            // not a SDKCoreLicError
+            ULog.e(.tag, "Unhandled error : \(error)")
             streamElementSubject.value = .none
             return nil
         }
-        let finalLocation = CLLocation(coordinate: newLocation.coordinate,
-                                       altitude: newLocation.altitude - takeOffAltitude,
-                                       horizontalAccuracy: newLocation.horizontalAccuracy,
-                                       verticalAccuracy: newLocation.verticalAccuracy,
-                                       timestamp: newLocation.timestamp)
-        return finalLocation
     }
 
     func setWaypointLocation(point: CGPoint) -> CLLocation? {
@@ -782,28 +811,28 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
         let takeOffAltitude = absoluteAltitudeDrone - takeoffRelativeAltitude
         let locationAltitude = (altitudeSubject.value ?? 0) + takeOffAltitude
 
-        var newLocation: CLLocation?
-        if let location = wayPointSubject.value {
-            let location2D = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
-            let location3D = CLLocation(coordinate: location2D,
-                                        altitude: locationAltitude, horizontalAccuracy: 0,
-                                        verticalAccuracy: 0, timestamp: Date())
-            newLocation = lic.location(fromPosition: point, for: location3D)
-        } else {
-            newLocation = lic.location(fromPosition: point, forDistance: Constants.defaultNewPointDistance)
-        }
-
-        guard let newLocation = newLocation else {
+        var newLocation: CLLocation
+        do {
+            if let location = wayPointSubject.value {
+                let location2D = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
+                let location3D = CLLocation(coordinate: location2D,
+                                            altitude: locationAltitude, horizontalAccuracy: 0,
+                                            verticalAccuracy: 0, timestamp: Date())
+                newLocation = try lic.location(fromPosition: point, for: location3D)
+            } else {
+                newLocation = try lic.location(fromPosition: point, forDistance: Constants.defaultNewPointDistance)
+            }
+            let finalLocation = CLLocation(coordinate: newLocation.coordinate,
+                                           altitude: newLocation.altitude - takeOffAltitude,
+                                           horizontalAccuracy: newLocation.horizontalAccuracy,
+                                           verticalAccuracy: newLocation.verticalAccuracy,
+                                           timestamp: newLocation.timestamp)
+            return finalLocation
+        } catch {
             ULog.d(.tag, "Could not compute a new waypoint location. point:\(point), waypoint:\(String(describing: wayPointSubject.value))")
             streamElementSubject.value = .none
             return nil
         }
-        let finalLocation = CLLocation(coordinate: newLocation.coordinate,
-                                       altitude: newLocation.altitude - takeOffAltitude,
-                                       horizontalAccuracy: newLocation.horizontalAccuracy,
-                                       verticalAccuracy: newLocation.verticalAccuracy,
-                                       timestamp: newLocation.timestamp)
-        return finalLocation
     }
 }
 

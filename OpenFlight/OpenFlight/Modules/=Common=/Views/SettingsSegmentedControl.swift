@@ -177,6 +177,7 @@ private extension SettingsSegmentedControl {
             return
         }
         updateSegment(tag: sender.tag)
+        segmentModel?.selectedIndex = sender.tag
         delegate?.settingsSegmentedControlDidChange(sender: self,
                                                     selectedSegmentIndex: sender.tag)
     }

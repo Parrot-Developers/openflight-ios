@@ -71,9 +71,7 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
 
     // MARK: - IBOutlet
     @IBOutlet private weak var containerStream: UIView!
-    private weak var mapViewController: MapViewController?
     private var stopStreamOnSizeEvent = false
-    private var isUpdatingSettingKeys: [String] = []
 
     // MARK: - Private Properties
     private var viewModel: TouchAndFlyPanelViewModelImpl!
@@ -143,14 +141,6 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
         setProgressView(progressViewDisplay: viewModel.progressViewDisplay)
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        if let touchView = viewModel.splitControls.streamViewController?.touchView {
-            viewModel.splitControls.streamViewController?.view.sendSubviewToBack(touchView)
-        }
-    }
-
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if containerStatus == nil {
@@ -192,18 +182,48 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
 
     /// Show the map in container
     func showMiniMap() {
-        let mapViewControllerVC = MapViewController.instantiate(isMiniMap: true)
-        addChild(mapViewControllerVC)
-        containerStream.addWithConstraints(subview: mapViewControllerVC.view)
-        mapViewControllerVC.didMove(toParent: self)
-        mapViewController = mapViewControllerVC
+        guard let bigMap = viewModel.splitControls?.commonMapViewController else { return }
+        bigMap.view.removeFromSuperview()
+        containerStream.subviews.first?.removeFromSuperview()
+
+        var scale = 0.5
+        if bigMap.view.frame.width > 0, bigMap.view.frame.height > 0,
+           containerStream.frame.width > 0, containerStream.frame.height > 0 {
+            let scaleX = containerStream.frame.width / bigMap.view.frame.width
+            let scaleY = containerStream.frame.height / bigMap.view.frame.height
+            scale = min(scaleX, scaleY)
+        }
+        viewModel.splitControls?.commonMapViewController?.mapViewModel.isMiniMap.value = true
+        viewModel.splitControls?.commonMapViewController?.mapViewModel.largeMapRatio = bigMap.view.frame.width / bigMap.view.frame.height
+
+        bigMap.view.transform = CGAffineTransform(scaleX: scale, y: scale)
+        addChild(bigMap)
+        containerStream.addSubview(bigMap.view)
+        addView(bigMap.view, parent: containerStream,
+                offsetX: bigMap.view.bounds.width * (1 - scale),
+                offsetY: bigMap.view.bounds.height * (1 - scale) / 2)
+        bigMap.didMove(toParent: self)
+        viewModel.splitControls?.commonMapViewController?.view.isUserInteractionEnabled = false
     }
 
     /// Hide the map in container.
     func hideMiniMap() {
+        // put map back in splitcontrols
         containerStream.subviews.first?.removeFromSuperview()
-        mapViewController?.removeFromParent()
-        mapViewController = nil
+        viewModel.splitControls?.commonMapViewController?.mapViewModel.isMiniMap.value = false
+        viewModel.splitControls?.commonMapViewController?.mapViewModel.largeMapRatio = nil
+        viewModel.splitControls.commonMapViewController?.view.transform = CGAffineTransform.identity
+        viewModel.splitControls.commonMapViewController?.view.isUserInteractionEnabled = true
+    }
+
+    private func addView(_ view: UIView, parent: UIView, offsetX: CGFloat = 0, offsetY: CGFloat = 0) {
+        parent.addConstraints([
+            view.leadingAnchor.constraint(equalTo: parent.leadingAnchor, constant: -offsetX),
+            view.trailingAnchor.constraint(equalTo: parent.trailingAnchor, constant: offsetX),
+            view.topAnchor.constraint(equalTo: parent.topAnchor, constant: -offsetY),
+            view.bottomAnchor.constraint(equalTo: parent.bottomAnchor, constant: offsetY)
+        ])
+        parent.layoutIfNeeded()
     }
 
     @objc func handleTap(_ sender: UITapGestureRecognizer? = nil) {
@@ -272,10 +292,8 @@ private extension TouchAndFlyPanelViewController {
         viewModel.displayOnMapPublisher
             .removeDuplicates()
             .sink { [weak self] _ in
-                guard let self = self,
-                      self.isUpdatingSettingKeys.isEmpty else {
-                    return
-                }
+                guard let self = self else { return }
+                // Reload the table view.
                 self.tableView.reloadData()
             }
         .store(in: &cancellables)
@@ -325,8 +343,10 @@ private extension TouchAndFlyPanelViewController {
     // MARK: - functions to replace stream by map and map by stream
     private func startStream() {
         guard stream == nil else { return }
+        // TODO: variable always nil
         stream?.doNotPauseStreamOnDisappear = true
         let streamVC = HUDCameraStreamingViewController.instantiate()
+        streamVC.isMiniStreamView = true
         addChild(streamVC)
 
         containerStream.addWithConstraints(subview: streamVC.view)
@@ -346,11 +366,21 @@ private extension TouchAndFlyPanelViewController {
 
     // MARK: - Action Outlet
     @IBAction func playButtonAction(_ sender: UIButton) {
+        cancelRulersAnimations()
         viewModel.play()
     }
 
     @IBAction func stopButtonAction(_ sender: UIButton) {
+        cancelRulersAnimations()
         viewModel.stop()
+    }
+
+    /// Cancels all current ruler settings animations.
+    func cancelRulersAnimations() {
+        tableView.visibleCells.forEach { cell in
+            guard let cell = cell as? CenteredRulerTableViewCell else { return }
+            cell.cancelRulerAnimation()
+        }
     }
 
     func setupTableView() {
@@ -491,19 +521,6 @@ extension TouchAndFlyPanelViewController: EditionSettingsCellModelDelegate {
             }
         case .none:
             break
-        }
-    }
-
-    func updateChoiceSetting(for key: String?, value: Bool) {
-        // nothing to do
-    }
-
-    func isUpdatingSetting(for key: String?, isUpdating: Bool) {
-        guard let key = key else { return }
-        if isUpdating {
-            isUpdatingSettingKeys.append(key)
-        } else {
-            isUpdatingSettingKeys.removeAll(where: { $0 == key })
         }
     }
 }

@@ -40,6 +40,7 @@ extension LogEvent {
         static let classic: String = "Classic"
         static let flightPlan: String = "FlightPlan"
         static let touchAndFly: String = "Touch & Fly"
+        static let cameraman: String = "Cameraman"
         /// Classic submodes.
         static let manual: String = "Manual"
     }

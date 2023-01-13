@@ -30,6 +30,10 @@
 import GroundSdk
 import Combine
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "FlightPlanPanelViewModel")
+}
+
 /// View model for flight plan menu.
 final class FlightPlanPanelViewModel {
 
@@ -63,13 +67,14 @@ final class FlightPlanPanelViewModel {
     @Published private(set) var pendingExecution: FlightPlanModel?
 
     private weak var coordinator: FlightPlanPanelCoordinator?
-    private weak var splitControls: SplitControls?
+    public weak var splitControls: SplitControls?
 
     // MARK: - Private Properties
 
     private var projectManager: ProjectManager
     private var currentMissionManager: CurrentMissionManager
     private var flightService: FlightService
+    private let rthSettingsMonitor: RthSettingsMonitor
     private var stateMachine: FlightPlanStateMachine?
     private(set) var runManager: FlightPlanRunManager
 
@@ -83,16 +88,19 @@ final class FlightPlanPanelViewModel {
          currentMissionManager: CurrentMissionManager,
          flightService: FlightService,
          coordinator: FlightPlanPanelCoordinator,
+         rthSettingsMonitor: RthSettingsMonitor,
          splitControls: SplitControls) {
         self.projectManager = projectManager
         self.runManager = runStateProgress
         self.currentMissionManager = currentMissionManager
         self.flightService = flightService
+        self.rthSettingsMonitor = rthSettingsMonitor
         self.coordinator = coordinator
         self.splitControls = splitControls
         listenMissionMode()
         listenProjectManager()
         listenFlights()
+        listenUserRthSettings()
     }
 
     // MARK: - Internal Funcs
@@ -124,6 +132,15 @@ final class FlightPlanPanelViewModel {
 
     func getProjectModel() -> ProjectModel? {
         projectManager.currentProject
+    }
+
+    /// Set  the current project if nil with the latest project found
+    func checkForLastOpenedProject() {
+        guard let projectType = currentMissionManager.mode.flightPlanProvider?.projectType,
+            projectManager.currentProject == nil else {
+            return
+        }
+        projectManager.loadLastOpenedProject(type: projectType)
     }
 
     /// Updates pending execution according to current view state.
@@ -161,7 +178,13 @@ final class FlightPlanPanelViewModel {
     }
 
     /// Edit button touched up inside.
-    @IBAction func editButtonTouchedUpInside() {
+    func editButtonTouchedUpInside() {
+        // Ensure we are allowed to enter in edition mode.
+        guard viewState.canEnterEdition else {
+            ULog.e(.tag, "Trying to enter edition mode when not possible")
+            return
+        }
+
         if getProjectModel().map(projectManager.editableFlightPlan) == nil,
            let flightPlanProvider = getFlightPlanProvider() {
             // There are not already flight plans, create a new project and go to edition
@@ -280,13 +303,23 @@ private extension FlightPlanPanelViewModel {
             .store(in: &cancellables)
     }
 
+    /// Listens to user rth settings.
+    func listenUserRthSettings() {
+        rthSettingsMonitor.userPreferredRthSettingsPublisher
+            .sink { [weak self] _ in
+                guard let self = self, let stateMachine = self.stateMachine else { return }
+                self.updateExecutionSettings(stateMachine.state)
+            }
+            .store(in: &cancellables)
+    }
+
     private func updateViewState(state: State, fpProgress: FlightPlanProgress) {
         switch state.machine {
         case .machineStarted, .initialized:
             break
         case .editable(let flightPlan, startAvailability: _):
             viewState = .edition(hasHistory: projectManager.hasCurrentProjectExecutions,
-                                 canEdit: flightPlan.dataSetting?.readOnly != true)
+                                 editionMode: EditionMode.mode(for: flightPlan))
         case .resumable:
             viewState = .resumable(hasHistory: projectManager.hasCurrentProjectExecutions)
         case let .startedNotFlying(_, mavlinkStatus):
@@ -407,6 +440,10 @@ private extension FlightPlanPanelViewModel {
                 }
             case .alreadyRunning:
                 return FlightPlanPanelProgressModel(mainText: "")
+            case .firstWayPointTooFar:
+                return FlightPlanPanelProgressModel(mainText: L10n.flightPlanFirstWayPointTooFar,
+                                                    mainColor: ColorName.errorColor.color,
+                                                    hasError: true)
             }
         case .machineStarted, .initialized:
             return FlightPlanPanelProgressModel(mainText: "")
@@ -421,6 +458,10 @@ private extension FlightPlanPanelViewModel {
         let distanceString: String = UnitHelper.stringDistanceWithDouble(distance,
                                                                          spacing: false)
         switch runState {
+        case .idle:
+            // Plan file has been correctly uploaded to the Drone but not started.
+            // Waiting Drone configuration and execution starting...
+            return FlightPlanPanelProgressModel(mainText: L10n.flightPlanInfoUploading)
         case let .playing(droneConnected, _, rth):
             if rth {
                 return FlightPlanPanelProgressModel(mainText: L10n.commonReturnHome,
@@ -479,16 +520,11 @@ private extension FlightPlanPanelViewModel {
         var sections: [SettingsSection] = []
 
         switch machineState {
-        case let .editable(flightPlan, _):
-            let fpSettings = settingsProvider?.settings(for: flightPlan) ?? settingsProvider?.settings
-            if categories?.contains(.image) == true {
-                // Image has it own section.
-                sections.append(.image(hasCustomType, fpSettings?.filter { $0.category == .image} ?? [], flightPlan.dataSetting))
-            }
-        case let .end(flightPlan),
-             let .flying(flightPlan),
-             let .resumable(flightPlan, _),
-             let .startedNotFlying(flightPlan, _):
+        case let .editable(flightPlan, _),
+            let .end(flightPlan),
+            let .flying(flightPlan),
+            let .resumable(flightPlan, _),
+            let .startedNotFlying(flightPlan, _):
             let fpSettings = settingsProvider?.settings(for: flightPlan) ?? settingsProvider?.settings
             if categories?.contains(.image) == true {
                 // Image has its own section.
@@ -600,11 +636,34 @@ extension FlightPlanPanelViewModel {
                                                     startEnabled: false)
     }
 
+    /// Flight Plan Edition Modes.
+    ///
+    /// • `disabled`: The flight plan is read only and cannot be edited.
+    /// • `importedMavlink`: Only specific flight plan settings will be available for the edition.
+    ///                    User can only edit some settings which don't impact the mavlink behavior.
+    /// • `full`: All flight plan settings can be edited.
+    enum EditionMode {
+        case disabled
+        case importedMavlink
+        case full
+
+        /// Returns the edition mode for a flight plan.
+        ///
+        /// - Parameter flightPlan: the flight plan
+        /// - Returns the flight plan's edition mode
+        ///
+        /// - Note: The `disabled` state is currently not used, as the only FP state is currently *read only* ot not.
+        ///         With *read only* state indicating the FP has been created from a Mavlink import.
+        static func mode(for flightPlan: FlightPlanModel) -> Self {
+            flightPlan.hasImportedMavlink ? .importedMavlink : .full
+        }
+    }
+
     /// Enumeration of the different bottom view states.
     ///
     /// • `creation`: No project available. User is invited to create one.
-    /// • `edition`: Project's current Flight Plan is in editable mode.
-    ///            User can start / edit the current Flight Plan, or show the executions history.
+    /// • `edition`: Project's current Flight Plan edition mode.
+    ///            Depending `hasHistory` and `editionMode` states, the user can start / edit the current Flight Plan, or show the executions history.
     /// • `navigatingToStartingPoint`: The drone navigating to the first (or last executed) Waypoint.
     /// • `playing`: The Flight Plan execution is running. The execution state is displayed.
     /// • `resumable`:  The Flight Plan is resumable (stopped and partially executed).
@@ -614,7 +673,7 @@ extension FlightPlanPanelViewModel {
     /// • `rth`: The Flight Plan execution ended and the drone returning home.
     enum ViewState: Equatable {
         case creation
-        case edition(hasHistory: Bool, canEdit: Bool)
+        case edition(hasHistory: Bool, editionMode: EditionMode)
         case navigatingToStartingPoint
         case playing(time: TimeInterval)
         case resumable(hasHistory: Bool)
@@ -630,10 +689,44 @@ extension FlightPlanPanelViewModel {
                 (.paused, .paused),
                 (.rth, .rth):
                 return true
-            case let (.edition(hasHistoryLHS, canEditLHS), .edition(hasHistoryRHS, canEditRHS)):
-                return hasHistoryLHS == hasHistoryRHS && canEditLHS == canEditRHS
+            case let (.edition(hasHistoryLHS, editionModeLHS), .edition(hasHistoryRHS, editionModeRHS)):
+                return hasHistoryLHS == hasHistoryRHS && editionModeLHS == editionModeRHS
             default:
                 return false
+            }
+        }
+
+        /// Whether the current state represents an execution ongoing.
+        /// RTH and 'GTWP' are treated as a part of the FP execution.
+        var isExecutionRunning: Bool {
+            switch self {
+            case .playing,
+                    .rth,
+                    .navigatingToStartingPoint:
+                return true
+            default:
+                return false
+            }
+        }
+
+        /// Whether the current state represents an execution paused and/or resumable.
+        /// This computed property allows to know when the launcher is displaying a 'resumable view'.
+        var isExecutionPaused: Bool {
+            switch self {
+            case .paused,
+                    .resumable:
+                return true
+            default:
+                return false
+            }
+        }
+
+        /// Whether the current view state allows to enter in edition mode.
+        var canEnterEdition: Bool {
+            switch self {
+            case .creation: return true
+            case .edition(_, let editionMode) where editionMode != .disabled : return true
+            default: return false
             }
         }
     }

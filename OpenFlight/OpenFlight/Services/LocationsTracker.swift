@@ -39,8 +39,10 @@ public protocol LocationsTracker: AnyObject {
 
     /// User location publisher
     var userLocationPublisher: AnyPublisher<OrientedLocation, Never> { get }
-    /// Drone location publisher
+    /// Drone location publisher with altitude relative to take off
     var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> { get }
+    /// Drone location publisher with absolute altitude
+    var droneAbsoluteLocationPublisher: AnyPublisher<OrientedLocation, Never> { get }
     /// Return home location publisher
     var returnHomeLocationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> { get }
     /// Drone gps fixed publisher
@@ -49,6 +51,12 @@ public protocol LocationsTracker: AnyObject {
     var userLocation: OrientedLocation { get }
     /// Drone location
     var droneLocation: OrientedLocation { get }
+    /// Drone location with absolute altitude
+    var droneAbsoluteLocation: OrientedLocation { get }
+    /// Connected drone current location.
+    /// - Note: Unlike `droneLocation`, which represents the last known drone location (even if the drone is not connected),
+    ///         `connectedDroneCurrentLocation` is the current connected drone location (`nil` if not connected or GPS not fixed).
+    var connectedDroneCurrentLocation: OrientedLocation? { get }
     /// Return home location
     var returnHomeLocation: CLLocationCoordinate2D? { get }
 }
@@ -80,6 +88,7 @@ class LocationsTrackerImpl {
     private var returnHomeRef: Ref<ReturnHomePilotingItf>?
     private var remoteControlCompassRef: Ref<Compass>?
     private var oldLandscapeInterfaceOrientation: UIInterfaceOrientation = .landscapeLeft
+    private var absoluteAltitude: Double?
     private var takeOffAltitude: Double?
 
     /// Current user location.
@@ -91,6 +100,10 @@ class LocationsTrackerImpl {
     }
     /// Current drone location
     private var droneLocationSubject = CurrentValueSubject<Location3D?, Never>(nil)
+    /// Current drone absolute location
+    private var droneAbsoluteLocationSubject = CurrentValueSubject<Location3D?, Never>(nil)
+    /// Current drone location
+    private var connectedDroneLocationSubject = CurrentValueSubject<Location3D?, Never>(nil)
     /// Current return home location
     private var returnHomeLocationSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
 
@@ -151,6 +164,10 @@ class LocationsTrackerImpl {
         droneLocationSubject
             .sink { [unowned self] in droneLocationStorage = $0 }
             .store(in: &cancellables)
+        droneAbsoluteLocationSubject.value = droneLocationStorage
+        droneAbsoluteLocationSubject
+            .sink { [unowned self] in droneLocationStorage = $0 }
+            .store(in: &cancellables)
         let groundSdk = GroundSdk()
         listenUserHeading(groundSdk: groundSdk)
         listenUserLocation(groundSdk: groundSdk)
@@ -161,6 +178,7 @@ class LocationsTrackerImpl {
         connectedDroneHolder.dronePublisher
             .sink { [unowned self] in
                 guard let drone = $0 else {
+                    connectedDroneLocationSubject.value = nil
                     isDroneGpsFixedSubject.value = false
                     gpsRef = nil
                     droneGimbalRef = nil
@@ -202,16 +220,29 @@ private extension LocationsTrackerImpl {
             isDroneGpsFixedSubject.value = gps.fixed
             droneLocationSubject.value = Location3D(coordinate: location.coordinate,
                                                     altitude: takeOffAltitude ?? 0.0)
+            droneAbsoluteLocationSubject.value = Location3D(coordinate: location.coordinate,
+                                                    altitude: absoluteAltitude ?? 0.0)
+            // The connected drone's current location is treated as unkown when GPS is not fixed.
+            connectedDroneLocationSubject.value = gps.fixed ? droneLocationSubject.value : nil
         }
     }
 
     /// Starts watcher for altimeter.
     func listenAltimeter(drone: Drone) {
         altimeterRef = drone.getInstrument(Instruments.altimeter) { [unowned self] altimeter in
+            absoluteAltitude = altimeter?.absoluteAltitude
             takeOffAltitude = altimeter?.takeoffRelativeAltitude
             if let coordinate = droneLocationSubject.value?.coordinate {
                 droneLocationSubject.value = Location3D(coordinate: coordinate,
                                                         altitude: takeOffAltitude ?? 0.0)
+                droneAbsoluteLocationSubject.value = Location3D(coordinate: coordinate,
+                                                        altitude: absoluteAltitude ?? 0.0)
+            }
+            // Update the connected drone's current location only when GPS has a fixed drone's location.
+            if let coordinate = connectedDroneLocationSubject.value?.coordinate,
+               gpsRef?.value?.fixed == true {
+                connectedDroneLocationSubject.value = Location3D(coordinate: coordinate,
+                                                                 altitude: absoluteAltitude ?? 0.0)
             }
         }
     }
@@ -309,6 +340,16 @@ extension LocationsTrackerImpl: LocationsTracker {
                          heading: droneHeadingSubject.value)
     }
 
+    var droneAbsoluteLocation: OrientedLocation {
+        OrientedLocation(coordinates: droneAbsoluteLocationSubject.value,
+                         heading: droneHeadingSubject.value)
+    }
+
+    var connectedDroneCurrentLocation: OrientedLocation? {
+        OrientedLocation(coordinates: connectedDroneLocationSubject.value,
+                         heading: droneHeadingSubject.value)
+    }
+
     var userLocationPublisher: AnyPublisher<OrientedLocation, Never> {
         userLocationSubject.combineLatest(userDeviceHeadingPublisher)
             .map {
@@ -326,6 +367,12 @@ extension LocationsTrackerImpl: LocationsTracker {
 
     var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> {
         droneLocationSubject.combineLatest(droneHeadingSubject)
+            .map { OrientedLocation(coordinates: $0.0, heading: $0.1) }
+            .eraseToAnyPublisher()
+    }
+
+    var droneAbsoluteLocationPublisher: AnyPublisher<OrientedLocation, Never> {
+        droneAbsoluteLocationSubject.combineLatest(droneHeadingSubject)
             .map { OrientedLocation(coordinates: $0.0, heading: $0.1) }
             .eraseToAnyPublisher()
     }

@@ -33,29 +33,22 @@ import UIKit
 import Reusable
 import GroundSdk
 
-private extension ULogTag {
-     static let tag = ULogTag(name: "StereoCalibrationProgressView")
-}
-
 class StereoCalibrationProgressView: UIView, NibOwnerLoadable {
 
     // MARK: - Outlet
 
-    @IBOutlet weak var missionResultLabel: UILabel!
-    @IBOutlet weak var missionStateLabel: UILabel!
     @IBOutlet weak var progressViewContainer: UIView!
-    @IBOutlet weak var calibrationTitle: UILabel!
+    @IBOutlet weak var containerStackView: MainContainerStackView!
+    @IBOutlet weak var circleProgressView: CircleProgressView!
+    @IBOutlet weak var missionStateLabel: UILabel!
     @IBOutlet weak var finishedButton: ActionButton!
-    @IBOutlet weak var stopButton: ActionButton!
+    @IBOutlet weak var stopView: StopView!
     @IBOutlet weak var calibrationCompleteImageView: UIImageView!
-    @IBOutlet weak var calibrationHandLandingImageView: UIImageView!
     @IBOutlet weak var calibrationErrorLabel: UILabel!
     @IBOutlet weak var landingStackView: UIStackView!
     @IBOutlet weak var landingButton: ActionButton!
     @IBOutlet weak var landingTitle: UILabel!
-    @IBOutlet private weak var panelTitleLabel: UILabel!
 
-    private var progressView = CircleProgressView()
     private var cancellables = Set<AnyCancellable>()
     private var stereoCalibViewModel: StereoCalibrationViewModel! {
         didSet {
@@ -95,16 +88,19 @@ private extension StereoCalibrationProgressView {
                                                   borderColor: .clear,
                                                   hasShadow: true,
                                                   style: .secondary1)
-
-        stopButton.setup(image: Asset.Common.Icons.stop.image, title: nil, style: .destructive)
-        finishedButton.setup(title: L10n.ok, style: .validate)
         landingButton.model = actionButtonModel
-        landingButton.setBackgroundImage(Asset.Alertes.AutoLanding.icAutoLanding.image, for: .normal)
-        progressViewContainer.addWithConstraints(subview: progressView)
-        progressView.backgroundColor = .clear
-        panelTitleLabel.text = L10n.loveCalibrationTitle
+        landingTitle.makeUp(with: .big, color: .defaultTextColor)
         landingTitle.text = L10n.loveCalibrationDone
-        calibrationHandLandingImageView.animationImages = Asset.Alertes.HandLand.Animation.allValues.compactMap { $0.image }
+
+        stopView.style = .classic
+        stopView.delegate = self
+
+        finishedButton.setup(title: L10n.ok, style: .validate)
+
+        calibrationErrorLabel.makeUp(with: .current, color: .errorColor)
+        calibrationCompleteImageView.heightAnchor.constraint(equalToConstant: Layout.buttonIntrinsicHeight(isRegularSizeClass)).isActive = true
+
+        containerStackView.screenBorders = [.bottom, .right]
     }
 
     /// Loads the view from a xib.
@@ -116,138 +112,94 @@ private extension StereoCalibrationProgressView {
     func bindViewModel() {
         stereoCalibViewModel.calibrationStateMessage
             .compactMap { $0 }
-            .sink { [unowned self] calibrationMessage in
-                missionStateLabel.text = calibrationMessage
+            .removeDuplicates()
+            .sink { [unowned self] in
+                missionStateLabel.text = $0
             }
             .store(in: &cancellables)
 
-        stereoCalibViewModel.calibrationPercentage
+        stereoCalibViewModel.calibrationPercentagePublisher
             .compactMap { $0 }
-            .sink { [unowned self] percentage in
-                progressView.setProgress(percentage/100)
+            .removeDuplicates()
+            .sink { [unowned self] in
+                circleProgressView.setProgress($0 / 100)
             }
             .store(in: &cancellables)
 
-        stereoCalibViewModel.$shouldHideProgressView
-            .sink { [unowned self] shouldHideProgressView in
-                progressView.isHidden = shouldHideProgressView
+        stereoCalibViewModel.$shouldHideCircleProgressView
+            .removeDuplicates()
+            .sink { [unowned self] in
+                progressViewContainer.isHidden = $0
             }
             .store(in: &cancellables)
 
         stereoCalibViewModel.$stopButtonHidden
-            .sink { [unowned self] stopButtonHidden in
-                stopButton.isHidden = stopButtonHidden
+            .removeDuplicates()
+            .sink { [unowned self] in
+                stopView.isHidden = $0
             }
             .store(in: &cancellables)
 
         stereoCalibViewModel.$finishedButtonHidden
-            .sink { [unowned self] finishedButtonHidden in
-                finishedButton.isHidden = finishedButtonHidden
+            .removeDuplicates()
+            .sink { [unowned self] in
+                finishedButton.isHidden = $0
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$finishedButtonStyle
+            .removeDuplicates()
+            .sink { [unowned self] in
+                finishedButton.updateStyle($0)
             }
             .store(in: &cancellables)
 
         stereoCalibViewModel.$missionStateHidden
-            .sink { [unowned self] missionStateHidden in
-                missionStateLabel.isHidden = missionStateHidden
+            .removeDuplicates()
+            .sink { [unowned self] in
+                missionStateLabel.isHidden = $0
+            }
+            .store(in: &cancellables)
+
+        stereoCalibViewModel.$calibrationCompleteImage
+            .removeDuplicates()
+            .sink { [unowned self] in
+                calibrationCompleteImageView.image = $0
             }
             .store(in: &cancellables)
 
         stereoCalibViewModel.$calibrationCompleteImageHidden
             .removeDuplicates()
-            .sink { [unowned self]  in
+            .sink { [unowned self] in
                 calibrationCompleteImageView.isHidden = $0
             }
             .store(in: &cancellables)
 
-        stereoCalibViewModel.$calibrationHandLandingImageHidden
-            .removeDuplicates()
-            .sink { [unowned self]  in
-                calibrationHandLandingImageView.isHidden = $0
-                if !$0 {
-                    calibrationHandLandingImageView.startAnimating()
-                } else {
-                    calibrationHandLandingImageView.stopAnimating()
-                }
-            }
-            .store(in: &cancellables)
-
-        stereoCalibViewModel.$calibrationTitle
-            .sink { [unowned self] title in
-                calibrationTitle.text = title
-            }
-            .store(in: &cancellables)
-
-        stereoCalibViewModel.$calibrationTitleHidden
-            .sink { [unowned self] missionTitleHidden in
-                calibrationTitle.isHidden = missionTitleHidden
-            }
-            .store(in: &cancellables)
-
-        stereoCalibViewModel.$calibrationTitleColor
-            .sink { [unowned self] calibrationTitleColor in
-                calibrationTitle.textColor = calibrationTitleColor
-            }
-            .store(in: &cancellables)
-
         stereoCalibViewModel.$landingButtonHidden
-            .sink { [unowned self] landingButtonHidden in
-                landingStackView.isHidden = landingButtonHidden
+            .removeDuplicates()
+            .sink { [unowned self] in
+                landingStackView.isHidden = $0
             }
             .store(in: &cancellables)
 
         stereoCalibViewModel.$calibrationMessageColor
-            .sink { [unowned self] messageColor in
-                missionStateLabel.textColor = messageColor
-            }
-            .store(in: &cancellables)
-
-        stereoCalibViewModel.$calibrationResultHidden
-            .sink { [unowned self] calibrationResultHidden in
-                missionResultLabel.isHidden = calibrationResultHidden
-            }
-            .store(in: &cancellables)
-
-        stereoCalibViewModel.$calibrationResultColor
-            .sink { [unowned self] calibrationResultColor in
-                missionResultLabel.textColor = calibrationResultColor
-            }
-            .store(in: &cancellables)
-
-        stereoCalibViewModel.$calibrationResultText
-            .sink { [unowned self] calibrationResultText in
-                missionResultLabel.text = calibrationResultText
-            }
-            .store(in: &cancellables)
-
-        stereoCalibViewModel.$finishedButtonHighlighted
-            .sink { [unowned self] finishedButtonHighlighted in
-                if finishedButtonHighlighted {
-                    finishedButton.setTitleColor(ColorName.white.color, for: .normal)
-                    finishedButton.customCornered(corners: [.allCorners],
-                                                  radius: Style.largeCornerRadius,
-                                                  backgroundColor: ColorName.highlightColor.color,
-                                                  borderColor: ColorName.clear.color,
-                                                  borderWidth: Style.mediumBorderWidth)
-                } else {
-                    finishedButton.setTitleColor(ColorName.defaultTextColor.color, for: .normal)
-                    finishedButton.customCornered(corners: [.allCorners],
-                                                  radius: Style.largeCornerRadius,
-                                                  backgroundColor: ColorName.whiteAlbescent.color,
-                                                  borderColor: ColorName.defaultTextColor20.color,
-                                                  borderWidth: Style.mediumBorderWidth)
-                }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                missionStateLabel.textColor = $0
             }
             .store(in: &cancellables)
 
         stereoCalibViewModel.$calibrationErrorText
-            .sink { [unowned self] calibrationErrorText in
-                calibrationErrorLabel.text = calibrationErrorText
+            .removeDuplicates()
+            .sink { [unowned self] in
+                calibrationErrorLabel.text = $0
             }
             .store(in: &cancellables)
 
         stereoCalibViewModel.$calibrationErrorHidden
-            .sink { [unowned self] calibrationErrorHidden in
-                calibrationErrorLabel.isHidden = calibrationErrorHidden
+            .removeDuplicates()
+            .sink { [unowned self] in
+                calibrationErrorLabel.isHidden = $0
             }
             .store(in: &cancellables)
     }
@@ -257,16 +209,18 @@ private extension StereoCalibrationProgressView {
 
 extension StereoCalibrationProgressView {
 
-    @IBAction func cancelCalibration(_ sender: Any) {
-        stereoCalibViewModel.cancelCalibration()
-        stereoCalibViewModel.dismissProgressView(endState: .aborted)
+    @IBAction func finishedButtonTouchedUpInside(_ sender: Any) {
+        stereoCalibViewModel.finishCalibration()
     }
 
-    @IBAction func closeAfterCalibration(_ sender: Any) {
-        stereoCalibViewModel.askingForBack()
-    }
-
-    @IBAction func landingDrone(_ sender: Any) {
+    @IBAction func landingButtonTouchedUpInside(_ sender: Any) {
         stereoCalibViewModel.landDrone()
+    }
+}
+
+// MARK: - StopViewDelegate
+extension StereoCalibrationProgressView: StopViewDelegate {
+    func didClickOnStop() {
+        stereoCalibViewModel.cancelCalibration()
     }
 }

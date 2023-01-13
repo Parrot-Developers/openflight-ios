@@ -47,7 +47,6 @@ final class DashboardViewController: UIViewController {
         viewModel: DashboardViewModel) -> DashboardViewController {
         let viewController = StoryboardScene.Dashboard.initialScene.instantiate()
         viewController.coordinator = coordinator
-        viewModel.initViewModels()
         viewController.viewModel = viewModel
         return viewController
     }
@@ -174,7 +173,7 @@ extension DashboardViewController: UICollectionViewDataSource {
         case .content(.droneInfos):
             return createDroneCell(viewModel.droneInfosViewModel, indexPath)
         case .content(.galleryMedia):
-            return createMediasCell(viewModel.galleryMediaViewModel, indexPath)
+            return createMediasCell(viewModel.dashboardMediasViewModel, indexPath)
         case .content(.myFlights):
             return createMyFlightsCell(viewModel.myFlightsCellModel, indexPath)
         case .content(.settings):
@@ -295,13 +294,12 @@ private extension DashboardViewController {
     /// Instantiates the Medias Cell.
     ///
     /// - Parameters:
-    ///    - viewModel: ViewModel for the cell
-    /// - Returns: DashboardMediasCell
-    func createMediasCell(_ viewModel: GalleryMediaViewModel, _ indexPath: IndexPath) -> DashboardMediasCell {
+    ///    - viewModel: the medias view model
+    ///    - indexPath: the index path of the cell
+    /// - Returns: a `DashboardMediasCell`
+    func createMediasCell(_ viewModel: DashboardMediasViewModel, _ indexPath: IndexPath) -> DashboardMediasCell {
         let mediaCell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMediasCell
-        mediaCell.viewModel = viewModel
-        mediaCell.setup(state: viewModel.state.value)
-
+        mediaCell.setup(viewModel: viewModel)
         return mediaCell
     }
 

@@ -67,7 +67,7 @@ public class SplitControls: NSObject, DelayedTaskProvider {
     // MARK: - Internal Properties
 
     weak var cameraStreamingViewController: HUDCameraStreamingViewController?
-    var mapViewController: MapViewController?
+    var commonMapViewController: CommonMapViewController?
     weak var mapOr3DParent: UIViewController?
     var delayedTaskComponents = DelayedTaskComponents()
     weak var delegate: SplitControlsDelegate?
@@ -188,7 +188,7 @@ public class SplitControls: NSObject, DelayedTaskProvider {
 
 private extension SplitControls {
     @IBAction func centerMapButtonTouchedUpInside(_ sender: UIButton) {
-        mapViewController?.disableAutoCenter(false)
+        commonMapViewController?.centerMap()
     }
 }
 
@@ -316,25 +316,25 @@ private extension SplitControls {
 }
 
 extension SplitControls {
-    public func addMap(_ map: MapViewController, parent: UIViewController) {
+
+    public func addMap(_ map: CommonMapViewController, parent: UIViewController) {
 
         // Prevent from double calls.
-        guard parent != mapOr3DParent || map != mapViewController else {
+        guard parent != mapOr3DParent || map != commonMapViewController else {
             return
         }
         forceStream = false
         // remove if needed
-        mapViewController?.remove()
-        mapViewController?.unplug()
+        commonMapViewController?.remove()
 
         // keep map and parent
-        mapViewController = map
-        mapViewController?.splitControls = self
+        commonMapViewController = map
+        commonMapViewController?.splitControls = self
         // keep parent (in order to add Map ou 3D view as child)
         mapOr3DParent = parent
         displayMapOr3DasChild()
     }
-
+    
     /// Change display of bottom bar in HUD
     ///
     /// - Parameters:
@@ -353,7 +353,7 @@ extension SplitControls {
 
     /// Update the right pannel with Map or 3D View
     public func displayMapOr3DasChild() {
-        guard mapViewController != nil, let parent = mapOr3DParent else {
+        guard commonMapViewController != nil, let parent = mapOr3DParent else {
             return
         }
         var vcToDisplay: UIViewController?
@@ -365,7 +365,8 @@ extension SplitControls {
                 }
                 vcToDisplay = streamViewController
             } else {
-                vcToDisplay = mapViewController
+
+                vcToDisplay = commonMapViewController
             }
 
         case .threeDimensions:
@@ -380,7 +381,9 @@ extension SplitControls {
             return
         } else {
             // remove the previous
-            mapViewController?.remove()
+            if !currentMissionManager.mode.isRightPanelRequired {
+                commonMapViewController?.remove()
+            }
             streamViewController?.remove()
             occupancyViewController?.remove()
             // we do not keep the occupancyViewController if it is not necessary

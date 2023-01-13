@@ -106,23 +106,29 @@ public class CenteredRulerTableViewCell: SidePanelSettingTableViewCell, NibReusa
                                    orientation: .horizontal,
                                    displayType: displayType)
     }
+
+    /// Cancels the current ruler animation.
+    public func cancelRulerAnimation() {
+        centeredRulerBarView.cancelUpdate()
+    }
 }
 
 // MARK: - SettingValueRulerViewDelegate
 extension CenteredRulerTableViewCell: SettingValueRulerViewDelegate {
+    public func scrollViewWillBeginMoving() {
+        delegate?.isUpdatingSetting(for: settingType?.key, isUpdating: true)
+    }
+
+    public func scrollViewDidEndMoving() {
+        delegate?.isUpdatingSetting(for: settingType?.key, isUpdating: false)
+    }
+
     public func valueDidChange(_ value: Double) {
         var finalValue = Int(value)
         if let divider = settingType?.divider, divider < 1.0 {
             finalValue = Int(value / divider)
         }
-        delegate?.isUpdatingSetting(for: settingType?.key,
-                                    isUpdating: false)
         delegate?.updateSettingValue(for: settingType?.key,
                                      value: finalValue)
-    }
-
-    public func valueWillChange() {
-        delegate?.isUpdatingSetting(for: settingType?.key,
-                                    isUpdating: true)
     }
 }

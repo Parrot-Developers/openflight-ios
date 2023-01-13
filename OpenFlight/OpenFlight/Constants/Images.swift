@@ -610,6 +610,7 @@ public enum Asset {
       public static let icEncryptedConnexion = ImageAsset(name: "icEncryptedConnexion")
       public static let icExpand = ImageAsset(name: "icExpand")
       public static let icExport = ImageAsset(name: "icExport")
+      public static let icFillCross = ImageAsset(name: "icFillCross")
       public static let icFlightPlanSettings = ImageAsset(name: "icFlightPlanSettings")
       public static let icFlightPlanTimer = ImageAsset(name: "icFlightPlanTimer")
       public static let icGreyChevron = ImageAsset(name: "icGreyChevron")
@@ -668,6 +669,7 @@ public enum Asset {
         icEncryptedConnexion,
         icExpand,
         icExport,
+        icFillCross,
         icFlightPlanSettings,
         icFlightPlanTimer,
         icGreyChevron,
@@ -816,6 +818,19 @@ public enum Asset {
       icTimePassedMini,
       icTotalDistance,
       icVideoMini,
+    ]
+  }
+  public enum Dri {
+
+    public static let icDriDeactivated = ImageAsset(name: "icDriDeactivated")
+    public static let icDriDisconnected = ImageAsset(name: "icDriDisconnected")
+    public static let icDriKo = ImageAsset(name: "icDriKo")
+    public static let icDriOk = ImageAsset(name: "icDriOk")
+    public static let allValues: [ImageAsset] = [
+      icDriDeactivated,
+      icDriDisconnected,
+      icDriKo,
+      icDriOk,
     ]
   }
   public enum Drone {
@@ -1090,9 +1105,16 @@ public enum Asset {
 
     public static let centerOnDrone = ImageAsset(name: "centerOnDrone")
     public static let centerOnUser = ImageAsset(name: "centerOnUser")
+    public static let icHome = ImageAsset(name: "icHome")
+    public static let icHomeCritical = ImageAsset(name: "icHomeCritical")
+    public static let icHomeCriticalLarge = ImageAsset(name: "icHomeCriticalLarge")
+    public static let icHomeLarge = ImageAsset(name: "icHomeLarge")
+    public static let icHomeWarning = ImageAsset(name: "icHomeWarning")
+    public static let icHomeWarningLarge = ImageAsset(name: "icHomeWarningLarge")
     public static let mapDrone = ImageAsset(name: "mapDrone")
     public static let mapDroneDisconnected = ImageAsset(name: "mapDroneDisconnected")
-    public static let mapHome = ImageAsset(name: "mapHome")
+    public static let mapDroneDisconnectedMiniMap = ImageAsset(name: "mapDroneDisconnectedMiniMap")
+    public static let mapDroneMiniMap = ImageAsset(name: "mapDroneMiniMap")
     public static let poiBlackAndWhite = ImageAsset(name: "poi_black_and_white")
     public static let poiBlue = ImageAsset(name: "poi_blue")
     public static let poiGreen = ImageAsset(name: "poi_green")
@@ -1105,9 +1127,16 @@ public enum Asset {
     public static let allValues: [ImageAsset] = [
       centerOnDrone,
       centerOnUser,
+      icHome,
+      icHomeCritical,
+      icHomeCriticalLarge,
+      icHomeLarge,
+      icHomeWarning,
+      icHomeWarningLarge,
       mapDrone,
       mapDroneDisconnected,
-      mapHome,
+      mapDroneDisconnectedMiniMap,
+      mapDroneMiniMap,
       poiBlackAndWhite,
       poiBlue,
       poiGreen,

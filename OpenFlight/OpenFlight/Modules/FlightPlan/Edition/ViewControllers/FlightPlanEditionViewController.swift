@@ -41,9 +41,10 @@ public class FlightPlanEditionViewController: UIViewController {
     private weak var panelCoordinator: FlightPlanPanelCoordinator?
     public var menuCoordinator: FlightPlanEditionMenuCoordinator?
     public var editionSettingsCoordinator: EditionSettingsCoordinator?
-    private weak var mapViewController: MapViewController?
+    private weak var mapViewController: FlightPlanMapViewController?
+    private weak var sceneViewController: FlightPlanSceneViewController?
     private var cancellables = [AnyCancellable]()
-    private var viewModel: FlightPlanEditionViewModel!
+    public var viewModel: FlightPlanEditionViewModel!
     private var hasFlightPlanObject: Bool {
         viewModel.hasFlightPlanObject
     }
@@ -61,7 +62,7 @@ public class FlightPlanEditionViewController: UIViewController {
     /// - Returns: FlightPlanEditionViewController
     public static func instantiate(panelCoordinator: FlightPlanPanelCoordinator,
                                    flightPlanServices: FlightPlanServices,
-                                   mapViewController: MapViewController?,
+                                   mapViewController: FlightPlanMapViewController?,
                                    flightPlanProvider: FlightPlanProvider?,
                                    navigationStack: NavigationStackService,
                                    backButtonPublisher: AnyPublisher<Void, Never>) -> FlightPlanEditionViewController {
@@ -75,10 +76,46 @@ public class FlightPlanEditionViewController: UIViewController {
             panelCoordinator: panelCoordinator)
         viewController.panelCoordinator = panelCoordinator
         viewController.mapViewController = mapViewController
-        viewController.mapViewController?.setMapMode(.flightPlanEdition)
+        // Check if map edition must be disabled in case of an FP created by a Mavlink import.
+        let disableMapEdition = flightPlanServices.edition.currentFlightPlanValue?.hasImportedMavlink ?? false
+        viewController.mapViewController?.isInEdition = !disableMapEdition
         viewController.viewModel.mapDelegate = mapViewController
         viewController.backButtonPublisher = backButtonPublisher
         mapViewController?.flightDelegate = viewController.viewModel
+        panelCoordinator.flightPlanEditionViewController = viewController
+        return viewController
+    }
+
+    // MARK: - Setup
+    /// Instantiate the view controller.
+    ///
+    /// - Parameters:
+    ///    - panelCoordinator: flight plan panel coordinator
+    ///    - mapViewController: controller for the map
+    ///    - flightPlanProvider: flight plan provider
+    ///    - backButtonPublisher: the back button publisher that is triggered when the user wants to
+    ///      discard the current changes.
+    /// - Returns: FlightPlanEditionViewController
+    public static func instantiate(panelCoordinator: FlightPlanPanelCoordinator,
+                                   flightPlanServices: FlightPlanServices,
+                                   sceneViewController: FlightPlanSceneViewController?,
+                                   flightPlanProvider: FlightPlanProvider?,
+                                   navigationStack: NavigationStackService,
+                                   backButtonPublisher: AnyPublisher<Void, Never>) -> FlightPlanEditionViewController {
+        let viewController = StoryboardScene.FlightPlanEdition.initialScene.instantiate()
+        viewController.viewModel = FlightPlanEditionViewModel(
+            settingsProvider: flightPlanProvider?.settingsProvider,
+            edition: flightPlanServices.edition,
+            projectManager: flightPlanServices.projectManager,
+            topBarService: Services.hub.ui.hudTopBarService,
+            navigationStack: navigationStack,
+            panelCoordinator: panelCoordinator)
+        viewController.panelCoordinator = panelCoordinator
+        viewController.sceneViewController = sceneViewController
+        viewController.sceneViewController?.isInEdition = true
+        viewController.viewModel.mapDelegate = sceneViewController
+        viewController.backButtonPublisher = backButtonPublisher
+        sceneViewController?.flightDelegate = viewController.viewModel
         panelCoordinator.flightPlanEditionViewController = viewController
         return viewController
     }
@@ -185,9 +222,9 @@ public class FlightPlanEditionViewController: UIViewController {
     ///
     /// - Parameters:
     ///    - graphic: graphic to display in edition
-    func showCustomGraphicEdition(_ graphic: EditableAGSGraphic) {
+    open func showCustomGraphicEdition(_ graphic: EditableAGSGraphic) {
         viewModel.showCustomGraphicEdition(graphic)
-        openSettings()
+        openSettings(categoryFilter: .custom(L10n.flightPlanSegmentSettingsTitle))
     }
 
     /// End flight plan edition.
@@ -326,10 +363,6 @@ extension FlightPlanEditionViewController: EditionSettingsDelegate {
 
     public func updateSettingValue(for key: String?, value: Int) {
         viewModel.updateSettingValue(for: key, value: value)
-    }
-
-    public func isUpdatingSetting(for key: String?, isUpdating: Bool) {
-        // nothing to do
     }
 
     public func didTapCloseButton() {

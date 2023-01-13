@@ -295,7 +295,10 @@ private extension SettingsGridActionView {
 
         if shouldSaveValue {
             // Save new geofence if needed.
-            viewModel.saveGeofence(altitude: altitude, distance: distance)
+            let convertedAltitude = UnitHelper.roundedDistanceWithDouble(altitude)
+            let convertedDistance = UnitHelper.roundedDistanceWithDouble(distance)
+            viewModel.saveGeofence(altitude: convertedAltitude,
+                                   distance: convertedDistance)
         }
     }
 

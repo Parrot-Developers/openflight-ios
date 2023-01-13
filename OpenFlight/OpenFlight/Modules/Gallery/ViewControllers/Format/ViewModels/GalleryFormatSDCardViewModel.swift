@@ -30,25 +30,37 @@
 import GroundSdk
 import Combine
 
-/// ViewModel for SDCard formatting.
+protocol FormattingNavigationDelegate: AnyObject {
 
+    /// Informs of a close view request with optional toast message.
+    ///
+    /// - Parameters:
+    ///    - message: the toast message to display (if any)
+    ///    - duration: the toast message duration (relevant only if `message` is non-`nil`)
+    func close(message: String?, duration: TimeInterval)
+}
+
+/// A view model for SD card formatting.
 final class GalleryFormatSDCardViewModel: NSObject {
 
+    /// The navigation delegate.
+    weak var delegate: FormattingNavigationDelegate?
+
     // MARK: - Published Properties
-    @Published private(set) var isFlying: Bool = false
+    /// The formatting state.
+    @Published private(set) var formattingState: StorageFormattingState = .unknown
+    /// Whether formatting screen closing is allowed.
+    @Published private(set) var canClose = true
 
     // MARK: - Private Properties
-    private weak var galleryViewModel: GalleryMediaViewModel?
-    private var sdCardListener: GallerySdMediaListener?
-    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var currentDrone = Services.hub.currentDroneHolder
+    /// The cancellables.
     private var cancellables = Set<AnyCancellable>()
+    /// The user storage service.
+    private var userStorageService: UserStorageService!
 
     // MARK: - Internal Properties
+    /// The selected formatting type.
     var selectedFormattingType: FormattingType = .quick
-    var canFormat: Bool {
-        return galleryViewModel?.sdCardViewModel?.state.value.canFormat ?? false
-    }
 
     // MARK: - Private Enums
     private enum Constants {
@@ -56,84 +68,73 @@ final class GalleryFormatSDCardViewModel: NSObject {
         static let newPartitionMinPercentage: Float = 90.0
     }
 
-    // MARK: - Deinit
-    deinit {
-        galleryViewModel?.sdCardViewModel?.unregisterListener(sdCardListener)
-    }
-
     // MARK: - Init
     ///
-    /// - Parameters:
-    ///    - galleryViewModel: gallery view model
-    init(galleryViewModel: GalleryMediaViewModel?) {
+    /// - Parameter userStorageService: the user storage service
+    init(userStorageService: UserStorageService) {
         super.init()
-        self.galleryViewModel = galleryViewModel
-        currentDrone.dronePublisher
-            .sink { [unowned self] drone in
-                listenFlyingState(drone: drone)
-            }
-            .store(in: &cancellables)
+
+        self.userStorageService = userStorageService
+        listenToUserStorageService(userStorageService)
     }
 }
 
 // MARK: - Internal Funcs
 extension GalleryFormatSDCardViewModel {
-    /// Format SD Card.
-    func format() {
-        galleryViewModel?.sdCardViewModel?.format(selectedFormattingType)
+
+    /// Format SD card.
+    ///
+    /// - Returns: `true` if the format has been actually asked to the peripheral, `false` otherwise
+    @discardableResult
+    func format() -> Bool {
+        userStorageService.format(formattingType: selectedFormattingType)
     }
 
-    /// Called when we need to start listening to the formatting progress.
+    /// Listens to user storage service in order to update states accordingly.
+    ///
+    /// - Parameter userStorageService: the user storage service
+    func listenToUserStorageService(_ userStorageService: UserStorageService) {
+        userStorageService.formattingStatePublisher.sink { [weak self] state in
+            guard let self = self else { return }
+            self.canClose = !state.isRunning
+            self.formattingState = state
+        }
+        .store(in: &cancellables)
+    }
+
+    /// Requests delegate to close view with optional toast message.
     ///
     /// - Parameters:
-    ///    - block: block to execute for each update
-    func startListeningToFormattingProgress(_ block: @escaping (FormattingStep, Float, FormattingState) -> Void) {
-        sdCardListener = galleryViewModel?.sdCardViewModel?.registerListener(didChange: { state in
-            guard let formattingProgress = state.formattingProgress,
-                let formattingState = state.formattingState,
-                let formattingStep = state.formattingStep else {
-                    return
-            }
-            let formattingProgressAsFloat: Float = Float(formattingProgress) / 100.0
-            var currentShare: Float = 0.0
-            var currentShareStart: Float = 0.0
-            var displayedProgress: Float = 0.0
-            switch formattingStep {
-            case .partitioning:
-                currentShareStart = 0.0
-                currentShare = Constants.partitioningMaxPercentage / 100.0
-            case .clearingData:
-                currentShareStart = Constants.partitioningMaxPercentage / 100.0
-                currentShare = (Constants.newPartitionMinPercentage - Constants.partitioningMaxPercentage) / 100.0
-            case .creatingFs:
-                currentShareStart = Constants.newPartitionMinPercentage / 100.0
-                currentShare = (100.0 - Constants.newPartitionMinPercentage) / 100.0
-                if formattingProgress == 100 {
-                    self.formatCompleted()
-                }
-            }
-            displayedProgress = currentShareStart + formattingProgressAsFloat * currentShare
-            block(formattingStep, displayedProgress, formattingState)
-        })
+    ///    - message: the toast message to display (if any)
+    ///    - duration: the toast message duration (relevant only if `message` is non-`nil`)
+    func close(message: String? = nil, duration: TimeInterval = Style.longAnimationDuration) {
+        delegate?.close(message: message, duration: duration)
     }
+}
 
-    /// Starts observing changes for flying indicators and updates the flyingState published property.
+extension GalleryFormatSDCardViewModel {
+
+    /// Returns the progress value to display according to ongoing formatting status.
     ///
-    /// - Parameter drone: The current drone
-    func listenFlyingState(drone: Drone) {
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
-            self?.isFlying = drone.isFlying
+    /// - Parameter status: the ongoing formatting status
+    /// - Returns: the formatting progress to display
+    func displayedProgress(for status: FormattingState) -> Float {
+        let formattingProgressAsFloat: Float = Float(status.progress) / 100.0
+        var currentShare: Float = 0.0
+        var currentShareStart: Float = 0.0
+
+        switch status.step {
+        case .partitioning:
+            currentShareStart = 0.0
+            currentShare = Constants.partitioningMaxPercentage / 100.0
+        case .clearingData:
+            currentShareStart = Constants.partitioningMaxPercentage / 100.0
+            currentShare = (Constants.newPartitionMinPercentage - Constants.partitioningMaxPercentage) / 100.0
+        case .creatingFs:
+            currentShareStart = Constants.newPartitionMinPercentage / 100.0
+            currentShare = (100.0 - Constants.newPartitionMinPercentage) / 100.0
         }
-    }
 
-    /// Called when we need to stop listening to the formatting progress.
-    func stopListeningToFormattingProgress() {
-        galleryViewModel?.sdCardViewModel?.unregisterListener(sdCardListener)
-    }
-
-    /// Called when format process is completed.
-    func formatCompleted() {
-        galleryViewModel?.sdCardViewModel?.formatCompleted()
-        galleryViewModel?.sdCardViewModel?.refreshMedias()
+        return currentShareStart + formattingProgressAsFloat * currentShare
     }
 }

@@ -39,8 +39,11 @@ public protocol SettingValueRulerViewDelegate: AnyObject {
     ///     - value: current value
     func valueDidChange(_ value: Double)
 
-    /// Called when ruler value will change.
-    func valueWillChange()
+    /// Called when the ruler is being moved
+    func scrollViewWillBeginMoving()
+
+    /// Called when the ruler stops moving after a drag or a deceleration
+    func scrollViewDidEndMoving()
 }
 
 // MARK: - Public Enums
@@ -255,6 +258,14 @@ public final class SettingValueRulerView: UIView, NibOwnerLoadable {
             self.updateValue(indexPath: self.indexPathForSelectedValue)
         }
     }
+
+    ///  Cancels the update operation of the setting.
+    ///
+    /// This is used when there is a need to cancel an animation of the collection view immediately.
+    /// If the ruler setting is currently animated, the new value will be the one visible in the center of the view.
+    public func cancelUpdate() {
+        self.updateValue(indexPath: self.indexPathForSelectedValue)
+    }
 }
 
 // MARK: - Private Funcs
@@ -356,7 +367,7 @@ extension SettingValueRulerView: UICollectionViewDelegate {
     }
 
     public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        delegate?.valueWillChange()
+        delegate?.scrollViewWillBeginMoving()
     }
 
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
@@ -364,6 +375,7 @@ extension SettingValueRulerView: UICollectionViewDelegate {
         let indexPath = orientation.isHorizontal
             ? collectionView.closestToHorizontalCenterIndexPath
             : collectionView.closestToVerticalCenterIndexPath
+        delegate?.scrollViewDidEndMoving()
         updateValue(indexPath: indexPath ?? indexPathForSelectedValue)
     }
 
@@ -371,6 +383,7 @@ extension SettingValueRulerView: UICollectionViewDelegate {
         let indexPath = orientation.isHorizontal
             ? collectionView.closestToHorizontalCenterIndexPath
             : collectionView.closestToVerticalCenterIndexPath
+        delegate?.scrollViewDidEndMoving()
         updateValue(indexPath: indexPath ?? indexPathForSelectedValue)
     }
 }

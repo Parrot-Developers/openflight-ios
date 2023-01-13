@@ -35,8 +35,10 @@ public final class FlightPlanUserLocationGraphic: AGSGraphic {
     private enum Constants {
         static let innerColor: UIColor = ColorName.blueDodger.color
         static let innerSize: CGFloat = 7.5
+        static let innerSizeBig: CGFloat = 22.5
         static let outerColor: UIColor = ColorName.white.color
         static let outerSize: CGFloat = 9.5
+        static let outerSizeBig: CGFloat = 28.5
     }
 
     // MARK: - Private Properties
@@ -56,5 +58,18 @@ public final class FlightPlanUserLocationGraphic: AGSGraphic {
         let attributes = attributes
         super.init(geometry: geometry, symbol: locationSymbol, attributes: attributes)
         self.symbol = locationSymbol
+    }
+
+    /// Set reduced mode, this is used when map is mini.
+    ///
+    /// - Parameters:
+    ///    - value: the new value
+    func setReduced(_ value: Bool) {
+        self.symbol = AGSCompositeSymbol(symbols: [
+            AGSSimpleMarkerSymbol(style: .circle, color: Constants.outerColor,
+                                  size: value ? Constants.outerSizeBig : Constants.outerSize),
+            AGSSimpleMarkerSymbol(style: .circle, color: Constants.innerColor,
+                                  size: value ? Constants.innerSizeBig : Constants.innerSize)
+        ])
     }
 }

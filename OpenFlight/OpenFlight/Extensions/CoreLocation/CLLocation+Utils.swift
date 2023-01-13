@@ -46,4 +46,70 @@ public extension CLLocation {
             completion(place.addressDescription)
         }
     }
+
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///   - latitude: the latitude
+    ///   - longitude: the longitude
+    ///   - altitude: the altitude
+    ///
+    /// - Note: Accuracies are set to 0 and timestamp to the current date.
+    convenience init(latitude: CLLocationDegrees,
+                     longitude: CLLocationDegrees,
+                     altitude: CLLocationDistance) {
+        self.init(coordinate: CLLocationCoordinate2D(latitude: latitude,
+                                                     longitude: longitude),
+                  altitude: altitude,
+                  horizontalAccuracy: 0,
+                  verticalAccuracy: 0,
+                  timestamp: Date())
+    }
+}
+
+extension CLLocation {
+    /// The Null Island location.
+    static var nullIsland: Self { .init(latitude: 0, longitude: 0) }
+
+    /// The antipode of the current location.
+    var antipode: Self {
+        let latitude = -1 * coordinate.latitude
+        let longitude = coordinate.longitude > 0
+        ? coordinate.longitude - 180
+        : coordinate.longitude + 180
+        return .init(latitude: latitude, longitude: longitude)
+    }
+
+    /// The earth radius in meters.
+    static var earthRadius: CLLocationDistance {
+        let halfPerimeter = Self.nullIsland.distance(from: Self.nullIsland.antipode)
+        return halfPerimeter / .pi
+    }
+
+    /// Returns a new location moved by specified distance and  bearing.
+    ///
+    /// - Parameters:
+    ///    - distance: the distance in meters
+    ///    - bearing: the bearing in degrees [-180:180]
+    ///
+    /// - Note: Bearing examples:
+    ///             • *0*: North
+    ///             • *-90*: West
+    ///             • *90*: East
+    ///             • *180*: South
+    ///             • *-45*: 45° N-W
+    func moved(distance: CLLocationDistance, bearing: CLLocationDegrees) -> Self {
+        let lat1 = coordinate.latitude.toRadians()
+        let long1 = coordinate.longitude.toRadians()
+        let bearingRadians = bearing.toRadians()
+        let distanceRadians = distance / Self.earthRadius
+
+        let lat2 = asin(sin(lat1) * cos(distanceRadians)
+                        + cos(lat1) * sin(distanceRadians) * cos(bearingRadians))
+        let long2 = long1 + atan2(sin(bearingRadians) * sin(distanceRadians) * cos(lat1),
+                                  cos(distanceRadians) - sin(lat1) * sin(lat2))
+
+        return .init(latitude: lat2.toDegrees(),
+                     longitude: long2.toDegrees())
+    }
 }

@@ -30,6 +30,7 @@
 import UIKit
 import MapKit
 import Combine
+import ArcGIS
 
 /// Protocol used to inform view controller of the dismissal of th modal.
 protocol DroneDetailsMapViewProtocol: AnyObject {
@@ -38,10 +39,9 @@ protocol DroneDetailsMapViewProtocol: AnyObject {
 }
 
 /// Display map into drone details screen.
-final class DroneDetailsMapViewController: UIViewController {
+final class DroneDetailsMapViewController: AGSMapViewController {
     // MARK: - Outlets
     @IBOutlet private weak var mainView: UIView!
-    @IBOutlet private weak var containerView: UIView!
     @IBOutlet private weak var lastPositionTitleLabel: UILabel!
     @IBOutlet private weak var lastPositionValueLabel: UILabel!
     @IBOutlet private weak var coordinateView: UIView!
@@ -53,9 +53,9 @@ final class DroneDetailsMapViewController: UIViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
-    private var mapController: MapViewController?
     private let viewModel = DroneDetailsMapViewModel()
     private var cancellables = Set<AnyCancellable>()
+    private var droneLocationOverlay: DroneLocationGraphicsOverlay?
 
     // MARK: - Public Properties
     private weak var delegate: DroneDetailsMapViewProtocol?
@@ -94,6 +94,15 @@ final class DroneDetailsMapViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
+
+    override func getCenter(completion: @escaping(AGSViewpoint?) -> Void) {
+        if let coordinate = viewModel.location?.coordinate {
+            completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate),
+                                    scale: CommonMapConstants.cameraDistanceToCenterLocation))
+        } else {
+            completion(nil)
+        }
+    }
 }
 
 // MARK: - Actions
@@ -123,7 +132,6 @@ private extension DroneDetailsMapViewController {
     func initView() {
         mainView.customCornered(corners: [.topLeft, .topRight],
                                 radius: Style.largeCornerRadius)
-        containerView?.isUserInteractionEnabled = true
         coordinateView.layer.cornerRadius = Style.largeCornerRadius
         bellStackView.layer.cornerRadius = Style.largeCornerRadius
         lastPositionTitleLabel.text = L10n.droneDetailsLastKnownPosition
@@ -131,15 +139,11 @@ private extension DroneDetailsMapViewController {
 
     /// Init map view controller.
     func initMap() {
-        if mapController == nil {
-            let controller = MapViewController.instantiate(mapMode: .droneDetails)
-            addChild(controller)
-            mapController = controller
-        }
-        if let mapView = mapController?.view {
-            containerView.addWithConstraints(subview: mapView)
-        }
-        mapController?.didMove(toParent: self)
+        // Drone Overlay
+        droneLocationOverlay = DroneLocationGraphicsOverlay()
+        droneLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
+        guard let droneLocationOverlay = droneLocationOverlay else { return }
+        mapView.graphicsOverlays.insert(droneLocationOverlay, at: 0)
     }
 
     /// Sets up the view model.

@@ -685,13 +685,6 @@ public final class DroneDetailCellularViewModel {
         coordinator?.dismiss()
     }
 
-    /// Dismisses the current view and shows the cellular debug screen
-    func showDebug() {
-        coordinator?.dismiss {
-            self.coordinator?.displayCellularDebug()
-        }
-    }
-
     /// Dismisses the current view and shows the cellular support screen
     func showSupport() {
         coordinator?.dismiss {

@@ -27,11 +27,15 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import UIKit
+import Combine
 import Reusable
 
 /// Custom View used to show medias and infos about storage.
 final class DashboardMediasCell: UICollectionViewCell, NibReusable {
+
+    /// The cancellables.
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Outlets
     @IBOutlet private weak var sdCardFormatNeededIcon: UIImageView!
     @IBOutlet private weak var sdCardErrorLabel: UILabel!
@@ -41,21 +45,44 @@ final class DashboardMediasCell: UICollectionViewCell, NibReusable {
     @IBOutlet private weak var emptyImageView: UIImageView!
     @IBOutlet private weak var titleLabel: UILabel!
 
+    /// The medias displayed in the tile.
+    private var medias = [GalleryMedia]() {
+        didSet { updateMedias(with: medias) }
+    }
+
     // MARK: - Private Properties
     private enum Constants {
         static let cellSpacing: CGFloat = 5.0
         static let maximumNumberOfItems: Int = 3
     }
 
-    // MARK: - Internal Properties
-    weak var viewModel: GalleryMediaViewModel?
-
     // MARK: - Override Funcs
     override func awakeFromNib() {
         super.awakeFromNib()
-        initCollectionView()
-        initSdCardFormatNeededIcon()
-        updateView()
+        setupView()
+    }
+
+    func setup(viewModel: DashboardMediasViewModel) {
+        viewModel.$medias
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] medias in
+            self?.medias = medias
+        }
+        .store(in: &cancellables)
+
+        viewModel.$sdCardErrorState
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+            self?.updateSdCardErrorState(with: state)
+        }
+        .store(in: &cancellables)
+
+        viewModel.$sourceDetails
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] details in
+            self?.updateSourceDetails(with: details)
+        }
+        .store(in: &cancellables)
     }
 }
 
@@ -63,24 +90,14 @@ final class DashboardMediasCell: UICollectionViewCell, NibReusable {
 extension DashboardMediasCell: UICollectionViewDataSource {
     internal func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(for: indexPath) as DashboardMediasSubCell
-        guard let viewModel = viewModel,
-            let media = viewModel.getMedia(index: indexPath.row) else {
-                return cell
-        }
 
-        cell.setup(media: media,
-                   index: viewModel.getMediaImageDefaultIndex(media))
+        cell.setup(media: medias[indexPath.item])
 
         return cell
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let viewModel = viewModel else { return 0 }
-
-        let numberOfMedias = viewModel.numberOfMedias
-        emptyImageView.isHidden = numberOfMedias != 0
-
-        return min(Constants.maximumNumberOfItems, numberOfMedias)
+        medias.count
     }
 }
 
@@ -103,16 +120,16 @@ extension DashboardMediasCell: UICollectionViewDelegateFlowLayout {
     }
 }
 
-// MARK: - Internal Funcs
-extension DashboardMediasCell: CellConfigurable {
-    func setup(state: ViewModelState) {
-        updateView()
-        collectionView.reloadData()
-    }
-}
-
 // MARK: - Private Funcs
 private extension DashboardMediasCell {
+
+    /// Sets up view.
+    func setupView() {
+        titleLabel.text = L10n.dashboardMediasTitle
+        initCollectionView()
+        initSdCardFormatNeededIcon()
+    }
+
     /// Init the collection view of the cell.
     func initCollectionView() {
         collectionView.register(cellType: DashboardMediasSubCell.self)
@@ -129,24 +146,37 @@ private extension DashboardMediasCell {
         sdCardErrorLabel.text = L10n.alertNoSdcardErrorTitle.localizedUppercase
     }
 
-    /// Update the view of the cell.
-    func updateView() {
-        guard let viewModel = viewModel else { return }
-
-        storageIcon.image = viewModel.sourceType.image?.withTintColor(ColorName.highlightColor.color)
-        freeStorageLabel.attributedText = NSMutableAttributedString(withAvailableSpace: viewModel.getAvailableSpace())
-        titleLabel.text = L10n.dashboardMediasTitle
-
-        updateSdCardFormatNeededView()
+    /// Updates medias collection.
+    ///
+    /// - Parameter medias: the medias array to update the cell with
+    func updateMedias(with medias: [GalleryMedia]) {
+        emptyImageView.isHidden = !medias.isEmpty
+        collectionView.reloadData()
     }
 
-    /// Updates the SD card format needed view.
-    func updateSdCardFormatNeededView() {
-        guard let viewModel = viewModel else { return }
-        let formatNeeded = viewModel.state.value.isFormatNeeded
-        let needIcon = formatNeeded || viewModel.isSdCardMissing
-        let needMessage = formatNeeded || !viewModel.isSdCardMissing
-        sdCardFormatNeededIcon.animateIsHiddenInStackView(!needIcon)
-        sdCardErrorLabel.animateIsHiddenInStackView(needMessage)
+    /// Updates source details.
+    ///
+    /// - Parameter details: the storage details to update the cell with
+    func updateSourceDetails(with details: UserStorageDetails) {
+        storageIcon.image = details.type.image?.withTintColor(ColorName.highlightColor.color)
+        if let availableSpace = details.availableStorage {
+            freeStorageLabel.attributedText = NSMutableAttributedString(withAvailableSpace: availableSpace)
+            freeStorageLabel.accessibilityValue = "\(availableSpace)"
+        } else {
+            freeStorageLabel.text = "-"
+        }
+    }
+
+    /// Updates SD card error state.
+    ///
+    /// - Parameter state: the error state to update the cell with
+    func updateSdCardErrorState(with state: UserStorageState?) {
+        if let state = state {
+            sdCardFormatNeededIcon.animateIsHiddenInStackView(false)
+            sdCardErrorLabel.animateIsHiddenInStackView(state != .notDetected)
+        } else {
+            sdCardFormatNeededIcon.animateIsHiddenInStackView(true)
+            sdCardErrorLabel.animateIsHiddenInStackView(true)
+        }
     }
 }

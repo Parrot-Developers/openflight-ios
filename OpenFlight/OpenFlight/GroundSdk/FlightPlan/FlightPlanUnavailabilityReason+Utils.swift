@@ -47,8 +47,9 @@ extension FlightPlanUnavailabilityReason {
             return L10n.flightPlanAlertCameraUnavailable
         case .insufficientBattery:
             return L10n.flightPlanAlertInsufficientBattery
-        case .droneInvalidState:
+        case .droneInvalidState, .firstWaypointTooFar:
             // Do not display any error message if drone state is invalid.
+            // First waypoint is not checked before the start of the flightplan
             return ""
         }
     }

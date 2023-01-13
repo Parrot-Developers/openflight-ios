@@ -71,7 +71,7 @@ final class SettingsDriCell: SettingsSegmentedCell {
     func configureCell(cellTitle: String?,
                        segmentModel: SettingsSegmentModel,
                        subtitle: String?,
-                       operatorId: String,
+                       operatorTuple: (mainEntry: String?, key: String?),
                        operatorColor: UIColor,
                        isEnabled: Bool = true,
                        subtitleColor: UIColor = ColorName.defaultTextColor.color,
@@ -91,7 +91,8 @@ final class SettingsDriCell: SettingsSegmentedCell {
                             infoText: infoText,
                             atIndexPath: indexPath,
                             shouldShowBackground: shouldShowBackground)
-        operatorNumberLabel.text = operatorId
+        let operatorNumberText = (operatorTuple.mainEntry ?? L10n.settingsConnectionDriOperatorPlaceholder) + " " + (operatorTuple.key ?? "")
+        operatorNumberLabel.text = operatorNumberText
         operatorNumberLabel.textColor = operatorColor
         editStackView.isHidden = subtitle == nil
         editButton.addTarget(self, action: #selector(editButtonTouchedUpInside), for: .touchUpInside)

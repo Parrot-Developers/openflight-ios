@@ -207,6 +207,16 @@ public final class UnitHelper: NSObject {
                       stringDistanceUnitWithDouble(distance))
     }
 
+    /// Rounds a distance to a new distance from current unit.
+    ///
+    /// - Parameters:
+    ///    - distance: distance in meter (Double)
+    /// - Returns: a distance rounded
+    static func roundedDistanceWithDouble(_ distance: Double) -> Double {
+        let type = DistanceType.type(for: distance)
+        return UnitHelper.doubleDistanceWithDouble(distance).rounded(toPlaces: type.useFractionDigit ? 1 : 0) / type.conversionFactor
+    }
+
     /// Converts a distance value from meter to current display unit (with formatting).
     /// (used for FP / T&F slider)
     ///

@@ -43,10 +43,10 @@ public class DashboardMyFlightsCellModel {
          cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.service = service
         self.cloudSynchroWatcher = cloudSynchroWatcher
-        cloudSynchroWatcher?.isSynchronizingDataPublisher
+        cloudSynchroWatcher?.synchroStatusPublisher
             .receive(on: RunLoop.main)
-            .sink { [weak self] isSynch in
-                self?.isSynchronizingSubject.value = isSynch
+            .sink { [weak self] status in
+                self?.isSynchronizingSubject.value = status.isSyncing
             }.store(in: &cancellable)
 
         service.allFlightsSummary

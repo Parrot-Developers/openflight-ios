@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina5_5" orientation="landscape" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -32,22 +33,22 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EJ5-A0-gWb" userLabel="panelView">
-                                <rect key="frame" x="37" y="213.33333333333337" width="662" height="200.66666666666663"/>
+                                <rect key="frame" x="37" y="216.66666666666663" width="662" height="197.33333333333337"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="26" translatesAutoresizingMaskIntoConstraints="NO" id="AzW-6R-NoT" userLabel="stackView">
-                                        <rect key="frame" x="101" y="15" width="460" height="155.66666666666666"/>
+                                        <rect key="frame" x="101" y="15" width="460" height="152.33333333333334"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ggq-2k-hfe">
-                                                <rect key="frame" x="0.0" y="0.0" width="460" height="22.333333333333332"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="460" height="19"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                                 <color key="textColor" name="default_text_color"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="feS-iU-maj" userLabel="calibrationChoice">
-                                                <rect key="frame" x="0.0" y="48.333333333333336" width="460" height="107.33333333333331"/>
+                                                <rect key="frame" x="0.0" y="45.000000000000021" width="460" height="107.33333333333331"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="onA-sq-O3a">
-                                                        <rect key="frame" x="0.0" y="0.0" width="225" height="107.33333333333333"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="460" height="107.33333333333333"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2KN-GP-A1m" customClass="CalibrationChoiceView" customModule="OpenFlight" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="107.66666666666667" height="107.33333333333333"/>
@@ -69,14 +70,8 @@
                                                                     <action selector="choiceViewTouchedUpInside:" destination="om2-Bk-pxl" eventType="touchUpInside" id="dgD-4u-c2K"/>
                                                                 </connections>
                                                             </view>
-                                                        </subviews>
-                                                        <variation key="heightClass=regular-widthClass=compact" axis="vertical"/>
-                                                    </stackView>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="h2a-u0-0cM">
-                                                        <rect key="frame" x="235" y="0.0" width="225" height="107.33333333333333"/>
-                                                        <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2x9-8B-QDf" customClass="CalibrationChoiceView" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="0.0" y="0.0" width="107.66666666666667" height="107.33333333333333"/>
+                                                                <rect key="frame" x="234.99999999999997" y="0.0" width="107.66666666666666" height="107.33333333333333"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" secondItem="2x9-8B-QDf" secondAttribute="height" multiplier="1:1" id="k9g-8i-xZ5"/>
@@ -86,7 +81,7 @@
                                                                 </connections>
                                                             </view>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rY2-2Z-1G1" customClass="CalibrationChoiceView" customModule="OpenFlight" customModuleProvider="target">
-                                                                <rect key="frame" x="117.66666666666669" y="0.0" width="107.33333333333331" height="107.33333333333333"/>
+                                                                <rect key="frame" x="352.66666666666669" y="0.0" width="107.33333333333331" height="107.33333333333333"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="width" secondItem="rY2-2Z-1G1" secondAttribute="height" multiplier="1:1" id="U2H-JM-9rP"/>
@@ -155,9 +150,9 @@
                     <connections>
                         <outlet property="correctHorizonChoiceView" destination="orb-om-fEz" id="MfI-Tz-kOB"/>
                         <outlet property="gimbalCalibrationChoiceView" destination="2KN-GP-A1m" id="tcg-Xo-15j"/>
-                        <outlet property="leftStackView" destination="onA-sq-O3a" id="VyO-4K-Qno"/>
                         <outlet property="magnetometerChoiceView" destination="2x9-8B-QDf" id="Ezv-IW-ODn"/>
                         <outlet property="mainView" destination="EJ5-A0-gWb" id="WZW-H9-JUX"/>
+                        <outlet property="missionsStackView" destination="onA-sq-O3a" id="0Ko-dH-V3A"/>
                         <outlet property="obstacleDetectionChoiceView" destination="rY2-2Z-1G1" id="bbA-3b-zzh"/>
                         <outlet property="titleLabel" destination="Ggq-2k-hfe" id="3N1-qN-eHI"/>
                     </connections>
@@ -179,16 +174,16 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KJe-VK-tku" customClass="DeviceNavigationView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="0.0" width="736" height="22"/>
+                                <rect key="frame" x="0.0" y="0.0" width="736" height="28.333333333333332"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Magnetometer calibration" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z45-oC-V7s">
-                                        <rect key="frame" x="259" y="-0.33333333333333393" width="218" height="22.666666666666671"/>
+                                        <rect key="frame" x="266.66666666666669" y="4.6666666666666679" width="202.66666666666669" height="19"/>
                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                         <color key="textColor" name="default_text_color"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Mbc-Kn-jZL" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="8" y="0.0" width="21" height="22"/>
+                                        <rect key="frame" x="8" y="0.0" width="21" height="28.333333333333332"/>
                                         <color key="tintColor" name="default_text_color"/>
                                         <state key="normal" image="ic_back"/>
                                         <connections>
@@ -206,7 +201,7 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9LL-dr-UWN" customClass="DroneCalibrationInstructionsView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="30" width="736" height="284"/>
+                                <rect key="frame" x="0.0" y="36.333333333333343" width="736" height="277.66666666666663"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="9ZK-tE-kQ8"/>
@@ -382,22 +377,22 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zfd-rC-Frr" userLabel="panelView">
-                                <rect key="frame" x="37" y="134" width="662" height="280"/>
+                                <rect key="frame" x="37" y="140" width="662" height="274"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="bp5-UK-1mi">
-                                        <rect key="frame" x="101" y="15" width="460" height="235"/>
+                                        <rect key="frame" x="101" y="15" width="460" height="229"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ghR-5C-mkv">
-                                                <rect key="frame" x="177.66666666666669" y="0.0" width="105" height="160"/>
+                                                <rect key="frame" x="177.66666666666669" y="0.0" width="105" height="154"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5t2-5b-9dC" userLabel="titleLabel">
-                                                        <rect key="frame" x="28.999999999999996" y="0.0" width="46.666666666666657" height="22.333333333333332"/>
+                                                        <rect key="frame" x="31.333333333333314" y="0.0" width="42" height="19"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
                                                         <color key="textColor" name="default_text_color"/>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="EP0-lK-yjM">
-                                                        <rect key="frame" x="0.0" y="32.33333333333335" width="105" height="127.66666666666669"/>
+                                                        <rect key="frame" x="0.0" y="29" width="105" height="125"/>
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="olq-0V-MG4" userLabel="view">
                                                                 <rect key="frame" x="0.0" y="0.0" width="105" height="105"/>
@@ -427,7 +422,7 @@
                                                                 </constraints>
                                                             </view>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Vc-IQ-ayN">
-                                                                <rect key="frame" x="34" y="109.99999999999997" width="37" height="17.666666666666671"/>
+                                                                <rect key="frame" x="35.666666666666629" y="110" width="33.333333333333343" height="15"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                                 <color key="textColor" name="warning_color"/>
                                                                 <nil key="highlightedColor"/>
@@ -437,7 +432,7 @@
                                                 </subviews>
                                             </stackView>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mUN-FR-AKZ" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="105" y="185" width="250" height="50"/>
+                                                <rect key="frame" x="105" y="179" width="250" height="50"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="50" id="4oF-eV-r2y"/>
                                                     <constraint firstAttribute="width" constant="250" id="8WV-Jn-JnZ"/>
@@ -513,7 +508,7 @@
     <resources>
         <image name="icClose" width="17" height="17"/>
         <image name="icGimbal" width="94" height="55"/>
-        <image name="ic_back" width="21" height="21"/>
+        <image name="ic_back" width="21" height="28.333333969116211"/>
         <image name="icloading" width="21" height="21"/>
         <namedColor name="default_bgcolor">
             <color red="0.94117647058823528" green="0.93333333333333335" blue="0.89411764705882357" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

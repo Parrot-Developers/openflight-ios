@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import SwiftyUserDefaults
+import Combine
 
 // MARK: - Internal Enums
 /// Describes type of a Joystick.
@@ -65,41 +66,28 @@ final class JoysticksTypeViewModel {
     @Published private(set) var rightJoystickType: JoystickType = .pitchRoll
 
     // MARK: - Private Properties
-    private var disposable: DefaultsDisposable?
+    private let controlsViewModel = ControlsViewModel(currentDroneHolder: Services.hub.currentDroneHolder,
+                                                      currentRemoteControlHolder: Services.hub.currentRemoteControlHolder,
+                                                      remoteControlUpdater: Services.hub.remoteControlUpdater)
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     init() {
-        listenControlsMode()
-    }
-
-    // MARK: - Deinit
-    deinit {
-        disposable?.dispose()
-        disposable = nil
+        controlsViewModel.$state
+            .removeDuplicates()
+            .sink { [unowned self] in
+                updateJoysticks(state: $0)
+            }
+            .store(in: &cancellables)
     }
 }
 
 // MARK: - Private Funcs
 private extension JoysticksTypeViewModel {
-    /// Starts watcher for controls mode.
-    func listenControlsMode() {
-        disposable = Defaults.observe(\.userControlModeSetting, options: [.initial, .new]) { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.updateJoysticks()
-            }
-        }
-    }
 
     /// Update left and right joystick types.
-    func updateJoysticks() {
-        // Listen current control mode and update each joystick's type.
-        var mode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
-        if let rawUserMode = Defaults.userControlModeSetting,
-            let userMode = ControlsSettingsMode(value: rawUserMode) {
-            mode = userMode
-        }
-
-        switch mode {
+    func updateJoysticks(state: ControlsState) {
+        switch state.controlMode {
         case .mode1:
             leftJoystickType = .pitchYaw
             rightJoystickType = .gazRoll

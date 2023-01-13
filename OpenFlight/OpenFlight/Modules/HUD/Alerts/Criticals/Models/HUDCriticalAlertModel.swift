@@ -86,6 +86,7 @@ public enum HUDCriticalAlertType: Comparable {
     case droneGpsKo
     case vehicleGpsKo
     case droneTooFar(Float)
+    case dri
 
     var isSensorAlarm: Bool {
         switch self {
@@ -115,15 +116,16 @@ public enum HUDCriticalAlertType: Comparable {
         case .batteryPoorConnection:        return 11
         case .batteryUsbPortConnection:     return 12
         case .obstacleAvoidanceFreeze:      return 13
-        case .cellularModemFirmwareUpdate:  return 14
-        case .insufficientStorageSpace:     return 15
-        case .insufficientStorageSpeed:     return 16
-        case .sdCardNeedsFormat:            return 17
-        case .sdCardNotDetected:            return 18
-        case .droneAndVehicleGpsKo:         return 19
-        case .droneGpsKo:                   return 20
-        case .vehicleGpsKo:                 return 21
-        case .droneTooFar:                  return 22
+        case .dri:                          return 14
+        case .cellularModemFirmwareUpdate:  return 15
+        case .insufficientStorageSpace:     return 16
+        case .insufficientStorageSpeed:     return 17
+        case .sdCardNeedsFormat:            return 18
+        case .sdCardNotDetected:            return 19
+        case .droneAndVehicleGpsKo:         return 20
+        case .droneGpsKo:                   return 21
+        case .vehicleGpsKo:                 return 22
+        case .droneTooFar:                  return 23
         }
     }
 
@@ -157,6 +159,8 @@ public enum HUDCriticalAlertType: Comparable {
             return batteryUsbPortConnection
         case .cellularModemFirmwareUpdate:
             return cellularModemFirmwareUpdate
+        case .dri:
+            return dri
         case .droneInclination:
             return droneInclination
         case .magnetoCalibration:
@@ -239,6 +243,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertControllerGpsUnavailableTitle
         case .droneTooFar:
             return L10n.takeoffAlertDroneTooFarTitle
+        case .dri:
+            return L10n.takeoffAlertDriTitle
         }
     }
 
@@ -333,7 +339,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return Asset.Alertes.TakeOff.icDroneRemoteUpdateAlert.image
         case .droneCalibrationRequired:
             return Asset.Alertes.TakeOff.icDroneCalibrationNeeded.image
-        case .droneInclination:
+        case .droneInclination,
+                .dri:
             return nil
         case .updateOngoing:
             return Asset.Alertes.TakeOff.icDroneUpdating.image
@@ -412,6 +419,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.takeoffAlertGpsUnavailableDescription
         case .droneTooFar(let maxDistance):
             return L10n.takeoffAlertDroneTooFarDescription(UnitHelper.stringDistanceWithDouble(Double(maxDistance)))
+        case .dri:
+            return L10n.takeoffAlertDriDescription
        }
     }
 
@@ -420,7 +429,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .droneUpdateRequired,
              .remoteUpdateRequired,
              .droneAndRemoteUpdateRequired,
-             .droneCalibrationRequired:
+             .droneCalibrationRequired,
+             .sdCardNeedsFormat:
             return true
         default:
             return false
@@ -439,6 +449,8 @@ extension HUDCriticalAlertType: CriticalAlertModel {
             return L10n.dashboardUpdate
         case .droneCalibrationRequired:
             return L10n.remoteCalibrationCalibrate
+        case .sdCardNeedsFormat:
+            return L10n.commonFormat
         default:
             return L10n.ok
         }
@@ -453,8 +465,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .cellularModemFirmwareUpdate,
              .insufficientStorageSpace,
              .insufficientStorageSpeed,
-             .sdCardNotDetected,
-             .sdCardNeedsFormat:
+             .sdCardNotDetected:
             return .defaultTextColor
         default:
             return .white
@@ -471,7 +482,9 @@ extension HUDCriticalAlertType: CriticalAlertModel {
              .droneAndVehicleGpsKo,
              .droneGpsKo,
              .vehicleGpsKo,
-             .droneTooFar:
+             .droneTooFar,
+             .dri,
+             .sdCardNeedsFormat:
             return .warningColor
         case .droneInclination,
              .updateOngoing,
@@ -486,8 +499,7 @@ extension HUDCriticalAlertType: CriticalAlertModel {
         case .obstacleAvoidanceFreeze,
              .insufficientStorageSpace,
              .insufficientStorageSpeed,
-             .sdCardNotDetected,
-             .sdCardNeedsFormat:
+             .sdCardNotDetected:
             return .defaultBgcolor
         }
     }

@@ -233,7 +233,7 @@ public class FlightPlanManagerImpl: FlightPlanManager {
     public func delete(flightPlan: FlightPlanModel) {
         ULog.i(.tag, "Deleting flightPlan '\(flightPlan.uuid)'")
         if flightPlan.pgyProjectId > 0 {
-            pgyProjectRepo.deletePgyProject(withProjectId: flightPlan.pgyProjectId, updateRelatedFlightPlan: false)
+            pgyProjectRepo.deletePgyProjects(withProjectIds: [flightPlan.pgyProjectId])
         }
         filesManager.deleteMavlink(of: flightPlan)
         persistenceFlightPlan.deleteOrFlagToDeleteFlightPlans(withUuids: [flightPlan.uuid], completion: nil)

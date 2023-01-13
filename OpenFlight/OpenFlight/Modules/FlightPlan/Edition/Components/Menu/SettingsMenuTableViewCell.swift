@@ -81,7 +81,15 @@ internal extension SettingsMenuTableViewCell {
             }
         }
 
-        settingsKey.text = setting.shortTitle ?? setting.title
+        if setting.category == .altitudeRef {
+            // In case of altitude reference display, in edition mode,
+            // the setting key, already available in section title, is set
+            // with its short version to avoid duplication.
+            settingsKey.text = inEditionMode ? setting.shortTitle : setting.title
+        } else {
+            settingsKey.text = setting.shortTitle ?? setting.title
+        }
+
         if let descriptions = setting.valueDescriptions,
            let current = setting.currentValue,
            descriptions.count > current {

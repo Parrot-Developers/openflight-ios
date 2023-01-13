@@ -86,10 +86,10 @@ public class DashboardProjectManagerCellModel {
     }
 
     private func listenDataSynchronization() {
-        cloudSynchroWatcher?.isSynchronizingDataPublisher
+        cloudSynchroWatcher?.synchroStatusPublisher
             .receive(on: RunLoop.main)
-            .sink { [weak self] isSynch in
-                self?.isSynchronizingSubject.value = isSynch
+            .sink { [weak self] status in
+                self?.isSynchronizingSubject.value = status.isSyncing
             }
             .store(in: &cancellables)
     }

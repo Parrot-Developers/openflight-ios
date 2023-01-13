@@ -51,7 +51,8 @@ open class DashboardCoordinator: Coordinator {
                                                     cloudSynchroWatcher: services.cloudSynchroWatcher,
                                                     projectManagerUiProvider: services.ui.projectManagerUiProvider,
                                                     dashboardUiProvider: services.ui.dashboardUiProvider,
-                                                    flightService: services.flight.service)
+                                                    flightService: services.flight.service,
+                                                    mediaServices: services.media)
         let viewController = DashboardViewController.instantiate(coordinator: self,
                                                                  viewModel: dashboardViewModel)
         // Prevents not fullscreen presentation style since iOS 13.
@@ -78,6 +79,14 @@ open class DashboardCoordinator: Coordinator {
         droneCoordinator.parentCoordinator = self
         droneCoordinator.start()
         present(childCoordinator: droneCoordinator)
+    }
+
+    /// Starts settings screen.
+    open func startSettings() {
+        let settingsCoordinator = SettingsCoordinator(services: services)
+        settingsCoordinator.parentCoordinator = self
+        settingsCoordinator.start()
+        present(childCoordinator: settingsCoordinator)
     }
 }
 
@@ -118,18 +127,11 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
 
     /// Starts medias gallery.
     func startMedias() {
-        let galleryCoordinator = GalleryCoordinator()
+        let galleryCoordinator = GalleryCoordinator(mediaServices: services.media,
+                                                    cameraRecordingService: services.drone.cameraRecordingService)
         galleryCoordinator.parentCoordinator = self
         galleryCoordinator.start()
         present(childCoordinator: galleryCoordinator)
-    }
-
-    /// Starts settings screen.
-    func startSettings() {
-        let settingsCoordinator = SettingsCoordinator()
-        settingsCoordinator.parentCoordinator = self
-        settingsCoordinator.start()
-        present(childCoordinator: settingsCoordinator)
     }
 
     /// Starts my flights screen.

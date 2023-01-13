@@ -51,7 +51,6 @@ class AlertsMonitor {
     private var takeoffChecklistRef: Ref<TakeoffChecklist>?
     private var motorsRef: Ref<CopterMotors>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var gpsRef: Ref<Gps>?
     private var cameraRef: Ref<MainCamera2>?
     private var captureRef: Ref<Camera2PhotoCapture>?
     private var gimbalRef: Ref<Gimbal>?
@@ -71,17 +70,7 @@ class AlertsMonitor {
     }
     /// Whether drone is flying.
     private var isDroneFlying = false {
-        didSet {
-            updateRthAlert()
-            updateGpsAlert()
-        }
-    }
-    /// Whether drone is flying or waiting.
-    private var isDroneFlyingOrWaiting = false {
-        didSet {
-            guard oldValue != isDroneFlyingOrWaiting else { return }
-            updateHomePositionSetAlert()
-        }
+        didSet { updateRthAlert() }
     }
     /// Whether drone is taking off.
     private var isDroneTakingOff = false {
@@ -93,10 +82,6 @@ class AlertsMonitor {
             updateImuSaturationAlert()
             updatePreciseHomeAlert()
         }
-    }
-    /// Whether GPS fix is missing.
-    private var isGpsFixMissing = false {
-        didSet { updateGpsAlert() }
     }
     /// Whether drone is emergency landing.
     private var isDroneEmergencyLanding = false {
@@ -126,12 +111,6 @@ class AlertsMonitor {
     private var isAutolandingBatteryTooHotAlarmOn = false {
         didSet { updateAutolandingAlerts() }
     }
-    /// Whether home position set alert is required.
-    private var isHomePositionSetAlertRequired = false
-    /// Whether home position is set.
-    private var isHomePositionSet = false {
-        didSet { updateHomePositionSetAlert() }
-    }
     /// Whether RTH is active.
     private var isRthActive = false {
         didSet { updatePreciseHomeAlert() }
@@ -139,6 +118,13 @@ class AlertsMonitor {
     /// Whether precise home is active.
     private var isPreciseHomeActive = false {
         didSet { updatePreciseHomeAlert() }
+    }
+    /// The RTH unavailability reasons set.
+    private var rthUnavailabilityReasons: Set<ReturnHomeIssue>? {
+        didSet {
+            guard oldValue != rthUnavailabilityReasons else { return }
+            updateRthUnavailabilityAlerts()
+        }
     }
 
     // MARK: init
@@ -148,10 +134,16 @@ class AlertsMonitor {
     /// - Parameters:
     ///   - connectedDroneHolder: the drone holder
     ///   - bamService: the banner alert manager service
+    ///   - mediaStoreService: the media store service
+    ///   - flightPlanEditionService: the flight plan edition service
     init(connectedDroneHolder: ConnectedDroneHolder,
-         bamService: BannerAlertManagerService) {
+         bamService: BannerAlertManagerService,
+         mediaStoreService: MediaStoreService,
+         flightPlanEditionService: FlightPlanEditionService) {
         self.bamService = bamService
-        listen(connectedDroneHolder: connectedDroneHolder)
+        listen(to: connectedDroneHolder)
+        listen(to: mediaStoreService)
+        listen(to: flightPlanEditionService)
     }
 }
 
@@ -161,7 +153,7 @@ private extension AlertsMonitor {
     /// Listens to connected drone.
     ///
     /// - Parameter connectedDroneHolder: drone holder
-    func listen(connectedDroneHolder: ConnectedDroneHolder) {
+    func listen(to connectedDroneHolder: ConnectedDroneHolder) {
         connectedDroneHolder.dronePublisher
             .sink { [weak self] drone in
                 guard let self = self else { return }
@@ -177,7 +169,6 @@ private extension AlertsMonitor {
                 self.listenAlarms(drone: drone)
                 self.listenMotors(drone: drone)
                 self.listenFlyingIndicators(drone: drone)
-                self.listenGps(drone: drone)
                 self.listenNetworkControl(drone: drone)
                 self.listenGimbal(drone: drone)
                 self.listenReturnHome(drone: drone)
@@ -194,7 +185,6 @@ private extension AlertsMonitor {
         takeoffChecklistRef = nil
         motorsRef = nil
         flyingIndicatorsRef = nil
-        gpsRef = nil
         cameraRef = nil
         captureRef = nil
         networkControlRef = nil
@@ -213,17 +203,26 @@ private extension AlertsMonitor {
         isDroneTakingOff = false
         isDroneLanding = false
         isDroneEmergencyLanding = false
-        isGpsFixMissing = false
         imuSaturationAlarmLevel = .notAvailable
         isHomeNotReachable = false
         isAutolandingBatteryLowAlarmOn = false
         isAutolandingBatteryTooColdAlarmOn = false
         isAutolandingBatteryTooHotAlarmOn = false
         isAutolandingPropellerIcingAlarmOn = false
-        isHomePositionSetAlertRequired = false
-        isHomePositionSet = false
         isRthActive = false
         isPreciseHomeActive = false
+    }
+
+    /// Listens to media store service.
+    ///
+    /// - Parameter mediaStoreService: the media store service to listen to
+    func listen(to mediaStoreService: MediaStoreService) {
+        mediaStoreService.isDownloadingPublisher.removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isDownloading in
+                self?.bamService.update(AdviceBannerAlert.streamUnavailable, show: isDownloading)
+            }
+            .store(in: &cancellables)
     }
 
     /// Listens to take off checklist instrument changes.
@@ -283,15 +282,6 @@ private extension AlertsMonitor {
         }
     }
 
-    /// Listens to GPS instrument changes.
-    ///
-    /// - Parameter drone: drone to monitor
-    func listenGps(drone: Drone) {
-        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            self?.isGpsFixMissing = gps?.fixed == false
-        }
-    }
-
     /// Listens to network control peripheral changes.
     ///
     /// - Parameter drone: drone to monitor
@@ -319,8 +309,8 @@ private extension AlertsMonitor {
         returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] returnHome in
             guard let self = self else { return }
             self.isHomeNotReachable = returnHome?.homeReachability == .notReachable
-            self.isHomePositionSet = returnHome?.homeLocation != nil
             self.isRthActive = returnHome?.state == .active
+            self.rthUnavailabilityReasons = returnHome?.unavailabilityReasons
         }
     }
 
@@ -352,6 +342,30 @@ private extension AlertsMonitor {
             self?.isPreciseHomeActive = preciseHome?.state == .active
         }
     }
+
+    /// Listens to flight plan edition service.
+    ///
+    /// - Parameter flightPlanEditionService: the flight plan edition service
+    func listen(to flightPlanEditionService: FlightPlanEditionService) {
+        // Listen to the end of the edition.
+        flightPlanEditionService.editionDidEndPublisher
+            .sink { [unowned self] flightPlan in
+                // Display an alert in case of AMSL, when supported, can't be used as altitude reference.
+                guard flightPlanEditionService.isAmslReferenceSupported == true,
+                      let isAMSLEnabled = flightPlan?.isAMSL else { return }
+                bamService.update(AdviceBannerAlert.amslFlightPlanUnavailable, show: !isAMSLEnabled)
+            }
+            .store(in: &cancellables)
+
+        // Listen to the Flight Plan changes to reset the edition's alerts.
+        flightPlanEditionService.currentFlightPlanPublisher
+            .map { $0?.uuid }
+            .removeDuplicates()
+            .sink { [unowned self] _ in
+                bamService.hide(AdviceBannerAlert.amslFlightPlanUnavailable)
+            }
+            .store(in: &cancellables)
+   }
 }
 
 private extension AlertsMonitor {
@@ -388,12 +402,6 @@ private extension AlertsMonitor {
         isDroneEmergencyLanding = flyingIndicators?.state == .emergencyLanding
         isDroneTakingOff = flyingIndicators?.flyingState == .takingOff
         isDroneLanding = flyingIndicators?.flyingState == .landing
-        isDroneFlyingOrWaiting = flyingIndicators?.flyingState.isFlyingOrWaiting == true
-
-        if isDroneTakingOff {
-            // Taking off => home position set alert is required.
-            isHomePositionSetAlertRequired = true
-        }
     }
 }
 
@@ -427,12 +435,6 @@ private extension AlertsMonitor {
         bamService.hide(otherCopterMotorAlerts)
 
         bamService.update(alert, show: isMotorsAlarmOn)
-    }
-
-    /// Updates GPS banner alert.
-    func updateGpsAlert() {
-        let hasGpsError = isGpsFixMissing && isDroneFlying
-        bamService.update(CriticalBannerAlert.noGps, show: hasGpsError)
     }
 
     /// Updates conditions banner alerts.
@@ -537,25 +539,29 @@ private extension AlertsMonitor {
                           show: hasError && !isTooSlow)
     }
 
-    /// Updates home position set alert.
-    func updateHomePositionSetAlert() {
-        let show = isHomePositionSetAlertRequired &&
-        isHomePositionSet &&
-        isDroneFlyingOrWaiting
-
-        bamService.update(HomeAlert.homePositionSet, show: show)
-
-        if show {
-            // Do not show alert again until next take off.
-            isHomePositionSetAlertRequired = false
-        }
-    }
-
     /// Updates precise home alerts.
     func updatePreciseHomeAlert() {
         bamService.update(HomeAlert.preciseRthInProgress,
                           show: isRthActive && isPreciseHomeActive)
         bamService.update(HomeAlert.preciseLandingInProgress,
                           show: isDroneLanding && isPreciseHomeActive)
+    }
+
+    /// Updates RTH unavailability alerts.
+    func updateRthUnavailabilityAlerts() {
+        guard let issues = rthUnavailabilityReasons else {
+            bamService.hide(AnyBannerAlert.rthUnavailabilityAlerts)
+            return
+        }
+
+        let isDroneNotFlying = issues.contains(.droneNotFlying)
+        let isDroneNotCalibrated = issues.contains(.droneNotCalibrated)
+        let isGpsInfoInaccurate = issues.contains(.droneGpsInfoInaccurate)
+
+        // Show magnetometer RTH unavailability only if drone is not landed (issues does not contain `.droneNotFlying`).
+        bamService.update(CriticalBannerAlert.rthUnavailableMagnetometer,
+                          show: isDroneNotCalibrated && !isDroneNotFlying)
+        bamService.update(CriticalBannerAlert.rthUnavailableNoGps,
+                          show: isGpsInfoInaccurate)
     }
 }

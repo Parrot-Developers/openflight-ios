@@ -34,4 +34,9 @@ extension String {
     var dashPrefixed: String {
         return String(format: "%@ %@", Style.dash, self)
     }
+
+    /// The drone UID extracted from URL string (requires a valid media URL path).
+    var droneUid: String {
+        components(separatedBy: "/").dropFirst().first ?? ""
+    }
 }

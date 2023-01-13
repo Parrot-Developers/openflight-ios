@@ -136,6 +136,13 @@
 /**
  * Français localization.
 */
+"mission_mode_cameraman" = "Cameraman";
+"cameraman_select_target" = "Sélectionnez une cible";
+"cameraman_take_off" = "Faites décoller le drone";
+"cameraman_tracking" = "Suivi…";
+/**
+ * Français localization.
+*/
 "mission_mode_touch_n_fly" = "Touch & Fly";
 "touch_fly_place_waypoint_poi" = "Placez un waypoint ou un POI sur la carte ou le flux vidéo";
 "touch_fly_take_off_the_drone" = "Faites décoller le drone";
@@ -144,6 +151,7 @@
 "touch_fly_flying_to_waypoint" = "En vol vers le waypoint...";
 "touch_fly_poi_altitude" = "POI Altitude";
 "touch_fly_wp_altitude" = "WP Altitude";
+"touch_fly_poi_too_close" = "POI trop proche de l'horizon";
 /**
  * Français localization.
 */
@@ -297,11 +305,13 @@
 "alert_auto_landing" = "Atterrissage automatique";
 "alert_poor_battery_connection" = "Mauvaise connexion de la batterie";
 "alert_very_low_battery" = "Le drone va bientôt atterrir";
-"alert_no_gps_too_dark" = "Qualité du vol dégradée – l'environnement est trop sombre";
-"alert_no_gps_too_high" = "Qualité du vol dégradée – réduisez l'altitude du drone";
-"alert_no_gps" = "En attente du GPS – vols autonomes indisponibles";
-"alert_heading_lock_ko_perturbation_magnetic" = "Perturbations magnétiques – vols autonomes indisponibles";
-"alert_heading_lock_ko_earth_magnetic" = "Champ magnétique terrestre trop faible – vols autonomes indisponibles";
+"alert_no_gps_too_dark" = "Stabilité du vol stationnaire dégradée – l'environnement est trop sombre";
+"alert_no_gps_too_high" = "Stabilité du vol stationnaire dégradée – réduisez l'altitude de votre drone";
+"alert_no_gps" = "Pas de fix GPS";
+"alert_rth_unavailable_no_gps" = "Pas de fix GPS – RTH indisponible";
+"alert_rth_unavailable_magnetometer" = "Perturbations magnétiques – RTH indisponible";
+"alert_heading_lock_ko_perturbation_magnetic" = "Perturbations magnétiques";
+"alert_heading_lock_ko_earth_magnetic" = "Champ magnétique terrestre trop faible";
 "alert_too_much_wind" = "Vents forts";
 "alert_strong_imu_vibrations" = "Fortes vibrations détectées – vérifiez la fixation des hélices";
 "alert_internal_memory_full" = "Mémoire interne pleine";
@@ -313,22 +323,22 @@
 "alert_no_sdcard_error_title" = "Pas de carte SD";
 "alert_no_sdcard_error_desc" = "Les médias seront enregistrés dans la mémoire interne du drone.";
 "alert_sdcard_format_error_title" = "Carte SD non reconnue";
-"alert_sdcard_format_error_desc" = "Veuillez formater votre carte SD depuis la galerie des médias.";
+"alert_sdcard_format_error_desc" = "Veuillez formater votre carte SD.";
 "alert_sdcard_error_title" = "Erreur carte SD";
 "alert_sdcard_insufficient_speed_error_desc" = "La vitesse de la carte SD est insuffisante pour cet enregistrement vidéo.";
 "alert_geofence_reached" = "Géocage atteinte";
 "alert_camera_error" = "Vérifiez que rien ne gène les mouvements de la caméra";
 "alert_low_and_perturbed_wifi" = "Signal Wi-Fi faible – fortes interférences";
-"alert_stereo_sensors_not_calibrated" = "Étalonnage des capteurs stéréo requis";
+"alert_stereo_sensors_not_calibrated" = "Calibration des capteurs stéréo requis";
 "alert_no_avoidance_sensors_failure" = "Évitement d'obstacles désactivé – problème caméra stéréo";
 "alert_no_avoidance_gimbal_failure" = "Évitement d'obstacles désactivé – problème stabilisation gimbal";
-"alert_no_avoidance_sensors_not_calibrated" = "Évitement d'obstacles désactivé – étalonnage des capteurs stéréo requis";
+"alert_no_avoidance_sensors_not_calibrated" = "Évitement d'obstacles désactivé – calibration des capteurs stéréo requis";
 "alert_no_avoidance_too_dark" = "Évitement d'obstacles désactivé – environnement trop sombre";
 "alert_no_avoidance_no_gps" = "Évitement d'obstacles désactivé – mauvaise qualité du GPS";
 "alert_deteriorated_avoidance_strong_winds" = "Évitement d'obstacles dégradé – vents forts";
-"alert_avoidance_deteriorated" = "Évitement d'obstacles dégradé – faible qualité du GPS";
+"alert_avoidance_deteriorated" = "Évitement d'obstacles dégradé – précision du GPS trop faible";
 "alert_drone_stuck" = "Évitement d’obstacles – le drone n'a pas pu trouver un passage";
-"alert_high_deviation" = "Évitement d’obstacles – forte déviation";
+"alert_high_deviation" = "Évitement d’obstacles – forte déviation de la trajectoire";
 "alert_obstacle_avoidance_computational_error" = "Évitement d’obstacles désactivé – erreur interne";
 "alert_obstacle_avoidance_blind_direction" = "Évitement d’obstacles – drone aveugle dans cette direction";
 "alert_sensor_calibration_recommended" = "Calibrer les capteurs d'obstacles pour une meilleure expérience.";
@@ -344,6 +354,7 @@
 "alert_drone_too_close_ground" = "Drone trop proche du sol";
 "alert_drone_above_max_altitude" = "Drone au-dessus de l'altitude maximale";
 "alert_select_subject" = "Sélectionnez un sujet";
+"alert_stream_unavailable_download" = "Flux vidéo indisponible durant un téléchargement";
 "alert_hand_launch_launch" = "Lancer";
 "alert_hand_launch" = "Main détectée. Souhaitez vous lancer votre drone ?";
 "alert_hand_land_hand_detected" = "Main detectée";
@@ -391,6 +402,8 @@
 "takeoff_alert_inclination_description" = "L’inclinaison du drone est trop importante pour décoller. Veuillez le placer à l’horizontale.";
 "takeoff_alert_updating_title" = "Mise à jour du firmware en cours";
 "takeoff_alert_updating_description" = "Le drone ne peut pas décoller tant qu’une mise à jour du firmware est en cours. Veuillez attendre la fin de la mise à jour.";
+"takeoff_alert_dri_title" = "Dispositif de signalement électronique non fonctionnel";
+"takeoff_alert_dri_description" = "Le drone ne peut pas décoller en raison d'un problème matériel sur l'interface Wi-Fi.";
 "takeoff_alert_usb_connection_title" = "Drone connecté en USB";
 "takeoff_alert_usb_connection_description" = "Le drone ne peut pas décoller tant que le port USB est connecté. Veuillez le déconnecter pour décoller.";
 "takeoff_alert_modem_updating_title" = "Initialisation du modem 4G";
@@ -420,6 +433,20 @@
 "alert_oa_drone_stuck_action_text" = "Désactiver l’évitement d’obstacles";
 "alert_oa_freeze_title" = "Évitement d'obstacles désactivé";
 "alert_oa_freeze_description" = "Votre drone s'est immobilisé. L'évitement d'obstacles a été désactivé.\nÀ partir de maintenant vous piloterez le drone sans la fonction d'évitement d'obstacles.";
+"alert_system_error_title" = "Erreur système";
+"alert_system_error_message" = "Echec du partage de médias. Le système d'exploitation a signalé une erreur:";
+"alert_flight_plan_without_amsl_message" = "Échec de génération de la trajectoire en référence d'altitude AGL\nL'altitude de la mission sera relative au point de décollage";
+/**
+ * Français localization.
+*/
+"live_streaming_live_streaming" = "Live streaming";
+"live_streaming_enter_url" = "Entrer l'URL";
+"live_streaming_connect" = "Connecter";
+"live_streaming_error" = "La connexion a échoué. Veuillez vérifier l'URL ou réessayer plus tard.";
+"live_streaming_encrypted_stream" = "Flux crypté";
+"live_streaming_add_conf" = "Ajouter un nouveau";
+"live_streaming_quality_priority" = "Priorité à la qualité";
+"live_streaming_latency_priority" = "Priorité à la latence";
 /**
  * Français localization.
 */
@@ -516,6 +543,19 @@
 "default_flight_plan_project_name" = "FlightPlan";
 "existing_project_name_alert_title" = "Nom de projet existant";
 "existing_project_name_alert_message" = "Veuillez choisir un autre nom.";
+"flight_plan_first_way_point_too_far" = "Premier waypoint trop éloigné";
+"flight_plan_too_big_to_be_displayed" = "Mémoire insuffisante : affichage dégradé";
+"flight_plan_altitude_reference_setting_title" = "Référence d'altitude";
+"flight_plan_altitude_reference_setting_short_title" = "Référence";
+"flight_plan_altitude_reference_amsl_title" = "au-dessus du niveau moyen de la mer";
+"flight_plan_altitude_reference_amsl_short_title" = "MSL";
+"flight_plan_altitude_reference_ato_title" = "au-dessus du décollage";
+"flight_plan_altitude_reference_ato_short_title" = "Décollage";
+"flight_plan_altitude_reference_agl_title" = "above ground level";
+"flight_plan_altitude_reference_agl_short_title" = "AGL";
+"flight_plan_database_upgrade_title" = "Mise à jour de la base de données";
+"flight_plan_database_upgrade_description" = "La base de données a besoin d’être mise à jour pour utiliser l’application.\nVeuillez patienter jusqu’à la fin du processus.";
+"flight_plan_database_upgrade_state_finalizing" = "Finalisation…";
 /**
  * Français localization.
 */
@@ -545,12 +585,6 @@
 "dashboard_my_flights_empty_list_title" = "Aucun vol pour le moment";
 "dashboard_my_flights_empty_list_desc" = "Connectez-vous à Parrot Cloud pour synchroniser tous vos vols et plans de vol";
 "dashboard_my_flights_not_connected" = "Non connecté";
-"dashboard_my_flights_connect_to_sync" = "Connectez-vous pour synchroniser les vols";
-"dashboard_my_flights_synchronized" = "Synchronisé";
-"dashboard_my_flights_synchronization_pending" = "Synchronisation";
-"dashboard_my_flights_synchronization" = "Synchronisation %d/%d";
-"dashboard_my_flights_to_sync" = "%d vols à synchroniser";
-"dashboard_my_flights_cannot_synchronize" = "Impossible de synchroniser";
 "dashboard_start_button_piloting" = "Piloter";
 "dashboard_start_button_fly" = "Fly";
 "dashboard_my_flights_total_distance" = "Distance totale";
@@ -625,6 +659,7 @@
 "settings_interface_secondary_screen_3d_view" = "Vue 3D";
 "settings_interface_reset" = "Réinitialiser les paramètres d'interface";
 "settings_interface_measurement_system" = "Système de mesure";
+"settings_interface_grid_display_type" = "Affichage de la grille";
 "settings_interface_measurement_system_imperial" = "Impérial";
 "settings_interface_measurements_system_auto" = "Auto";
 "settings_interface_measurement_system_metric" = "Métrique";
@@ -676,14 +711,17 @@
 "settings_connection_network_name" = "Nom du réseau Wi-Fi";
 "settings_connection_broadcast_dri" = "Diffusion DRI";
 "settings_connection_dri_learn_more" = "En apprendre plus";
-"settings_connection_dri_name" = "DRI";
+"settings_connection_dri_name" = "Dispositif de signalement électronique";
+"settings_connection_dri_abbreviated_name" = "DRI";
 "settings_connection_dri_dialog_title" = "Dispositif de signalement électronique";
 "settings_connection_dri_dialog_text" = "La fonction DRI (Identification Directe à Distance) est un dispositif de signalement électronique conforme à la réglementation européenne qui permet au drone de diffuser localement des informations en temps réel. Le message envoyé par la fonction DRI, pendant toute la durée de vol, contient des informations sur le pilote (son numéro d’enregistrement opérateur) et le drone (comme son numéro de série).\nPour plus d’information, consultez la réglementation en vigueur.\nPour voler en catégorie ouverte selon la réglementation européenne : vérifiez que l’option « diffusion DRI » est activée lors des phases de vols.";
 "settings_connection_direct_connection" = "Connexion directe depuis PC ou smartphone";
 "settings_connection_dri_operator_id" = "Numéro d’enregistrement opérateur";
 "settings_connection_dri_operator_placeholder" = "Pas de numéro d’opérateur";
 "settings_connection_drone_serial_id" = "Numéro de série du drone";
-"settings_edit_dri_description" = "Insérez votre numéro d'enregistrement suivi de la clé associée.";
+"settings_edit_dri_regulation_description" = "Votre drone est-il soumis à la réglementation européenne (marquage C1) ?";
+"settings_edit_dri_short_description" = "Saisissez votre numéro d'enregistrement opérateur";
+"settings_edit_dri_full_description" = "Saisissez votre numéro d'enregistrement opérateur suivi de la clé associée";
 "settings_edit_dri_error_operator_id_length" = "Le numéro d'enregistrement doit contenir 16 caractères";
 "settings_edit_dri_error_key_length" = "La clé doit contenir 3 caractères.";
 "settings_edit_dri_error_invalid_id" = "Numéro d'enregistrement ou clé invalide.";
@@ -749,17 +787,6 @@
 "pairing_remote_drone_password_incorrect" = "Impossible de se connecter: mot de passe incorrect";
 "pairing_remote_drone_failed_connect_drone" = "Impossible de se connecter au drone";
 "pairing_pilot" = "Pilotez !";
-/**
- * Français localization.
-*/
-"live_streaming_live_streaming" = "Live streaming";
-"live_streaming_enter_url" = "Entrer l'URL";
-"live_streaming_connect" = "Connecter";
-"live_streaming_error" = "La connexion a échoué. Veuillez vérifier l'URL ou réessayer plus tard.";
-"live_streaming_encrypted_stream" = "Flux crypté";
-"live_streaming_add_conf" = "Ajouter un nouveau";
-"live_streaming_quality_priority" = "Priorité à la qualité";
-"live_streaming_latency_priority" = "Priorité à la latence";
 /**
  * Français localization.
 */
@@ -912,7 +939,7 @@
 "love_calibration_idle" = "En attente";
 "love_calibration_takeoff" = "Décollage";
 "love_calibration_ascending" = "Montée à %@m";
-"love_calibration_turning" = "Calibration en cours";
+"love_calibration_turning" = "Rotation en cours";
 "love_calibration_descending" = "Descente en cours";
 "love_calibration_ok" = "Calibration réussie";
 "love_calibration_ko" = "Echec de la calibration";
@@ -922,8 +949,8 @@
 "love_calibration_quick_description" = "(jusqu’à 50m)";
 "love_calibration_optimal" = "Calibration optimale";
 "love_calibration_optimal_description" = "(jusqu’à 120m)";
-"love_calibration_aborted" = "Calibration annulée";
-"love_calibration_hand_launch_state" = "Handlaunch %@";
+"love_calibration_interrupted" = "Calibration interrompue";
+"love_calibration_in_progress" = "Calibration en cours…";
 /**
  * Français localization.
 */
@@ -946,6 +973,7 @@
 "gallery_remove_drone_memory_error_plural" = "Impossible de supprimer les fichiers de la mémoire du drone.";
 "gallery_remove_local_memory_error_plural" = "Impossible de supprimer les fichiers de la mémoire locale.";
 "gallery_remove_drone_memory_downloading" = "Impossible de supprimer un fichier de la mémoire du drone lorsqu'un téléchargement est en cours.";
+"gallery_download_error" = "Impossible de télécharger les fichiers.";
 "gallery_delete_resource" = "Supprimer cette photo";
 "gallery_delete_media" = "Supprimer toutes les photos (%d)";
 "gallery_format_sd_card" = "Formater la carte SD";
@@ -998,6 +1026,7 @@
 "gallery_recording_not_possible_desc" = "L’enregistrement ne peut pas être lancé quand une lecture vidéo est en cours.";
 "gallery_recording_not_possible_title" = "Enregistrement impossible";
 "gallery_preview_not_possible_download" = "Affichage de l’image impossible quand un téléchargement est en cours";
+"gallery_loading" = "Chargement des médias en cours…";
 /**
  * Français localization.
 */

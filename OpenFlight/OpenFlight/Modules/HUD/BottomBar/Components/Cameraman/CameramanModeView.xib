@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="CameramanModeView" customModule="FreeFlight7" customModuleProvider="target">
+            <connections>
+                <outlet property="stateView" destination="yOS-hX-Asx" id="gEY-WD-b1D"/>
+                <outlet property="stopView" destination="Cgy-Of-GdW" id="kAS-Hc-6S7"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="llb-H1-wSx" customClass="ActionView" customModule="OpenFlight">
+            <rect key="frame" x="0.0" y="0.0" width="283" height="50"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pbE-Sh-Apd">
+                    <rect key="frame" x="0.0" y="0.0" width="283" height="50"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" placeholderIntrinsicWidth="250" placeholderIntrinsicHeight="50" translatesAutoresizingMaskIntoConstraints="NO" id="1Fe-oc-Cuw">
+                            <rect key="frame" x="0.0" y="0.0" width="283" height="50"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="yOS-hX-Asx" customClass="BarButtonView" customModule="OpenFlight">
+                                    <rect key="frame" x="0.0" y="0.0" width="233" height="50"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </view>
+                                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Cgy-Of-GdW" customClass="StopView" customModule="OpenFlight">
+                                    <rect key="frame" x="233" y="0.0" width="50" height="50"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="width" secondItem="Cgy-Of-GdW" secondAttribute="height" multiplier="1:1" id="wQW-zw-1hI"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="1Fe-oc-Cuw" firstAttribute="leading" secondItem="pbE-Sh-Apd" secondAttribute="leading" id="O7v-48-zH2"/>
+                        <constraint firstAttribute="height" constant="50" id="OZZ-Nf-lRM"/>
+                        <constraint firstItem="1Fe-oc-Cuw" firstAttribute="top" secondItem="pbE-Sh-Apd" secondAttribute="top" id="jpR-Jh-Mp9"/>
+                        <constraint firstAttribute="trailing" secondItem="1Fe-oc-Cuw" secondAttribute="trailing" id="ufF-eB-lt3"/>
+                        <constraint firstAttribute="bottom" secondItem="1Fe-oc-Cuw" secondAttribute="bottom" id="xA7-8c-fz2"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="pbY-Zt-eVK"/>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="pbE-Sh-Apd" firstAttribute="top" secondItem="llb-H1-wSx" secondAttribute="top" id="2O7-ZF-mEm"/>
+                <constraint firstAttribute="trailing" secondItem="pbE-Sh-Apd" secondAttribute="trailing" id="LbH-qs-w14"/>
+                <constraint firstItem="pbE-Sh-Apd" firstAttribute="leading" secondItem="llb-H1-wSx" secondAttribute="leading" id="NqK-Vv-8ge"/>
+                <constraint firstAttribute="bottom" secondItem="pbE-Sh-Apd" secondAttribute="bottom" id="QQo-0L-MBJ"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-124" y="169.11544227886057"/>
+        </view>
+    </objects>
+</document>

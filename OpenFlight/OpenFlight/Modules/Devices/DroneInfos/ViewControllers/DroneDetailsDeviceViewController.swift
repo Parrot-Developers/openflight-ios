@@ -39,7 +39,9 @@ final class DroneDetailsDeviceViewController: UIViewController {
     @IBOutlet private weak var gpsImageView: UIImageView!
     @IBOutlet private weak var batteryImageView: UIImageView!
     @IBOutlet private weak var satelliteImageView: UIImageView!
-    @IBOutlet private weak var networkImageView: UIImageView!
+    @IBOutlet private weak var cellularStatusImageView: UIImageView!
+    @IBOutlet private weak var driStateImageView: UIImageView!
+    @IBOutlet private weak var wifiStatusImageView: UIImageView!
 
     // MARK: - Private Properties
     private let droneInfoViewModel = DroneInfosViewModel()
@@ -84,6 +86,7 @@ private extension DroneDetailsDeviceViewController {
         bindBattery()
         bindGpsStrength()
         bindDroneName()
+        bindWifiStrength()
         bindCellularStrength()
         bindGimbalErrorImage()
         bindFrontStereoGimbalErrorImage()
@@ -91,6 +94,7 @@ private extension DroneDetailsDeviceViewController {
         bindCopterMotorsErrors()
         bindConnectionState()
         bindSatelliteCount()
+        bindDriState()
     }
 }
 
@@ -131,7 +135,16 @@ private extension DroneDetailsDeviceViewController {
     func bindCellularStrength() {
         droneInfoViewModel.$cellularStrength
             .sink { [unowned self] cellularStrength in
-                networkImageView.image = cellularStrength.signalIcon
+                cellularStatusImageView.image = cellularStrength.signalIcon
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the wifi strength from the view model to networkImageView
+    func bindWifiStrength() {
+        droneInfoViewModel.$wifiStrength
+            .sink { [unowned self] wifiStrength in
+                wifiStatusImageView.image = wifiStrength.signalIcon
             }
             .store(in: &cancellables)
     }
@@ -188,6 +201,15 @@ private extension DroneDetailsDeviceViewController {
                 let isConnected = droneInfoViewModel.connectionState == .connected
                 nbSatelliteLabel.text = ": " + (isConnected ? String(satelliteCount ?? 0) : Style.dash)
                 satelliteImageView.tintColor = ColorName.defaultTextColor.color
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Binds the dri state from the view model to the dri imageView
+    func bindDriState() {
+        droneInfoViewModel.$driState
+            .sink { [unowned self] driState in
+                driStateImageView.image = driState.driIcon
             }
             .store(in: &cancellables)
     }

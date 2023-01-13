@@ -18,7 +18,7 @@ message Config {
     float altitude = 1;
 }
 
-// All the steps (in order) of the calibration process)
+// All the steps (in order) of the calibration process
 enum CalibrationStep {
     CALIBRATION_STEP_IDLE = 0;
 
@@ -30,8 +30,6 @@ enum CalibrationStep {
     CALIBRATION_STEP_TURNING_DONE = 6;
     CALIBRATION_STEP_DESCENDING = 7;
     CALIBRATION_STEP_DESCENDING_DONE = 8;
-
-    // Not yet implemented
     CALIBRATION_STEP_LANDING = 9;
     CALIBRATION_STEP_LANDING_DONE = 10;
 };
@@ -58,6 +56,11 @@ message Command {
         Config start = 1;
         // Abort calibration (drone will stop moving)
         google.protobuf.Empty abort = 2;
+        // Reset last known status. Only allowed when step is idle
+        google.protobuf.Empty reset_status = 3;
+        // Start calibration (drone will automatically takeoff if needed).
+        // It will to a hand takeoff procedure instead of a normal one
+        Config start_hand = 4;
     }
 }
 

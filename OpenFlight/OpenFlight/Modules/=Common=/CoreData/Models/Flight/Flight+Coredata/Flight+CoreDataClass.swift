@@ -77,7 +77,7 @@ public class Flight: NSManagedObject {
                            distance: distance,
                            duration: duration,
                            gutmaFile: nil,
-                           thumbnail: thumbnail?.model(),
+                           thumbnail: nil,
                            parrotCloudUploadUrl: parrotCloudUploadUrl,
                            isLocalDeleted: isLocalDeleted,
                            synchroStatus: SynchroStatus(status: synchroStatus),

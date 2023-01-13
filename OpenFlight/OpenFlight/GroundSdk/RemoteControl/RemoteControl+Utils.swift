@@ -46,6 +46,8 @@ extension RemoteControl {
             return "Parrot Skycontroller 4"
         case .skyCtrlUA:
             return "Parrot Skycontroller UA"
+        case .skyCtrl5:
+            return "Parrot Skycontroller 5"
         }
     }
 }

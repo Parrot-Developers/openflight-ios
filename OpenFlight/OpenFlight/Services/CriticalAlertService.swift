@@ -86,13 +86,13 @@ class CriticalAlertServiceImpl {
     /// - Parameters:
     ///   - connectedDroneHolder: drone holder
     ///   - updateService: update service
-    ///   - removableUserStorageService: removable user storage service
+    ///   - userStorageService: user storage service
     init(connectedDroneHolder: ConnectedDroneHolder,
          updateService: UpdateService,
-         removableUserStorageService: RemovableUserStorageService) {
+         userStorageService: UserStorageService) {
         listen(connectedDroneHolder: connectedDroneHolder)
         listen(updateService: updateService)
-        listen(removableUserStorageService: removableUserStorageService)
+        listen(userStorageService: userStorageService)
         listenTakeoffRequests()
     }
 
@@ -143,18 +143,16 @@ private extension CriticalAlertServiceImpl {
 
     /// Listens to removable user storage state changes.
     ///
-    /// - Parameter removableUserStorageService: the service
-    func listen(removableUserStorageService: RemovableUserStorageService) {
-        removableUserStorageService.userStoragePhysicalStatePublisher.removeDuplicates()
-            .combineLatest(removableUserStorageService.userStorageFileSystemStatePublisher.removeDuplicates())
-            .sink { [unowned self] userStorageState in
-                otherAlerts.update(.sdCardNotDetected,
-                                   shouldAdd: userStorageState.0 == .noMedia)
-                otherAlerts.update(.sdCardNeedsFormat,
-                                   shouldAdd: userStorageState == (.available, .needFormat))
-                publish()
-            }
-            .store(in: &cancellables)
+    /// - Parameter userStorageService: the service
+    func listen(userStorageService: UserStorageService) {
+        userStorageService.removableStorageStatePublisher.removeDuplicates().sink { [unowned self] storageState in
+            otherAlerts.update(.sdCardNotDetected,
+                               shouldAdd: storageState == .notDetected)
+            otherAlerts.update(.sdCardNeedsFormat,
+                               shouldAdd: storageState == .needsFormat)
+            publish()
+        }
+        .store(in: &cancellables)
     }
 
     /// Listens to takeoff requests.

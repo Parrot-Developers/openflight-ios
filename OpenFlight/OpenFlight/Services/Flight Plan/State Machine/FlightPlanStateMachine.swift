@@ -139,7 +139,7 @@ public protocol FlightPlanStateMachine {
 
     func pause()
 
-    func reset()
+    func reset(isSameProject: Bool)
 
     /// Flight plan was edited
     func flightPlanWasEdited(flightPlan: FlightPlanModel)
@@ -162,11 +162,13 @@ open class FlightPlanStateMachineImpl {
     public let manager: FlightPlanManager
     public let projectManager: ProjectManager
     public let runManager: FlightPlanRunManager
-    public let mavlinkGenerator: MavlinkGenerator
-    public let mavlinkSender: MavlinkDroneSender
+    public let planFileGenerator: PlanFileGenerator
+    public let planFileSender: PlanFileDroneSender
+    public let filesManager: FlightPlanFilesManager
     public let startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher
     public let edition: FlightPlanEditionService
     public var cloudSynchroWatcher: CloudSynchroWatcher?
+    public let locationTracker: LocationsTracker
 
     private var synchroWatcherSubscriber: AnyCancellable?
 
@@ -177,18 +179,22 @@ open class FlightPlanStateMachineImpl {
     public init(manager: FlightPlanManager,
                 projectManager: ProjectManager,
                 runManager: FlightPlanRunManager,
-                mavlinkGenerator: MavlinkGenerator,
-                mavlinkSender: MavlinkDroneSender,
+                planFileGenerator: PlanFileGenerator,
+                planFileSender: PlanFileDroneSender,
+                filesManager: FlightPlanFilesManager,
                 startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher,
                 edition: FlightPlanEditionService,
-                cloudSynchroWatcher: CloudSynchroWatcher?) {
+                cloudSynchroWatcher: CloudSynchroWatcher?,
+                locationTracker: LocationsTracker) {
         self.manager = manager
         self.projectManager = projectManager
         self.runManager = runManager
-        self.mavlinkGenerator = mavlinkGenerator
-        self.mavlinkSender = mavlinkSender
+        self.planFileGenerator = planFileGenerator
+        self.planFileSender = planFileSender
+        self.filesManager = filesManager
         self.startAvailabilityWatcher = startAvailabilityWatcher
         self.edition = edition
+        self.locationTracker = locationTracker
         self.stateMachine = GKStateMachine(states: buildStates())
         statePrivate.sink {
             ULog.i(.tag, "Publishing state \($0)")
@@ -255,9 +261,6 @@ open class FlightPlanStateMachineImpl {
             reset()
         }
         let flightPlan = manager.update(flightplan: flightPlan, with: .completed)
-        if isCurrentFlightPlan {
-            open(flightPlan: flightPlan)
-        }
     }
 }
 
@@ -275,8 +278,10 @@ private extension FlightPlanStateMachineImpl {
         let startedNotFlyingState = StartedNotFlyingState(delegate: self,
                                                           flightPlanManager: manager,
                                                           projectManager: projectManager,
-                                                          mavlinkGenerator: mavlinkGenerator,
-                                                          mavlinkSender: mavlinkSender)
+                                                          planFileGenerator: planFileGenerator,
+                                                          planFileSender: planFileSender,
+                                                          filesManager: filesManager,
+                                                          locationTracker: locationTracker)
         let startedFlyingState = StartedFlyingState(delegate: self,
                                                     runManager: runManager,
                                                     flightPlanManager: manager)
@@ -409,12 +414,19 @@ extension FlightPlanStateMachineImpl: EditableStateDelegate {
 
 extension FlightPlanStateMachineImpl: StartedNotFlyingStateDelegate {
 
-    public func handleMavlinkGenerationError(flightPlan: FlightPlanModel, _ error: MavlinkGenerationError) {
+    public func handleMavlinkGenerationError(flightPlan: FlightPlanModel, _ error: Error) {
         ULog.e(.tag, "Mavlink generation error for '\(flightPlan.uuid)': \(error.localizedDescription)")
         goToEditableState(flightPlan: flightPlan)
     }
 
-    public func handleMavlinkSendingError(flightPlan: FlightPlanModel, _ error: MavlinkDroneSenderError) {
+    public func handleStartProhibited(for flightPlan: FlightPlanModel, reason: StartProhibitedReason) {
+        ULog.e(.tag, "Start prohibited for '\(flightPlan.uuid)': \(reason)")
+        // Inform `startAvailabilityWatcher` about the blocker.
+        startAvailabilityWatcher.enableFirstWayPointTooFarBlocker(true)
+        goToEditableState(flightPlan: flightPlan)
+    }
+
+    public func handleMavlinkSendingError(flightPlan: FlightPlanModel, _ error: Error) {
         ULog.e(.tag, "Mavlink sending error for '\(flightPlan.uuid)': \(error.localizedDescription)")
         goToEditableState(flightPlan: flightPlan)
     }
@@ -450,6 +462,15 @@ extension FlightPlanStateMachineImpl: EndedStateDelegate {
     public func flightPlanEnded(flightPlan: FlightPlanModel, completed: Bool) {
         ULog.i(.tag, "Ended '\(flightPlan.uuid)'")
         statePrivate.send(.end(flightPlan))
+        // If the FP is completed, the Plan file is no more needed, it can be removed from the filesystem.
+        if completed { try? filesManager.removePlanFile(of: flightPlan) }
+        // If the current project has changed (e.g. mission switched) we don't wan't to update the
+        // state machine with a wrong flight plan.
+        if let projectId = projectManager.currentProject?.uuid,
+           projectId != flightPlan.projectUuid {
+            ULog.i(.tag, "Project has been changed. Don't enter in Editable mode for ended FP.")
+            return
+        }
         // Entering `EndedState` means FP is stopped (not paused).
         // When stopped, we must load the project's editable FP to be able to start an new exacution.
         // 1 - Reset state machine.
@@ -503,7 +524,7 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
             }
         }
         // In all cases, perform a reset of the state machine to start from a clean state.
-        reset()
+        reset(isSameProject: flightPlan.projectUuid == currentFlightPlan?.projectUuid)
         // Ensure we are in a state from we can enter in InitializingState.
         guard stateMachine.canEnterState(InitializingState.self),
               let initialState = stateMachine.state(forClass: InitializingState.self) else { return }
@@ -537,7 +558,7 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
             case .available:
                 // Good to go
                 goToStartedNotFlying()
-            case .unavailable, .alreadyRunning:
+            case .unavailable, .alreadyRunning, .firstWayPointTooFar:
                 ULog.w(.tag, "COMMAND: start not possible with state '\(statePrivate.value)'")
             }
         case .flying:
@@ -581,7 +602,7 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
         startedFlyingState.pause()
     }
 
-    public func reset() {
+    public func reset(isSameProject: Bool) {
         if let currentState = stateMachine.currentState {
             ULog.i(.tag, "COMMAND: reset currentState: '\(type(of: currentState))'"
                    + " currentFlightPlan: '\(currentFlightPlan?.uuid ?? "")'")
@@ -591,14 +612,18 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
             if let startedFlying = currentState as? StartedFlyingState {
                 // In case of a reset, we don't want to execute the RTH (`forced` = true).
                 startedFlying.stop(forced: true)
+                // If the reset is initiated by the re-opening of the editable of the stopped FP,
                 // `StartedFlyingState.stop()` will stop the FP then reopen/reset it.
                 // We should not continue to prevent overwritting the state with Idle.
-                return
+                if isSameProject { return }
             }
         } else {
             ULog.i(.tag, "COMMAND: reset currentState: 'nil'"
                    + " currentFlightPlan: '\(currentFlightPlan?.uuid ?? "")'")
         }
+        // Reset the 'first way point too far' blocker.
+        startAvailabilityWatcher.enableFirstWayPointTooFarBlocker(false)
+
         enter(IdleState.self)
         statePrivate.value = .machineStarted
     }
@@ -608,6 +633,10 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
               case .editable(_, let startAvailability) = statePrivate.value,
               currentFlightPlan?.uuid == flightPlan.uuid else { return }
         ULog.i(.tag, "Was edited '\(flightPlan.uuid)'")
+
+        // Reset the 'first way point too far' blocker. The edited FP will be checked at next launch.
+        startAvailabilityWatcher.enableFirstWayPointTooFarBlocker(false)
+
         editableState.flightPlan = flightPlan
         statePrivate.send(.editable(flightPlan, startAvailability: startAvailability))
     }
@@ -645,4 +674,9 @@ extension FlightPlanStateMachineImpl: FlightPlanStateMachine {
                           runningTime: runningTime)
         enter(StartedFlyingState.self)
     }
+}
+
+/// `FlightPlanStateMachine` protocol helpers to add default values.
+extension FlightPlanStateMachine {
+    public func reset() { reset(isSameProject: true) }
 }

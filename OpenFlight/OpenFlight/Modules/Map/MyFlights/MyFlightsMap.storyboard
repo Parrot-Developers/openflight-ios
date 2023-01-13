@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+    <device id="retina6_0" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--My Flights Map View Controller-->
+        <scene sceneID="gAF-Wg-Bhz">
+            <objects>
+                <viewController storyboardIdentifier="MyFlightsMapViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="om2-Bk-pxl" customClass="MyFlightsMapViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="C1A-cC-ySo"/>
+                        <viewControllerLayoutGuide type="bottom" id="zGs-At-gSm"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="Wf3-fd-o0X">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rZi-Mi-6wZ">
+                                <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <accessibility key="accessibilityConfiguration" label="Map">
+                                    <bool key="isElement" value="YES"/>
+                                </accessibility>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" placeholderIntrinsicWidth="667" placeholderIntrinsicHeight="60" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="diZ-DP-QfY" customClass="HudTopBarGradientView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="390" height="60"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="3eF-qZ-cVS" customClass="SideNavigationBarStackView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="21" height="28.333333333333332"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nH1-mk-R4B" customClass="MainBackButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="21" height="28.333333333333332"/>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <state key="normal" image="ic_back"/>
+                                            </button>
+                                        </subviews>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="3eF-qZ-cVS" firstAttribute="leading" secondItem="diZ-DP-QfY" secondAttribute="leading" id="Im8-ds-YwV"/>
+                                    <constraint firstItem="3eF-qZ-cVS" firstAttribute="top" secondItem="diZ-DP-QfY" secondAttribute="top" id="au1-f2-nDm"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="diZ-DP-QfY" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="Bz5-MJ-LyM"/>
+                            <constraint firstAttribute="bottom" secondItem="rZi-Mi-6wZ" secondAttribute="bottom" id="FdG-2k-kYQ"/>
+                            <constraint firstItem="rZi-Mi-6wZ" firstAttribute="leading" secondItem="Wf3-fd-o0X" secondAttribute="leading" id="H9L-R3-Hf9"/>
+                            <constraint firstAttribute="trailing" secondItem="rZi-Mi-6wZ" secondAttribute="trailing" id="TZq-Q3-SMl"/>
+                            <constraint firstItem="diZ-DP-QfY" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="XnG-uz-3LN"/>
+                            <constraint firstItem="rZi-Mi-6wZ" firstAttribute="top" secondItem="Wf3-fd-o0X" secondAttribute="top" id="ghN-nL-1lU"/>
+                            <constraint firstAttribute="trailing" secondItem="diZ-DP-QfY" secondAttribute="trailing" id="iNd-Yy-Vct"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="backButton" destination="nH1-mk-R4B" id="qH0-hm-If2"/>
+                        <outlet property="navBarStackView" destination="3eF-qZ-cVS" id="qBA-vd-Np1"/>
+                        <outlet property="navBarView" destination="diZ-DP-QfY" id="BYe-HV-FHn"/>
+                        <outlet property="viewContainer" destination="rZi-Mi-6wZ" id="3bC-17-N92"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ji5-JS-vrB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-720.08995502248877" y="213.59999999999999"/>
+        </scene>
+    </scenes>
+    <designables>
+        <designable name="diZ-DP-QfY">
+            <size key="intrinsicContentSize" width="667" height="60"/>
+        </designable>
+    </designables>
+    <resources>
+        <image name="ic_back" width="21" height="28.333333969116211"/>
+    </resources>
+</document>

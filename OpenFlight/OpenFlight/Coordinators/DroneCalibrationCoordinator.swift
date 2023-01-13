@@ -47,7 +47,7 @@ open class DroneCalibrationCoordinator: Coordinator {
         self.services = services
     }
 
-    public func start() {
+    open func start() {
         let viewController = DroneCalibrationViewController.instantiate(coordinator: self)
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
@@ -66,6 +66,25 @@ open class DroneCalibrationCoordinator: Coordinator {
         droneCoordinator.parentCoordinator = self
         droneCoordinator.start()
         present(childCoordinator: droneCoordinator)
+    }
+
+    /// Starts ophtalmo coordinator if view is not displayed.
+    open func startOphtalmo() {
+        // check if viewIsDisplayed
+        if (childCoordinators.last as? OphtalmoCoordinator) == nil {
+            let ophtalmoCoordinator = OphtalmoCoordinator(services: Services.hub)
+            presentCoordinatorWithAnimator(childCoordinator: ophtalmoCoordinator)
+        }
+    }
+
+    /// Starts settings coordinator.
+    ///
+    /// - Parameters:
+    ///     - type: settings type
+    open func startSettings(_ type: SettingsType?) {
+        let settingsCoordinator = SettingsCoordinator(services: services)
+        settingsCoordinator.startSettingType = type
+        presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
     }
 }
 
@@ -93,7 +112,10 @@ extension DroneCalibrationCoordinator {
 
     /// Starts stereo vision calibration.
     func startStereoVisionCalibration() {
-        let viewModel = StereoCalibrationViewModel(coordinator: self, ophtalmoService: services.drone.ophtalmoService)
+        let viewModel = StereoCalibrationViewModel(coordinator: self,
+                                                   connectedDroneHolder: services.connectedDroneHolder,
+                                                   ophtalmoService: services.drone.ophtalmoService,
+                                                   handLaunchService: services.drone.handLaunchService)
         let controller = StereoCalibrationViewController.instantiate(viewModel: viewModel)
         push(controller)
     }
@@ -103,16 +125,6 @@ extension DroneCalibrationCoordinator {
         let viewModel = HorizonCorrectionViewModel(coordinator: self, droneHolder: Services.hub.connectedDroneHolder)
         let controller = HorizonCorrectionViewController.instantiate(viewModel: viewModel)
         push(controller)
-    }
-
-    /// Starts settings coordinator.
-    ///
-    /// - Parameters:
-    ///     - type: settings type
-    func startSettings(_ type: SettingsType?) {
-        let settingsCoordinator = SettingsCoordinator()
-        settingsCoordinator.startSettingType = type
-        presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
     }
 
     /// Starts remote details coordinator.

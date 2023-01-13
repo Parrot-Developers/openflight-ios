@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-/// All the steps (in order) of the calibration process)
+/// All the steps (in order) of the calibration process
 enum Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStep: SwiftProtobuf.Enum {
   typealias RawValue = Int
   case idle // = 0
@@ -32,8 +32,6 @@ enum Parrot_Missions_Ophtalmo_Airsdk_Messages_CalibrationStep: SwiftProtobuf.Enu
   case turningDone // = 6
   case descending // = 7
   case descendingDone // = 8
-
-  /// Not yet implemented
   case landing // = 9
   case landingDone // = 10
   case UNRECOGNIZED(Int)
@@ -218,6 +216,25 @@ struct Parrot_Missions_Ophtalmo_Airsdk_Messages_Command {
     set {id = .abort(newValue)}
   }
 
+  /// Reset last known status. Only allowed when step is idle
+  var resetStatus: SwiftProtobuf.Google_Protobuf_Empty {
+    get {
+      if case .resetStatus(let v)? = id {return v}
+      return SwiftProtobuf.Google_Protobuf_Empty()
+    }
+    set {id = .resetStatus(newValue)}
+  }
+
+  /// Start calibration (drone will automatically takeoff if needed).
+  /// It will to a hand takeoff procedure instead of a normal one
+  var startHand: Parrot_Missions_Ophtalmo_Airsdk_Messages_Config {
+    get {
+      if case .startHand(let v)? = id {return v}
+      return Parrot_Missions_Ophtalmo_Airsdk_Messages_Config()
+    }
+    set {id = .startHand(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_ID: Equatable {
@@ -225,6 +242,11 @@ struct Parrot_Missions_Ophtalmo_Airsdk_Messages_Command {
     case start(Parrot_Missions_Ophtalmo_Airsdk_Messages_Config)
     /// Abort calibration (drone will stop moving)
     case abort(SwiftProtobuf.Google_Protobuf_Empty)
+    /// Reset last known status. Only allowed when step is idle
+    case resetStatus(SwiftProtobuf.Google_Protobuf_Empty)
+    /// Start calibration (drone will automatically takeoff if needed).
+    /// It will to a hand takeoff procedure instead of a normal one
+    case startHand(Parrot_Missions_Ophtalmo_Airsdk_Messages_Config)
 
   #if !swift(>=4.1)
     static func ==(lhs: Parrot_Missions_Ophtalmo_Airsdk_Messages_Command.OneOf_ID, rhs: Parrot_Missions_Ophtalmo_Airsdk_Messages_Command.OneOf_ID) -> Bool {
@@ -238,6 +260,14 @@ struct Parrot_Missions_Ophtalmo_Airsdk_Messages_Command {
       }()
       case (.abort, .abort): return {
         guard case .abort(let l) = lhs, case .abort(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.resetStatus, .resetStatus): return {
+        guard case .resetStatus(let l) = lhs, case .resetStatus(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.startHand, .startHand): return {
+        guard case .startHand(let l) = lhs, case .startHand(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -409,6 +439,8 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_Command: SwiftProtobuf.Messag
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "start"),
     2: .same(proto: "abort"),
+    3: .standard(proto: "reset_status"),
+    4: .standard(proto: "start_hand"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -443,6 +475,32 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_Command: SwiftProtobuf.Messag
           self.id = .abort(v)
         }
       }()
+      case 3: try {
+        var v: SwiftProtobuf.Google_Protobuf_Empty?
+        var hadOneofValue = false
+        if let current = self.id {
+          hadOneofValue = true
+          if case .resetStatus(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.id = .resetStatus(v)
+        }
+      }()
+      case 4: try {
+        var v: Parrot_Missions_Ophtalmo_Airsdk_Messages_Config?
+        var hadOneofValue = false
+        if let current = self.id {
+          hadOneofValue = true
+          if case .startHand(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.id = .startHand(v)
+        }
+      }()
       default: break
       }
     }
@@ -461,6 +519,14 @@ extension Parrot_Missions_Ophtalmo_Airsdk_Messages_Command: SwiftProtobuf.Messag
     case .abort?: try {
       guard case .abort(let v)? = self.id else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case .resetStatus?: try {
+      guard case .resetStatus(let v)? = self.id else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case .startHand?: try {
+      guard case .startHand(let v)? = self.id else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     }()
     case nil: break
     }

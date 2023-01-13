@@ -61,6 +61,7 @@ extension LogEvent {
         static let mapType: String = "MapType"
         static let secondaryScreenType: String = "SecondaryScreen"
         static let measurementSystem: String = "MeasurementSystem"
+        static let gridDisplayType: String = "GridDisplayType"
         static let geofence: String = "Geofence"
         static let returnHome: String = "ReturnHome"
         static let extraZoom: String = "ExtraZoom"
@@ -85,6 +86,7 @@ extension LogEvent {
         static let directConnectionSetting: String = "DirectConnectionSettings"
         static let shellAccessSetting: String = "ShellAccessSettings"
         static let missionLogsSetting: String = "MissionLogsSettings"
+        static let endHoveringAltitude: String = "EndHoveringAltitude"
     }
 
     /// Enum which stores password edition button key for log message.

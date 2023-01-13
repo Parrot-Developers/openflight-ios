@@ -43,7 +43,8 @@ extension UIViewController {
     /// Checks if view controller is visible on screen.
     ///
     /// - Returns: `true` if view controller is visible on screen, `false` otherwise
-    func isVisible() -> Bool {
+    @objc
+    open func isVisible() -> Bool {
         isViewLoaded && view.window != nil
     }
 }

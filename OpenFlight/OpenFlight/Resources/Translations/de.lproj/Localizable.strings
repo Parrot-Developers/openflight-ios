@@ -136,6 +136,13 @@
 /**
  * German localization.
 */
+"mission_mode_cameraman" = "Cameraman";
+"cameraman_select_target" = "Select target";
+"cameraman_take_off" = "Take off the drone";
+"cameraman_tracking" = "Tracking…";
+/**
+ * German localization.
+*/
 "mission_mode_touch_n_fly" = "Touch & Fly";
 "touch_fly_place_waypoint_poi" = "Place a waypoint or a POI on the map or the video stream";
 "touch_fly_take_off_the_drone" = "Take off the drone";
@@ -144,6 +151,7 @@
 "touch_fly_flying_to_waypoint" = "Flying to waypoint...";
 "touch_fly_poi_altitude" = "POI Altitude";
 "touch_fly_wp_altitude" = "WP Altitude";
+"touch_fly_poi_too_close" = "POI too close to the horizon";
 /**
  * German localization.
 */
@@ -297,11 +305,13 @@
 "alert_auto_landing" = "Automatische Landung";
 "alert_poor_battery_connection" = "Poor battery connection";
 "alert_very_low_battery" = "Die Drohne wird bald landen";
-"alert_no_gps_too_dark" = "Flight quality is not optimal – environment is too dark";
-"alert_no_gps_too_high" = "Flight quality is not optimal – decrease the drone's altitude";
-"alert_no_gps" = "Waiting for GPS – autonomous flights are unavailable";
-"alert_heading_lock_ko_perturbation_magnetic" = "Magnetic interference – autonomous flights are unavailable";
-"alert_heading_lock_ko_earth_magnetic" = "Earth magnetic field too low – autonomous flights are unavailable";
+"alert_no_gps_too_dark" = "Hovering stability degraded – environment is too dark";
+"alert_no_gps_too_high" = "Hovering stability degraded – lower the drone altitude";
+"alert_no_gps" = "No GPS fix";
+"alert_rth_unavailable_no_gps" = "No GPS fix – RTH unavailable";
+"alert_rth_unavailable_magnetometer" = "Magnetic interference – RTH unavailable";
+"alert_heading_lock_ko_perturbation_magnetic" = "Magnetic interference";
+"alert_heading_lock_ko_earth_magnetic" = "Earth magnetic field too low";
 "alert_too_much_wind" = "Starke Winde";
 "alert_strong_imu_vibrations" = "Strong vibrations detected – check that propellers are tightly screwed";
 "alert_internal_memory_full" = "Internal memory full";
@@ -313,7 +323,7 @@
 "alert_no_sdcard_error_title" = "No SD card";
 "alert_no_sdcard_error_desc" = "Media will be saved on the drone’s internal memory.";
 "alert_sdcard_format_error_title" = "SD card format error";
-"alert_sdcard_format_error_desc" = "Please format your SD card in the Gallery.";
+"alert_sdcard_format_error_desc" = "Please format your SD card.";
 "alert_sdcard_error_title" = "SD card error";
 "alert_sdcard_insufficient_speed_error_desc" = "The SD card speed is insufficient for this video recording.";
 "alert_geofence_reached" = "Geocage reached";
@@ -326,9 +336,9 @@
 "alert_no_avoidance_too_dark" = "Obstacle avoidance disabled – environment too dark";
 "alert_no_avoidance_no_gps" = "Obstacle avoidance disabled – poor GPS quality";
 "alert_deteriorated_avoidance_strong_winds" = "Obstacle avoidance degraded – strong winds";
-"alert_avoidance_deteriorated" = "Obstacle avoidance degraded – poor GPS quality";
+"alert_avoidance_deteriorated" = "Obstacle avoidance degraded – poor GPS accuracy";
 "alert_drone_stuck" = "Obstacle avoidance – drone was not able to find a path";
-"alert_high_deviation" = "Obstacle avoidance – high deviation";
+"alert_high_deviation" = "Obstacle avoidance – strong trajectory deviation";
 "alert_obstacle_avoidance_computational_error" = "Obstacle avoidance disabled – internal error";
 "alert_obstacle_avoidance_blind_direction" = "Obstacle avoidance – drone blind in this direction";
 "alert_sensor_calibration_recommended" = "Calibrate sensors for a better experience.";
@@ -344,6 +354,7 @@
 "alert_drone_too_close_ground" = "Drone too close to the ground";
 "alert_drone_above_max_altitude" = "Drone above maximum altitude";
 "alert_select_subject" = "Select a subject";
+"alert_stream_unavailable_download" = "Video stream unavailable during download";
 "alert_hand_launch_launch" = "Starten";
 "alert_hand_launch" = "Hand detected. Do you want to hand launch your drone ?";
 "alert_hand_land_hand_detected" = "Hand detected";
@@ -391,6 +402,8 @@
 "takeoff_alert_inclination_description" = "The drone’s inclination is too high to take off. Please place your drone horizontally.";
 "takeoff_alert_updating_title" = "Firmware update ongoing";
 "takeoff_alert_updating_description" = "The drone can not take off while a firmware update is on going. Please wait until the end of the update.";
+"takeoff_alert_dri_title" = "Direct Remote Identification not functional";
+"takeoff_alert_dri_description" = "Drone cannot take off because of hardware issue on the\nWi-Fi interface.";
 "takeoff_alert_usb_connection_title" = "Drone connected via USB";
 "takeoff_alert_usb_connection_description" = "The drone can not take off while the USB port is connected. Please disconnect it to take off.";
 "takeoff_alert_modem_updating_title" = "Cellular modem intitializing";
@@ -420,6 +433,20 @@
 "alert_oa_drone_stuck_action_text" = "Disable obstacle avoidance";
 "alert_oa_freeze_title" = "Obstacle avoidance disabled";
 "alert_oa_freeze_description" = "Your drone has stopped. Obstacle avoidance has been disabled.\nFrom now on you will fly the drone without the obstacle avoidance function.";
+"alert_system_error_title" = "System error";
+"alert_system_error_message" = "Media sharing failed. Operating system signaled an error:";
+"alert_flight_plan_without_amsl_message" = "Failed to generate trajectory in AGL altitude reference\nMission altitude will be related to the take-off point";
+/**
+ * German localization.
+*/
+"live_streaming_live_streaming" = "Live streaming";
+"live_streaming_enter_url" = "Enter URL";
+"live_streaming_connect" = "Connect";
+"live_streaming_error" = "Connection failed. Please chack the URL or try again later.";
+"live_streaming_encrypted_stream" = "Encrypted stream";
+"live_streaming_add_conf" = "Add new";
+"live_streaming_quality_priority" = "Priority on quality";
+"live_streaming_latency_priority" = "Priority on latency";
 /**
  * German localization.
 */
@@ -516,6 +543,19 @@
 "default_flight_plan_project_name" = "FlightPlan";
 "existing_project_name_alert_title" = "Existing Project Name";
 "existing_project_name_alert_message" = "Please choose another name.";
+"flight_plan_first_way_point_too_far" = "First waypoint too far away";
+"flight_plan_too_big_to_be_displayed" = "Low memory: degraded display";
+"flight_plan_altitude_reference_setting_title" = "Altitude reference";
+"flight_plan_altitude_reference_setting_short_title" = "Reference";
+"flight_plan_altitude_reference_amsl_title" = "above mean sea level";
+"flight_plan_altitude_reference_amsl_short_title" = "MSL";
+"flight_plan_altitude_reference_ato_title" = "above take off";
+"flight_plan_altitude_reference_ato_short_title" = "Take-off";
+"flight_plan_altitude_reference_agl_title" = "above ground level";
+"flight_plan_altitude_reference_agl_short_title" = "AGL";
+"flight_plan_database_upgrade_title" = "Database upgrade";
+"flight_plan_database_upgrade_description" = "The database needs to be upgraded to use the app.\nPlease wait until the end of the process…";
+"flight_plan_database_upgrade_state_finalizing" = "Finalizing…";
 /**
  * German localization.
 */
@@ -545,12 +585,6 @@
 "dashboard_my_flights_empty_list_title" = "No flight for the moment";
 "dashboard_my_flights_empty_list_desc" = "Connect to Parrot Cloud to sync all your flights and flight plans";
 "dashboard_my_flights_not_connected" = "Not connected";
-"dashboard_my_flights_connect_to_sync" = "Connect to sync flights";
-"dashboard_my_flights_synchronized" = "Synchronized";
-"dashboard_my_flights_synchronization_pending" = "Synchronization";
-"dashboard_my_flights_synchronization" = "Synchronisation %d/%d";
-"dashboard_my_flights_to_sync" = "%d flights to sync.";
-"dashboard_my_flights_cannot_synchronize" = "Can't synchronize";
 "dashboard_start_button_piloting" = "Piloting";
 "dashboard_start_button_fly" = "Fly";
 "dashboard_my_flights_total_distance" = "Total distance";
@@ -625,6 +659,7 @@
 "settings_interface_secondary_screen_3d_view" = "3D view";
 "settings_interface_reset" = "Alle Oberflächenpräferenzen zurücksetzen";
 "settings_interface_measurement_system" = "Einheit";
+"settings_interface_grid_display_type" = "Display grid";
 "settings_interface_measurement_system_imperial" = "Imperial";
 "settings_interface_measurements_system_auto" = "Auto";
 "settings_interface_measurement_system_metric" = "Metrisch";
@@ -676,14 +711,17 @@
 "settings_connection_network_name" = "Name des Netzwerks";
 "settings_connection_broadcast_dri" = "Broadcast DRI";
 "settings_connection_dri_learn_more" = "Learn more";
-"settings_connection_dri_name" = "DRI";
+"settings_connection_dri_name" = "Direct Remote Identification";
+"settings_connection_dri_abbreviated_name" = "DRI";
 "settings_connection_dri_dialog_title" = "Direct Remote Identification (DRI)";
 "settings_connection_dri_dialog_text" = "The DRI (Direct Remote Identification) option ensures, in real time, the local broadcast of remote pilot (operator registration number) and drone information (such as the serial number) during the flight. The DRI electronic signal is compliant with European drone regulations.\nFor additional information, consult the regulations in force.\nAccording to European drone regulations for open category: check that the DRI function is turned ON during in-flight operation.";
 "settings_connection_direct_connection" = "Direct connection from PC or smartphone";
 "settings_connection_dri_operator_id" = "Operator registration number";
 "settings_connection_dri_operator_placeholder" = "No operator number";
 "settings_connection_drone_serial_id" = "Drone serial number";
-"settings_edit_dri_description" = "Insert your registration number followed by the key associated.";
+"settings_edit_dri_regulation_description" = "Is your drone subject to European regulations (C1-marking) ?";
+"settings_edit_dri_short_description" = "Enter your operator registration number";
+"settings_edit_dri_full_description" = "Enter your operator registration number followed by the key associated";
 "settings_edit_dri_error_operator_id_length" = "Registration number must contain 16 characters.";
 "settings_edit_dri_error_key_length" = "Key must contain 3 characters.";
 "settings_edit_dri_error_invalid_id" = "Invalid registration number or key.";
@@ -901,7 +939,7 @@
 "love_calibration_idle" = "Waiting";
 "love_calibration_takeoff" = "Taking off";
 "love_calibration_ascending" = "Reaching %@m";
-"love_calibration_turning" = "Calibrating";
+"love_calibration_turning" = "Rotation in progress";
 "love_calibration_descending" = "Reaching ground";
 "love_calibration_ok" = "Calibration successful";
 "love_calibration_ko" = "Calibration failed";
@@ -911,8 +949,8 @@
 "love_calibration_quick_description" = "(up to 50m)";
 "love_calibration_optimal" = "Optimal calibration";
 "love_calibration_optimal_description" = "(up to 120m)";
-"love_calibration_aborted" = "Calibration aborted";
-"love_calibration_hand_launch_state" = "Handlaunch %@";
+"love_calibration_interrupted" = "Calibration interrupted";
+"love_calibration_in_progress" = "Calibration in progress…";
 /**
  * German localization.
 */
@@ -935,6 +973,7 @@
 "gallery_remove_drone_memory_error_plural" = "Can’t delete the files from the drone’s memory.";
 "gallery_remove_local_memory_error_plural" = "Can’t delete the files from the local memory.";
 "gallery_remove_drone_memory_downloading" = "Unable to delete a file from drone memory when a download is in progress.";
+"gallery_download_error" = "Unable to download files.";
 "gallery_delete_resource" = "Delete this picture";
 "gallery_delete_media" = "Delete all pictures (%d)";
 "gallery_format_sd_card" = "Format SD Card";
@@ -987,6 +1026,7 @@
 "gallery_recording_not_possible_desc" = "Recording not possible while video playback is in progress.";
 "gallery_recording_not_possible_title" = "Recording not possible";
 "gallery_preview_not_possible_download" = "Image display not possible while download is in progress";
+"gallery_loading" = "Loading medias…";
 /**
  * German localization.
 */
@@ -1097,7 +1137,7 @@
 "drone_modem_status_online" = "Modem online";
 "drone_modem_status_error" = "Unable to initialize modem";
 "drone_sim_status_locked" = "SIM card locked";
-"drone_sim_status_ready" = "SIM card ready";
+"drone_sim_status_ready" = "SIM  card ready";
 "drone_sim_status_absent" = "No SIM detected";
 "drone_sim_status_error" = "Unable to establish a connection with the SIM card";
 "drone_network_status_searching" = "Searching for 4G network";

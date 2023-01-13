@@ -197,10 +197,10 @@ final class FlightPlansListViewModel {
         self.navigationStack = navigationStack
         self.selectedHeaderUuid = selectedHeaderUuid
 
-        cloudSynchroWatcher?.isSynchronizingDataPublisher
+        cloudSynchroWatcher?.synchroStatusPublisher
             .receive(on: RunLoop.main)
-            .sink(receiveValue: { [weak self] isSynchronizingData in
-                if !isSynchronizingData {
+            .sink(receiveValue: { [weak self] status in
+                if !status.isSyncing {
                     self?.initViewModel()
                 }
             }).store(in: &cancellables)

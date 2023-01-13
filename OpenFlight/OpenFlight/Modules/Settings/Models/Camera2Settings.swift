@@ -281,3 +281,8 @@ extension Camera2DigitalSignature: SettingMode {
                 Camera2DigitalSignature.drone]
     }
 }
+
+extension Camera2DigitalSignature {
+    /// Whether the photo signature is enabled.
+    var isEnabled: Bool { self == .drone }
+}

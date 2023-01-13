@@ -32,7 +32,7 @@ import Reusable
 import SwiftyUserDefaults
 
 /// Generic class to manage advanced settings.
-class SettingsContentViewController: UIViewController, StoryboardBased {
+open class SettingsContentViewController: UIViewController, StoryboardBased {
     // MARK: - Outlets
     @IBOutlet internal weak var settingsTableView: UITableView!
 
@@ -62,7 +62,7 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
     private var isSliderEditing: Bool = false
 
     // MARK: - Override Funcs
-    override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
 
         view.backgroundColor = .clear
@@ -74,17 +74,17 @@ class SettingsContentViewController: UIViewController, StoryboardBased {
         }
     }
 
-    override func viewWillAppear(_ animated: Bool) {
+    open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
         settingsTableView.flashScrollIndicators()
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
+    open override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 
-    override var prefersStatusBarHidden: Bool {
+    open override var prefersStatusBarHidden: Bool {
         return true
     }
 
@@ -249,11 +249,11 @@ private extension SettingsContentViewController {
 
 // MARK: - UITableView DataSource
 extension SettingsContentViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return cells.count
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: UITableViewCell
         let cellType = cells[indexPath.row]
 

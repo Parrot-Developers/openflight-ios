@@ -31,12 +31,14 @@ import UIKit
 import GroundSdk
 import SwiftyUserDefaults
 import CoreData
+import ArcGIS
 
 // MARK: - Internal Enums
 /// Constants for all missions.
 enum MissionsConstants {
     static let classicMissionManualKey: String = "classicManual"
     static let classicMissionTouchAndFlyKey: String = "classicTouchAndFly"
+    static let classicMissionCameramanKey: String = "classicCameraman"
 }
 
 public extension ULogTag {
@@ -72,6 +74,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         // Enable device battery monitoring.
         UIDevice.current.isBatteryMonitoringEnabled = true
+        // ARCGIS KEY - Openflight
+        AGSArcGISRuntimeEnvironment.apiKey =
+            "put your key here (https://developers.arcgis.com/)"
 
         // Enable gsdk system log
         ULog.redirectToSystemLog(enabled: true)
@@ -152,6 +157,8 @@ extension AppDelegate: AirSdkMissionsSetupProtocol {
     /// Add AirSdk missions to the HUD Panel.
     func addMissionsToHUDPanel() {
         services.missionsStore.add(missions: [FlightPlanMission(),
+                                              CameramanMission(),
+                                              TouchAndFlyMission(),
                                               HelloWorldMission()])
     }
 }

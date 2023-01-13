@@ -31,7 +31,7 @@ import UIKit
 import Combine
 
 /// View Controller used to display drone calibrations.
-final class DroneCalibrationViewController: UIViewController {
+open class DroneCalibrationViewController: UIViewController {
 
     // MARK: - Outlets
     @IBOutlet private weak var titleLabel: UILabel!
@@ -39,15 +39,16 @@ final class DroneCalibrationViewController: UIViewController {
     @IBOutlet private weak var correctHorizonChoiceView: CalibrationChoiceView!
     @IBOutlet private weak var magnetometerChoiceView: CalibrationChoiceView!
     @IBOutlet private weak var obstacleDetectionChoiceView: CalibrationChoiceView!
-    @IBOutlet private weak var leftStackView: UIStackView!
+    @IBOutlet private weak var missionsStackView: UIStackView!
     @IBOutlet private weak var mainView: UIView!
 
     // MARK: - Private Properties
-    private weak var coordinator: DroneCalibrationCoordinator?
+    weak public var coordinator: DroneCalibrationCoordinator?
     private var viewModel = DroneCalibrationViewModel()
     private var cancellables = Set<AnyCancellable>()
     private var firmwareAndMissionsUpdateListener: FirmwareAndMissionsListener?
     private var firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel?
+    private var moreMissionsProvider: DroneCalibrationMoreMissionsProvider?
 
     // MARK: - Private Enums
     private enum Constants {
@@ -56,30 +57,36 @@ final class DroneCalibrationViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneCalibrationCoordinator) -> DroneCalibrationViewController {
+    static public func instantiate(coordinator: DroneCalibrationCoordinator,
+                                   moreMissionProvider: DroneCalibrationMoreMissionsProvider? = nil) -> DroneCalibrationViewController {
         let viewController = StoryboardScene.DroneCalibration.initialScene.instantiate()
         viewController.coordinator = coordinator
-
+        viewController.moreMissionsProvider = moreMissionProvider
         return viewController
     }
 
     // MARK: - Override Funcs
-    override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
+
+        setupAdditionalMissions()
         listenFirmwareUpdate()
-        listenOphtalmoMission()
         initUI()
         setupViewModels()
-        bindViewModel()
     }
 
-    override func viewWillAppear(_ animated: Bool) {
+    open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
+        bindViewModel()
         LogEvent.log(.screen(LogEvent.Screen.droneCalibration))
     }
 
-    override func viewDidAppear(_ animated: Bool) {
+    open override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        cancellables = []
+    }
+
+    open override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         UIView.animate(withDuration: Style.shortAnimationDuration,
@@ -90,19 +97,19 @@ final class DroneCalibrationViewController: UIViewController {
         })
     }
 
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+    open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         // Landscape: display gimbal calibration first.
         // Portrait: display horizon correction first.
         let lastView: CalibrationChoiceView = UIApplication.isLandscape ? correctHorizonChoiceView : gimbalCalibrationChoiceView
-        leftStackView.addArrangedSubview(lastView)
+        missionsStackView.addArrangedSubview(lastView)
     }
 
-    override var prefersHomeIndicatorAutoHidden: Bool {
+    open override var prefersHomeIndicatorAutoHidden: Bool {
         return true
     }
 
-    override var prefersStatusBarHidden: Bool {
+    open override var prefersStatusBarHidden: Bool {
         return true
     }
 }
@@ -113,20 +120,19 @@ private extension DroneCalibrationViewController {
     @IBAction func choiceViewTouchedUpInside(_ view: CalibrationChoiceView) {
         if view == gimbalCalibrationChoiceView {
             logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.gimbalCalibration)
-            self.coordinator?.startGimbal()
+            coordinator?.startGimbal()
         } else if view == correctHorizonChoiceView {
-            self.coordinator?.startHorizonCorrection()
+            coordinator?.startHorizonCorrection()
         } else if view == magnetometerChoiceView {
             logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.magnetometerCalibration)
-            self.coordinator?.startMagnetometerCalibration()
+            coordinator?.startMagnetometerCalibration()
         } else if view == obstacleDetectionChoiceView {
             logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.sensorCalibrationTutorial)
             if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
                 if firmwareAndMissionToUpdateModel.updateRequired {
-                    self.coordinator?.displayCriticalAlert()
+                    coordinator?.displayCriticalAlert()
                 } else {
-                    viewModel.updateIsStereoCalibrationLaunched(isLaunched: true)
-                    self.coordinator?.startStereoVisionCalibration()
+                    coordinator?.startStereoVisionCalibration()
                 }
             }
         }
@@ -177,22 +183,15 @@ private extension DroneCalibrationViewController {
     /// Hides the view if the drone is flying
     func bindFlyingState() {
         viewModel.$flyingState
-            .compactMap { $0 }
-            .combineLatest(viewModel.$isStereoCalibrationLaunched)
-            .sink { [unowned self] (flyingState, isStereoCalibrationLaunched) in
-                if flyingState == .flying && !isStereoCalibrationLaunched {
+            .sink { [unowned self] flyingState in
+                guard let flyingState = flyingState else {
+                    // Drone is disconnected -> dismiss view
                     coordinator?.dismissDroneCalibration()
+                    return
                 }
-            }
-            .store(in: &cancellables)
-    }
 
-    /// Hides the view if the drone is not connected
-    func bindConnectionState() {
-        viewModel.$droneState
-            .compactMap { $0 }
-            .sink { [unowned self] droneState in
-                if droneState == .disconnected || droneState == .disconnecting {
+                // Drone is flying -> dismiss view
+                if flyingState == .flying {
                     coordinator?.dismissDroneCalibration()
                 }
             }
@@ -202,9 +201,8 @@ private extension DroneCalibrationViewController {
     /// Updates the gimbal choice view
     func bindGimbal() {
         viewModel.$frontStereoGimbalState
-            .combineLatest(viewModel.$frontStereoGimbalCalibrationProcessState,
-                           viewModel.$gimbalCalibrationDescription)
-            .sink { [unowned self]  (gimbalState, _, calibrationDescription) in
+            .combineLatest(viewModel.$gimbalCalibrationDescription)
+            .sink { [unowned self]  (gimbalState, calibrationDescription) in
                 if gimbalState == .needed {
                     gimbalCalibrationChoiceView.viewModel?.subtitle = gimbalState?.description ?? ""
                     gimbalCalibrationChoiceView.viewModel?.titleColor = ColorName.white.color
@@ -263,10 +261,10 @@ private extension DroneCalibrationViewController {
             .store(in: &cancellables)
     }
 
-    /// Called when the view needs to be dismissed.
+    /// Dismiss the view.
     func dismissView() {
         self.view.backgroundColor = .clear
-        self.coordinator?.dismissDroneCalibration()
+        coordinator?.dismissDroneCalibration()
     }
 
     /// Calls log event.
@@ -284,17 +282,12 @@ private extension DroneCalibrationViewController {
             }
     }
 
-    func listenOphtalmoMission() {
-        Services.hub.drone.ophtalmoService.ophtalmoMissionStatePublisher
-            .sink { [unowned self] in
-                guard let coordinator = coordinator else { return }
-                if $0 == .active {
-                    // check if viewIsDisplayed
-                    if (coordinator.childCoordinators.last as? OphtalmoCoordinator) == nil {
-                        coordinator.presentCoordinatorWithAnimator(childCoordinator: OphtalmoCoordinator(services: Services.hub))
-                    }
-                }
-            }
-            .store(in: &cancellables)
+    /// Adds additional missions to the missionsStackView.
+    func setupAdditionalMissions() {
+        guard let moreMissions = moreMissionsProvider?.moreMissions else { return }
+
+        for mission in moreMissions {
+            missionsStackView.insertArrangedSubview(mission.calibrationChoiceView, at: mission.positionInStack)
+        }
     }
 }

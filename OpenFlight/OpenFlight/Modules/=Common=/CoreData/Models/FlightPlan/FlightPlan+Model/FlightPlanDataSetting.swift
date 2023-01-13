@@ -61,6 +61,23 @@ public enum FlightPlanCaptureMode: String, CaseIterable {
             return Asset.BottomBar.CameraModes.icCameraModeGpsLapse.image
         }
     }
+
+    /// Returns the available capture mode for a flight plan.
+    ///
+    /// - Parameter flightPlan: the flightPlan
+    /// - Returns an array with available modes
+    ///
+    /// - Description: When a flight plan has been created by importing a Mavlink, its capture mode (contained in the Mavlink)
+    ///  cannot be modified. For this specific case, the captures modes are filtered to return only the one set in the Mavlink.
+    static func availableModes(for flightPlan: FlightPlanModel?) -> [Self] {
+        Self.allCases.filter {
+            (flightPlan?.hasImportedMavlink ?? false)
+            // If FP has been created from an imported mavlink, return only the current FP capture mode.
+            ? $0 == flightPlan?.dataSetting?.captureModeEnum ?? .defaultValue
+            // For FPs created in the app, return all capture modes.
+            : true
+        }
+    }
 }
 
 /// Class representing a Data Setting saved on disk.
@@ -84,7 +101,15 @@ public struct FlightPlanDataSetting: Codable {
     public var disconnectionRth: Bool = true
     public var captureMode: String = FlightPlanCaptureMode.defaultValue.rawValue
     public var captureSettings: [String: String]?
-    public var disablePhotoSignature: Bool = false
+    // Whether the signature is prohibited (value returned by LibPigeon for PGY).
+    // It's independent from the user choice made with `isPhotoSignatureEnabled`.
+    public var disablePhotoSignature: Bool = false {
+        didSet {
+            if disablePhotoSignature { isPhotoSignatureEnabled = false }
+        }
+    }
+    // By default, the FP photo digital signature has the global settings user choice.
+    public var isPhotoSignatureEnabled: Bool = UserDefaults.photoDigitalSignature.isEnabled
     public var freeSettings = [String: String]()
     public var notPropagatedSettings = [String: String]()
     public var customRth: Bool = false
@@ -203,6 +228,7 @@ public struct FlightPlanDataSetting: Codable {
         case obstacleAvoidanceActivated
         case mavlinkDataFile
         case disablePhotoSignature
+        case isPhotoSignatureEnabled
 
         // Plan
         case takeoffActions = "takeoff"
@@ -258,6 +284,7 @@ public struct FlightPlanDataSetting: Codable {
     ///    - polygonPoints: list of polygon points
     ///    - disablePhotoSignature: whether to disable photo siganture during the
     ///    flight plan
+    ///    - isPhotoSignatureEnabled: whether the photo digital signature is enabled
     ///    - captureMode: the capture mode of flight plan
     ///    - pgyProjectId: the pgy project ID.
     ///    - uploadAttemptCount: the number of pgy pics upload attempts.
@@ -280,6 +307,7 @@ public struct FlightPlanDataSetting: Codable {
                 pois: [PoiPoint] = [],
                 wayPoints: [WayPoint] = [],
                 disablePhotoSignature: Bool,
+                isPhotoSignatureEnabled: Bool,
                 captureMode: FlightPlanCaptureMode,
                 pgyProjectId: Int64? = nil,
                 uploadAttemptCount: Int16? = nil,
@@ -302,6 +330,7 @@ public struct FlightPlanDataSetting: Codable {
         self.polygonPoints = polygonPoints ?? []
         self.mavlinkDataFile = mavlinkDataFile
         self.disablePhotoSignature = disablePhotoSignature
+        self.isPhotoSignatureEnabled = isPhotoSignatureEnabled
         self.captureMode = captureMode.rawValue
         self.pgyProjectId = pgyProjectId
         self.uploadAttemptCount = uploadAttemptCount
@@ -329,6 +358,7 @@ public struct FlightPlanDataSetting: Codable {
                   pois: [],
                   wayPoints: [],
                   disablePhotoSignature: false,
+                  isPhotoSignatureEnabled: UserDefaults.photoDigitalSignature.isEnabled,
                   captureMode: captureMode)
     }
 
@@ -355,7 +385,9 @@ public struct FlightPlanDataSetting: Codable {
         self.droneLocationTimestamp = try? container.decode(Date.self, forKey: .droneLocationTimestamp)
         self.obstacleAvoidanceActivated = (try? container.decode(Bool.self, forKey: .obstacleAvoidanceActivated)) ?? true
         self.mavlinkDataFile = try? container.decode(Data.self, forKey: .mavlinkDataFile)
-        self.disablePhotoSignature = try container.decode(Bool.self, forKey: .disablePhotoSignature)
+        self.disablePhotoSignature = (try? container.decode(Bool.self, forKey: .disablePhotoSignature)) ?? false
+        self.isPhotoSignatureEnabled = (try? container.decode(Bool.self, forKey: .isPhotoSignatureEnabled))
+                                       ?? UserDefaults.photoDigitalSignature.isEnabled
         self.captureSettings = try? container.decode([String: String].self, forKey: .captureSettings)
         self.freeSettings = (try? container.decode([String: String].self, forKey: .freeSettings)) ?? [:]
         self.notPropagatedSettings  = (try? container.decode([String: String].self, forKey: .notPropagatedSettings)) ?? [:]
@@ -395,6 +427,8 @@ public struct FlightPlanDataSetting: Codable {
         try container.encode(polygonPoints, forKey: .polygonPoints)
         try container.encode(captureMode, forKey: .captureMode)
         try container.encode(shouldContinue, forKey: .shouldContinue)
+        try container.encode(disablePhotoSignature, forKey: .disablePhotoSignature)
+        try container.encode(isPhotoSignatureEnabled, forKey: .isPhotoSignatureEnabled)
 
         try container.encode(longitude, forKey: .longitude)
         try container.encode(latitude, forKey: .latitude)
@@ -406,7 +440,6 @@ public struct FlightPlanDataSetting: Codable {
         try container.encode(droneLocationTimestamp, forKey: .droneLocationTimestamp)
         try container.encode(obstacleAvoidanceActivated, forKey: .obstacleAvoidanceActivated)
         try container.encode(mavlinkDataFile, forKey: .mavlinkDataFile)
-        try container.encode(disablePhotoSignature, forKey: .disablePhotoSignature)
         try container.encode(captureSettings, forKey: .captureSettings)
         try container.encode(freeSettings, forKey: .freeSettings)
         try container.encode(notPropagatedSettings, forKey: .notPropagatedSettings)
@@ -477,6 +510,7 @@ extension FlightPlanDataSetting: Equatable {
         && lhs.pois == rhs.pois
         && lhs.wayPoints == rhs.wayPoints
         && lhs.disablePhotoSignature == rhs.disablePhotoSignature
+        && lhs.isPhotoSignatureEnabled == rhs.isPhotoSignatureEnabled
         && lhs.captureMode == rhs.captureMode
         && lhs.shouldContinue == rhs.shouldContinue
         && lhs.longitude == rhs.longitude
@@ -525,6 +559,7 @@ extension FlightPlanDataSetting: CustomStringConvertible {
         + "droneLocationTimestamp: \(droneLocationTimestamp?.description ?? "-"), "
         + "obstacleAvoidanceActivated: \(obstacleAvoidanceActivated), "
         + "disablePhotoSignature: \(disablePhotoSignature), "
+        + "isPhotoSignatureEnabled: \(isPhotoSignatureEnabled), "
         + "captureSettings: \(captureSettings?.description ?? "-"), "
         + "freeSettings: \(freeSettings), "
         + "notPropagatedSettings: \(notPropagatedSettings), "
@@ -532,7 +567,7 @@ extension FlightPlanDataSetting: CustomStringConvertible {
         + "disconnectionRth: \(disconnectionRth), "
         + "takeoffActions: \(takeoffActions), "
         + "pois: \(pois), "
-        + "wayPoints: \(wayPoints), "
+        + "wayPoints: \(wayPoints.shortDescription), "
         + "pgyProjectId: \(pgyProjectId?.description ?? "-"), "
         + "uploadAttemptCount: \(uploadAttemptCount?.description ?? "-"), "
         + "lastUploadAttempt: \(lastUploadAttempt?.description ?? "-"), "

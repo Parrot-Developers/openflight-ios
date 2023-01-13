@@ -76,6 +76,7 @@ final class FlightPlanWayPointToPoiLineGraphic: FlightPlanGraphic, WayPointRelat
 
         self.wayPoint = wayPoint
         self.poiPoint = poiPoint
+        self.zIndex = FlightPlanConstants.minZIndex
         attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = wayPointIndex
         attributes[FlightPlanAGSConstants.poiIndexAttributeKey] = poiIndex
     }

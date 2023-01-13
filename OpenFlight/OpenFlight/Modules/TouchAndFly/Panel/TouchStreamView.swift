@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import Combine
 import GroundSdk
 import ArsdkEngine
 import CoreLocation
@@ -77,9 +78,12 @@ public class TouchStreamView: UIView {
     private var arrowHorizontal: ArrowGraphic?
     private var arrowVertical: ArrowGraphic?
     private var axis: AxisGraphic?
+    private var cancellables = Set<AnyCancellable>()
     private lazy var stateMachine: TouchStreamStateMachine = {
         TouchStreamStateMachine(view: self)
     }()
+
+    var viewModel: TouchStreamViewModel?
     weak var delegate: TouchStreamViewDelegate?
 
     override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -97,13 +101,37 @@ public class TouchStreamView: UIView {
     override public func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
-        stateMachine.process(event: .moved(location))
+        if touches.count == 1 {
+            stateMachine.process(event: .moved(location))
+        } else {
+            stateMachine.process(event: .cancelled)
+        }
     }
 
     override public func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
-        stateMachine.process(event: .cancelled(location))
+        stateMachine.process(event: .cancelled)
+    }
+
+    func listen() {
+        listenRunningState()
+        listenHudVisibility()
+    }
+
+    func listenRunningState() {
+        viewModel?.$runningState.sink { state in
+            guard let state = state else { return }
+            self.stateMachine.process(event: .runningStateUpdated(state))
+        }
+        .store(in: &cancellables)
+    }
+
+    func listenHudVisibility() {
+        viewModel?.$isHudVisible.sink { isVisible in
+            if !isVisible {
+                self.stateMachine.process(event: .cancelled)
+            }
+        }
+        .store(in: &cancellables)
     }
 
     /// Set user interaction.

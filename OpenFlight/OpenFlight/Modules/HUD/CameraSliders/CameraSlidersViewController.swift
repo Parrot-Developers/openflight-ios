@@ -45,6 +45,7 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var joysticksButton: InsetHitAreaButton!
     @IBOutlet private weak var infoTiltLabel: PaddingLabel!
 
+    @IBOutlet private weak var defaultViewContainer: UIView!
     @IBOutlet private var overzoomLabelOpenConstraints: [NSLayoutConstraint]!
     @IBOutlet private var overzoomLabelClosedConstraints: [NSLayoutConstraint]!
     @IBOutlet weak var maxTiltSliderLabelUpConstraint: NSLayoutConstraint!
@@ -191,6 +192,7 @@ private extension CameraSlidersViewController {
             .dropFirst(1)
             .sink { [unowned self] in
                 tiltButton.value = $0
+                tiltButton.accessibilityValue = "\(Int($0))"
                 infoTiltLabel.text = "\(Int($0))°"
                 viewModel.showInfoTiltLabel()
             }
@@ -288,14 +290,14 @@ private extension CameraSlidersViewController {
     /// Shows the zoom slider view.
     func showZoomSliderView() {
         animate(viewToShow: zoomSliderView,
-                viewToHide: tiltButtonContainer,
+                viewToHide: defaultViewContainer,
                 constraintsToRemove: overzoomLabelClosedConstraints,
                 constraintsToActivate: overzoomLabelOpenConstraints)
     }
 
     /// Hides the zoom slider view.
     func hideZoomSliderView() {
-        animate(viewToShow: tiltButtonContainer,
+        animate(viewToShow: defaultViewContainer,
                 viewToHide: zoomSliderView,
                 constraintsToRemove: overzoomLabelOpenConstraints,
                 constraintsToActivate: overzoomLabelClosedConstraints)

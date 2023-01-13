@@ -27,6 +27,28 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// MARK: - Internal Enums
+/// Enum describing Dri status.
+enum DriState {
+    case active
+    case off
+    case disconnected
+    case error
+
+    var driIcon: UIImage {
+        switch self {
+        case .active:
+            return Asset.Dri.icDriOk.image
+        case .off:
+            return Asset.Dri.icDriDeactivated.image
+        case .disconnected:
+            return Asset.Dri.icDriDisconnected.image
+        case .error:
+            return Asset.Dri.icDriKo.image
+        }
+    }
+}
+
 /// Dedicated model for dri settings when value changed.
 struct DriSettingModel: DroneSettingModelProtocol {
     var allValues: [SettingMode]

@@ -82,6 +82,10 @@ public struct TouchAndFlyMission: MissionProvider {
     // MARK: - Public Properties
     public init() {}
 
+    private func newCustomMap() -> TouchAndFlyMapViewController {
+        return StoryboardScene.TouchAndFlyMap.initialScene.instantiate()
+    }
+
     // MissionsConstants.classicMissionTouchAndFlyKey
     // MARK: - Internal Properties
     public var mission: OpenFlight.Mission {
@@ -100,6 +104,9 @@ public struct TouchAndFlyMission: MissionProvider {
         let missionMode = MissionMode(
             configurator: touchAndFlyModeConf,
             missionActivationModel: TouchAndFlyActivationModel(),
+            customMapProvider: {
+             self.newCustomMap()
+            },
             bottomBarLeftStack: { () -> [UIView] in
                 return []
             },

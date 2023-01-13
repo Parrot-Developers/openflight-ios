@@ -36,10 +36,6 @@ public class FlightPlan: NSManagedObject {
     // MARK: - Utils
     /// Return FlightPlanModel from FlightPlan type of NSManagedObject
     func model() -> FlightPlanModel {
-        var flightPlanSettings: String?
-        if let dataString = dataString {
-            flightPlanSettings = String(decoding: dataString, as: UTF8.self)
-        }
         return FlightPlanModel(apcId: apcId,
                                type: type,
                                uuid: uuid,
@@ -48,7 +44,7 @@ public class FlightPlan: NSManagedObject {
                                thumbnailUuid: thumbnailUuid,
                                projectUuid: projectUuid,
                                dataStringType: dataStringType,
-                               dataString: flightPlanSettings,
+                               dataString: getDataSettingString(),
                                pgyProjectId: pgyProjectId,
                                state: FlightPlanModel.FlightPlanState(rawString: state) ?? .editable,
                                lastMissionItemExecuted: lastMissionItemExecuted,
@@ -75,6 +71,13 @@ public class FlightPlan: NSManagedObject {
         var modelResult = model()
         modelResult.flightPlanFlights = flightPlanFlights?.toArray().map({ $0.modelWithFlightAndFlightPlan() })
         return modelResult
+    }
+
+    func getDataSettingString() -> String? {
+        guard let dataString = dataString else {
+            return nil
+        }
+        return String(decoding: dataString, as: UTF8.self)
     }
 
     func update(fromFlightPlanModel flightPlanModel: FlightPlanModel, withProject: Project?, withThumbnail: Thumbnail?) {

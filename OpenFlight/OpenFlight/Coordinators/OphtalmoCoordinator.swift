@@ -30,21 +30,24 @@
 import Foundation
 
 /// Coordinator for ophtalmo.
-public final class OphtalmoCoordinator: Coordinator {
+open class OphtalmoCoordinator: Coordinator {
     // MARK: - Properties
     public var navigationController: NavigationController?
     public var childCoordinators = [Coordinator]()
     public weak var parentCoordinator: Coordinator?
 
-    private let services: ServiceHub
+    public let services: ServiceHub
 
-    init(services: ServiceHub) {
+    public init(services: ServiceHub) {
         self.services = services
     }
 
     // MARK: - Public Funcs
     public func start() {
-        let viewModel = StereoCalibrationViewModel(coordinator: self, ophtalmoService: services.drone.ophtalmoService)
+        let viewModel = StereoCalibrationViewModel(coordinator: self,
+                                                   connectedDroneHolder: services.connectedDroneHolder,
+                                                   ophtalmoService: services.drone.ophtalmoService,
+                                                   handLaunchService: services.drone.handLaunchService)
         let controller = StereoCalibrationViewController.instantiate(viewModel: viewModel)
         navigationController = NavigationController(rootViewController: controller)
         navigationController?.isNavigationBarHidden = true
@@ -54,8 +57,8 @@ public final class OphtalmoCoordinator: Coordinator {
     ///
     /// - Parameters:
     ///     - type: settings type
-    func startSettings(_ type: SettingsType?) {
-        let settingsCoordinator = SettingsCoordinator()
+    open func startSettings(_ type: SettingsType?) {
+        let settingsCoordinator = SettingsCoordinator(services: services)
         settingsCoordinator.startSettingType = type
         presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
     }

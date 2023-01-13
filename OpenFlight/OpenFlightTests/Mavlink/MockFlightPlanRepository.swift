@@ -121,6 +121,11 @@ class MockFlightPlanRepository: FlightPlanRepository {
         return 0
     }
 
+    func getAllSynchronizedFlightPlansUuids() -> [String] {
+        // do nothing
+        return []
+    }
+
     func getAllFlightPlansCount() -> Int {
         // do nothing
         return 0
@@ -163,10 +168,6 @@ class MockFlightPlanRepository: FlightPlanRepository {
     }
 
     func deleteFlightPlans(withUuids uuids: [String], completion: ((Bool) -> Void)?) {
-        // do nothing
-    }
-
-    func deleteFlightPlans(withExcludedStates excludedStates: [String], completion: ((_ status: Bool) -> Void)?) {
         // do nothing
     }
 

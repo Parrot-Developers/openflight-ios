@@ -235,7 +235,7 @@ class MainContainerView: SubContainerView {
 
 /// A UIView with default button's height constraint (defined by `Layout.buttonIntrinsicHeight`).
 /// Used for action views.
-public class ActionView: UIView {
+public class ActionView: PassThroughView {
     public override var intrinsicContentSize: CGSize {
         .init(width: Layout.sidePanelWidth(isRegularSizeClass) - 2 * Layout.mainPadding(isRegularSizeClass),
               height: Layout.buttonIntrinsicHeight(isRegularSizeClass))

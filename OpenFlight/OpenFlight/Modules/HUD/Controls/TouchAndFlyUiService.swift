@@ -35,13 +35,11 @@ import ArcGIS
 public protocol TouchAndFlyUiService: CustomHUDControls {
     var didTapTargetWhileEditingEvent: AnyPublisher<Bool, Never> { get }
     func set(editing: Bool)
+    var commonMapViewController: TouchAndFlyMapViewController? { get set }
 }
 
 /// Class that manages Touch and Fly related UI on HUD.
 class TouchAndFlyUiServiceImpl {
-    // MARK: - Internal Properties
-    weak var mapViewController: MapViewController?
-
     // MARK: - Private Properties
     private let service: TouchAndFlyService
     private let locations: LocationsTracker
@@ -51,6 +49,7 @@ class TouchAndFlyUiServiceImpl {
     private var lastDroneLocation: CLLocation?
     private var draggingStartPoint: CLLocationCoordinate2D?
     private var didTapTargetWhileEditingSubject = PassthroughSubject<Bool, Never>()
+    private weak var mapViewController: TouchAndFlyMapViewController?
 
     init(service: TouchAndFlyService,
          locations: LocationsTracker,
@@ -75,6 +74,15 @@ class TouchAndFlyUiServiceImpl {
 
 // MARK: - TouchAndFlyUiService conformance
 extension TouchAndFlyUiServiceImpl: TouchAndFlyUiService {
+    var commonMapViewController: TouchAndFlyMapViewController? {
+        get {
+            return mapViewController
+        }
+        set {
+            mapViewController = newValue
+        }
+    }
+
     func set(editing: Bool) {
         self.editing = editing
     }
@@ -99,7 +107,7 @@ extension TouchAndFlyUiServiceImpl {
                     self.lastDroneLocation = CLLocation(latitude: droneCoordinates.latitude, longitude: droneCoordinates.longitude)
                 }
                 if target == .none {
-                    self.mapViewController?.clearTouchAndFly()
+                    self.commonMapViewController?.touchAndFlyOverlay?.viewModel.clearTouchAndFly()
                 }
                 self.display(target: target)
             }
@@ -111,10 +119,9 @@ extension TouchAndFlyUiServiceImpl {
         case .none:
             return
         case .wayPoint(location: let location, altitude: let altitude, _):
-            mapViewController?.displayWayPoint(at: Location3D(coordinate: location, altitude: altitude),
-                                                     droneLocation: lastDroneLocation)
+            commonMapViewController?.touchAndFlyOverlay?.viewModel.displayWayPoint(at: Location3D(coordinate: location, altitude: altitude))
         case .poi(location: let location, altitude: let altitude):
-            mapViewController?.displayPoiPoint(at: Location3D(coordinate: location, altitude: altitude))
+            commonMapViewController?.touchAndFlyOverlay?.viewModel.displayPoiPoint(at: Location3D(coordinate: location, altitude: altitude))
         }
     }
 
@@ -175,6 +182,7 @@ extension TouchAndFlyUiServiceImpl {
     }
 
     func handleCustomMapTouchDown(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?, completion: @escaping (Bool) -> Void) {
+
         guard shouldHandleGesture(), containsTarget(identifyResult: identifyResult) else {
             completion(false)
             return

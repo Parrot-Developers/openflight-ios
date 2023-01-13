@@ -41,6 +41,10 @@ public protocol HandLaunchService: AnyObject {
     var canStartPublisher: AnyPublisher<Bool, Never> { get }
     /// Whether hand launch can be started.
     var canStart: Bool { get }
+    /// Publisher telling whether hand launch is disabled by user.
+    var isDisabledByUserPublisher: AnyPublisher<Bool, Never> { get }
+    /// Whether hand launch is disabled by user.
+    var isDisabledByUser: Bool { get }
     /// Disables hand launch until drone is landed again on a stable surface.
     func disabledByUser()
     /// Updates the takeOffButtonPressed value
@@ -62,11 +66,7 @@ public class HandLaunchServiceImpl {
     /// Subject telling whether hand launch can be started.
     private var canStartSubject = CurrentValueSubject<Bool, Never>(false)
     /// Whether hand launch has been disabled by user. Turned to `false` when the drone is landed on a stable surface.
-    private var disabled = false {
-        didSet {
-            ULog.d(.tag, "Hand launch disabled: \(disabled)")
-        }
-    }
+    private var isDisabledByUserSubject = CurrentValueSubject<Bool, Never>(false)
     /// Reset pressed button timer
     private var resetPressedButtonTimer: Timer?
     /// Whether the take off button has been pressed
@@ -92,6 +92,11 @@ public class HandLaunchServiceImpl {
 
         canStartPublisher.sink { canStart in
             ULog.d(.tag, "Can start hand launch: \(canStart)")
+        }
+        .store(in: &cancellables)
+
+        isDisabledByUserPublisher.sink { isDisabledByUser in
+            ULog.d(.tag, "Hand launch disabled: \(isDisabledByUser)")
         }
         .store(in: &cancellables)
     }
@@ -158,14 +163,14 @@ private extension HandLaunchServiceImpl {
         let manualPilotingItf = drone.getPilotingItf(PilotingItfs.manualCopter)
         if drone.isStateLanded,
            manualPilotingItf?.smartTakeOffLandAction != .thrownTakeOff {
-            disabled = false
+            isDisabledByUserSubject.value = false
         }
     }
 
     /// Updates hand launch sart availability.
     func updateCanStart() {
         let drone = currentDroneHolder.drone
-        canStartSubject.value = !disabled && drone.isHandLaunchAvailable && !takeOffButtonPressed
+        canStartSubject.value = !isDisabledByUserSubject.value && drone.isHandLaunchAvailable && !takeOffButtonPressed
     }
 }
 
@@ -174,10 +179,16 @@ extension HandLaunchServiceImpl: HandLaunchService {
 
     public var canStartPublisher: AnyPublisher<Bool, Never> { canStartSubject.eraseToAnyPublisher() }
 
+    public var isDisabledByUserPublisher: AnyPublisher<Bool, Never> {
+        isDisabledByUserSubject.eraseToAnyPublisher()
+    }
+
     public var canStart: Bool { canStartSubject.value }
 
+    public var isDisabledByUser: Bool { isDisabledByUserSubject.value }
+
     public func disabledByUser() {
-        disabled = true
+        isDisabledByUserSubject.value = true
         updateCanStart()
     }
 

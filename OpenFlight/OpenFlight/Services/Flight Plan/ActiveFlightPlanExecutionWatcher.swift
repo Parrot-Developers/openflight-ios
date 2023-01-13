@@ -39,6 +39,12 @@ public enum ActiveFlightPlanState {
     case activating(FlightPlanModel)
     /// Flight Plan is active.
     case active(FlightPlanModel)
+
+    /// Whether there is currently no active or activating flight plan.
+    var isInactive: Bool {
+        if case .none = self { return true }
+        return false
+    }
 }
 
 /// Watches flight plan activation and exposes the active flight plan if any

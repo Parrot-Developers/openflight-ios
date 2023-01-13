@@ -173,10 +173,16 @@ extension Camera2RecordingState {
     /// The alert type according to recording stopping reason.
     var alertType: HUDCriticalAlertType? {
         switch self {
-        case .stopping(let reason, _):
+        case .stopping(let reason, let mediaId):
             switch reason {
-            case .errorInsufficientStorageSpace: return .insufficientStorageSpace
-            case .errorInsufficientStorageSpeed: return .insufficientStorageSpeed
+            case .errorInsufficientStorageSpace:
+                return .insufficientStorageSpace
+            case .errorInsufficientStorageSpeed:
+                // A non-nil `mediaId` corresponds to `RECORDING_EVENT_STOP(RECORDING_STOP_REASON_INSUFFICIENT_STORAGE_SPEED)` event,
+                // and should not trigger any alert when received, as `.insufficientStorageSpeed` popup already has been raised by
+                // `RECORDING_EVENT_STOPPING(RECORDING_STOP_REASON_INSUFFICIENT_STORAGE_SPEED)` event and should not be
+                // shown again.
+                return mediaId == nil ? .insufficientStorageSpeed : nil
             default: return nil
             }
         default: return nil

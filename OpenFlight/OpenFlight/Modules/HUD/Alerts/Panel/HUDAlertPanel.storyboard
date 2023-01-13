@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="rRa-mJ-wGh">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="rRa-mJ-wGh">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -44,48 +44,37 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d8E-Qq-N2f" userLabel="Box Alert Image + Label">
                                                 <rect key="frame" x="0.0" y="0.0" width="200" height="230"/>
                                                 <subviews>
-                                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="vjr-Qb-0zO">
-                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="4"/>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="eOb-1d-oDC">
+                                                        <rect key="frame" x="0.0" y="0.0" width="200" height="10"/>
                                                         <subviews>
-                                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="4" translatesAutoresizingMaskIntoConstraints="NO" id="eOb-1d-oDC">
-                                                                <rect key="frame" x="0.0" y="0.0" width="200" height="4"/>
-                                                                <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.44999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="5Sk-5I-Tid" userLabel="Title Label">
-                                                                        <rect key="frame" x="100" y="0.0" width="0.0" height="0.0"/>
-                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
-                                                                        <color key="textColor" name="default_text_color"/>
-                                                                        <nil key="highlightedColor"/>
-                                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                                            <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="25"/>
-                                                                        </variation>
-                                                                    </label>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000596046448" translatesAutoresizingMaskIntoConstraints="NO" id="Twt-nQ-U3h" userLabel="Subtitle Label">
-                                                                        <rect key="frame" x="100" y="4" width="0.0" height="0.0"/>
-                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                        <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="11"/>
-                                                                        <color key="textColor" name="navy_blue"/>
-                                                                        <nil key="highlightedColor"/>
-                                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                                            <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="13"/>
-                                                                        </variation>
-                                                                    </label>
-                                                                </subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.44999998807907104" translatesAutoresizingMaskIntoConstraints="NO" id="5Sk-5I-Tid" userLabel="Title Label">
+                                                                <rect key="frame" x="0.0" y="0.0" width="200" height="0.0"/>
                                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            </stackView>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                                <color key="textColor" name="default_text_color"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="25"/>
+                                                                </variation>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="252" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.40000000596046448" translatesAutoresizingMaskIntoConstraints="NO" id="Twt-nQ-U3h" userLabel="Subtitle Label">
+                                                                <rect key="frame" x="0.0" y="10" width="200" height="0.0"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="11"/>
+                                                                <color key="textColor" name="navy_blue"/>
+                                                                <nil key="highlightedColor"/>
+                                                                <variation key="heightClass=regular-widthClass=regular">
+                                                                    <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="13"/>
+                                                                </variation>
+                                                            </label>
                                                         </subviews>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="trailing" secondItem="eOb-1d-oDC" secondAttribute="trailing" id="FaG-VJ-ufT"/>
-                                                            <constraint firstItem="eOb-1d-oDC" firstAttribute="leading" secondItem="vjr-Qb-0zO" secondAttribute="leading" id="a9O-FB-yUU"/>
-                                                        </constraints>
-                                                        <variation key="heightClass=regular-widthClass=regular" alignment="top"/>
                                                     </stackView>
                                                     <view clipsSubviews="YES" contentMode="scaleToFill" placeholderIntrinsicWidth="437" placeholderIntrinsicHeight="437" translatesAutoresizingMaskIntoConstraints="NO" id="uyz-kq-mVt" userLabel="Action Button" customClass="HUDAlertPanelActionButton" customModule="OpenFlight">
-                                                        <rect key="frame" x="0.0" y="4" width="200" height="226"/>
+                                                        <rect key="frame" x="0.0" y="10" width="200" height="220"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <connections>
-                                                            <action selector="actionButtonTouchedUpInside:" destination="rRa-mJ-wGh" eventType="valueChanged" id="dzg-ub-CEf"/>
+                                                            <action selector="actionButtonTouchedUpInside:" destination="rRa-mJ-wGh" eventType="touchUpInside" id="cUX-To-DwC"/>
                                                         </connections>
                                                     </view>
                                                     <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SEU-5s-ysy" userLabel="Start View">
@@ -111,17 +100,17 @@
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
                                                     <constraint firstAttribute="bottom" secondItem="SEU-5s-ysy" secondAttribute="bottom" id="57r-Vh-t6P"/>
-                                                    <constraint firstAttribute="trailing" secondItem="vjr-Qb-0zO" secondAttribute="trailing" id="5VC-Fe-gQA"/>
                                                     <constraint firstItem="uyz-kq-mVt" firstAttribute="leading" secondItem="d8E-Qq-N2f" secondAttribute="leading" id="EDf-vP-9WA"/>
                                                     <constraint firstItem="uyz-kq-mVt" firstAttribute="centerY" secondItem="d8E-Qq-N2f" secondAttribute="centerY" priority="750" constant="15" id="EHD-sv-dbQ"/>
-                                                    <constraint firstItem="uyz-kq-mVt" firstAttribute="top" secondItem="vjr-Qb-0zO" secondAttribute="bottom" id="G7h-tD-Seb"/>
                                                     <constraint firstItem="SEU-5s-ysy" firstAttribute="leading" secondItem="d8E-Qq-N2f" secondAttribute="leading" id="Glk-YN-011"/>
                                                     <constraint firstItem="SEU-5s-ysy" firstAttribute="top" secondItem="uyz-kq-mVt" secondAttribute="bottom" id="KzF-ba-bQD"/>
                                                     <constraint firstAttribute="trailing" secondItem="uyz-kq-mVt" secondAttribute="trailing" id="RmM-Ir-STc"/>
-                                                    <constraint firstItem="vjr-Qb-0zO" firstAttribute="top" secondItem="d8E-Qq-N2f" secondAttribute="top" id="Rwu-aO-qYt"/>
+                                                    <constraint firstAttribute="trailing" secondItem="eOb-1d-oDC" secondAttribute="trailing" id="WuT-xd-lvK"/>
+                                                    <constraint firstItem="uyz-kq-mVt" firstAttribute="top" relation="greaterThanOrEqual" secondItem="eOb-1d-oDC" secondAttribute="bottom" id="fti-bd-ovJ"/>
+                                                    <constraint firstItem="eOb-1d-oDC" firstAttribute="leading" secondItem="d8E-Qq-N2f" secondAttribute="leading" id="gaO-9R-omG"/>
                                                     <constraint firstItem="uyz-kq-mVt" firstAttribute="centerX" secondItem="d8E-Qq-N2f" secondAttribute="centerX" id="nZS-qV-oaW"/>
+                                                    <constraint firstItem="eOb-1d-oDC" firstAttribute="top" secondItem="d8E-Qq-N2f" secondAttribute="top" id="v2Y-X1-tEn"/>
                                                     <constraint firstAttribute="trailing" secondItem="SEU-5s-ysy" secondAttribute="trailing" id="vOB-4S-y8T"/>
-                                                    <constraint firstItem="vjr-Qb-0zO" firstAttribute="leading" secondItem="d8E-Qq-N2f" secondAttribute="leading" id="w2y-k7-eI6"/>
                                                 </constraints>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hlu-9H-pKd" userLabel="Box button" customClass="ActionView" customModule="OpenFlight" customModuleProvider="target">

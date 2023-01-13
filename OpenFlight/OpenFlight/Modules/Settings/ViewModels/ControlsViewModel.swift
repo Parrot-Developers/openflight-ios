@@ -29,9 +29,10 @@
 
 import GroundSdk
 import SwiftyUserDefaults
+import Combine
 
 /// State for `ControlsViewModel`.
-final class ControlsState: DevicesConnectionState {
+final class ControlsState: Equatable {
     // MARK: - Internal Properties
     var isVirtualJogsAvailable: Bool = false
     var isLanded: Bool?
@@ -39,106 +40,59 @@ final class ControlsState: DevicesConnectionState {
     var isLanding: Bool?
     var isReturningHome: Bool?
     var isEvTriggerActivated: Bool? = Defaults.evTriggerSetting
-    var controlMode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
+    var controlMode: ControlsSettingsMode = ControlsSettingsMode(value: Defaults.userControlModeSetting) ?? ControlsSettingsMode.defaultMode
 
-    // MARK: - Override Funcs
-    override func copy() -> ControlsState {
-        let copy = ControlsState(droneConnectionState: droneConnectionState,
-                                 remoteControlConnectionState: remoteControlConnectionState)
-        copy.isVirtualJogsAvailable = isVirtualJogsAvailable
-        copy.isLanded = isLanded
-        copy.isTakingOff = isTakingOff
-        copy.isLanding = isLanding
-        copy.isReturningHome = isReturningHome
-        copy.controlMode = controlMode
-        copy.isEvTriggerActivated = isEvTriggerActivated
-
-        return copy
-    }
-
-    override func isEqual(to other: DevicesConnectionState) -> Bool {
-        guard let other = other as? ControlsState else { return false }
-
-        return super.isEqual(to: other)
-            && isVirtualJogsAvailable == other.isVirtualJogsAvailable
-            && isLanded == other.isLanded
-            && isTakingOff == other.isTakingOff
-            && isLanding == other.isLanding
-            && isReturningHome == other.isReturningHome
-            && controlMode == other.controlMode
-            && isEvTriggerActivated == other.isEvTriggerActivated
+    static func == (lhs: ControlsState, rhs: ControlsState) -> Bool {
+        lhs.isVirtualJogsAvailable == rhs.isVirtualJogsAvailable
+            && lhs.isLanded == rhs.isLanded
+            && lhs.isTakingOff == rhs.isTakingOff
+            && lhs.isLanding == rhs.isLanding
+            && lhs.isReturningHome == rhs.isReturningHome
+            && lhs.isEvTriggerActivated == rhs.isEvTriggerActivated
+            && lhs.controlMode == rhs.controlMode
     }
 }
 
 /// Controls settings view model.
-final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
+final class ControlsViewModel {
+    // MARK: - Published Properties
+    @Published private(set) var state = ControlsState()
+
     // MARK: - Private Properties
     private var gimbalRef: Ref<Gimbal>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
-    private var pilotingControlRef: Ref<PilotingControl>?
     private var manualPilotingRef: Ref<ManualCopterPilotingItf>?
+    private var cancellables = Set<AnyCancellable>()
+    private let currentDroneHolder: CurrentDroneHolder!
+    private let currentRemoteControlHolder: CurrentRemoteControlHolder!
+    private let remoteControlUpdater: RemoteControlUpdater!
 
     // MARK: - Internal Properties
     var settingEntries: [SettingEntry] {
         return [SettingEntry(setting: SettingsCellType.controlMode)]
     }
-    var currentControlMode: ControlsSettingsMode {
-        var mode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
-        if let rawUserMode = Defaults.userControlModeSetting,
-           let userMode = ControlsSettingsMode(value: rawUserMode) {
-            mode = userMode
-        }
-
-        return mode
-    }
 
     // MARK: - Init
-    override init() {
-        super.init()
+    init(currentDroneHolder: CurrentDroneHolder,
+         currentRemoteControlHolder: CurrentRemoteControlHolder,
+         remoteControlUpdater: RemoteControlUpdater) {
+        self.currentDroneHolder = currentDroneHolder
+        self.currentRemoteControlHolder = currentRemoteControlHolder
+        self.remoteControlUpdater = remoteControlUpdater
 
-        // Init content regarding data.
-        if !Defaults.hasKey(\.userControlModeSetting) {
-            resetSettings()
-        }
-    }
-
-    // MARK: - Override Funcs
-    override func listenDrone(drone: Drone) {
-        super.listenDrone(drone: drone)
-        /// Listen Piloting Control.
-        pilotingControlRef = drone.getPeripheral(Peripherals.pilotingControl, observer: { [unowned self] control in
-            if control?.behaviourSetting.value == .cameraOperated {
-                resetBehaviourSettings()
+        currentDroneHolder.dronePublisher
+            .sink { [unowned self] in
+                listenPilotingItf(drone: $0)
+                listenGimbal(drone: $0)
+                listenFlyingIndicators(drone: $0)
             }
-            // Update remote control mapping to apply changes.
-            updateRemoteMapping(withMode: currentControlMode)
-        })
-        /// Listen Manual Piloting Interface.
-        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
-            updateState()
-        }
-        /// Listen gimbal.
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [unowned self] _ in
-            updateState()
-        }
-        /// Listen flying indicators.
-        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] _ in
-            updateState()
-        }
-    }
+            .store(in: &cancellables)
 
-    override func listenRemoteControl(remoteControl: RemoteControl) {
-        super.listenRemoteControl(remoteControl: remoteControl)
-
-        updateState()
-    }
-
-    // MARK: - Internal Funcs
-    /// Reset settings to default values.
-    func resetSettings() {
-        Defaults.evTriggerSetting = false
-        updateRemoteMapping(withMode: ControlsSettingsMode.defaultMode)
-        drone?.getPilotingItf(PilotingItfs.manualCopter)?.thrownTakeOffSettings?.value = PilotingPreset.thrownTakeOff
+        currentRemoteControlHolder.remoteControlPublisher
+            .sink { [unowned self] _ in
+                updateState()
+            }
+            .store(in: &cancellables)
     }
 
     /// Update remote mapping regarding controls settings mode.
@@ -147,32 +101,57 @@ final class ControlsViewModel: DevicesStateViewModel<ControlsState> {
     /// - Parameters:
     ///     - controlMode: controls settings mode
     func updateRemoteMapping(withMode controlMode: ControlsSettingsMode) {
-        let copy = state.value.copy()
-        copy.controlMode = controlMode
-        copy.isEvTriggerActivated = Defaults.evTriggerSetting
-        state.set(copy)
+        let state = self.state
+        state.controlMode = controlMode
+        state.isEvTriggerActivated = Defaults.evTriggerSetting
+        self.state = state
 
-        Defaults.userControlModeSetting = controlMode.value
-        Services.hub.remoteControlUpdater.updateRemoteMapping()
+        remoteControlUpdater.setControlMode(controlMode)
     }
 }
 
 // MARK: - Private Funcs
 private extension ControlsViewModel {
-    /// Update state for drone and remote states.
-    func updateState() {
-        let copy = state.value.copy()
-        copy.isLanding = drone?.isLanding
-        copy.isLanded = drone?.isStateLanded
-        copy.isTakingOff = drone?.isTakingOff
-        copy.isReturningHome = drone?.isReturningHome
-        copy.isVirtualJogsAvailable = copy.droneConnectionState?.isConnected() ?? false
-            && !(copy.remoteControlConnectionState?.isConnected() ?? false)
-        state.set(copy)
+    /// Starts watcher for the piloting interface.
+    ///
+    /// - Parameters:
+    ///   - drone: the current drone
+    func listenPilotingItf(drone: Drone) {
+        manualPilotingRef = drone.getPilotingItf(PilotingItfs.manualCopter) { [unowned self] _ in
+            updateState()
+        }
     }
 
-    /// Resets behaviour settings.
-    func resetBehaviourSettings() {
-        drone?.getPeripheral(Peripherals.pilotingControl)?.behaviourSetting.value = .standard
+    /// Starts watcher for the gimbal.
+    ///
+    /// - Parameters:
+    ///   - drone: the current drone
+    func listenGimbal(drone: Drone) {
+        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [unowned self] _ in
+            updateState()
+        }
+    }
+
+    /// Starts watcher for the flying indicators.
+    ///
+    /// - Parameters:
+    ///   - drone: the current drone
+    func listenFlyingIndicators(drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] _ in
+            updateState()
+        }
+    }
+
+    /// Update state for drone and remote states.
+    func updateState() {
+        let drone = currentDroneHolder.drone
+        let remoteControl = currentRemoteControlHolder.remoteControl
+        let state = self.state
+        state.isLanding = drone.isLanding
+        state.isLanded = drone.isStateLanded
+        state.isTakingOff = drone.isTakingOff
+        state.isReturningHome = drone.isReturningHome
+        state.isVirtualJogsAvailable = drone.isConnected && remoteControl?.isConnected != true
+        self.state = state
     }
 }

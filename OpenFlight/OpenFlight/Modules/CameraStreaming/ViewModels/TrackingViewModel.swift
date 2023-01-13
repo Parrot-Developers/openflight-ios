@@ -37,7 +37,6 @@ final class TrackingState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Internal Properties
     fileprivate(set) var trackingInfo: TrackingData?
-    fileprivate(set) var tilt: Double?
     fileprivate(set) var droneNotConnected: Bool?
 
     // MARK: - Init
@@ -47,23 +46,20 @@ final class TrackingState: ViewModelState, EquatableState, Copying {
     ///
     /// - Parameters:
     ///    - trackingInfo: meta data returned by the drone
-    ///    - tilt: tilt
     ///    - droneNotConnected: state of the drone
-    init(trackingInfo: TrackingData?, tilt: Double?, droneNotConnected: Bool?) {
+    init(trackingInfo: TrackingData?, droneNotConnected: Bool?) {
         self.trackingInfo = trackingInfo
     }
 
     // MARK: - Internal Funcs
     func isEqual(to other: TrackingState) -> Bool {
-        return trackingInfo == other.trackingInfo
-        && tilt == other.tilt
+        trackingInfo == other.trackingInfo
         && droneNotConnected == other.droneNotConnected
     }
 
     /// Returns a copy of the object.
     func copy() -> TrackingState {
-        let copy = TrackingState(trackingInfo: trackingInfo, tilt: tilt, droneNotConnected: droneNotConnected)
-        return copy
+        TrackingState(trackingInfo: trackingInfo, droneNotConnected: droneNotConnected)
     }
 }
 
@@ -114,7 +110,6 @@ final class TrackingViewModel: DroneWatcherViewModel<TrackingState> {
         if enabled, let drone = drone {
             listenStreamServer(drone: drone)
             listenOnboardTracker(drone: drone)
-            listenGimbal(drone: drone)
         } else {
             removeAllReferences()
         }
@@ -183,7 +178,8 @@ private extension TrackingViewModel {
                           return
                       }
 
-                sink = liveStream.openYuvSink(queue: DispatchQueue.main, listener: self)
+                sink = liveStream.openSink(config: RawVideoSinkConfig(dispatchQueue: DispatchQueue.main,
+                                                                      listener: self))
             }
         }
     }
@@ -192,21 +188,6 @@ private extension TrackingViewModel {
     func listenOnboardTracker(drone: Drone) {
         onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [unowned self] onboardTracker in
             self.onboardTracker = onboardTracker
-        }
-    }
-
-    /// Starts watcher for gimbal.
-    func listenGimbal(drone: Drone) {
-        gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [unowned self] gimbal in
-            guard let gimbal = gimbal,
-                  gimbal.calibrated,
-                  let currentPitch = gimbal.currentAttitude[.pitch] else {
-                      return
-                  }
-
-            let copy = state.value.copy()
-            copy.tilt = currentPitch
-            state.set(copy)
         }
     }
 
@@ -237,19 +218,15 @@ private extension TrackingViewModel {
     }
 }
 
-// MARK: - YuvSinkListener
-extension TrackingViewModel: YuvSinkListener {
-    func didStart(sink: StreamSink) {}
-    func didStop(sink: StreamSink) {}
+// MARK: - RawVideoSinkListener
+extension TrackingViewModel: RawVideoSinkListener {
 
-    func frameReady(sink: StreamSink, frame: SdkCoreFrame) {
-        guard let metadataProtobuf = frame.metadataProtobuf else { return }
+    func didStart(sink: RawVideoSink, videoFormat: VideoFormat) {}
+    func didStop(sink: RawVideoSink) {}
 
-        do {
-            let decodedInfo = try TrackingData(serializedData: Data(metadataProtobuf))
-            DispatchQueue.main.async {
-                self.trackingStatusDidUpdate(decodedInfo)
-            }
-        } catch {}
+    func frameReady(sink: RawVideoSink, frame: RawVideoSinkFrame) {
+        guard let metadataProtobuf = frame.metadata else { return }
+
+        self.trackingStatusDidUpdate(metadataProtobuf)
     }
 }

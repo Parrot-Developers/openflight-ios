@@ -68,5 +68,14 @@ public protocol EditionSettingsCellModelDelegate: AnyObject {
     ///     - key: current key for setting
     ///     - isUpdating: tells if the current value of settings is updating
     func isUpdatingSetting(for key: String?, isUpdating: Bool)
+}
 
+extension EditionSettingsCellModelDelegate {
+    public func isUpdatingSetting(for key: String?, isUpdating: Bool) {
+        // default implementation does nothing
+    }
+
+    func updateChoiceSetting(for key: String?, value: Bool) {
+        // default implementation does nothing
+    }
 }

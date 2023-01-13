@@ -96,6 +96,10 @@ public protocol FlightRepository: AnyObject {
     /// - Returns: `FlightModel` object if found
     func getFlight(withCloudId cloudId: Int) -> FlightModel?
 
+    /// Get total of duration and distance of all flights
+    /// - Returns: tuple of duration and distance of all flights
+    func getTotalDurationAndDistance() -> (duration: Double, distance: Double)
+
     /// Get count of all Flights
     /// - Returns: Count of all Flights
     func getAllFlightsCount() -> Int
@@ -118,6 +122,10 @@ public protocol FlightRepository: AnyObject {
     /// Get all FlightModels locally modified from Flights in CoreData
     /// - Returns:  List of FlightModels
     func getAllModifiedFlights() -> [FlightModel]
+
+    /// Get all synchronized flights UUIDs
+    /// - Returns: List of UUIDs
+    func getAllSynchronizedFlightsUuids() -> [String]
 
     /// Get all FlightModels to be deleted from Flights in CoreData
     /// - Returns: List of FlightModels
@@ -324,6 +332,22 @@ extension CoreDataServiceImpl: FlightRepository {
         return getFlightsCD(offset: offset, limit: limit, toBeDeleted: false).map({ $0.model() })
     }
 
+    public func getTotalDurationAndDistance() -> (duration: Double, distance: Double) {
+        var result: (duration: Double, distance: Double) = (duration: 0, distance: 0)
+
+        performAndSave({ [unowned self] _ in
+            let allFlights = getAllFlightsCD(toBeDeleted: false)
+            allFlights.forEach {
+                result.duration += $0.duration
+                result.distance += $0.distance
+            }
+
+            return false
+        })
+
+        return result
+    }
+
     public func getAllFlights() -> [FlightModel] {
         return getAllFlightsCD(toBeDeleted: false).map({ $0.model() })
     }
@@ -349,6 +373,10 @@ extension CoreDataServiceImpl: FlightRepository {
     public func getAllModifiedFlights() -> [FlightModel] {
         let apcIdQuery = "apcId == '\(userService.currentUser.apcId)'"
         return getFlightsCD(withQuery: "latestLocalModificationDate != nil && \(apcIdQuery)").map({ $0.model() })
+    }
+
+    public func getAllSynchronizedFlightsUuids() -> [String] {
+        getAllSynchronizedFlightsCD().compactMap({ $0.uuid })
     }
 
     // MARK: __ Delete
@@ -552,6 +580,23 @@ internal extension CoreDataServiceImpl {
 
         let desc1 = NSSortDescriptor.init(key: "startTime", ascending: false)
         fetchRequest.sortDescriptors = [desc1]
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getAllSynchronizedFlightsCD() -> [Flight] {
+        let fetchRequest = Flight.fetchRequest()
+
+        var subPredicateList: [NSPredicate] = []
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let cloudIdPredicate =  NSPredicate(format: "cloudId > 0")
+        subPredicateList.append(cloudIdPredicate)
+
+        let compoundPredicates = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+        fetchRequest.predicate = compoundPredicates
 
         return fetch(request: fetchRequest)
     }

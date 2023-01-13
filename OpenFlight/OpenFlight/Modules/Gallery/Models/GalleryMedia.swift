@@ -30,19 +30,25 @@
 import UIKit
 import GroundSdk
 
-/// Gallery media download state.
-
-enum GalleryMediaDownloadState: CaseIterable {
+/// Gallery media action state.
+public enum GalleryMediaActionState: CaseIterable {
     case toDownload
     case downloading
     case downloaded
+    case deleting
     case error
 
-    static let defaultValue: GalleryMediaDownloadState = .toDownload
+    static let defaultValue: GalleryMediaActionState = .toDownload
 
+    enum Constants {
+        static let disabledBackgroundAlpha: CGFloat = 0.7
+    }
+
+    /// The left icon displayed on the action button (can be animated).
     var icon: UIImage {
         switch self {
-        case .downloading:
+        case .downloading,
+                .deleting:
             return Asset.Pairing.icloading.image
         case .toDownload:
             return Asset.Gallery.mediaDownload.image
@@ -53,21 +59,49 @@ enum GalleryMediaDownloadState: CaseIterable {
         }
     }
 
-    var backgroundColor: UIColor {
+    /// Whether the left icon is enabled according to the action availability.
+    ///
+    /// - Parameter isAvailable: whether the action is available for interaction
+    /// - Returns: `true` if the left icon is enabled, `false` otherwise (used to visually reflect the action availability)
+    func isIconEnabled(isAvailable: Bool) -> Bool {
+        self != .toDownload || isAvailable
+    }
+
+    /// The button background color according to the action availability.
+    ///
+    /// - Parameter isAvailable: whether the action is available for interaction
+    /// - Returns: the button backgroud color
+    func backgroundColor(isAvailable: Bool) -> UIColor {
         switch self {
         case .toDownload:
-            return ColorName.highlightColor.color
+            // Use a faded highlightColor background if action is unavailable in order
+            // to reflect the user interaction state.
+            return ColorName.highlightColor.color.withAlphaComponent(isAvailable ? 1 : Constants.disabledBackgroundAlpha)
         case .downloaded,
              .downloading:
             return .white
+        case .deleting:
+            return ColorName.errorColor.color.withAlphaComponent(Style.disabledAlpha)
         case .error:
             return .clear
         }
     }
 
+    /// Whether button user interaction is enabled according to the action availability.
+    ///
+    /// - Parameter isAvailable: whether the action is available for interaction
+    /// - Returns: whether the button user interaction is enabled
+    func isUserInteractionEnabled(isAvailable: Bool) -> Bool {
+        // Action availability is only taken into account if state is `.toDownload`, as any
+        // other state does not imply any user interaction.
+        self == .toDownload ? isAvailable : false
+    }
+
+    /// The tint color.
     var tintColor: UIColor {
         switch self {
-        case .toDownload:
+        case .toDownload,
+                .deleting:
             return .white
         case .downloading,
              .downloaded:
@@ -77,25 +111,15 @@ enum GalleryMediaDownloadState: CaseIterable {
         }
     }
 
-    var isDownloadActionInfoShown: Bool {
-        switch self {
-        case .toDownload,
-             .downloading,
-             .error:
-            return true
-        case .downloaded:
-            return false
-        }
-    }
-
-    var isShareActionInfoShown: Bool {
-        !isDownloadActionInfoShown
-    }
-
+    /// The title of the button according to a specific optional text and button's state.
+    ///
+    /// - Parameter text: the text to display (if any)
+    /// - Returns: the title of the button based on provided text
     func title(_ text: String?) -> String? {
         switch self {
         case .downloading,
-             .downloaded:
+             .downloaded,
+             .deleting:
             return nil
         default:
             return text ?? L10n.commonDownload
@@ -105,20 +129,26 @@ enum GalleryMediaDownloadState: CaseIterable {
 
 /// Gallery media model.
 
-struct GalleryMedia: Equatable {
+public struct GalleryMedia: Equatable {
     // MARK: - Internal Properties
     var uid: String
+    var droneUid: String
     var customTitle: String?
     var source: GallerySourceType
     var mediaItems: [MediaItem]?
     var type: GalleryMediaType
-    var downloadState: GalleryMediaDownloadState?
-    var size: UInt64
     var date: Date
     var flightDate: Date?
     var bootDate: Date?
     var url: URL?
     var urls: [URL]?
+    var size: UInt64 {
+        mediaItems?.size ?? 0
+    }
+    /// Whether the media has been fully downloaded.
+    var isDownloaded: Bool {
+        source == .mobileDevice || mediaItems?.isDownloadComplete == true
+    }
     /// The previewable resources' URLs: any non-DNG resources.
     var previewableUrls: [URL]? {
         urls?.filter { $0.pathExtension != MediaItem.Format.dng.description.uppercased() }
@@ -235,17 +265,31 @@ struct GalleryMedia: Equatable {
     }
 
     // MARK: - Equatable Protocol
-    static func == (lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         return lhs.uid == rhs.uid
-            && lhs.type == rhs.type
-            && lhs.downloadState == rhs.downloadState
-            && lhs.size == rhs.size
-            && lhs.date == rhs.date
-            && lhs.flightDate == rhs.flightDate
-            && lhs.bootDate == rhs.bootDate
-            && lhs.url == rhs.url
-            && lhs.urls == rhs.urls
-            && lhs.mediaResources?.count == rhs.mediaResources?.count
+        && lhs.droneUid == rhs.droneUid
+        && lhs.type == rhs.type
+        && lhs.isDownloaded == rhs.isDownloaded
+        && lhs.size == rhs.size
+        && lhs.date == rhs.date
+        && lhs.flightDate == rhs.flightDate
+        && lhs.bootDate == rhs.bootDate
+        && lhs.url == rhs.url
+        && lhs.urls == rhs.urls
+        && lhs.mediaResources?.count == rhs.mediaResources?.count
+    }
+
+    /// Compares media to another `GalleryMedia`.
+    ///
+    /// - Parameter media: the media to compare to
+    /// - Returns: `true` if medias have identical UIDs (media + drone), `false` otherwise
+    func isSameMedia(as media: GalleryMedia) -> Bool {
+        uid == media.uid && droneUid == media.droneUid
+    }
+
+    /// Whether media is a spherical panorama.
+    var isSphericalPanorama: Bool {
+        type.toPanoramaType == .sphere
     }
 
     /// Whether an immersive panorama can be shown for the media.
@@ -262,7 +306,7 @@ struct GalleryMedia: Equatable {
 
     /// Whether a panorama can be generated for the media.
     /// `false` if not a panorama media type or if panorama has already been generated, `true` else.
-    var canGeneratePanorama: Bool {
+    var needsPanoGeneration: Bool {
         switch source {
         case .droneSdCard,
              .droneInternal:
@@ -371,9 +415,144 @@ struct GalleryMedia: Equatable {
     }
 }
 
+extension GalleryMedia {
+    /// The total number of resources of the media.
+    var resourcesCount: Int { resourcesCount(previewableOnly: false) }
+    /// The number of previewable resources of the media.
+    var previewableResourcesCount: Int { resourcesCount(previewableOnly: true) }
+
+    /// Returns the URL of a given media resource if it has been downloaded or cached.
+    ///
+    /// - Parameters:
+    ///    - index: the index of the resource to look for
+    /// - Returns: the URL of the resource if found, `nil` otherwise
+    func resourceUrl(at index: Int) -> URL? {
+        if source == .mobileDevice {
+            guard let urls = previewableUrls, index < urls.count else { return nil }
+            // URLs are already stored in `GalleryMedia` object if source is device.
+            return urls[index]
+        }
+
+        guard let resources = previewableResources, index < resources.count else { return nil }
+
+        let resource = resources[index]
+        if resource.type == .panorama,
+           let url = AssetUtils.shared.panoramaResourceUrlForMediaId(uid, droneUid: droneUid) {
+            // Local panorama resource exists => use local url.
+            return url
+        }
+
+        if let url = resource.galleryURL(droneId: droneUid, mediaType: type),
+           resource.isDownloaded(droneId: droneUid, mediaType: type) {
+            // Resource has been downloaded to device => use local url.
+            return url
+        }
+
+        // Return cached image URL if any, nil otherwise.
+        return resources[index].cachedImgUrlExist(droneId: droneUid) ?
+        resources[index].cachedImgUrl(droneId: droneUid) :
+        nil
+    }
+
+    /// The default resource index.
+    var defaultResourceIndex: Int {
+        if type == .bracketing {
+            // Bracketing media => return middle resource (ev0) index.
+            return Int((Float(resourcesCount) / 2).rounded(.up))
+        }
+
+        if panoramaGenerationState != .none {
+            // Non-generated panorama media => return type-based default resource index.
+            return (0...resourcesCount - 1).clamp(type.defaultResourceIndex)
+        }
+
+        // Return first resource index in default case.
+        return 0
+    }
+}
+
 extension MediaItem {
     /// The `MediaItem` resources that can be previewed on the device: any non-DNG resources.
     var previewableResources: [Resource] {
         resources.filter { $0.format != .dng }
+    }
+}
+
+extension Array where Element == GalleryMedia {
+
+    // TODO: [GalleryRework] Cleaner implementation.
+    /// Returns an array of filtered and sorted tuples (`Date`, `GalleryMedia`).
+    ///
+    /// - Parameter filter: the media types filter to apply
+    /// - Returns: the tuples array
+    func orderedByDate(filter: Set<GalleryMediaType> = []) -> [(date: Date, medias: [GalleryMedia])] {
+        var sortedItems: [(date: Date, medias: [GalleryMedia])] = []
+        let sortedData = self.filter { filter.isEmpty ? true : filter.contains($0.type) }
+            .sorted(by: { $0.date > $1.date })
+
+        for item in sortedData {
+            if let currentDate = sortedItems.first(where: { $0.date.isSameDay(date: item.date) }) {
+                var newDateTuple = currentDate
+                sortedItems.removeAll(where: { $0.date.isSameDay(date: currentDate.date) })
+                newDateTuple.medias.append(item)
+                sortedItems.append(newDateTuple)
+            } else {
+                sortedItems.append((date: item.date, medias: [item]))
+            }
+        }
+        return sortedItems
+    }
+
+    /// Returns the media array filtered by a media types set.
+    ///
+    /// - Parameter filter: the media types set filter
+    /// - Returns: the filtered `GalleryMedia`s array.
+    func filtered(by filter: Set<GalleryMediaType>) -> [GalleryMedia] {
+        self.filter { filter.isEmpty ? true : filter.contains($0.type) }
+            .sorted(by: { $0.date > $1.date })
+    }
+
+    /// The media array ordered by date.
+    var orderedByDate: [GalleryMedia] {
+        self.sorted(by: { $0.date > $1.date })
+    }
+
+    /// The flattened media items of the media array.
+    var mediaItems: [MediaItem] { compactMap({ $0.mediaItems }).flatMap({ $0 }) }
+
+    /// The flattened URLs of the media array.
+    var urls: [URL] { compactMap({ $0.urls }).flatMap({ $0 }) }
+
+    /// The total size of the media array.
+    var size: UInt64 { reduce(0) { $0 + $1.size } }
+
+    /// Returns media from array with specified media and drone UIDs.
+    ///
+    /// - Parameters:
+    ///    - uid: the media UID to look for
+    ///    - droneUid: the drone UID of the media to look for
+    /// - Returns: the media if it exists in the array, `nil` otherwise
+    func mediaWith(uid: String, droneUid: String) -> GalleryMedia? {
+        first(where: { $0.uid == uid && $0.droneUid == droneUid })
+    }
+}
+
+private extension GalleryMedia {
+
+    /// Returns the number of resources of current media
+    ///
+    /// - Parameter previewableOnly: whether total count should only include previewable resources or not
+    /// - Returns: the number of resources
+    func resourcesCount(previewableOnly: Bool = false) -> Int {
+        switch source {
+        case .droneSdCard, .droneInternal:
+            let resources = previewableOnly ? previewableResources : mediaResources
+            return resources?.count ?? 0
+        case .mobileDevice:
+            let urls = previewableOnly ? previewableUrls : urls
+            return urls?.count ?? 0
+        default:
+            return 0
+        }
     }
 }

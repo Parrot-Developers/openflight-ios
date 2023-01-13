@@ -175,14 +175,6 @@ extension BuildingHeightMenuViewController: EditionSettingsCellModelDelegate {
         guard let key = key else { return }
         updateSetting(forKey: key, withValue: value)
     }
-
-    func updateChoiceSetting(for key: String?, value: Bool) {
-        // nothing to do
-    }
-
-    func isUpdatingSetting(for key: String?, isUpdating: Bool) {
-        // nothing to do
-    }
 }
 
 // MARK: - Private Funcs

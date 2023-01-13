@@ -79,6 +79,11 @@ extension MediaItem {
         return Services.hub.currentDroneHolder.drone.uid
     }
 
+    /// The size of all downloadable resources (i.e. not downloaded yet) of the media item.
+    var size: UInt64 {
+        downloadableResources.reduce(0) { $0 + $1.size }
+    }
+
     /// Returns a list of all downloadable resources for this mediaItem.
     var downloadableResources: [MediaItem.Resource] {
         return resources.filter { !$0.isDownloaded(droneId: droneId, mediaType: mediaType) }
@@ -209,5 +214,62 @@ extension MediaItem.Resource {
         guard let cachedImgUrl = cachedImgUrl(droneId: droneId) else { return false }
 
         return FileManager.default.fileExists(atPath: cachedImgUrl.path)
+    }
+}
+
+/// Utility extension for `MediaItem` array.
+extension Array where Element == MediaItem {
+
+    /// The total size of all downloadable resources (i.e. not downloaded yet) of the media items array.
+    var size: UInt64 { reduce(0) { $0 + $1.size } }
+
+    /// The number of video medias in the array.
+    var videoMediaCount: Int { filter { $0.type == .video }.count }
+
+    /// The number of photo medias in the array.
+    var photoMediaCount: Int { filter { $0.type == .photo }.count }
+
+    /// Whether all the resources of the items in the array have been downloaded.
+    var isDownloadComplete: Bool { allSatisfy { $0.isDownloaded } }
+
+    /// The `GalleryMedia` object containing the media items array and based on first item parameters.
+    func galleryMedia(droneUid: String) -> GalleryMedia? {
+        guard let mediaItem = first else { return nil }
+        return GalleryMedia(uid: mediaItem.uid,
+                            droneUid: droneUid,
+                            customTitle: mediaItem.customId?.isEmpty != false ? nil : mediaItem.customTitle,
+                            source: mediaItem.isSdStorage ? .droneSdCard : mediaItem.isInternalStorage ? .droneInternal : .mobileDevice,
+                            mediaItems: self,
+                            type: mediaItem.mediaType,
+                            date: mediaItem.creationDate,
+                            flightDate: mediaItem.flightDate,
+                            bootDate: mediaItem.bootDate,
+                            url: nil)
+    }
+
+    /// The array of `GalleryMedia` objects based of media items array grouped by customID.
+    func galleryMedias(droneUid: String) -> [GalleryMedia] {
+        var mediasWithoutCustomId: [MediaItem] = []
+        var mediasWithCustomId: [String: [MediaItem]] = [:]
+
+        for media in self {
+            // Group timelapse or gpslapse FP Photogrammetry medias by custom_id.
+            if let customID = media.customId,
+               !customID.isEmpty,
+               media.mediaType == .gpsLapse || media.mediaType == .timeLapse {
+                if let mediasWithCustomID = mediasWithCustomId[customID] {
+                    mediasWithCustomId[customID] = mediasWithCustomID + [media]
+                } else {
+                    mediasWithCustomId[customID] = [media]
+                }
+            } else {
+                mediasWithoutCustomId.append(media)
+            }
+        }
+
+        let galleryMediasWithoutCustomID = mediasWithoutCustomId.compactMap { [$0].galleryMedia(droneUid: droneUid) }
+        let galleryMediasWithCustomID = mediasWithCustomId.compactMap { $1.galleryMedia(droneUid: droneUid) }
+
+        return galleryMediasWithoutCustomID + galleryMediasWithCustomID
     }
 }

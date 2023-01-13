@@ -142,6 +142,11 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
         let newIndex = (poiIndex ?? 0) % FlightPlanPoiPointGraphic.colors.count
         diamondSymbol = isSelected ? AGSPictureMarkerSymbol(image: FlightPlanPoiPointGraphic.poiSelected)
                                     : AGSPictureMarkerSymbol(image: FlightPlanPoiPointGraphic.colors[newIndex])
+        if graphicIsSelected {
+            zIndex = FlightPlanConstants.maxZIndex
+        } else {
+            zIndex = Int(altitude ?? 0)
+        }
         applyRotation()
         symbol = getSymbol()
 
@@ -153,7 +158,7 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
         poiPoint?.altitude = altitude
 
         if changeAltitude {
-            zIndex = Int(altitude)
+            zIndex = graphicIsSelected ? FlightPlanConstants.maxZIndex : Int(altitude)
             refreshText(altitude: poiPoint?.formattedAltitude ?? "")
             applyRotation()
             symbol = getSymbol()
@@ -208,8 +213,8 @@ public final class FlightPlanPoiPointGraphic: FlightPlanPointGraphic, PoiPointRe
 
     /// Applies rotation to symbols.
     private func applyRotation() {
-        mainLabel?.angle = Float(heading) * FlightPlanGraphic.Constants.rotationFactor
-        diamondSymbol?.angle = Float(heading) * FlightPlanGraphic.Constants.rotationFactor
+        mainLabel?.angle = Float(heading)
+        diamondSymbol?.angle = Float(heading)
     }
 }
 

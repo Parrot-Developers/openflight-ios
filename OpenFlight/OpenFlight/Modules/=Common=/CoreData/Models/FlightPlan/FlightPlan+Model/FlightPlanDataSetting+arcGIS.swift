@@ -28,6 +28,11 @@
 //    SUCH DAMAGE.
 
 import ArcGIS
+import GroundSdk
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "FlightPlanDataSetting.ArcGIS")
+}
 
 /// Utility extension for `FlightPlanObject` usage with ArcGIS.
 extension FlightPlanDataSetting {
@@ -182,6 +187,71 @@ extension FlightPlanDataSetting {
     ///     - mapMode: The current map mode
     func linesAndWaypointsGraphics(mapMode: MapMode) -> [FlightPlanGraphic] {
         return allLinesGraphics() + waypointsMarkersGraphics(mapMode: mapMode)
+    }
+
+    /// Returns ArcGis graphics generation result.
+    ///
+    /// - Parameters:
+    ///    - mapMode: the current map mode
+    ///    - graphicsMode: the graphics mode
+    /// - Returns: the `FlightPlanGraphicsGenerationResult`
+    ///
+    /// - Note: it would be better to have only one loop to generate WP related graphics
+    ///         but performing in several steps allows to display the minimum needed graphics in case of low memory.
+    @MainActor
+    func graphics(for mapMode: MapMode,
+                  graphicsMode: FlightPlanGraphicsMode) async -> FlightPlanGraphicsGenerationResult {
+        var graphics = [FlightPlanGraphic]()
+
+        // Generate trajectory lines.
+        for (index, wayPoint) in wayPoints.enumerated() {
+            guard let next = wayPoint.nextWayPoint else { continue }
+            graphics.append(FlightPlanWayPointLineGraphic(origin: wayPoint,
+                                                          destination: next,
+                                                          originIndex: index))
+            if Task.isCancelled {
+                ULog.i(.tag, "Cancelling trajectory graphics generation at index \(index) (WP count: \(wayPoints.count).")
+                return .failed
+            }
+        }
+
+        // Generate trajectory arrows if needed (in `.myFlights` the arrows are never shown).
+        if graphicsMode.isArrowIncluded && mapMode != .myFlights {
+            for (index, wayPoint) in wayPoints.enumerated() {
+                graphics.append(wayPoint.arrowGraphic(index: index))
+                if Task.isCancelled {
+                    ULog.i(.tag, "Cancelling trajectory arrows generation at index \(index) (WP count: \(wayPoints.count).")
+                    // Task has been cancelled but we can still want to display only the trajactory line
+                    // (e.g. in case of low memory warning).
+                    return .init(partially: .onlyTrajectory, graphics: graphics)
+                }
+            }
+        }
+
+        // Generate WP markers if needed.
+        if graphicsMode.isWayPointMarkersIncluded {
+            for (index, wayPoint) in wayPoints.enumerated() {
+                graphics .append(wayPoint.markerGraphic(index: index, isDetail: mapMode == .myFlights))
+                if Task.isCancelled {
+                    ULog.i(.tag, "Cancelling way points generation at index \(index) (WP count: \(wayPoints.count).")
+                    let mode: FlightPlanGraphicsMode = graphicsMode.isArrowIncluded ? .trajectoryAndArrows : .onlyTrajectory
+                    return .init(partially: mode, graphics: graphics)
+                }
+            }
+        }
+
+        // Generate POI markers if needed (in `.myFlights` the arrows are never shown).
+        if graphicsMode.isPoiMarkersIncluded && mapMode != .myFlights {
+            for (index, poiPoint) in pois.enumerated() {
+                graphics .append(poiPoint.markerGraphic(index: index))
+                if Task.isCancelled {
+                    ULog.i(.tag, "Cancelling pois generation at index \(index) (WP count: \(wayPoints.count).")
+                    return .init(status: .incompletePois, graphics: graphics)
+                }
+            }
+        }
+
+        return .init(succeeded: graphics)
     }
 
     /// Returns a simple `AGSPolyline` with all points.

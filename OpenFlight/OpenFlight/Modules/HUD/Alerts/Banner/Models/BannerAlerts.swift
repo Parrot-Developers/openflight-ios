@@ -43,7 +43,8 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
     case batteryIdentification
     case noGpsTooDark
     case noGpsTooHigh
-    case noGps
+    case rthUnavailableNoGps
+    case rthUnavailableMagnetometer
     case headingLockedKoPerturbationMagnetic
     case headingLockedKoEarthMagnetic
     case tooMuchWind
@@ -68,6 +69,31 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
     public var severity: BannerAlertSeverity { .critical }
 
     public var content: BannerAlertContent { .init(icon: icon, title: title) }
+
+    public var behavior: BannerAlertBehavior {
+        switch self {
+        case .motorCutout,
+                .motorCutoutTemperature,
+                .motorCutoutPowerSupply,
+                .forceLandingLowBattery,
+                .forceLandingIcedPropeller,
+                .forceLandingBatteryTooHot,
+                .forceLandingBatteryTooCold,
+                .wontReachHome,
+                .sdError,
+                .sdTooSlow,
+                .internalMemoryError,
+                .geofence,
+                .rthIcedPropeller,
+                .rthPoorBatteryConnection:
+            // Specific case: use severity's default behavior without any 'on' or 'snooze' duration.
+            return BannerAlertBehavior(feedbackType: severity.feedbackType,
+                                       systemSoundId: severity.systemSoundId)
+        default:
+            // Use severity's default behavior.
+            return severity.behavior
+        }
+    }
 
     public var priority: Int { rawValue }
 
@@ -128,8 +154,10 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
             return L10n.alertNoGpsTooDark
         case .noGpsTooHigh:
             return L10n.alertNoGpsTooHigh
-        case .noGps:
-            return L10n.alertNoGps
+        case .rthUnavailableNoGps:
+            return L10n.alertRthUnavailableNoGps
+        case .rthUnavailableMagnetometer:
+            return L10n.alertRthUnavailableMagnetometer
         case .headingLockedKoPerturbationMagnetic:
             return L10n.alertHeadingLockKoPerturbationMagnetic
         case .headingLockedKoEarthMagnetic:
@@ -183,11 +211,11 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
     case obstacleAvoidanceBlindMotionDirection
     case imuVibration
     case targetLost
-    case droneGpsKo
     case userDeviceGpsKo
     case unauthorizedFlightZone
     case unauthorizedFlightZoneWithMission
     case highDeviation
+    case flightPlanTooBigToBeDisplayed
 
     public var severity: BannerAlertSeverity { .warning }
 
@@ -196,9 +224,17 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
     public var behavior: BannerAlertBehavior {
         switch self {
         case .obstacleAvoidanceDroneStucked,
-                .obstacleAvoidanceBlindMotionDirection:
+                .obstacleAvoidanceBlindMotionDirection,
+                .targetLost,
+                .unauthorizedFlightZone,
+                .unauthorizedFlightZoneWithMission:
             // Specific case: use severity's default behavior without any 'on' or 'snooze' duration.
             return BannerAlertBehavior(feedbackType: severity.feedbackType,
+                                       systemSoundId: severity.systemSoundId)
+        case .flightPlanTooBigToBeDisplayed:
+            // Keep the default warning severity behavior except the snooze.
+            return BannerAlertBehavior(onDuration: severity.onDuration,
+                                       feedbackType: severity.feedbackType,
                                        systemSoundId: severity.systemSoundId)
         default:
             // Use severity's default behavior.
@@ -214,11 +250,10 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
             return Asset.Common.Icons.icWifi.image
         case .imuVibration:
             return Asset.Common.Icons.icDroneSmall.image
-        case .droneGpsKo,
-                .userDeviceGpsKo:
+        case .userDeviceGpsKo:
             return Asset.Gps.Controller.icGpsKo.image.withRenderingMode(.alwaysTemplate)
         default:
-            return nil
+            return Asset.Common.Icons.icWarningWhite.image
         }
     }
 
@@ -232,8 +267,7 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
             return L10n.alertImuVibrations
         case .targetLost:
             return L10n.alertTargetLost
-        case .droneGpsKo,
-                .userDeviceGpsKo:
+        case .userDeviceGpsKo:
             return L10n.alertGpsKo
         case .unauthorizedFlightZone,
                 .unauthorizedFlightZoneWithMission:
@@ -242,6 +276,8 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
             return L10n.alertHighDeviation
         case .obstacleAvoidanceBlindMotionDirection:
             return L10n.alertObstacleAvoidanceBlindDirection
+        case .flightPlanTooBigToBeDisplayed:
+            return L10n.flightPlanTooBigToBeDisplayed
         }
     }
 }
@@ -251,17 +287,53 @@ public enum WarningBannerAlert: Int, BannerAlert, Equatable {
 public enum AdviceBannerAlert: Int, BannerAlert, Equatable {
 
     case takeOff
+    case streamUnavailable
+    case unableToComputePoi
+    case amslFlightPlanUnavailable
 
-    public var severity: BannerAlertSeverity { .advice }
+    public var severity: BannerAlertSeverity {
+        switch self {
+        case .streamUnavailable: return .critical
+        case .takeOff: return .advice
+        case .unableToComputePoi: return .advice
+        case .amslFlightPlanUnavailable: return .advice
+        }
+    }
 
-    public var content: BannerAlertContent { .init(title: title) }
+    public var content: BannerAlertContent { .init(icon: icon, title: title) }
+
+    public var style: BannerAlertStyle {
+        switch self {
+        case .streamUnavailable:
+            return .init(iconColor: ColorName.errorColor.color,
+                         titleColor: .black,
+                         backgroundColor: .white)
+        default:
+            return severity.style
+        }
+    }
 
     public var priority: Int { rawValue }
+
+    private var icon: UIImage? {
+        switch self {
+        case .streamUnavailable:
+            return Asset.Gallery.mediaCorrupted.image
+        default:
+            return nil
+        }
+    }
 
     private var title: String {
         switch self {
         case .takeOff:
             return L10n.alertTakeOff
+        case .streamUnavailable:
+            return L10n.alertStreamUnavailableDownload
+        case .unableToComputePoi:
+            return L10n.touchFlyPoiTooClose
+        case .amslFlightPlanUnavailable:
+            return L10n.alertFlightPlanWithoutAmslMessage
         }
     }
 }
@@ -360,6 +432,10 @@ public extension AnyBannerAlert {
 
     static var copterMotorAlerts: [CriticalBannerAlert] {
         [.motorCutout, .motorCutoutTemperature, .motorCutoutTemperature]
+    }
+
+    static var rthUnavailabilityAlerts: [CriticalBannerAlert] {
+        [.rthUnavailableNoGps, .rthUnavailableMagnetometer]
     }
 
     static var alarmsAlerts: [BannerAlert] {

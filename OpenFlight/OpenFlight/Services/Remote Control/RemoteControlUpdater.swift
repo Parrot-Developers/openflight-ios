@@ -37,66 +37,102 @@ private extension ULogTag {
 }
 
 public protocol RemoteControlUpdater {
-    /// send mapping to remote controller
-    func updateRemoteMapping()
+    /// Sets the control mode.
+    ///
+    /// - Parameters:
+    ///   - controlMode: the control mode
+    func setControlMode(_ controlMode: ControlsSettingsMode)
 }
 
 class RemoteControlUpdaterImpl: RemoteControlUpdater {
-    private var currentRemoteControlHolder: CurrentRemoteControlHolder
-    private var remoteControl: RemoteControl?
+    private let currentRemoteControlHolder: CurrentRemoteControlHolder!
+    private let currentDroneHolder: CurrentDroneHolder!
     private var remoteControlStateRef: Ref<DeviceState>?
-    private var drone: Drone?
+    private var pilotingControlRef: Ref<PilotingControl>?
     private var cancellables = Set<AnyCancellable>()
 
-    init(currentRemoteControlHolder: CurrentRemoteControlHolder) {
+    init(currentRemoteControlHolder: CurrentRemoteControlHolder,
+         currentDroneHolder: CurrentDroneHolder) {
         self.currentRemoteControlHolder = currentRemoteControlHolder
-        listenRemoteControl()
-    }
+        self.currentDroneHolder = currentDroneHolder
 
-    private func listenRemoteControl() {
         ULog.d(.tag, "listen starting")
         currentRemoteControlHolder.remoteControlPublisher
             .sink { [unowned self] in
                 guard let remoteControl = $0 else {
                     return
                 }
-                self.remoteControl = remoteControl
-                listenConnectionState()
+                listenConnectionState(remoteControl: remoteControl)
+            }
+            .store(in: &cancellables)
+
+        currentDroneHolder.dronePublisher
+            .sink { [unowned self] in
+                listenPilotingControl(drone: $0)
             }
             .store(in: &cancellables)
     }
 
-    /// Listen to controller connection state
-    private func listenConnectionState() {
+    /// Sets the control mode.
+    ///
+    /// - Parameters:
+    ///   - controlMode: the control mode
+    func setControlMode(_ controlMode: ControlsSettingsMode) {
+        Defaults.userControlModeSetting = controlMode.value
+        updateRemoteMapping()
+    }
+}
+
+private extension RemoteControlUpdaterImpl {
+    /// Listen to controller connection state.
+    ///
+    /// - Parameters:
+    ///     - remoteControl: the remote control
+    func listenConnectionState(remoteControl: RemoteControl?) {
         ULog.d(.tag, "listen connection state starting")
         remoteControlStateRef = remoteControl?.getState { [unowned self] deviceState in
             switch deviceState?.connectionState {
             case .connected:
                 ULog.d(.tag, "device connected")
-                self.updateRemoteMapping()
+                updateRemoteMapping()
             default:
                 break
             }
         }
     }
 
-    func updateRemoteMapping() {
-        let currentDroneHolder = Services.hub.currentDroneHolder
-        drone = currentDroneHolder.drone
-        guard let remoteControl = remoteControl,
-              let skyCtrl4 = remoteControl.getPeripheral(Peripherals.skyCtrl4Gamepad),
-              let droneModel = drone?.model else {
-                  return
-              }
+    /// Starts watcher for the piloting control.
+    ///
+    /// - Parameters:
+    ///   - drone: the current drone
+    func listenPilotingControl(drone: Drone) {
+        /// Listen Piloting Control.
+        pilotingControlRef = drone.getPeripheral(Peripherals.pilotingControl) { [unowned self] control in
+            if control?.behaviourSetting.value == .cameraOperated {
+                resetBehaviourSettings()
+            }
+            // Update remote control mapping to apply changes.
+            updateRemoteMapping()
+        }
+    }
 
-        guard let rawUserMode = Defaults.userControlModeSetting,
-              let controlMode = ControlsSettingsMode(value: rawUserMode) else {
-                  return
-              }
+    /// Resets behaviour settings.
+    func resetBehaviourSettings() {
+        currentDroneHolder.drone.getPeripheral(Peripherals.pilotingControl)?.behaviourSetting.value = .standard
+    }
+
+    /// Updates the remote mapping according to the control mode.
+    func updateRemoteMapping() {
+        guard let remoteControl = currentRemoteControlHolder.remoteControl,
+              let skyCtrl4 = remoteControl.getPeripheral(Peripherals.skyCtrl4Gamepad),
+              let controlMode = ControlsSettingsMode(value: Defaults.userControlModeSetting) else {
+            return
+        }
 
         skyCtrl4.volatileMappingSetting?.value = false
 
         ULog.d(.tag, "updating remote with mode \(controlMode.value)")
+        let droneModel = currentDroneHolder.drone.model
         switch controlMode {
         case .mode1:
             skyCtrl4.register(mappingEntry: SkyCtrl4AxisMappingEntry(droneModel: droneModel, action: .controlPitch,
@@ -153,13 +189,13 @@ class RemoteControlUpdaterImpl: RemoteControlUpdater {
     ///
     /// - Parameters:
     ///     - axes: set of Sky controller axis
-    private func reverseAxes(_ axes: Set<SkyCtrl4Axis>) {
-        guard let remoteControl = remoteControl,
-              let skyCtrl4 = remoteControl.getPeripheral(Peripherals.skyCtrl4Gamepad),
-              let droneModel = drone?.model else {
-                  return
-              }
+    func reverseAxes(_ axes: Set<SkyCtrl4Axis>) {
+        guard let remoteControl = currentRemoteControlHolder.remoteControl,
+              let skyCtrl4 = remoteControl.getPeripheral(Peripherals.skyCtrl4Gamepad) else {
+            return
+        }
 
+        let droneModel = currentDroneHolder.drone.model
         SkyCtrl4Axis.allCases.forEach { axe in
             if (skyCtrl4.reversedAxes(forDroneModel: droneModel)?.contains(axe) == false && axes.contains(axe))
                 || (skyCtrl4.reversedAxes(forDroneModel: droneModel)?.contains(axe) == true && !axes.contains(axe)) {

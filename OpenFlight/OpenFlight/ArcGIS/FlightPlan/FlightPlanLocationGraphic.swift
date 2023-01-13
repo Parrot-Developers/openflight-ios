@@ -28,15 +28,35 @@
 //    SUCH DAMAGE.
 
 import ArcGIS
+import UIKit
 
 /// Graphic class for Flight Plan's location graphic
 public final class FlightPlanLocationGraphic: AGSGraphic {
     // MARK: - Private Properties
-    private var locationSymbol: AGSPictureMarkerSymbol
+    public var locationSymbol: AGSPictureMarkerSymbol?
     private var cameraHeading: Int = 0
     private var angle: Int = 0
     private var applyCameraHeading = true
-    private let arcgisMagicNumber = -1
+    private var modelSymbol: AGSModelSceneSymbol?
+    var compositeSymbol: AGSDistanceCompositeSceneSymbol?
+
+    public var symbol3D: AGSModelSceneSymbol?
+    private var cameraZoomLevel: Int?
+    private var cameraPosition: AGSPoint?
+    private var originalWidth: Double?
+    private var originalHeight: Double?
+    private var originalDepth: Double?
+
+    private var distance: Double = 0
+    private var isReduced = false
+    private var originalGeometry: AGSPoint
+    private var display3D = false
+    private enum Constants {
+        static let lngToMeters: Double = 111_320
+        static let latToMeters: Double = 110_574
+        static let kValue = 0.013
+        static let symbolTraitOverlap = 1.3
+    }
 
     // MARK: - Init
     /// Init.
@@ -46,12 +66,28 @@ public final class FlightPlanLocationGraphic: AGSGraphic {
     ///    - heading: heading
     ///    - attributes: attributes
     ///    - image: image
-    public init(geometry: AGSPoint, heading: Float, attributes: [String: String], image: UIImage) {
+    ///    - image3D: 3D image
+    ///    - display3D: whether the display is in 3D or not
+    public init(geometry: AGSPoint, heading: Float, attributes: [String: String], image: UIImage?,
+                image3D: AGSModelSceneSymbol?, display3D: Bool) {
+        self.originalGeometry = geometry
         self.angle = Int(heading)
-        locationSymbol = AGSPictureMarkerSymbol(image: image)
-        locationSymbol.angle = heading
-        let attributes = attributes
-        super.init(geometry: geometry, symbol: locationSymbol, attributes: attributes)
+        self.display3D = display3D
+
+        if let image = image, !display3D {
+            locationSymbol = AGSPictureMarkerSymbol(image: image)
+            locationSymbol?.angle = heading
+            super.init(geometry: geometry, symbol: locationSymbol, attributes: attributes)
+        } else if let image3D = image3D {
+            symbol3D = image3D
+            symbol3D?.heading = Double(heading)
+            symbol3D?.anchorPosition = .origin
+            // set up the distance composite symbol
+
+            super.init(geometry: geometry, symbol: symbol3D, attributes: attributes)
+        } else {
+            super.init(geometry: geometry, symbol: nil, attributes: attributes)
+        }
         applyRotation()
         self.symbol = getSymbol()
     }
@@ -59,10 +95,23 @@ public final class FlightPlanLocationGraphic: AGSGraphic {
     /// Get symbol
     ///
     /// - Returns: symbol
-    private func getSymbol() -> AGSCompositeSymbol {
+    private func getSymbol() -> AGSSymbol? {
         var array = [AGSSymbol]()
-        array.append(locationSymbol)
-        return AGSCompositeSymbol(symbols: array)
+        if display3D {
+            if let symbol3D = symbol3D {
+                compositeSymbol = AGSDistanceCompositeSceneSymbol()
+                array.append(symbol3D)
+                return AGSCompositeSymbol(symbols: array)
+            }
+        } else {
+            if let compositeSymbol = compositeSymbol {
+                return compositeSymbol
+            } else if let locationSymbol = locationSymbol {
+                array.append(locationSymbol)
+                return AGSCompositeSymbol(symbols: array)
+            }
+        }
+        return nil
     }
 
     /// Updates camera heading.
@@ -94,10 +143,11 @@ public final class FlightPlanLocationGraphic: AGSGraphic {
     /// - Parameters:
     ///     - geometry: new geometry
     func update(geometry: AGSPoint) {
-        guard geometry != self.geometry else {
+        guard geometry != self.originalGeometry else {
             return
         }
-        self.geometry = geometry
+        originalGeometry = geometry
+        updateSizeSymbol()
         applyRotation()
         symbol = getSymbol()
     }
@@ -105,12 +155,19 @@ public final class FlightPlanLocationGraphic: AGSGraphic {
     /// Applies rotation to symbols.
     private func applyRotation() {
         var result = 0
-        if applyCameraHeading {
+        if applyCameraHeading && symbol3D == nil {
             result = (angle - cameraHeading) % 360
         } else {
-            result = arcgisMagicNumber * (angle % 360)
+            // Minus because the bearing angle is counter-clockwise, but AGS expects a clockwise angle for a 2D graphic
+            if symbol3D == nil {
+                result = -1 * (angle % 360)
+            } else {
+                result = angle
+            }
         }
-        locationSymbol.angle = (Float(result))
+        locationSymbol?.angle = (Float(result))
+        symbol3D?.heading = Double(result)
+        adjustPositionOffset()
     }
 
     /// Updates apply camera heading
@@ -127,13 +184,88 @@ public final class FlightPlanLocationGraphic: AGSGraphic {
     }
 
     /// Updates image
+    /// PS : only used in 2D.
     ///
     /// - Parameters:
     ///     - image: new image
-    func update(image: UIImage) {
-        let angle = locationSymbol.angle
-        locationSymbol = AGSPictureMarkerSymbol(image: image)
-        locationSymbol.angle = angle
+    func update(image: UIImage?) {
+        if let image = image {
+            let angle = locationSymbol?.angle
+            locationSymbol = AGSPictureMarkerSymbol(image: image)
+            locationSymbol?.angle = angle ?? 0
+            symbol = getSymbol()
+        } else {
+            locationSymbol = nil
+            symbol = getSymbol()
+        }
+    }
+
+    /// Updates 3D image
+    ///
+    /// - Parameters:
+    ///     - image: new image
+    func update(image3D: AGSModelSceneSymbol?) {
+        self.symbol3D = image3D
+        symbol3D?.heading = Double(self.angle)
+        symbol3D?.anchorPosition = .bottom
         symbol = getSymbol()
+    }
+
+    /// Updates camera zoom level and camera position
+    ///
+    /// - Parameters:
+    ///     - cameraZoomLevel: new camera zoom level
+    ///     - position: new position of camera
+    func update(cameraZoomLevel: Int, position: AGSPoint) {
+        self.cameraZoomLevel = cameraZoomLevel
+        self.cameraPosition = position
+        updateSizeSymbol()
+        symbol = getSymbol()
+    }
+
+    /// Calculate distance between camera and the symbol.
+    private func setDistanceBetweenCoordinate() {
+        if let geometry = geometry as? AGSPoint, let cameraPosition = cameraPosition {
+            distance = cameraPosition.distanceToPoint(geometry)
+        }
+    }
+
+    /// Update size of 3D Symbol
+    private func updateSizeSymbol() {
+        setDistanceBetweenCoordinate()
+        if let symbol3D = symbol3D {
+            if originalWidth == nil, originalHeight == nil, originalDepth == nil {
+                originalWidth = symbol3D.width
+                originalHeight = symbol3D.height
+                originalDepth = symbol3D.depth
+            }
+
+            guard let originalWidth = originalWidth, let originalHeight = originalHeight,
+                    let originalDepth = originalDepth else { return }
+            symbol3D.width = distance * originalWidth * Constants.kValue * (isReduced ? 2 : 1)
+            symbol3D.height = distance * originalHeight * Constants.kValue * (isReduced ? 2 : 1)
+            symbol3D.depth = distance * originalDepth * Constants.kValue * (isReduced ? 2 : 1)
+        }
+    }
+
+    /// Set reduced mode, this is used when map is mini.
+    ///
+    /// - Parameters:
+    ///    - value: the new value
+    func setReduced(_ value: Bool) {
+        self.isReduced = value
+        updateSizeSymbol()
+    }
+
+    private func adjustPositionOffset() {
+        guard let symbol3D = symbol3D else {
+            self.geometry = originalGeometry
+            return
+        }
+        let size = Double(max(symbol3D.width, symbol3D.height)) / 2  * Constants.symbolTraitOverlap
+        let heading = Double(symbol3D.heading).toRadians()
+        let deltaX = (size / Constants.lngToMeters) * sin(heading) / cos(Double(originalGeometry.y).toRadians())
+        let deltaY = (size / Constants.latToMeters) * cos(heading)
+        self.geometry = AGSPoint(x: originalGeometry.x - deltaX, y: originalGeometry.y - deltaY, z: originalGeometry.z, spatialReference: .wgs84())
     }
 }

@@ -130,6 +130,20 @@ extension AssetUtils {
         }
     }
 
+    /// Returns local image stored at a specific URL (if existing).
+    ///
+    /// - Parameter url: the URL of the image
+    /// - Returns: the image stored at provided URL
+    static func loadImage(url: URL) -> UIImage? {
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+
+        if let data = try? Data(contentsOf: url) {
+            return UIImage(data: data)
+        }
+
+        return nil
+    }
+
     /// Returns image from given URL (raw/dng format) if exists, nil otherwise.
     ///
     /// - Parameters:
@@ -226,10 +240,19 @@ extension AssetUtils {
     /// Returns the local panorama resource URL of a specified media if stored locally.
     ///
     /// - Parameters:
-    ///    - uid: Media UID containing the resource to look for.
-    /// - Returns: The local URL of the corresponding panorama resource (if any).
-    func panoramaResourceUrlForMediaId(_ uid: String?) -> URL? {
-        guard var relativeUrlString = mediaResourcesInfo.filter({ $0.value.mediaId == uid && $0.value.isPanorama }).first?.key else { return nil }
+    ///    - uid: the media UID containing the resource to look for
+    ///    - droneUid: the UID of the drone which captured the media
+    /// - Returns: the local URL of the corresponding panorama resource (if any)
+    func panoramaResourceUrlForMediaId(_ uid: String?, droneUid: String) -> URL? {
+        guard var relativeUrlString = mediaResourcesInfo
+            .filter({ $0.value.mediaId == uid && $0.value.isPanorama })
+            .map({ $0.key })
+            .filter({ $0.droneUid == droneUid })
+            .first
+        else {
+            // No local URL found for provided media/drone UIDs.
+            return nil
+        }
         relativeUrlString.removeFirst() // Remove first '/' character from .mediaRelativeUrl string.
         return MediaUtils.imgGalleryDirectoryUrl?.appendingPathComponent(relativeUrlString)
     }
@@ -285,7 +308,9 @@ extension AssetUtils {
             }
             var mediaDictionary: [String: [URL]] = [:]
             for url in finalMediaUrls {
-                let imgOrigin = mediaUidFromUrl(url, urls: finalMediaUrls)
+                // Group items according to their media title first, as they may belong to the same media (e.g. GPS lapse).
+                // Group by UID if no media title is found.
+                let imgOrigin = mediaTitleFromUrl(url) ?? mediaUidFromUrl(url, urls: finalMediaUrls)
                 if mediaDictionary[imgOrigin] == nil {
                     mediaDictionary[imgOrigin] = [url]
                 } else {
@@ -338,6 +363,34 @@ extension AssetUtils {
             }
         }
         return success
+    }
+
+    /// Removes a medias array from device memory.
+    ///
+    /// - Parameter medias: the medias array to remove
+    func removeMedias(medias: [GalleryMedia]) async throws {
+        for media in medias {
+            guard let urls = media.urls else { continue }
+            for url in urls {
+                try FileManager.default.removeItem(at: url)
+                // Remove entry from local list if deletion is successful.
+                removeMediaInfoFromLocalList(url: url)
+            }
+        }
+    }
+
+    /// Removes the resources located at specific indexes of a media.
+    ///
+    /// - Parameters:
+    ///    - indexes: the indexes of the resources to remove
+    ///    - media: the media containing the resources to remove
+    func removeResources(at indexes: [Int], from media: GalleryMedia) async throws {
+        guard let urls = media.urls else { return }
+        for index in indexes.filter({ $0 < urls.count }) {
+            try FileManager.default.removeItem(at: urls[index])
+            // Remove entry from local list if deletion is successful.
+            removeMediaInfoFromLocalList(url: urls[index])
+        }
     }
 
     /// Deletes a resource from a media.
@@ -614,12 +667,11 @@ private extension AssetUtils {
         }
 
         let galleryMedia = GalleryMedia(uid: mediaUidFromUrl(mainMediaUrl, urls: urls),
+                                        droneUid: mainMediaUrl.droneUid,
                                         customTitle: mediaTitleFromUrl(mainMediaUrl),
                                         source: .mobileDevice,
                                         mediaItems: mediaItems,
                                         type: mediaType,
-                                        downloadState: .downloaded,
-                                        size: mediaSize,
                                         date: mediaDate,
                                         flightDate: mediaFlightDateFromUrl(mainMediaUrl),
                                         bootDate: mediaBootDateFromUrl(mainMediaUrl),
@@ -665,4 +717,8 @@ private extension AssetUtils {
                              panoramaType: nil,
                              resources: [mockResource])
     }
+}
+
+extension AssetUtils {
+    var medias: [GalleryMedia] { allLocalImages() + allLocalVideos() }
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ykg-O9-yb7">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ykg-O9-yb7">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -38,7 +38,7 @@
                                                 </constraints>
                                             </view>
                                             <stackView opaque="NO" contentMode="center" distribution="equalSpacing" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="9i8-0I-caz">
-                                                <rect key="frame" x="352.66666666666669" y="255" width="190.66666666666669" height="20"/>
+                                                <rect key="frame" x="321.66666666666669" y="255" width="252.66666666666669" height="20"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="center" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="lhx-tz-ePC">
                                                         <rect key="frame" x="0.0" y="0.0" width="45.333333333333336" height="20"/>
@@ -74,10 +74,23 @@
                                                             </imageView>
                                                         </subviews>
                                                     </stackView>
-                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GQuality5" translatesAutoresizingMaskIntoConstraints="NO" id="Cb6-oy-zU4">
-                                                        <rect key="frame" x="170.66666666666669" y="0.0" width="20" height="20"/>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icDriDeactivated" translatesAutoresizingMaskIntoConstraints="NO" id="Jry-Nb-tUd" userLabel="Dri State Image View">
+                                                        <rect key="frame" x="170.66666666666663" y="0.0" width="20" height="20"/>
                                                         <color key="tintColor" name="default_text_color"/>
                                                     </imageView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="W2f-R7-hQx">
+                                                        <rect key="frame" x="210.66666666666669" y="0.0" width="42" height="20"/>
+                                                        <subviews>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic4GOffline" translatesAutoresizingMaskIntoConstraints="NO" id="Cb6-oy-zU4">
+                                                                <rect key="frame" x="0.0" y="0.0" width="20" height="20"/>
+                                                                <color key="tintColor" name="default_text_color"/>
+                                                            </imageView>
+                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icWifiOffline" translatesAutoresizingMaskIntoConstraints="NO" id="jBi-Ww-G86">
+                                                                <rect key="frame" x="20" y="0.0" width="22" height="20"/>
+                                                                <color key="tintColor" name="default_text_color"/>
+                                                            </imageView>
+                                                        </subviews>
+                                                    </stackView>
                                                 </subviews>
                                             </stackView>
                                         </subviews>
@@ -96,11 +109,13 @@
                     <connections>
                         <outlet property="batteryImageView" destination="Nov-35-Xy2" id="h7b-4V-8wA"/>
                         <outlet property="batteryLabel" destination="yeR-CQ-ybr" id="Ych-qN-o1P"/>
+                        <outlet property="cellularStatusImageView" destination="Cb6-oy-zU4" id="je5-fm-z9E"/>
                         <outlet property="componentsStatusView" destination="NX0-MD-fc1" id="AAq-H4-ydX"/>
+                        <outlet property="driStateImageView" destination="Jry-Nb-tUd" id="zfc-Qg-rQN"/>
                         <outlet property="gpsImageView" destination="ISj-kN-eK3" id="h7w-vA-jCj"/>
                         <outlet property="nbSatelliteLabel" destination="Oe9-Io-BNT" id="fOB-2l-dhI"/>
-                        <outlet property="networkImageView" destination="Cb6-oy-zU4" id="je5-fm-z9E"/>
                         <outlet property="satelliteImageView" destination="QpX-wq-gqv" id="8LQ-57-tKy"/>
+                        <outlet property="wifiStatusImageView" destination="jBi-Ww-G86" id="fOH-oH-YNt"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="l1e-0N-Ly7" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -109,10 +124,12 @@
         </scene>
     </scenes>
     <resources>
-        <image name="ic4GQuality5" width="20" height="20"/>
+        <image name="ic4GOffline" width="20" height="20"/>
         <image name="icBattery" width="7" height="14"/>
+        <image name="icDriDeactivated" width="20" height="20"/>
         <image name="icGpsQuality6" width="20" height="20"/>
         <image name="icSatellite" width="22" height="16"/>
+        <image name="icWifiOffline" width="22" height="20"/>
         <namedColor name="default_text_color">
             <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

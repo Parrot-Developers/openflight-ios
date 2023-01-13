@@ -89,11 +89,15 @@ final class SettingsCameraViewModel: SettingsViewModelProtocol {
     // MARK: - Private Properties
     private var cameraRef: Ref<MainCamera2>?
     private var antiFlickerRef: Ref<Antiflicker>?
-    private unowned var flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler
+    private var activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher
+    /// Whether there is an FP execution currently running.
+    /// This will be used to know if some settings must be disabled or not.
+    private var flightPlanExecutionOngoing: Bool = false
 
     // MARK: - init
-    init(flightPlanCameraSettingsHandler: FlightPlanCameraSettingsHandler, currentDroneHolder: CurrentDroneHolder) {
-        self.flightPlanCameraSettingsHandler = flightPlanCameraSettingsHandler
+    init(activeFlightPlanWatcher: ActiveFlightPlanExecutionWatcher,
+         currentDroneHolder: CurrentDroneHolder) {
+        self.activeFlightPlanWatcher = activeFlightPlanWatcher
         self.currentDroneHolder = currentDroneHolder
 
         currentDroneHolder.dronePublisher
@@ -103,6 +107,8 @@ final class SettingsCameraViewModel: SettingsViewModelProtocol {
                 self.listenAntiFlicher(drone)
             }
             .store(in: &cancellables)
+
+        listenFlightPlanExecutionState()
     }
 
     func resetSettings() {
@@ -118,6 +124,15 @@ final class SettingsCameraViewModel: SettingsViewModelProtocol {
         }
 
         Defaults.overexposureSetting = CameraPreset.overexposure.rawValue
+    }
+
+    /// Listen if there is an active execution ongoing.
+    func listenFlightPlanExecutionState() {
+        activeFlightPlanWatcher.activeFlightPlanStatePublisher
+            .sink { [weak self] in
+                self?.flightPlanExecutionOngoing = !$0.isInactive
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -157,12 +172,11 @@ private extension SettingsCameraViewModel {
             let currentAntiflicker = antiFlicker?.setting.mode else {
                 return nil
         }
-        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: AntiflickerMode.allValues,
                                  supportedValues: Array(supportedModes),
                                  currentValue: currentAntiflicker,
                                  isUpdating: antiFlicker?.setting.updating ?? false,
-                                 forceDisabling: forceDisabling) { [weak self] mode in
+                                 forceDisabling: flightPlanExecutionOngoing) { [weak self] mode in
                                     guard let mode = mode as? AntiflickerMode else { return }
 
                                     let drone = self?.drone
@@ -194,11 +208,10 @@ private extension SettingsCameraViewModel {
             ULog.w(.tag, "Video Encoding setting: \(videoEncoding) is different in the Drone: \(droneValue?.rawValue ?? "-")")
         }
 
-        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2VideoCodec.allValues,
                                  supportedValues: Camera2VideoCodec.allValues,
                                  currentValue: videoEncoding,
-                                 forceDisabling: forceDisabling) { [weak self] mode in
+                                 forceDisabling: flightPlanExecutionOngoing) { [weak self] mode in
             guard let encodingMode = mode as? Camera2VideoCodec else { return }
 
             // Store the new value locally.
@@ -251,11 +264,10 @@ private extension SettingsCameraViewModel {
             ULog.w(.tag, "Video Dynamic Range setting: \(currentHdrValue) is different in the Drone: \(droneValue?.rawValue ?? "-")")
         }
 
-        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
         return DroneSettingModel(allValues: Camera2DynamicRange.usedValues,
                                  supportedValues: Camera2DynamicRange.usedValues,
                                  currentValue: currentHdrValue,
-                                 forceDisabling: forceDisabling) { [weak self] range in
+                                 forceDisabling: flightPlanExecutionOngoing) { [weak self] range in
             guard let videoRange = range as? Camera2DynamicRange else { return }
 
             Defaults.highDynamicRangeSetting = videoRange.rawValue
@@ -281,12 +293,10 @@ private extension SettingsCameraViewModel {
             ULog.w(.tag, "Photo signature setting: \(photoSignature) is different in the Drone: \(droneValue?.rawValue ?? "-")")
         }
 
-        let forceDisabling = flightPlanCameraSettingsHandler.forbidCameraSettingsChange
-
         return DroneSettingModel(allValues: Camera2DigitalSignature.allValues,
                                  supportedValues: Camera2DigitalSignature.allValues,
                                  currentValue: photoSignature,
-                                 forceDisabling: forceDisabling) { [weak self] digitalSignature in
+                                 forceDisabling: flightPlanExecutionOngoing) { [weak self] digitalSignature in
             guard let digitalSignature = digitalSignature as? Camera2DigitalSignature else { return }
 
             // Store the new value locally.

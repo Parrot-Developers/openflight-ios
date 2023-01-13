@@ -93,6 +93,10 @@ private extension TelemetryItemView {
         itemImageView.image = model?.image
         alertBackgroundView.backgroundColor = model?.backgroundColor
         alertBackgroundView.layer.borderColor = model?.borderColor.cgColor
-        accessibilityValue = attributedString.string
+        accessibilityLabel = attributedString.string
+        accessibilityValue = String(attributedString.string.split(separator: " ").first ?? "")
+        if accessibilityValue == "-" {
+            accessibilityValue = "0"
+        }
     }
 }

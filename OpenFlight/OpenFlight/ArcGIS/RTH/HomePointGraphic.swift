@@ -32,18 +32,24 @@ import ArcGIS
 /// Displays the home icon on the map during a RTH.
 public final class HomePointGraphic: AGSGraphic {
 
-    /// Home icon used on the map
-    static let homeImage = ImageAsset(name: "mapHome").image
-
     // MARK: - Init
-    /// Init.
-    /// 
+    /// Constructor.
+    ///
     /// - Parameters:
     ///    - homeLocation: home location
-    init(homeLocation: AGSPoint) {
-        let symbol = AGSPictureMarkerSymbol(image: HomePointGraphic.homeImage)
+    ///    - image: the home image
+    init(homeLocation: AGSPoint,
+         image: UIImage) {
+        let symbol = AGSPictureMarkerSymbol(image: image)
         super.init(geometry: homeLocation,
                    symbol: symbol,
                    attributes: nil)
+    }
+
+    /// Updates graphic symbol with provided image.
+    ///
+    /// - Parameter image: the image to use
+    func updateSymbol(image: UIImage) {
+        symbol = AGSPictureMarkerSymbol(image: image)
     }
 }

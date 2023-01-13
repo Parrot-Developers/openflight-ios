@@ -30,7 +30,7 @@
 import UIKit
 
 /// Gallery source type.
-enum GallerySourceType: CaseIterable {
+public enum GallerySourceType: CaseIterable {
     case unknown
     case droneSdCard
     case droneInternal
@@ -124,11 +124,16 @@ enum GallerySourceType: CaseIterable {
             return false
         }
     }
+
+    var isDeviceSource: Bool { !isDroneSource }
+    var mainActionType: GalleryActionType {
+        isDroneSource ? .download : .share
+    }
 }
 
 /// Extension for debug description.
 extension GallerySourceType: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .droneInternal: return "droneInternal"
         case .droneSdCard: return "droneSdCard"
@@ -139,11 +144,11 @@ extension GallerySourceType: CustomStringConvertible {
 }
 
 /// Gallery source model.
-struct GallerySource {
-    var type: GallerySourceType
-    var storageUsed: Double
-    var storageCapacity: Double
-    var isOffline: Bool
+public struct GallerySource {
+    var type: GallerySourceType = .unknown
+    var storageUsed: Double = 0
+    var storageCapacity: Double = 0
+    var isOffline: Bool = true
 
     var image: UIImage? {
         switch type {
@@ -155,6 +160,56 @@ struct GallerySource {
             return Asset.Dashboard.icPhoneLight.image
         default:
             return nil
+        }
+    }
+}
+
+public struct UserStorageDetails {
+    var type: GallerySourceType = .unknown
+    var storageUsed: Double?
+    var storageCapacity: Double?
+    var isOffline: Bool = false
+
+    var image: UIImage? {
+        switch type {
+        case .droneSdCard:
+            return Asset.Gallery.droneSd.image
+        case .droneInternal:
+            return Asset.Gallery.droneInternalMemory.image
+        case .mobileDevice:
+            return Asset.Dashboard.icPhoneLight.image
+        default:
+            return nil
+        }
+    }
+
+    /// The available storage.
+    var availableStorage: Double? {
+        guard let used = storageUsed, let capacity = storageCapacity else { return nil }
+        return capacity - used
+    }
+}
+
+// MARK: - Segmented Control
+enum GallerySourceSegment: Int, CaseIterable {
+    case drone
+    case device
+
+    var index: Int { rawValue }
+    init(index: Int) {
+        self = GallerySourceSegment(rawValue: index) ?? .device
+    }
+
+    init(source: GallerySourceType) {
+        self = source == .mobileDevice ? .device : .drone
+    }
+
+    var title: String {
+        switch self {
+        case .drone:
+            return L10n.gallerySourceDroneMemory
+        case .device:
+            return L10n.gallerySourceLocalMemory
         }
     }
 }

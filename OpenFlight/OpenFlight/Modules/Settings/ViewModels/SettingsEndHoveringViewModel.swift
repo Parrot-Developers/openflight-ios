@@ -75,11 +75,17 @@ final class SettingsEndHoveringViewModel: DroneWatcherViewModel<SettingsEndHover
     /// Returns the setting entry for end Hovering altitude.
     var endHoveringAltitudeEntry: SettingEntry {
         let isHovering = state.value.isHovering == true
-        return SettingEntry(setting: endHoveringAltitudeModel(),
+
+        let endHoveringAltitudeModel = endHoveringAltitudeModel()
+        return SettingEntry(setting: endHoveringAltitudeModel,
                             title: L10n.commonHovering,
                             unit: UnitType.distance,
                             defaultValue: Float(RthPreset.defaultHoveringAltitude),
-                            isEnabled: isHovering)
+                            isEnabled: isHovering,
+                            itemLogKey: LogEvent.LogKeyAdvancedSettings.endHoveringAltitude.description,
+                            settingStepperSlider: SettingStepperSlider(limitIntervalChange: Float(endHoveringAltitudeModel.min),
+                                                                       leftIntervalStep: 1,
+                                                                       rightIntervalStep: 1))
     }
 
     // MARK: - Private Properties

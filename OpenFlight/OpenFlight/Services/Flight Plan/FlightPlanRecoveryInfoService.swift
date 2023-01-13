@@ -44,6 +44,8 @@ public class FlightPlanRecoveryInfoServiceImpl {
 
     /// Flight plan manager.
     private let flightPlanManager: FlightPlanManager
+    /// Flight plan run manager.
+    private let runManager: FlightPlanRunManager
     /// Flight plan project manager.
     private let projectService: ProjectManager
     /// Mission store.
@@ -67,10 +69,12 @@ public class FlightPlanRecoveryInfoServiceImpl {
     init(connectedDroneHolder: ConnectedDroneHolder,
          currentDroneHolder: CurrentDroneHolder,
          flightPlanManager: FlightPlanManager,
+         runManager: FlightPlanRunManager,
          projectService: ProjectManager,
          missionsStore: MissionsStore,
          currentMissionManager: CurrentMissionManager) {
         self.flightPlanManager = flightPlanManager
+        self.runManager = runManager
         self.projectService = projectService
         self.missionsStore = missionsStore
         self.currentMissionManager = currentMissionManager
@@ -207,10 +211,12 @@ public class FlightPlanRecoveryInfoServiceImpl {
         // Check if the current FP:
         //  • is currently flying or stopped
         //  • has reached the last way point (completed)
-        //  • the RTH has not been paused (e.g by an over-piloting)
+        //  • the run manager is not in .rth state
+        //  • the piloting interface has not been paused (e.g by an over-piloting)
         // In case of all conditions are met, FP is handled as finished offline.
         guard [.flying, .stopped].contains(flightPlan.state),
               flightPlan.hasReachedLastWayPoint,
+              !runManager.state.isRthState,
               !isPaused else { return }
         // Ensure flight plan has a valid mission.
         guard let missionMode = missionsStore.missionFor(flightPlan: flightPlan)?.mission else {

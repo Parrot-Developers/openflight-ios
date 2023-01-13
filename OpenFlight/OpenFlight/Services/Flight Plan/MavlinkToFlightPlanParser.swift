@@ -50,7 +50,7 @@ final class MavlinkToFlightPlanParser {
         var commands: [MavlinkCommand] = []
 
         if let strongUrl = url {
-            commands = MavlinkFiles.parse(filepath: strongUrl.path)
+            commands = MavlinkFiles.parse(fileUrl: strongUrl)
         } else if let strongMavlinkString = mavlinkString {
             commands = MavlinkFiles.parse(mavlinkString: strongMavlinkString)
         }
@@ -121,7 +121,7 @@ final class MavlinkToFlightPlanParser {
             var commands: [MavlinkStandard.MavlinkCommand] = []
 
             if let strongUrl = url {
-                commands = (try? MavlinkStandard.MavlinkFiles.parse(filepath: strongUrl.path)) ?? []
+                commands = (try? MavlinkStandard.MavlinkFiles.parse(fileUrl: strongUrl)) ?? []
             } else if let strongMavlinkString = mavlinkString {
                 commands = (try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: strongMavlinkString)) ?? []
             }
@@ -135,10 +135,16 @@ final class MavlinkToFlightPlanParser {
             var currentWaypoint: WayPoint?
             var currentViewModeCommand = MavlinkStandard.SetViewModeCommand(mode: .absolute)
             var currentSpeedCommand: MavlinkStandard.ChangeSpeedCommand?
+
+            // Search the first NavigateToWayPoint command to get its corrdinate frame,
+            // then set the FP's `isAMSL` property accordingly.
             var isAMSL: Bool = false
-            if let command = commands.first {
+            if let command = commands.first(where: { $0 is MavlinkStandard.NavigateToWaypointCommand }) {
+                // `.global` means 'Above Mean Sea Level' will be enabled for the FP.
+                // All other values will be treated as 'relative to Home position' altitudes.
                 isAMSL = command.frame == .global
             }
+
             for command in commands {
                 switch command {
                 case is MavlinkStandard.StartVideoCaptureCommand:

@@ -53,6 +53,16 @@ class BannerAlertView: UIView {
 
     // MARK: Init
 
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupView()
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
+    }
+
     /// Constructor.
     ///
     /// - Parameter viewModel: the banner alert view model

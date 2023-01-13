@@ -60,26 +60,33 @@ extension SettingsPanelType {
 
     /// Provides default SettingsType (first one).
     var defaultSettings: SettingsType {
-        guard !settingsTypes.isEmpty
-            else { return SettingsType.defaultType }
-        return settingsTypes[0]
+        switch self {
+        case .quick:
+            return .quick
+        case .controls:
+            return .controls
+        case .advanced:
+            return .behaviour
+        }
     }
 
     /// Defines SettingsType array regarding panel.
-    var settingsTypes: [SettingsType] {
+    func getSettingsTypes(from provider: SettingsProvider?) -> [SettingsType] {
         switch self {
         case .quick:
             return [.quick]
         case .controls:
             return [.controls]
         case .advanced:
-            return [.behaviour,
-                    .interface,
-                    .geofence,
-                    .rth,
-                    .camera,
-                    .network,
-                    .developer]
+            var settingsTypes: [SettingsType] = [.behaviour,
+                                                 .interface,
+                                                 .geofence,
+                                                 .rth,
+                                                 .camera,
+                                                 .network]
+            settingsTypes.append(contentsOf: provider?.advancedSettingsTypes ?? [])
+            settingsTypes.append(.developer)
+            return settingsTypes
         }
     }
 }

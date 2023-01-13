@@ -76,13 +76,14 @@ final class OccupancyViewModel: DroneWatcherViewModel<OccupancyState> {
     private var sink: StreamSink?
     private var isMonitoring: Bool = false
     private var worldStorage: VoxelStorageCore
-    private var loveVideo: FileReplayCore?
+    private var loveVideoRef: Ref<FileReplay>?
     private var missedFrames = 0
     private var dropFrameTrigger = 1
     private var currentFrameCount = 0
     /// Queue to process frames
     private var sdkCoreFrameProcessQueue = DispatchQueue(label: "com.occupancy.framequeue", qos: .userInteractive)
     private var sdkCoreFrameProcessSemaphore = DispatchSemaphore(value: 1)
+    private let groundsdk = GroundSdk()
 
     /// MoserAPI singleton
     private var moserAPI: MoserAPI? {
@@ -102,7 +103,8 @@ final class OccupancyViewModel: DroneWatcherViewModel<OccupancyState> {
 
         if let pathComponent = documentDirectory?.appendingPathComponent("love.mp4") {
             if fileManager.fileExists(atPath: pathComponent.path) {
-                loveVideo = FileReplayCore(source: FileSourceCore(file: pathComponent, track: .defaultVideo))
+                let src = FileReplayFactory.videoTrackOf(file: pathComponent, track: .defaultVideo)
+                loveVideoRef = groundsdk.replay(source: src, observer: { _ in })
             }
         }
 
@@ -132,7 +134,7 @@ final class OccupancyViewModel: DroneWatcherViewModel<OccupancyState> {
         isMonitoring = enabled
 
         if enabled, let drone = drone {
-            if !drone.isConnected, let video = loveVideo {
+            if !drone.isConnected, let video = loveVideoRef?.value {
                 listenVideo(video)
             } else {
                 listenStreamServer(drone: drone)
@@ -165,14 +167,15 @@ private extension OccupancyViewModel {
                         return
                 }
 
-                strongSelf.sink = strongLiveStream.openYuvSink(queue: DispatchQueue.main, listener: strongSelf)
+                let config = RawVideoSinkConfig(dispatchQueue: DispatchQueue.main, listener: strongSelf)
+                strongSelf.sink = strongLiveStream.openSink(config: config)
                 _ = liveStream?.play()
             }
         }
     }
 
-    func listenVideo(_ video: FileReplayCore) {
-        sink = video.openYuvSink(queue: DispatchQueue.main, listener: self)
+    func listenVideo(_ video: FileReplay) {
+        sink = video.openSink(config: RawVideoSinkConfig(dispatchQueue: DispatchQueue.main, listener: self))
         _ = video.play()
     }
 
@@ -197,78 +200,75 @@ private extension OccupancyViewModel {
 }
 
 // MARK: - YuvSinkListener
-extension OccupancyViewModel: YuvSinkListener {
-    func didStart(sink: StreamSink) {}
-    func didStop(sink: StreamSink) {}
+extension OccupancyViewModel: RawVideoSinkListener {
+    func didStart(sink: RawVideoSink, videoFormat: VideoFormat) {}
+    func didStop(sink: RawVideoSink) {}
 
-    func frameReady(sink: StreamSink, frame: SdkCoreFrame) {
-        guard let metadataProtobuf = frame.metadataProtobuf
+    func frameReady(sink: RawVideoSink, frame: RawVideoSinkFrame) {
+        guard let decodedInfo = frame.metadata
             else { return }
 
-        do {
-            // Handle telemetry
-            let decodedInfo = try Vmeta_TimedMetadata(serializedData: metadataProtobuf)
-            let loveQuat: Vmeta_Quaternion = decodedInfo.camera.quat
-            var timestampNs: UInt64 = decodedInfo.camera.timestamp * 1000
+        // Handle telemetry
+        let loveQuat: Vmeta_Quaternion = decodedInfo.camera.quat
+        var timestampNs: UInt64 = decodedInfo.camera.timestamp * 1000
 
-            if timestampNs == 0 {
-                timestampNs = UInt64(Date().timeIntervalSinceReferenceDate * 1000000000)
-            }
+        if timestampNs == 0 {
+            timestampNs = UInt64(Date().timeIntervalSinceReferenceDate * 1000000000)
+        }
 
-            self.state.value.quaternion = [
-                decodedInfo.drone.quat.w,
-                decodedInfo.drone.quat.x,
-                decodedInfo.drone.quat.y,
-                decodedInfo.drone.quat.z]
-            self.state.value.isDroneStationary = decodedInfo.drone.flyingState == .fsHovering
+        self.state.value.quaternion = [
+            decodedInfo.drone.quat.w,
+            decodedInfo.drone.quat.x,
+            decodedInfo.drone.quat.y,
+            decodedInfo.drone.quat.z]
+        self.state.value.isDroneStationary = decodedInfo.drone.flyingState == .fsHovering
 
-            self.state.value.speedVector = vector3(decodedInfo.drone.speed.east, decodedInfo.drone.speed.down, decodedInfo.drone.speed.north)
+        self.state.value.speedVector = vector3(decodedInfo.drone.speed.east, decodedInfo.drone.speed.down, decodedInfo.drone.speed.north)
 
-            if let droneOrigin = self.worldStorage.gridOrigin {
-                self.state.value.origin = [
-                    self.worldStorage.center.x + (droneOrigin.y - decodedInfo.drone.position.east) / Occupancy.voxelRealSize,
-                    self.worldStorage.center.y + (droneOrigin.z - decodedInfo.drone.position.down) / Occupancy.voxelRealSize,
-                    self.worldStorage.center.z + (decodedInfo.drone.position.north - droneOrigin.x) / Occupancy.voxelRealSize
-                ]
-            } else {
-                self.state.value.origin = [
-                    self.worldStorage.center.x,
-                    self.worldStorage.center.y,
-                    self.worldStorage.center.z
-                ]
-            }
-            var origin: [Float32] = [
-                decodedInfo.drone.position.north,
-                decodedInfo.drone.position.east,
-                decodedInfo.drone.position.down
+        if let droneOrigin = self.worldStorage.gridOrigin {
+            self.state.value.origin = [
+                self.worldStorage.center.x + (droneOrigin.y - decodedInfo.drone.position.east) / Occupancy.voxelRealSize,
+                self.worldStorage.center.y + (droneOrigin.z - decodedInfo.drone.position.down) / Occupancy.voxelRealSize,
+                self.worldStorage.center.z + (decodedInfo.drone.position.north - droneOrigin.x) / Occupancy.voxelRealSize
             ]
-            var quaternion: [Float32] = [loveQuat.w, loveQuat.x, loveQuat.y, loveQuat.z]
-            self.voxelStatusDidUpdate()
+        } else {
+            self.state.value.origin = [
+                self.worldStorage.center.x,
+                self.worldStorage.center.y,
+                self.worldStorage.center.z
+            ]
+        }
+        var origin: [Float32] = [
+            decodedInfo.drone.position.north,
+            decodedInfo.drone.position.east,
+            decodedInfo.drone.position.down
+        ]
+        var quaternion: [Float32] = [loveQuat.w, loveQuat.x, loveQuat.y, loveQuat.z]
+        self.voxelStatusDidUpdate()
 
-            let doUpdateWorld = (currentFrameCount % dropFrameTrigger) == 0
-            if self.sdkCoreFrameProcessSemaphore.wait(timeout: DispatchTime.now()) == .success {
-                missedFrames = 0
-                self.sdkCoreFrameProcessQueue.async {
-                    // If available, update moser occupancy grid
-                    if self.moserAPI?.processFrame(
-                        frame.mbufFrame,
-                        quaternion: quaternion.cPtr,
-                        origin: origin.cPtr,
-                        timestampNs: timestampNs) == EXIT_SUCCESS {
-                        if doUpdateWorld {
-                            self.moserAPI?.updateStorage(self.worldStorage)
-                        }
+        let doUpdateWorld = (currentFrameCount % dropFrameTrigger) == 0
+        if self.sdkCoreFrameProcessSemaphore.wait(timeout: DispatchTime.now()) == .success {
+            missedFrames = 0
+            self.sdkCoreFrameProcessQueue.async {
+                // If available, update moser occupancy grid
+                if self.moserAPI?.processFrame(
+                    frame.nativePtr,
+                    quaternion: quaternion.cPtr,
+                    origin: origin.cPtr,
+                    timestampNs: timestampNs) == EXIT_SUCCESS {
+                    if doUpdateWorld {
+                        self.moserAPI?.updateStorage(self.worldStorage)
                     }
-                    self.sdkCoreFrameProcessSemaphore.signal()
                 }
-            } else {
-                missedFrames += 1
-                if missedFrames > (dropFrameTrigger - 1) && dropFrameTrigger < Occupancy.Storage.maxDropFrameForUpdate {
-                    dropFrameTrigger += 1
-                    missedFrames = 0
-                }
+                self.sdkCoreFrameProcessSemaphore.signal()
             }
-            currentFrameCount += 1
-        } catch {}
+        } else {
+            missedFrames += 1
+            if missedFrames > (dropFrameTrigger - 1) && dropFrameTrigger < Occupancy.Storage.maxDropFrameForUpdate {
+                dropFrameTrigger += 1
+                missedFrames = 0
+            }
+        }
+        currentFrameCount += 1
     }
 }

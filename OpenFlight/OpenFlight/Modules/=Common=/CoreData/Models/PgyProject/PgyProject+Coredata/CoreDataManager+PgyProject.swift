@@ -105,11 +105,19 @@ public protocol PgyProjectRepository: AnyObject {
     /// - Parameter projectIds: List of project IDs to search
     func deletePgyProjects(withProjectIds projectIds: [Int64])
 
-    /// Delete PgyProject in CoreData withproject ID
+    /// Delete PgyProject in CoreData with specified project IDs
     /// - Parameters:
     ///     - projectId: project ID to remove
     ///     - updateRelatedFlightPlan: update related FlightPlan if it exist
     func deletePgyProject(withProjectId projectId: Int64, updateRelatedFlightPlan: Bool)
+
+    /// Delete all PgyProject and update settings of related flight plans
+    func deleteAllPgyProjectsAndUpdateFlightPlans()
+
+    /// Delete all PgyProject with a project's date after the specified date
+    /// - Parameters:
+    ///     - afterDate: date to specified
+    func deletePgyProjects(afterDate: Date)
 
     /// Delete all PgyProject
     /// - Parameters:
@@ -260,7 +268,50 @@ extension CoreDataServiceImpl: PgyProjectRepository {
             let pgyProjects = getPgyProjectsCD(withProjectIds: projectIds)
             deletePgyProjectsCD(pgyProjects)
 
-            return false
+            return true
+        })
+    }
+
+    public func deleteAllPgyProjectsAndUpdateFlightPlans() {
+        var flightPlanModifDate: Date?
+
+        performAndSave({ [unowned self] _ in
+            let pgyProjectCDs = getAllPgyProjectsCD(toBeDeleted: false)
+            guard !pgyProjectCDs.isEmpty else {
+                return false
+            }
+
+            let pgyProjectIds = pgyProjectCDs.compactMap { $0.pgyProjectId }
+
+            let relatedFlightPlans = getFlightPlansCD(withPgyProjectIds: pgyProjectIds)
+            if !relatedFlightPlans.isEmpty {
+                flightPlanModifDate = Date()
+
+                relatedFlightPlans.forEach {
+                    var dataSetting = FlightPlanDataSetting.instantiate(with: $0.getDataSettingString())
+                    dataSetting?.pgyProjectDeleted = true
+                    $0.dataString = dataSetting?.asData
+                    // Set synchro status
+                    $0.latestLocalModificationDate = flightPlanModifDate
+                    $0.synchroStatus = 0
+                }
+            }
+
+            deleteObjects(pgyProjectCDs)
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                pgyProjectsDidChangeSubject.send()
+
+                if let flightPlanModifDate = flightPlanModifDate {
+                    latestFlightPlanLocalModificationDate.send(flightPlanModifDate)
+                    flightPlansDidChangeSubject.send()
+                }
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error deleteAllPgyProject - error: \(error.localizedDescription)")
+            }
         })
     }
 
@@ -283,30 +334,56 @@ extension CoreDataServiceImpl: PgyProjectRepository {
         })
     }
 
-    public func deletePgyProject(withProjectId projectId: Int64, updateRelatedFlightPlan: Bool) {
-        performAndSave({ [unowned self] context in
-            guard let pgyProject = getPgyProjectCD(withProjectId: projectId) else {
-                return false
-            }
-
-            if updateRelatedFlightPlan,
-                var flightPlan = getFlightPlanCD(withPgyProjectId: projectId)?.model() {
-                var dataSetting = flightPlan.dataSetting
-                dataSetting?.pgyProjectDeleted = true
-                flightPlan.dataSetting = dataSetting
-                saveOrUpdateFlightPlan(flightPlan,
-                                       byUserUpdate: true,
-                                       toSynchro: true,
-                                       withFileUploadNeeded: true)
-            }
-
-            context.delete(pgyProject)
+    public func deletePgyProjects(afterDate: Date) {
+        performAndSave({ [unowned self] _ in
+            let pgyProjectCDs = getPgyProjectsCD(afterDate: afterDate, toBeDeleted: nil)
+            deleteObjects(pgyProjectCDs)
 
             return true
         }, { [unowned self] result in
             switch result {
             case .success:
                 pgyProjectsDidChangeSubject.send()
+                ULog.i(.dataModelTag, "Delete pgy projects after date \(afterDate.commonFormattedString)")
+            case .failure(let error):
+                ULog.e(.dataModelTag, "Error delete pgy projects after date \(afterDate.commonFormattedString): \(error.localizedDescription)")
+            }
+        })
+    }
+
+    public func deletePgyProject(withProjectId projectId: Int64, updateRelatedFlightPlan: Bool) {
+        var flightPlanModifDate: Date?
+
+        performAndSave({ [unowned self] _ in
+            guard let pgyProject = getPgyProjectCD(withProjectId: projectId) else {
+                return false
+            }
+
+            if updateRelatedFlightPlan {
+                let relatedFlightPlans = getFlightPlansCD(withPgyProjectIds: [pgyProject.pgyProjectId])
+                flightPlanModifDate = Date()
+                relatedFlightPlans.forEach {
+                    var dataSetting = FlightPlanDataSetting.instantiate(with: $0.getDataSettingString())
+                    dataSetting?.pgyProjectDeleted = true
+                    $0.dataString = dataSetting?.asData
+                    // Set synchro status
+                    $0.latestLocalModificationDate = flightPlanModifDate
+                    $0.synchroStatus = 0
+                }
+            }
+
+            deleteObjects([pgyProject])
+
+            return true
+        }, { [unowned self] result in
+            switch result {
+            case .success:
+                pgyProjectsDidChangeSubject.send()
+
+                if let flightPlanModifDate = flightPlanModifDate {
+                    latestFlightPlanLocalModificationDate.send(flightPlanModifDate)
+                    flightPlansDidChangeSubject.send()
+                }
             case .failure(let error):
                 ULog.e(.dataModelTag, "Error deletePgyProject with projectId: \(projectId) - error: \(error.localizedDescription)")
             }
@@ -379,7 +456,7 @@ internal extension CoreDataServiceImpl {
 
     func getPgyProjectCD(withProjectId projectId: Int64) -> PgyProject? {
         let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
-        let uuidPredicate = NSPredicate(format: "pgyProjectId == %@", "\(projectId)")
+        let uuidPredicate = NSPredicate(format: "pgyProjectId == %i", projectId)
 
         fetchRequest.predicate = uuidPredicate
 
@@ -396,9 +473,38 @@ internal extension CoreDataServiceImpl {
         }
 
         let fetchRequest = PgyProject.fetchRequest()
-        let projectIdPredicate = NSPredicate(format: "pgyProjectId IN %i", projectIds)
+        var subPredicateList: [NSPredicate] = []
 
-        fetchRequest.predicate = projectIdPredicate
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let projectIdPredicate = NSPredicate(format: "pgyProjectId IN %@", projectIds)
+        subPredicateList.append(projectIdPredicate)
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+
+        let projectDateSortDesc = NSSortDescriptor.init(key: "projectDate", ascending: false)
+        fetchRequest.sortDescriptors = [projectDateSortDesc]
+
+        return fetch(request: fetchRequest)
+    }
+
+    func getPgyProjectsCD(afterDate: Date, toBeDeleted: Bool?) -> [PgyProject] {
+        let fetchRequest: NSFetchRequest<PgyProject> = PgyProject.fetchRequest()
+        var subPredicateList: [NSPredicate] = []
+
+        let apcIdPredicate = NSPredicate(format: "apcId == %@", userService.currentUser.apcId)
+        subPredicateList.append(apcIdPredicate)
+
+        let datePredicate = NSPredicate(format: "projectDate >= %@", afterDate as NSDate)
+        subPredicateList.append(datePredicate)
+
+        if let toBeDeleted = toBeDeleted {
+            let parrotToBeDeletedPredicate = NSPredicate(format: "isLocalDeleted == %@", NSNumber(value: toBeDeleted))
+            subPredicateList.append(parrotToBeDeletedPredicate)
+        }
+
+        fetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
 
         let projectDateSortDesc = NSSortDescriptor.init(key: "projectDate", ascending: false)
         fetchRequest.sortDescriptors = [projectDateSortDesc]

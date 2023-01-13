@@ -47,8 +47,8 @@ open class FlightDetailsViewModel {
     open private(set) var flight: FlightModel
     /// Flight trajectory points.
     public let flightPoints: [TrajectoryPoint]
-    /// Whether trajectory points altitudes are in ASML.
-    public let hasAsmlAltitude: Bool
+    /// Whether trajectory points altitudes are in AMSL.
+    public let hasAmslAltitude: Bool
 
     open var shareFileName: String? {
         name
@@ -75,7 +75,7 @@ open class FlightDetailsViewModel {
 
         let gutma = service.gutma(flight: flight)
         flightPoints = gutma?.points() ?? []
-        hasAsmlAltitude = gutma?.hasAsmlAltitude ?? false
+        hasAmslAltitude = gutma?.hasAmslAltitude ?? false
 
         name = flight.title ?? ""
         drone.dronePublisher

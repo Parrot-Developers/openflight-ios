@@ -54,9 +54,9 @@ class FlightsViewModel {
         self.navigationStack = navigationStack
         self.flightsSubject.value = service.getFlights(limit: service.numberOfFlightsPerPage)
 
-        Services.hub.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [weak self] in
+        Services.hub.cloudSynchroWatcher?.synchroStatusPublisher.sink { [weak self] in
             // Ensure there is no sync on-going.
-            guard let self = self, !$0  else { return }
+            guard let self = self, !$0.isSyncing  else { return }
             Task { await self.service.handleFlightsUnknownLocationTitle(inFlights: self.flightsSubject.value) }
         }.store(in: &cancellable)
 

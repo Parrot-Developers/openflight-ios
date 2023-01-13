@@ -1,5 +1,4 @@
-//
-//  Copyright (C) 2020 Parrot Drones SAS.
+//    Copyright (C) 2020 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -35,23 +34,26 @@ import GroundSdk
 enum CameramanModeState {
     case selectSubject
     case tracking
+    case waitingTakeOff
 
     // MARK: - Internal Properties
     var title: String {
         switch self {
         case .selectSubject:
-            return L10n.followMeSelectYourself
+            return L10n.cameramanSelectTarget
         case .tracking:
-            return L10n.followMeTracking
+            return L10n.cameramanTracking
+        case .waitingTakeOff:
+            return L10n.cameramanTakeOff
         }
     }
 }
 
 /// State for `CameramanModeViewModel`.
-final class CameramanState: ViewModelState, Equatable, Copying {
+final class CameramanState: ViewModelState, EquatableState, Copying {
 
     // MARK: - Internal Properties
-    fileprivate(set) var currentState: CameramanModeState = .selectSubject
+    fileprivate(set) var currentState: CameramanModeState = .waitingTakeOff
 
     // MARK: - Init
     required init() { }
@@ -65,11 +67,11 @@ final class CameramanState: ViewModelState, Equatable, Copying {
     }
 
     // MARK: - Internal Funcs
-    /// Equatable implementation.
-    static func == (lhs: CameramanState, rhs: CameramanState) -> Bool {
-        return lhs.currentState == rhs.currentState
+    func isEqual(to other: CameramanState) -> Bool {
+        return self.currentState == other.currentState
     }
 
+    // MARK: - Copying
     /// Returns a copy of the object.
     func copy() -> CameramanState {
         let copy = CameramanState(currentState: self.currentState)
@@ -81,23 +83,59 @@ final class CameramanState: ViewModelState, Equatable, Copying {
 final class CameramanModeViewModel: DroneWatcherViewModel<CameramanState> {
 
     // MARK: - Private Properties
-    private var onboardTrackerRef: Ref<OnboardTracker>?
-    private var onboardTracker: OnboardTracker?
     private var stateRef: Ref<DeviceState>?
+
+    private var flyingIndicatorsRef: Ref<FlyingIndicators>?
+    private var flyingIndicators: FlyingIndicators? {
+        return flyingIndicatorsRef?.value
+    }
+    private var lookAtPilotingItfRef: Ref<LookAtPilotingItf>?
+    private var lookAtPilotingItf: LookAtPilotingItf? {
+        return lookAtPilotingItfRef?.value
+    }
+    private var returnHomePilotingItfRef: Ref<ReturnHomePilotingItf>?
+    private var returnHomePilotingItf: ReturnHomePilotingItf? {
+        return returnHomePilotingItfRef?.value
+    }
+    private var onboardTrackerRef: Ref<OnboardTracker>?
+    private var onboardTracker: OnboardTracker? {
+        return onboardTrackerRef?.value
+    }
+
+    private var cameraRef: Ref<MainCamera2>?
+    private var camera: MainCamera2? {
+        return cameraRef?.value
+    }
+
+    private var missionManagerRef: Ref<MissionManager>?
+    private var missionManager: MissionManager? {
+        return missionManagerRef?.value
+    }
+
+    /// Whether onboard tracker is stopping.
+    private var isStopping: Bool = false
 
     // MARK: - Deinit
     deinit {
-        self.clearOnBoardTracking()
+        clearLookAt()
+        removeAllTargets()
+        returnHomePilotingItfRef = nil
+        onboardTracker?.stopTrackingEngine()
+        onboardTrackerRef = nil
+        flyingIndicatorsRef = nil
+        cameraRef = nil
+        missionManagerRef = nil
     }
 
     // MARK: - Override Funcs
     override func listenDrone(drone: Drone) {
-        self.listenDroneState(drone: drone)
+        listenDroneState(drone: drone)
     }
 
     /// Remove all current targets.
     func removeAllTargets() {
-        self.onboardTracker?.removeAllTargets()
+        drone?.getPeripheral(Peripherals.onboardTracker)?.removeAllTargets()
+        _ = lookAtPilotingItf?.deactivate()
     }
 }
 
@@ -105,68 +143,212 @@ final class CameramanModeViewModel: DroneWatcherViewModel<CameramanState> {
 private extension CameramanModeViewModel {
 
     /// Enables all listeners for the viewmodel.
+    ///
+    /// - Parameter drone: the current drone
     func enableListeners(drone: Drone) {
-        self.removeListeners()
-        self.listenOnboardTracker(drone: drone)
+        removeListeners()
+        listenReturnHomeInterface(drone: drone)
+        listenOnboardTracker(drone: drone)
+        listenLookAtInterface(drone: drone)
+        listenFlyingIndicators(drone: drone)
+        listenCamera(drone: drone)
+        listenMissionManager(drone: drone)
     }
 
     /// Removes all listeners for the viewmodel.
     func removeListeners() {
-        self.clearOnBoardTracking()
+        clearLookAt()
+        returnHomePilotingItfRef = nil
+        onboardTrackerRef = nil
+        flyingIndicatorsRef = nil
+        cameraRef = nil
+        missionManagerRef = nil
     }
 
     /// Starts watcher for drone state.
+    ///
+    /// - Parameter drone: the current drone
     func listenDroneState(drone: Drone) {
-        self.stateRef = drone.getState { [weak self] state in
-            if state?.connectionState == .connected {
-                self?.enableListeners(drone: drone)
+        stateRef = drone.getState { [unowned self] droneState in
+            if droneState?.connectionState == .connected {
+                isStopping = false
+                enableListeners(drone: drone)
             } else {
-                self?.removeListeners()
+                removeListeners()
             }
         }
     }
 
-    /// Starts watcher for onBoard tracker state.
+    /// Listen the onboard tracker peripheral.
+    ///
+    /// - Parameter drone: the current drone
     func listenOnboardTracker(drone: Drone) {
-        self.onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [weak self] onboardTracker in
-            self?.onboardTracker = onboardTracker
-            self?.updateState()
+        onboardTrackerRef = drone.getPeripheral(Peripherals.onboardTracker) { [unowned self] onboardTracker in
+            guard let onboardTracker = onboardTracker else {
+                return
+            }
+            if onboardTracker.trackingEngineState != .activated {
+                isStopping = false
+            }
 
-            // Activate Cameraman when the drone is tracking a target.
-            let isTracking = onboardTracker?.isTracking == true
-            self?.handleCameraman(drone: drone, enable: isTracking)
+            activateOrDeactivateOnboardIfNecessary()
+            activateLookAtIfNecessary()
+       }
+    }
+
+    /// Listen the Look At piloting interface.
+    ///
+    /// - Parameter drone: the current drone
+    func listenLookAtInterface(drone: Drone) {
+        lookAtPilotingItfRef = drone.getPilotingItf(PilotingItfs.lookAt) { [unowned self] _ in
+            updateState()
+            activateOrDeactivateOnboardIfNecessary()
+            activateLookAtIfNecessary()
         }
     }
 
-    // Update the current state of the cameraman.
+    /// Listen the Return home piloting interface.
+    ///
+    /// - Parameter drone: the current drone
+    func listenReturnHomeInterface(drone: Drone) {
+        returnHomePilotingItfRef = drone.getPilotingItf(PilotingItfs.returnHome) { [unowned self] _ in
+            activateOrDeactivateOnboardIfNecessary()
+            activateLookAtIfNecessary()
+        }
+    }
+
+    /// Listen flying indicators instrument.
+    ///
+    /// - Parameter drone: the current drone
+    func listenFlyingIndicators(drone: Drone) {
+        flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [unowned self] flyingIndicator in
+            guard flyingIndicator != nil else { return }
+            updateState()
+            activateOrDeactivateOnboardIfNecessary()
+            activateLookAtIfNecessary()
+        }
+    }
+
+    /// Listen mainCamera2 peripheral
+    ///
+    /// - Parameter drone: the current drone
+    func listenCamera(drone: Drone) {
+        cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] _ in
+            applyCamera(drone: drone)
+            activateOrDeactivateOnboardIfNecessary()
+            activateLookAtIfNecessary()
+        }
+    }
+
+    private func applyCamera(drone: Drone) {
+        guard let camera = drone.getPeripheral(Peripherals.mainCamera2), !camera.config.updating else { return }
+
+        let editor = camera.config.edit(fromScratch: true)
+        var edited = false
+        // switch camera to recording mode, if necessary
+        if camera.config[Camera2Params.mode]?.value != .recording {
+            // Cameraman depends on mode recording.
+            // It will not start if in photo mode.
+            editor[Camera2Params.mode]?.value = .recording
+            edited = true
+        }
+
+        // adjust recording framerate to a value supported in cameraman mode, if necessary
+        if let resolution = camera.config[Camera2Params.videoRecordingResolution]?.value,
+           let framerate = camera.config[Camera2Params.videoRecordingFramerate]?.value,
+           let supportedFrameratesInMission = CameramanCameraRestrictionsModel.Constants.framerates[resolution],
+           !supportedFrameratesInMission.contains(framerate) {
+            let currentSupportedValues = editor[Camera2Params.videoRecordingFramerate]?.currentSupportedValues
+                .intersection(supportedFrameratesInMission)
+            let highestFramerate = Camera2RecordingFramerate.sortedCases.reversed()
+                .filter { currentSupportedValues?.contains($0) == true }
+                .first
+            editor[Camera2Params.videoRecordingFramerate]?.value = highestFramerate
+            edited = true
+        }
+
+        if edited {
+            editor.saveSettings(currentConfig: camera.config)
+        }
+    }
+
+    /// Listen mission manager peripheral
+    ///
+    /// - Parameter drone: the current drone
+    func listenMissionManager(drone: Drone) {
+        missionManagerRef = drone.getPeripheral(Peripherals.missionManager) { [unowned self] missionManager in
+            guard missionManager != nil else { return }
+            activateOrDeactivateOnboardIfNecessary()
+            activateLookAtIfNecessary()
+        }
+    }
+
+    /// Tells if onboard tracker should be activated.
+    ///
+    /// - Returns: `true` if onboard tracker should be activated
+    private func shouldActivateOnboardTracker() -> Bool {
+        guard let returnHome = drone?.getPilotingItf(PilotingItfs.returnHome),
+              let flyingIndicators = drone?.getInstrument(Instruments.flyingIndicators),
+              let camera = drone?.getPeripheral(Peripherals.mainCamera2),
+              let missionManager = drone?.getPeripheral(Peripherals.missionManager),
+              let missionCameraman = missionManager.missions[CameramanActivationModel().signature.missionUID] else {
+            return false
+        }
+        return returnHome.state != .active
+            && flyingIndicators.flyingState.isFlyingOrWaiting
+            && camera.mode == .recording
+            && missionCameraman.state == .active
+    }
+
+    /// Activate or deactivate tracking engine of onboard tracker if necessary.
+    private func activateOrDeactivateOnboardIfNecessary() {
+        guard let onboardTracker = drone?.getPeripheral(Peripherals.onboardTracker) else {
+            return
+        }
+        if shouldActivateOnboardTracker() {
+            isStopping = false
+
+            // TODO: put back a filter to know if command was already sent.
+            if onboardTracker.trackingEngineState == .available {
+                onboardTracker.startTrackingEngine(boxProposals: true)
+            }
+        } else {
+            if !isStopping, onboardTracker.trackingEngineState == .activated {
+                isStopping = true
+                onboardTracker.removeAllTargets()
+                onboardTracker.stopTrackingEngine()
+            }
+        }
+    }
+
+    /// Activate look at piloting interface if necessary.
+    private func activateLookAtIfNecessary() {
+        guard let lookAt = drone?.getPilotingItf(PilotingItfs.lookAt),
+              let onboardTracker = drone?.getPeripheral(Peripherals.onboardTracker),
+              shouldActivateOnboardTracker() else {
+            return
+        }
+        if lookAt.state == .idle && !onboardTracker.targets.isEmpty {
+            _ = lookAt.activate()
+        }
+    }
+
+    /// Update the current state of the cameraman.
     func updateState() {
         let copy = self.state.value.copy()
-        copy.currentState = self.onboardTracker?.isTracking == true ? .tracking : .selectSubject
-        self.state.set(copy)
-    }
-
-    /// Activate or deactivate Cameraman mode.
-    ///
-    /// - Parameters:
-    ///    - drone: drone on which we want to activate/deactivate Cameraman mode.
-    ///    - enable: Precise if we want to activate or deactivate Cameraman mode.
-    func handleCameraman(drone: Drone, enable: Bool) {
-        let isCameramanActive = drone.getPilotingItf(PilotingItfs.lookAt)?.state == .active
-
-        if enable && !isCameramanActive {
-            _ = drone.getPilotingItf(PilotingItfs.lookAt)?.activate()
-        } else if !enable && isCameramanActive {
-            _ = drone.getPilotingItf(PilotingItfs.lookAt)?.deactivate()
+        if drone?.getInstrument(Instruments.flyingIndicators)?.flyingState.isFlyingOrWaiting == false {
+            copy.currentState = .waitingTakeOff
+        } else if drone?.getPilotingItf(PilotingItfs.lookAt)?.state == .active {
+            copy.currentState = .tracking
+        } else {
+            copy.currentState = .selectSubject
         }
+        state.set(copy)
     }
 
     /// Clear every variables of the view model.
-    func clearOnBoardTracking() {
-        self.onboardTracker?.removeAllTargets()
-        self.onboardTrackerRef = nil
-        self.onboardTracker = nil
-
-        guard let drone = self.drone else { return }
-        self.handleCameraman(drone: drone, enable: false)
+    func clearLookAt() {
+        _ = lookAtPilotingItf?.deactivate()
+        lookAtPilotingItfRef = nil
     }
 }

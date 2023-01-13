@@ -81,9 +81,12 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
     @Published var cameraLive: CameraLive?
     /// Whether snow view is visible.
     @Published var snowVisible = true
+    /// Whether grid view is visible
+    @Published var gridDisplayType: SettingsGridDisplayType = .none
 
     // MARK: - Private Properties
     private var overexposureSettingObserver: DefaultsDisposable?
+    private var gridSettingsObserver: DefaultsDisposable?
     private var streamServerRef: Ref<StreamServer>?
     private var cameraLiveRef: Ref<CameraLive>?
     private var playStreamRetryTimer: Timer?
@@ -109,6 +112,8 @@ final class HUDCameraStreamingViewModel: DroneWatcherViewModel<HUDCameraStreamin
         playStreamRetryTimer = nil
         overexposureSettingObserver?.dispose()
         overexposureSettingObserver = nil
+        gridSettingsObserver?.dispose()
+        gridSettingsObserver = nil
     }
 
     // MARK: - Override Funcs
@@ -182,6 +187,11 @@ private extension HUDCameraStreamingViewModel {
                 copy?.overexposureSetting = SettingsOverexposure.current
                 self?.state.set(copy)
             }
+        }
+
+        // start grid grid display type setting observer
+        gridSettingsObserver = Defaults.observe(\.userGridDisplayTypeSetting, options: [.new, .initial]) { [weak self] _ in
+            self?.gridDisplayType = SettingsGridDisplayType.current
         }
     }
 

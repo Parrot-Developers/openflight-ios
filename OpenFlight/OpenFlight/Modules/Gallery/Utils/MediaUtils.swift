@@ -140,12 +140,11 @@ final class MediaUtils {
     // MARK: Media resource
     /// Returns a MediaResourceList with all downloadable resources for an array of MediaItem.
     ///
-    /// - Parameters:
-    ///     - medias: medias
+    /// - Parameter items: the media items list
     /// - Returns: MediaResourceList
-    static func getDownloadableResources(medias: [MediaItem]) -> MediaResourceList {
+    static func getDownloadableResources(items: [MediaItem]) -> MediaResourceList {
         let resourceList = MediaResourceListFactory.emptyList()
-        medias.forEach { mediaItem in
+        items.forEach { mediaItem in
             mediaItem.downloadableResources.forEach({ resource in
                 resourceList.add(media: mediaItem, resource: resource)
             })

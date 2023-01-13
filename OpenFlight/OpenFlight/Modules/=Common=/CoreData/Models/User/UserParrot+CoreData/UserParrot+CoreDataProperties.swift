@@ -53,6 +53,7 @@ extension UserParrot {
     @NSManaged public var tmpApcUser: Bool
     @NSManaged public var academyId: String?
     @NSManaged public var pilotNumber: String?
+    @NSManaged public var isCaligoffEnabled: Bool
     @NSManaged public var userInfoChanged: Bool
     @NSManaged public var avatar: String?
     @NSManaged public var isSynchronizeFlightDataExtended: Bool

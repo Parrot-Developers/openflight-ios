@@ -181,9 +181,10 @@ private extension EditionSettingsViewController {
         switch category {
         case .common,
              .image,
-             .rth,
-             .custom:
-            self.undoButton.isHidden = true
+             .rth:
+            undoButton.isHidden = true
+        case .custom(let name):
+            undoButton.isHidden = (name != L10n.flightPlanSegmentSettingsTitle)
         default:
             self.undoButton.isHidden = false
         }
@@ -200,7 +201,12 @@ private extension EditionSettingsViewController {
     }
 
     @objc func backAction() {
+        resetTableViewScrollPosition()
         delegate?.didTapCloseButton()
+    }
+
+    func resetTableViewScrollPosition() {
+        tableView.setContentOffset(.zero, animated: true)
     }
 
     func updateTopBarTitle() {
@@ -210,14 +216,19 @@ private extension EditionSettingsViewController {
             title = L10n.commonWaypoint
         case is PoiPointSettingsProvider:
             title = L10n.commonPoi
-        case is WayPointSegmentSettingsProvider,
-            nil:
+        case is WayPointSegmentSettingsProvider:
             title = L10n.flightPlanSegmentSettingsTitle
         default:
-            title = viewModel.settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
+            title = viewModel.settingsCategoryFilter == .custom(L10n.flightPlanSegmentSettingsTitle)
+                ? L10n.flightPlanSegmentSettingsTitle
+                : viewModel.settingsCategoryFilter?.title ?? L10n.flightPlanSettingsTitle
         }
         topbar?.set(title: title)
-        topbar?.set(projectTitle: viewModel.savedFlightPlan?.customTitle)
+
+        let projectTitle = viewModel.settingsCategoryFilter == .custom(L10n.flightPlanSegmentSettingsTitle)
+            ? nil
+            : viewModel.savedFlightPlan?.customTitle
+        topbar?.set(projectTitle: projectTitle)
     }
 }
 

@@ -38,7 +38,7 @@ public enum PilotingPreset {
 
 /// Piloting style settings control modes.
 
-enum ControlsSettingsMode {
+public enum ControlsSettingsMode {
     /// !isSpecialMode && !jogsInversed
     case mode1
     /// !isSpecialMode && jogsInversed
@@ -105,7 +105,7 @@ extension ControlsSettingsMode: Equatable {
         }
     }
 
-    var jogsInversed: Bool {
+    var isJogsInversed: Bool {
         switch self {
         case .mode1, .mode2:
             return false

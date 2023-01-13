@@ -38,7 +38,9 @@ final class DroneInfosViewModel {
     /// Drone's battery level.
     @Published private(set) var batteryLevel: BatteryValueModel = BatteryValueModel()
     /// Drone's WiFi strength.
-    @Published private(set) var wifiStrength: WifiStrength?
+    @Published private(set) var wifiStrength: WifiStrength = .offline
+    /// DRI status.
+    @Published private(set) var driState: DriState = .off
     /// Drone's GPS strength.
     @Published private(set) var gpsStrength: GpsStrength = .none
     /// Drone's GPS satellite count.
@@ -73,6 +75,8 @@ final class DroneInfosViewModel {
 
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
+    private var alarmsRef: Ref<Alarms>?
+    private var driStatusRef: Ref<Dri>?
     private var batteryInfoRef: Ref<BatteryInfo>?
     private var gpsRef: Ref<Gps>?
     private var nameRef: Ref<String>?
@@ -95,7 +99,6 @@ final class DroneInfosViewModel {
         // TODO inject
         Services.hub.currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
-                listenBatteryInfo(drone: drone)
                 listenModel(drone: drone)
                 listenName(drone: drone)
                 listenGimbal(drone: drone)
@@ -109,9 +112,12 @@ final class DroneInfosViewModel {
 
         Services.hub.connectedDroneHolder.dronePublisher
             .sink { [unowned self] drone in
+                listenBatteryInfo(drone: drone)
                 listenGps(drone: drone)
-                listenCellular(drone: drone)
                 listenNetworkControl(drone: drone)
+                listenAlarms(drone: drone)
+                listenDriStatus(drone: drone)
+                listenCellular(drone: drone)
             }
             .store(in: &cancellables)
 
@@ -132,11 +138,14 @@ private extension DroneInfosViewModel {
     /// Starts watcher for battery.
     ///
     /// - Parameter drone: the current drone
-    func listenBatteryInfo(drone: Drone) {
-        batteryInfoRef = drone.getInstrument(Instruments.batteryInfo) { [weak self] batteryInfo in
-            let batteryLevel = BatteryValueModel(currentValue: batteryInfo?.batteryLevel)
-            self?.batteryLevel = batteryLevel
+    func listenBatteryInfo(drone: Drone?) {
+        // Starts watcher
+        batteryInfoRef = drone?.getInstrument(Instruments.batteryInfo) { [weak self] batteryInfo in
+            self?.updateBatteryLevel(drone: drone)
         }
+
+        // Updates status
+        updateBatteryLevel(drone: drone)
     }
 
     // MARK: - GPS
@@ -144,15 +153,13 @@ private extension DroneInfosViewModel {
     ///
     /// - Parameter drone: the current drone
     func listenGps(drone: Drone?) {
-        guard let drone = drone else {
-            gpsStrength = .none
-            satelliteCount = nil
-            return
+        // Starts watcher
+        gpsRef = drone?.getInstrument(Instruments.gps) { [weak self] _ in
+            self?.updateGpsStatus(drone: drone)
         }
-        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            self?.gpsStrength = gps?.gpsStrength ?? .none
-            self?.satelliteCount = gps?.satelliteCount
-        }
+
+        // Update status
+        updateGpsStatus(drone: drone)
     }
 
     // MARK: - Name
@@ -178,8 +185,9 @@ private extension DroneInfosViewModel {
     /// - Parameter drone: the current drone
     func listenGimbal(drone: Drone) {
         gimbalRef = drone.getPeripheral(Peripherals.gimbal) { [weak self] gimbal in
-            self?.gimbalStatus = gimbal?.state ?? .calibrated
-            self?.gimbalErrorImage = gimbal?.errorImage
+            guard let self = self else { return }
+            self.gimbalStatus = gimbal?.state ?? .calibrated
+            self.gimbalErrorImage = gimbal?.errorImage
         }
     }
 
@@ -188,8 +196,9 @@ private extension DroneInfosViewModel {
     /// - Parameter drone: the current drone
     func listenFrontStereoGimbal(drone: Drone) {
         frontStereoGimbalRef = drone.getPeripheral(Peripherals.frontStereoGimbal) { [weak self] frontStereoGimbal in
-            self?.frontStereoGimbalStatus = frontStereoGimbal?.state ?? .calibrated
-            self?.frontStereoGimbalErrorImage = frontStereoGimbal?.errorImage
+            guard let self = self else { return }
+            self.frontStereoGimbalStatus = frontStereoGimbal?.state ?? .calibrated
+            self.frontStereoGimbalErrorImage = frontStereoGimbal?.errorImage
         }
     }
 
@@ -218,11 +227,41 @@ private extension DroneInfosViewModel {
     ///
     /// - Parameter drone: the current drone
     func listenCellular(drone: Drone?) {
+        // Starts watcher
         cellularRef = drone?.getPeripheral(Peripherals.cellular) { [weak self] cellularState in
+            guard let self = self else { return }
             if let simInserted = cellularState?.isSimCardInserted {
-                self?.simInserted = simInserted
+                self.simInserted = simInserted
             }
-            self?.updateCellularStrength(drone: drone)
+            self.updateCellularStrength(drone: drone)
+        }
+
+        // Updates status
+        updateCellularStrength(drone: drone)
+    }
+
+    /// Listens to dri status.
+    ///
+    /// - Parameter drone: drone to monitor
+    func listenDriStatus(drone: Drone?) {
+        driStatusRef = drone?.getPeripheral(Peripherals.dri) { [weak self] _ in
+            self?.updateDriStatus(drone: drone)
+        }
+        updateDriStatus(drone: drone)
+    }
+
+    /// Listens to alarms instrument.
+    ///
+    /// - Parameter drone: drone to monitor
+    func listenAlarms(drone: Drone?) {
+        alarmsRef = drone?.getInstrument(Instruments.alarms) { [weak self] alarms in
+            guard let self = self, let alarms = alarms else { return }
+
+            if alarms.getAlarm(kind: .driFailing).level != .off {
+                self.driState = .error
+            } else if self.driState == .error && alarms.getAlarm(kind: .driFailing).level == .off {
+                self.updateDriStatus(drone: drone)
+            }
         }
     }
 
@@ -231,11 +270,76 @@ private extension DroneInfosViewModel {
     ///
     /// - Parameter drone: the current drone
     func listenNetworkControl(drone: Drone?) {
-        networkControlRef = drone?.getPeripheral(Peripherals.networkControl) { [weak self] networkControl in
-            self?.currentLink = networkControl?.currentLink ?? .wlan
-            self?.wifiStrength = networkControl?.wifiStrength
-            self?.updateCellularStrength(drone: drone)
+        // Starts watcher
+        networkControlRef = drone?.getPeripheral(Peripherals.networkControl) { [weak self] _ in
+            self?.updateNetworkLink(drone: drone)
         }
+        // Updates status
+        updateNetworkLink(drone: drone)
+    }
+
+    // MARK: - Motors
+    /// Starts watcher for drone's motors.
+    ///
+    /// - Parameter drone: the current drone
+    func listenMotors(drone: Drone) {
+        motorsRef = drone.getPeripheral(Peripherals.copterMotors) { [weak self] copterMotors in
+            self?.copterMotorsErrors = copterMotors?.motorsCurrentlyInError
+        }
+    }
+
+    /// Starts watcher for drone's connection state.
+    ///
+    /// - Parameter drone: the current drone
+    func listenConnectionState(drone: Drone) {
+        connectionStateRef = drone.getState { [weak self] state in
+            self?.connectionState = state?.connectionState ?? .disconnected
+        }
+    }
+
+    /// Updates the network link informations in our view model.
+    ///
+    /// - Parameter drone: the current drone
+    func updateNetworkLink(drone: Drone?) {
+        let networkControl = drone?.getPeripheral(Peripherals.networkControl)
+        currentLink = networkControl?.currentLink ?? .wlan
+        updateWifiStrength(drone: drone)
+        updateCellularStrength(drone: drone)
+    }
+
+    /// Updates the gps status in our view model.
+    ///
+    /// - Parameter drone: the current drone
+    func updateGpsStatus(drone: Drone?) {
+        let gps = drone?.getInstrument(Instruments.gps)
+        gpsStrength = gps?.gpsStrength ?? .none
+        satelliteCount = gps?.satelliteCount
+    }
+
+    /// Updates the battery level in our view model.
+    ///
+    /// - Parameter drone: the current drone
+    func updateBatteryLevel(drone: Drone?) {
+        let batteryInfo = drone?.getInstrument(Instruments.batteryInfo)
+        batteryLevel = BatteryValueModel(currentValue: batteryInfo?.batteryLevel)
+    }
+
+    /// Updates the dri status in our view model.
+    ///
+    /// - Parameters:
+    ///   - drone: the current drone
+    ///   - driErrorAlarm: a dri error alarm returned from the drone
+    func updateDriStatus(drone: Drone?) {
+        guard let drone = drone else {
+            driState = .disconnected
+            return
+        }
+        guard driState != .error else {
+            return
+        }
+
+        let dri = drone.getPeripheral(Peripherals.dri)
+        driState = dri?.mode?.value == true ? .active : .off
     }
 
     /// Updates the cellular strength in our view model.
@@ -244,9 +348,9 @@ private extension DroneInfosViewModel {
     func updateCellularStrength(drone: Drone?) {
         guard let cellular = drone?.getPeripheral(Peripherals.cellular),
               cellular.isActivated else {
-                  cellularStrength = .deactivated
-                  return
-              }
+            cellularStrength = .deactivated
+            return
+        }
 
         guard let isConnected = drone?.isConnected, isConnected else {
             cellularStrength = .offline
@@ -272,23 +376,13 @@ private extension DroneInfosViewModel {
         }
     }
 
-    // MARK: - Motors
-    /// Starts watcher for drone's motors.
-    ///
-    /// - Parameter drone: the current drone
-    func listenMotors(drone: Drone) {
-        motorsRef = drone.getPeripheral(Peripherals.copterMotors) { [weak self] copterMotors in
-            self?.copterMotorsErrors = copterMotors?.motorsCurrentlyInError
+    func updateWifiStrength(drone: Drone?) {
+        guard let isConnected = drone?.isConnected, isConnected else {
+            wifiStrength = .offline
+            return
         }
-    }
 
-    /// Starts watcher for drone's connection state.
-    ///
-    /// - Parameter drone: the current drone
-    func listenConnectionState(drone: Drone) {
-        connectionStateRef = drone.getState { [weak self] state in
-            self?.connectionState = state?.connectionState ?? .disconnected
-            self?.updateCellularStrength(drone: drone)
-        }
+        let networkControl = drone?.getPeripheral(Peripherals.networkControl)
+        wifiStrength = networkControl?.wifiStrength ?? .offline
     }
 }

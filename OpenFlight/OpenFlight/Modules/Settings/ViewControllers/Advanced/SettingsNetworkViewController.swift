@@ -199,7 +199,7 @@ private extension SettingsNetworkViewController {
             cell.configureCell(cellTitle: settingEntry.title,
                                segmentModel: settingSegments,
                                subtitle: settingEntry.subtitle,
-                               operatorId: networkViewModel.driOperatorFullId,
+                               operatorTuple: networkViewModel.driOperatorFullId,
                                operatorColor: networkViewModel.driOperatorColor,
                                isEnabled: settingEntry.isEnabled,
                                subtitleColor: ColorName.secondaryTextColor.color,

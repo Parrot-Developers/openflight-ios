@@ -121,31 +121,35 @@ private extension SettingsCellularDataCell {
             }
             .store(in: &cancellables)
 
-        viewModel.$cellularNetworkUrl.removeDuplicates()
+        viewModel.$cellularNetworkUrl
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
                 self.accessNameTextField.text = $0
             }
             .store(in: &cancellables)
 
-        viewModel.$cellularNetworkUsername.removeDuplicates()
+        viewModel.$cellularNetworkUsername
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
                 self.usernameTextField.text = $0
             }
             .store(in: &cancellables)
 
-        viewModel.$cellularNetworkPassword.removeDuplicates()
+        viewModel.$cellularNetworkPassword
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
                 self.passwordTextField.text = $0
             }
             .store(in: &cancellables)
 
-        viewModel.$cellularSelectionMode.removeDuplicates()
+        viewModel.$cellularSelectionMode
+            .removeDuplicates()
             .sink { [weak self] in
                 guard let self = self else { return }
-                self.networkSelectionStackView.isHidden = $0 == .auto
+                self.networkSelectionStackView.isHidden = $0 != .manual
             }
             .store(in: &cancellables)
     }

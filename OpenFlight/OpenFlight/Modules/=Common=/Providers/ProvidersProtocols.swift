@@ -32,6 +32,12 @@ import UIKit
 import Combine
 
 // MARK: - Protocols
+/// SettingsProvider protocol
+public protocol SettingsProvider {
+    /// Returns list of advanced settings types to show.
+    var advancedSettingsTypes: [SettingsType] { get }
+}
+
 /// AccountProvider protocol
 public protocol AccountProvider {
     /// Returns an image to show when needed (ie: on dashboard tile).
@@ -111,6 +117,19 @@ public protocol FlightPlanProvider {
     ///    - mapMode: map mode in which the Flight Plan will be displayed
     /// - Returns: Flight Plan Graphic array
     func graphicsWithFlightPlan(_ flightPlan: FlightPlanModel, mapMode: MapMode) -> [FlightPlanGraphic]
+    /// Returns FP's ArcGis graphics.
+    ///
+    /// - Parameters:
+    ///    - flightPlan: the flight plan
+    ///    - mapMode: the map mode
+    ///    - graphicsMode: the graphics mode
+    /// - Returns: the `FlightPlanGraphicsGenerationResult`
+    ///
+    /// - Note: This async method must currently be performed in main thread due to legacy implementation but it should be improved
+    ///         regarding Arcgis recommendations (cf https://developers.arcgis.com/ios/programming-patterns/performance-considerations/ ).
+    @MainActor
+    func graphics(for flightPlan: FlightPlanModel, mapMode: MapMode, graphicsMode: FlightPlanGraphicsMode)
+    async -> FlightPlanGraphicsGenerationResult
     /// Check if this provider manages a given flight plan type
     /// - Parameter type: the flight plan type
     func hasFlightPlanType(_ type: String) -> Bool
@@ -312,6 +331,35 @@ extension FlightPlanSettingType {
         return FlightPlanLightSetting(key: self.key,
                                       currentValue: self.currentValue)
     }
+
+    /// Whether the setting can be edited for an FP created via a Mavlink import.
+    public var isAvailableForImportedMavlink: Bool {
+        switch category {
+        case .image:
+            // Only Time/GPSLapse settings can't be edited.
+            // Note: Even if capture mode can't be changed for an imported mavlink,
+            // we don't filter it to display the current value to the user.
+            if key == ClassicFlightPlanSettingType.gpsLapseDistance.key
+                || key == ClassicFlightPlanSettingType.timeLapseCycle.key {
+                return false
+            }
+        case .rth:
+            // The FP custom RTH settings can be edited but will be only available for
+            // 'conection lost RTH'. The 'Final RTH' is contained in the Mavlink and will
+            // not be editable.
+            break
+        case .common:
+            // Following 'common' settings are Mavlink dependants and can't be edited.
+            if key == ClassicFlightPlanSettingType.continueMode.key
+                || key == ClassicFlightPlanSettingType.lastPointRth.key {
+                return false
+            }
+        default:
+            break
+        }
+        // All other settings can be edited.
+        return true
+    }
 }
 
 /// Array extension for Flight Plan Light Setting.
@@ -345,6 +393,8 @@ public protocol FlightPlanType {
     var missionProvider: MissionProvider { get }
     /// Mission mode
     var missionMode: MissionMode { get }
+    /// Whether the Flight Plan type supports the AMSL altitude reference.
+    var isAmslReferenceSupported: Bool { get }
 }
 
 /// Protocols used to provide mission activation methods.
@@ -604,6 +654,7 @@ public enum FlightPlanSettingCategory: Hashable {
     case common
     case image
     case rth
+    case altitudeRef
     case custom(String)
 
     /// Returns title category settings.
@@ -617,6 +668,8 @@ public enum FlightPlanSettingCategory: Hashable {
             return title
         case .rth:
             return L10n.flightPlanSettingsRthTitle
+        case .altitudeRef:
+            return L10n.flightPlanAltitudeReferenceSettingTitle
         }
     }
 }

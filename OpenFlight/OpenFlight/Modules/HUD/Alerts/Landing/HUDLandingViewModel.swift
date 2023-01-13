@@ -163,6 +163,8 @@ private extension HUDLandingViewModel {
                 switch state {
                 case let .playing(droneConnected: _, flightPlan: _, rth: rth):
                     self.isFlightPlanRthActive.send(rth)
+                case .rth:
+                    self.isFlightPlanRthActive.send(true)
                 default:
                     self.isFlightPlanRthActive.send(false)
                 }

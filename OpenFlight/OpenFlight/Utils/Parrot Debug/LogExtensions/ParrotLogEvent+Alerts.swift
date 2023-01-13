@@ -33,6 +33,7 @@ extension LogEvent {
     enum AlertKey {
         static let type: String = "type"
         static let message: String = "message"
+        static let banner: String = "banner"
         static let severity: String = "severity"
         static let onDuration: String = "on"
         static let snoozeDuration: String = "snooze"

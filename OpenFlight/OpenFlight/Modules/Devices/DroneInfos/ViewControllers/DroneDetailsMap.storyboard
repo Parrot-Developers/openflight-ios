@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="IAI-OY-jBw">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="IAI-OY-jBw">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -23,14 +23,14 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Z2x-GP-vgX">
-                                <rect key="frame" x="52" y="16" width="792" height="398"/>
+                                <rect key="frame" x="8" y="64" width="880" height="350"/>
                                 <subviews>
-                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IQK-Rg-HHV">
-                                        <rect key="frame" x="0.0" y="0.0" width="792" height="398"/>
+                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IQK-Rg-HHV" customClass="AGSMapView">
+                                        <rect key="frame" x="0.0" y="0.0" width="880" height="350"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </containerView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XFI-kh-kSC">
-                                        <rect key="frame" x="0.0" y="0.0" width="792" height="65"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="880" height="65"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7ou-1A-r6k">
                                                 <rect key="frame" x="0.0" y="0.0" width="65" height="65"/>
@@ -45,7 +45,7 @@
                                                 </connections>
                                             </button>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="LUv-Mc-STo">
-                                                <rect key="frame" x="375" y="16.5" width="42" height="32"/>
+                                                <rect key="frame" x="419" y="16.5" width="42" height="32"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uBf-A2-53n">
                                                         <rect key="frame" x="0.0" y="0.0" width="42" height="19"/>
@@ -62,7 +62,7 @@
                                                 </subviews>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="Czj-at-29z">
-                                                <rect key="frame" x="631" y="15" width="146" height="35"/>
+                                                <rect key="frame" x="719" y="15" width="146" height="35"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3Fb-Yc-A2h">
                                                         <rect key="frame" x="0.0" y="0.0" width="5" height="35"/>
@@ -96,7 +96,7 @@
                                                 <color key="backgroundColor" name="highlight_color"/>
                                             </stackView>
                                             <button opaque="NO" contentMode="left" horizontalHuggingPriority="251" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6e7-At-0eC">
-                                                <rect key="frame" x="631" y="15" width="146" height="35"/>
+                                                <rect key="frame" x="719" y="15" width="146" height="35"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -128,7 +128,7 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WrI-We-EIa">
-                                        <rect key="frame" x="618" y="322" width="158" height="32"/>
+                                        <rect key="frame" x="706" y="274" width="158" height="32"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hyc-Fn-BHY">
                                                 <rect key="frame" x="12" y="0.0" width="114" height="32"/>
@@ -163,7 +163,7 @@
                                         </constraints>
                                     </view>
                                 </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="bottom" secondItem="WrI-We-EIa" secondAttribute="bottom" constant="44" id="3hE-bo-EBT"/>
                                     <constraint firstItem="XFI-kh-kSC" firstAttribute="leading" secondItem="Z2x-GP-vgX" secondAttribute="leading" id="DKB-8N-roQ"/>
@@ -191,12 +191,12 @@
                         <outlet property="bellImageView" destination="urO-Lb-zqq" id="l3i-ex-2sP"/>
                         <outlet property="bellLabel" destination="cTi-SN-RNr" id="FgE-FK-F7U"/>
                         <outlet property="bellStackView" destination="Czj-at-29z" id="iJ1-dm-mPG"/>
-                        <outlet property="containerView" destination="IQK-Rg-HHV" id="hfq-6l-eNd"/>
                         <outlet property="coordinateButton" destination="hyc-Fn-BHY" id="158-GN-ygX"/>
                         <outlet property="coordinateView" destination="WrI-We-EIa" id="w08-X9-2B8"/>
                         <outlet property="lastPositionTitleLabel" destination="uBf-A2-53n" id="vC9-Se-4u5"/>
                         <outlet property="lastPositionValueLabel" destination="NY3-Oe-9Lf" id="Rpb-ux-5SE"/>
                         <outlet property="mainView" destination="Z2x-GP-vgX" id="x9S-nh-Mx1"/>
+                        <outlet property="mapView" destination="IQK-Rg-HHV" id="2s0-Ll-xvm"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hFS-12-YaQ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -209,7 +209,7 @@
         <image name="icClose" width="17" height="17"/>
         <image name="icRightArrow" width="9" height="16"/>
         <namedColor name="default_text_color">
-            <color red="0.23137254901960785" green="0.18823529411764706" blue="0.16470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
         <namedColor name="highlight_color">
             <color red="0.20392156862745098" green="0.75686274509803919" blue="0.45882352941176469" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>

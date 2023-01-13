@@ -37,13 +37,13 @@ final class DashboardViewModel {
     var dataSource = DashboardDataSource()
     var appLogo: UIImage = Asset.Logo.icLogoParrotApp.image
 
-    var galleryMediaViewModel: GalleryMediaViewModel!
-    var dashboardMyAccountViewModel: DashboardMyAccountViewModel!
-    var remoteInfosViewModel: RemoteInfosViewModel!
-    var droneInfosViewModel: DroneInfosViewModel!
-    var userDeviceViewModel: UserDeviceViewModel!
-    var dashboardProjectManagerCellModel: DashboardProjectManagerCellModel!
-    var myFlightsCellModel: DashboardMyFlightsCellModel!
+    let dashboardMediasViewModel: DashboardMediasViewModel
+    var dashboardMyAccountViewModel: DashboardMyAccountViewModel
+    var remoteInfosViewModel: RemoteInfosViewModel
+    var droneInfosViewModel: DroneInfosViewModel
+    var userDeviceViewModel: UserDeviceViewModel
+    var dashboardProjectManagerCellModel: DashboardProjectManagerCellModel
+    var myFlightsCellModel: DashboardMyFlightsCellModel
     let dashboardUiProvider: DashboardUiProvider
 
     private let service: VariableAssetsService
@@ -51,6 +51,8 @@ final class DashboardViewModel {
     private let cloudSynchroWatcher: CloudSynchroWatcher?
     private let projectManagerUiProvider: ProjectManagerUiProvider!
     private let flightService: FlightService
+    /// The media services.
+    private let mediaServices: MediaServices
 
     enum ViewState {
         case initialize
@@ -58,33 +60,34 @@ final class DashboardViewModel {
     }
 
     // MARK: - Init
-    /// Init.
+    /// Constructor.
     ///
     /// - Parameters:
-    ///     - service: the variable assets service.
+    ///    - service: the variable assets service
+    ///    - projectManager: the project manager
+    ///    - cloudSynchroWatcher: the cloud synchro watcher
+    ///    - dashboardUiProvider: the dashboard UI provider
+    ///    - flightService: the flight service
+    ///    - mediaServices: the media services
     init(service: VariableAssetsService,
          projectManager: ProjectManager,
          cloudSynchroWatcher: CloudSynchroWatcher?,
          projectManagerUiProvider: ProjectManagerUiProvider,
          dashboardUiProvider: DashboardUiProvider,
-         flightService: FlightService) {
+         flightService: FlightService,
+         mediaServices: MediaServices) {
         self.service = service
         self.projectManager = projectManager
         self.cloudSynchroWatcher = cloudSynchroWatcher
         self.projectManagerUiProvider = projectManagerUiProvider
         self.dashboardUiProvider = dashboardUiProvider
         self.flightService = flightService
-    }
+        self.mediaServices = mediaServices
 
-    func initViewModels() {
         appLogo = service.appLogo
 
-        galleryMediaViewModel = OpenFlight.GalleryMediaViewModel(onMediaStateUpdate: { [weak self] _ in
-            self?.viewState = .reloadData
-        })
-        galleryMediaViewModel.refreshMedias()
-
         // Fill the view model tab with all dashboard view model.
+        dashboardMediasViewModel = DashboardMediasViewModel(mediaServices: mediaServices)
         dashboardMyAccountViewModel =  DashboardMyAccountViewModel()
         remoteInfosViewModel = RemoteInfosViewModel()
         droneInfosViewModel = DroneInfosViewModel()

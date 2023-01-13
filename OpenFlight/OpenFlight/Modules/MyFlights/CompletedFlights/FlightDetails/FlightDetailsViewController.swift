@@ -75,7 +75,6 @@ final class FlightDetailsViewController: UIViewController, FileShare {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initView()
         updateMapDisplay()
         bindViewModel()
@@ -177,7 +176,12 @@ private extension FlightDetailsViewController {
 
     /// Init map controller.
     func initMap() {
-        let controller = MapViewController.instantiate(mapMode: .myFlights)
+        // TODO: Fix services injection.
+        let controller = MyFlightsMapViewController.instantiate(bamService: Services.hub.bamService,
+                                                                missionsStore: Services.hub.missionsStore,
+                                                                flightPlanEditionService: Services.hub.flightPlan.edition,
+                                                                flightPlanRunManager: Services.hub.flightPlan.run,
+                                                                memoryPressureMonitor: Services.hub.memoryPressureMonitor)
         controller.view.backgroundColor = .clear
         mapController = controller
         add(mapViewController: controller, to: mapContainerView)
@@ -202,19 +206,17 @@ private extension FlightDetailsViewController {
     func updateMapDisplay() {
         switch viewModel {
         case .details(let viewModel):
-            if let mapViewController = mapController as? MapViewController {
-                mapViewController.displayFlightTrajectories(flightsPoints: [viewModel.flightPoints],
-                                                            hasAsmlAltitude: viewModel.hasAsmlAltitude,
-                                                            adjustViewPoint: true)
+            if let mapViewController = mapController as? MyFlightsMapViewController {
+                mapViewController.displayFlightTrajectories(
+                    flightsPoints: [viewModel.flightPoints],
+                    hasAmslAltitude: viewModel.hasAmslAltitude)
             }
         case .execution(let viewModel):
-            if let mapViewController = mapController as? MapViewController {
-                mapViewController.flightPlan = viewModel.flightPlan
+            if let mapViewController = mapController as? MyFlightsMapViewController {
                 mapViewController.displayFlightPlan(viewModel.flightPlan, shouldReloadCamera: true)
                 mapViewController.displayFlightTrajectories(flightsPoints: viewModel.flightsPoints,
-                                                            hasAsmlAltitude: viewModel.hasAsmlAltitude,
-                                                            trajectoryState: viewModel.flightPlan.state.trajectoryState,
-                                                            adjustViewPoint: false)
+                                                            hasAmslAltitude: viewModel.hasAmslAltitude,
+                                                            trajectoryState: viewModel.flightPlan.state.trajectoryState)
             }
         case .none:
             break

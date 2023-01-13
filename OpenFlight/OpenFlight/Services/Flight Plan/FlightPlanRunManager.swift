@@ -53,6 +53,9 @@ public protocol FlightPlanRunManager: AnyObject {
     /// Flight Plan run state publisher.
     var statePublisher: AnyPublisher<FlightPlanRunningState, Never> { get }
 
+    /// Flight Plan run state.
+    var state: FlightPlanRunningState { get }
+
     /// The Drone is ready to receive commands.
     var interfaceReadyPublisher: AnyPublisher<Bool, Never> { get }
 
@@ -173,6 +176,19 @@ public enum FlightPlanRunningState: CustomStringConvertible {
         default:
             return false
         }
+    }
+
+    /// Whether the Run Manager is in `.rth` state.
+    ///
+    /// - Note: This property returns `true` only when the Run Manager state is set to `.rth`,
+    ///         but not when its state is `.playing` with its `rth` parameter set to `true`.
+    ///         The FP RTH behavior is not correctly defined yet. The RTH UI can be displayed by a
+    ///         change on the piloting Interface of the RTH or a change of the FP piloting interface when it has
+    ///         reached the last way point.
+    // TODO: Clarify and clean the flight plan rth behavior.
+    var isRthState: Bool {
+        guard case .rth = self else { return false }
+        return true
     }
 }
 
@@ -303,7 +319,8 @@ private extension FlightPlanRunManagerImpl {
         stateSubject.value = state
         switch state {
         case .playing(_, flightPlan: let flightPlan, _),
-                .paused(_, flightPlan: let flightPlan, _):
+                .paused(_, flightPlan: let flightPlan, _),
+                .rth(flightPlan: let flightPlan):
             playingFlightPlanSubject.value = flightPlan
         default:
             playingFlightPlanSubject.value = nil
@@ -431,6 +448,9 @@ private extension FlightPlanRunManagerImpl {
                     if droneConnected {
                         updateState(.rth(flightPlan: flightPlan))
                     }
+                case .rth:
+                    // If rth is already active when the event arrives, no need to do anything.
+                    break
                 default:
                     // In all other cases, there is an RTH initiated by an FP which should not be executed.
                     // Stopping the FP piloting interface will stop its RTH.
@@ -832,6 +852,8 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
 
     public var statePublisher: AnyPublisher<FlightPlanRunningState, Never> { stateSubject.eraseToAnyPublisher() }
 
+    public var state: FlightPlanRunningState { stateSubject.value }
+
     public var interfaceReadyPublisher: AnyPublisher<Bool, Never> { interfaceReadySubject.eraseToAnyPublisher() }
 
     public var distancePublisher: AnyPublisher<Double, Never> { distanceSubject.eraseToAnyPublisher() }
@@ -968,6 +990,8 @@ extension FlightPlanRunManagerImpl: FlightPlanRunManager {
     }
 
     public func handleTimeout(flightPlan: FlightPlanModel) {
+        // Send a stop to the piloting interface in case it's still trying to activate.
+        _ = getPilotingItf()?.stop()
         // Inform the active FP watcher that FP activation failed.
         activeFlightPlanWatcher.flightPlanActivationFailed(flightPlan)
     }

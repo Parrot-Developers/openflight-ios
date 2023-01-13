@@ -49,6 +49,10 @@ public protocol RthService: AnyObject {
     var currentTarget: ReturnHomeTarget { get }
     /// Publisher for the current RTH target
     var currentTargetPublisher: AnyPublisher<ReturnHomeTarget, Never> { get }
+    /// The home location publisher.
+    var homeLocationPublisher: AnyPublisher<Location3D?, Never> { get }
+    /// The home indicator state publisher.
+    var homeIndicatorStatePublisher: AnyPublisher<HomeIndicatorState, Never> { get }
 }
 
 /// Implementation of `RthService`.
@@ -67,12 +71,33 @@ public class RthServiceImpl {
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
     private var flyingIndicators: FlyingIndicators?
 
+    /// Whether home position set alert is required.
+    private var isHomePositionSetAlertRequired = false
     /// The RTH active state.
     private var isActiveSubject = CurrentValueSubject<Bool, Never>(false)
     /// The RTH min altitude
     private var minAltitudeSubject = CurrentValueSubject<Double, Never>(RthPreset.minAltitude)
     /// The RTH target.
     private var currentTargetSubject = CurrentValueSubject<ReturnHomeTarget, Never>(RthPreset.rthType)
+    /// The home location subject.
+    private var homeLocationSubject = CurrentValueSubject<Location3D?, Never>(nil)
+    /// The `returnHome` piloting interface home location subject.
+    private var rthHomeLocationSubject = CurrentValueSubject<CLLocation?, Never>(nil)
+    /// The `returnHome` piloting interface home location publisher.
+    private var rthHomeLocationPublisher: AnyPublisher<CLLocation?, Never> { rthHomeLocationSubject.eraseToAnyPublisher() }
+    /// The `returnHome` piloting interface home location.
+    private var rthHomelocation: CLLocation? {
+        get { rthHomeLocationSubject.value }
+        set { rthHomeLocationSubject.value = newValue }
+    }
+    /// The home indicator state subject.
+    private var homeIndicatorStateSubject = CurrentValueSubject<HomeIndicatorState, Never>(.active)
+    /// The home indicator state.
+    private var homeIndicatorState: HomeIndicatorState {
+        get { homeIndicatorStateSubject.value }
+        set { homeIndicatorStateSubject.value = newValue }
+    }
+
     /// The banner alert manager service.
     private var bamService: BannerAlertManagerService
 
@@ -82,12 +107,17 @@ public class RthServiceImpl {
     ///
     /// - Parameters:
     ///   - currentDroneHolder: drone holder
+    ///   - locationsTracker: the locations tracker service
     ///   - bamService: the banner alert manager service
     public init(currentDroneHolder: CurrentDroneHolder,
+                locationsTracker: LocationsTracker,
                 bamService: BannerAlertManagerService) {
         self.bamService = bamService
         // listen to drone changes
         listen(dronePublisher: currentDroneHolder.dronePublisher)
+
+        // Update home location according to `returnHome` piloting interface and locations tracker updates.
+        updateHomeLocation(locationsTracker: locationsTracker)
     }
 }
 
@@ -151,11 +181,67 @@ private extension RthServiceImpl {
         isActiveSubject.value = isReturningHome && !isForceLanding
         minAltitudeSubject.value = returnHome?.minAltitude?.value ?? RthPreset.minAltitude
         currentTargetSubject.value = returnHome?.currentTarget ?? RthPreset.rthType
+
+        // Update home location from `returnHome` piloting interface.
+        rthHomelocation = returnHome?.homeLocation
+
+        let reachability = returnHome?.homeReachability ?? .unknown
+        let isRthAvailable = returnHome?.unavailabilityReasons?.isEmpty == true
+        // Update home indicator state.
+        if drone.isTakingOff || !isRthAvailable {
+            homeIndicatorState = .hidden
+        } else if reachability == .notReachable {
+            homeIndicatorState = .error
+        } else if currentTarget != .takeOffPosition {
+            homeIndicatorState = .active
+        } else {
+            homeIndicatorState = returnHome?.gpsWasFixedOnTakeOff ?? false ? .active : .degraded
+        }
+
+        // Show home position set banner alert if needed.
+        let isHomePositionSet = returnHome?.isHomePositionSet == true
+        if drone.isTakingOff {
+            // New takeoff => home position set alert is required (if available).
+            isHomePositionSetAlertRequired = true
+        } else if isRthAvailable, isHomePositionSet, isHomePositionSetAlertRequired {
+            bamService.show(HomeAlert.homePositionSet)
+            // Do not show alert again until next take off.
+            isHomePositionSetAlertRequired = false
+        }
+
         // Show potentiel RTH banner alert according to RTH reason.
         let isIcedPropellerRth = isReturningHome && returnHome?.reason == .icedPropeller
         let isPoorBatteryConnectionRth = isReturningHome && returnHome?.reason == .batteryPoorConnection
         bamService.update(CriticalBannerAlert.rthIcedPropeller, show: isIcedPropellerRth)
         bamService.update(CriticalBannerAlert.rthPoorBatteryConnection, show: isPoorBatteryConnectionRth)
+    }
+
+    /// Updates home location subject by listening to related publishers.
+    ///
+    /// This function updates and publishes home location according to `returnHome` piloting interface info, device's
+    /// location and user preferrences.
+    ///
+    /// Home location should however only be determined by `returnHome` piloting interface.
+    /// Device's location is currently used to define home location in case of a pilot RTH target because `homeLocation`
+    /// field of `returnHome` piloting interface is not correctly updated in case of a `controllerPosition` preferred
+    /// return target.
+    ///
+    /// - Parameter locationsTracker: the locations tracker service
+    func updateHomeLocation(locationsTracker: LocationsTracker) {
+        rthHomeLocationPublisher.combineLatest(locationsTracker.userLocationPublisher, currentTargetPublisher)
+            .sink { [weak self] homeLocation, userLocation, currentTarget in
+                guard let self = self else { return }
+                if currentTarget == .takeOffPosition, let homeLocation = homeLocation {
+                    self.homeLocationSubject.value = Location3D(coordinate: homeLocation.coordinate,
+                                                                altitude: 0)
+                } else if let userLocation3D = userLocation.coordinates, userLocation.isValid {
+                    self.homeLocationSubject.value = Location3D(coordinate: userLocation3D.coordinate,
+                                                                altitude: 0)
+                } else {
+                    self.homeLocationSubject.value = nil
+                }
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -175,4 +261,8 @@ extension RthServiceImpl: RthService {
     public var currentTargetPublisher: AnyPublisher<ReturnHomeTarget, Never> {
         currentTargetSubject.eraseToAnyPublisher()
     }
+    /// The home location publisher.
+    public var homeLocationPublisher: AnyPublisher<Location3D?, Never> { homeLocationSubject.eraseToAnyPublisher() }
+    /// The home indicator state publisher.
+    public var homeIndicatorStatePublisher: AnyPublisher<HomeIndicatorState, Never> { homeIndicatorStateSubject.eraseToAnyPublisher() }
 }

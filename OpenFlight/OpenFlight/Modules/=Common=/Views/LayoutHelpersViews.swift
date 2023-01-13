@@ -28,7 +28,7 @@
 //    SUCH DAMAGE.
 
 /// An empty view with a flexible width (useful in stackViews).
-class HSpacerView: UIView {
+class HSpacerView: PassThroughView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -51,7 +51,7 @@ class HSpacerView: UIView {
 }
 
 /// An empty view with a flexible height (useful in stackViews).
-class VSpacerView: UIView {
+class VSpacerView: PassThroughView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()

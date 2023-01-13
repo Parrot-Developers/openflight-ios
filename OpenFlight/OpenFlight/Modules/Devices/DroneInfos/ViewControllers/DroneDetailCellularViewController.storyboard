@@ -219,7 +219,7 @@
                                                 </constraints>
                                             </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="tDH-9b-rmT" customClass="MainStackView" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="420" y="70" width="202" height="104"/>
+                                                <rect key="frame" x="420" y="89" width="202" height="66"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lYv-jY-pT8" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="202" height="28"/>
@@ -255,22 +255,8 @@
                                                             <action selector="unpairUser:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="YPM-cH-CLQ"/>
                                                         </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eve-dJ-pj3" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="76" width="202" height="28"/>
-                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="16"/>
-                                                        <state key="normal" title="Show debug">
-                                                            <color key="titleColor" name="default_text_color"/>
-                                                        </state>
-                                                        <variation key="heightClass=regular-widthClass=regular">
-                                                            <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="22"/>
-                                                        </variation>
-                                                        <connections>
-                                                            <action selector="showCellularDebug:" destination="Y6W-OH-hqX" eventType="touchUpInside" id="nDQ-B4-6Xh"/>
-                                                        </connections>
-                                                    </button>
                                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="40F-Qu-hPw" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="104" width="202" height="0.0"/>
+                                                        <rect key="frame" x="0.0" y="66" width="202" height="0.0"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <fontDescription key="fontDescription" name="Rajdhani-Regular" family="Rajdhani" pointSize="16"/>
                                                         <state key="normal" title="Show Support">
@@ -286,11 +272,10 @@
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
+                                                    <constraint firstItem="40F-Qu-hPw" firstAttribute="width" secondItem="lYv-jY-pT8" secondAttribute="width" id="DPg-pI-ggm"/>
                                                     <constraint firstItem="lYv-jY-pT8" firstAttribute="width" secondItem="tDH-9b-rmT" secondAttribute="width" priority="750" id="EBt-Lt-vqB"/>
                                                     <constraint firstItem="Jag-2W-lRz" firstAttribute="width" secondItem="lYv-jY-pT8" secondAttribute="width" id="JXg-08-RUe"/>
-                                                    <constraint firstItem="eve-dJ-pj3" firstAttribute="width" secondItem="Jag-2W-lRz" secondAttribute="width" id="T2X-zK-Ntc"/>
                                                     <constraint firstItem="lYv-jY-pT8" firstAttribute="width" secondItem="tDH-9b-rmT" secondAttribute="width" multiplier="0.7" id="fCt-Gb-YAK"/>
-                                                    <constraint firstItem="40F-Qu-hPw" firstAttribute="width" secondItem="eve-dJ-pj3" secondAttribute="width" id="sEr-id-6kJ"/>
                                                 </constraints>
                                                 <variation key="default">
                                                     <mask key="constraints">
@@ -383,7 +368,6 @@
                         <outlet property="forgetPinButton" destination="Jag-2W-lRz" id="YPO-tp-6hN"/>
                         <outlet property="leftInternetImage" destination="nNg-kH-E2h" id="umQ-RT-1Hc"/>
                         <outlet property="rightInternetImage" destination="v1O-m1-SXx" id="fkY-2f-DiZ"/>
-                        <outlet property="showDebugButton" destination="eve-dJ-pj3" id="8td-sQ-IqH"/>
                         <outlet property="showSupportButton" destination="40F-Qu-hPw" id="hgj-yM-M6g"/>
                         <outlet property="titleLabel" destination="LgE-0s-FVR" id="LcN-id-TxK"/>
                         <outlet property="topLeftBranchImage" destination="1uy-uw-T0v" id="hUC-xd-bHi"/>

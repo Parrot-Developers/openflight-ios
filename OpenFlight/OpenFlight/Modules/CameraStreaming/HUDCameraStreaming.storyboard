@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="2CR-rr-Vd9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="2CR-rr-Vd9">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -24,6 +24,10 @@
                             <glkView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" enableSetNeedsDisplay="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i0k-lN-fma" customClass="GSStreamView">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                             </glkView>
+                            <view hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SyZ-iE-80b" customClass="GridView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dZP-bN-RL5" customClass="SnowView" customModule="OpenFlight" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -33,16 +37,21 @@
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="i0k-lN-fma" secondAttribute="bottom" id="0LW-qf-P1D"/>
+                            <constraint firstAttribute="trailing" secondItem="SyZ-iE-80b" secondAttribute="trailing" id="72g-kr-gHI"/>
+                            <constraint firstItem="SyZ-iE-80b" firstAttribute="leading" secondItem="Qqi-Ph-Cof" secondAttribute="leading" id="9Ih-pN-CVz"/>
                             <constraint firstAttribute="bottom" secondItem="dZP-bN-RL5" secondAttribute="bottom" id="DJx-ev-vDD"/>
                             <constraint firstItem="i0k-lN-fma" firstAttribute="top" secondItem="Qqi-Ph-Cof" secondAttribute="top" id="DuA-FV-elw"/>
                             <constraint firstItem="dZP-bN-RL5" firstAttribute="leading" secondItem="Qqi-Ph-Cof" secondAttribute="leading" id="KPv-Qd-HpV"/>
+                            <constraint firstItem="SyZ-iE-80b" firstAttribute="top" secondItem="Qqi-Ph-Cof" secondAttribute="top" id="VmZ-FR-Mzi"/>
                             <constraint firstAttribute="trailing" secondItem="dZP-bN-RL5" secondAttribute="trailing" id="dUe-kc-Qa0"/>
                             <constraint firstItem="i0k-lN-fma" firstAttribute="leading" secondItem="Qqi-Ph-Cof" secondAttribute="leading" id="hE3-Hf-OIH"/>
                             <constraint firstItem="dZP-bN-RL5" firstAttribute="top" secondItem="Qqi-Ph-Cof" secondAttribute="top" id="mgt-iv-4Uf"/>
                             <constraint firstAttribute="trailing" secondItem="i0k-lN-fma" secondAttribute="trailing" id="oYC-oh-x0b"/>
+                            <constraint firstAttribute="bottom" secondItem="SyZ-iE-80b" secondAttribute="bottom" id="w6U-GH-VVS"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="gridView" destination="SyZ-iE-80b" id="7gD-Df-aeF"/>
                         <outlet property="snowView" destination="dZP-bN-RL5" id="Zzp-w8-fFS"/>
                         <outlet property="streamView" destination="i0k-lN-fma" id="9uX-ly-C1A"/>
                         <outlet property="touchView" destination="JCh-jJ-wtE" id="nvi-BO-E8Y"/>

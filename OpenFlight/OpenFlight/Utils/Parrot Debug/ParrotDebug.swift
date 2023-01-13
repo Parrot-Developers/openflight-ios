@@ -37,6 +37,7 @@ public class ParrotDebug {
 
     // MARK: - Private Properties
     private static let debugTag = ULogTag(name: "ParrotDebug")
+    private static let maxSizeLogMb = 2 * 1024 // 2 GB
     private static var activeLogBinRecorder: RotatingLogRecorder?
     private static var activeLogTxtRecorder: RotatingLogRecorder?
     private static let streamDbgPath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
@@ -45,8 +46,14 @@ public class ParrotDebug {
 
 // MARK: - Public Funcs
 public extension ParrotDebug {
+
+    private static func cleanOldLogs() {
+        try? FileManager.reduceDirectorySize(url: logsURL, fileExt: nil, totalMaxSizeMb: maxSizeLogMb, includingSubfolders: true)
+    }
+
     /// Start smart log.
     static func smartStartLog() {
+        cleanOldLogs()
         if !Defaults.hasKey(\.activatedLog) {
             // Use the default configuration.
             #if DEBUG
@@ -82,7 +89,6 @@ public extension ParrotDebug {
                 print("Failed to create log directory \(currentLogDirectory) \(error.localizedDescription)")
             }
         }
-        setenv("ULOG_LEVEL", "D", 1)
         let logBinConfig = LogBinRecorderConfig(currentLogDirectory)
         let logTxtConfig = LogTxtRecorderConfig(currentLogDirectory)
         activeLogBinRecorder = ULog.redirectToLogBin(config: logBinConfig)

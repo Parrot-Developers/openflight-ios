@@ -35,9 +35,8 @@ final class StereoCalibrationViewController: UIViewController {
 
     // MARK: - Outlet
 
-    @IBOutlet weak var rightPanelView: UIView!
     @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var subtitleLabel: UILabel!
+    @IBOutlet weak var stateLabel: UILabel!
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var warningLabel: UILabel!
     @IBOutlet weak var optimalCalibrationButton: ActionButton!
@@ -46,17 +45,17 @@ final class StereoCalibrationViewController: UIViewController {
     @IBOutlet weak var quickCalibrationButton: ActionButton!
     @IBOutlet weak var alertView: UIView!
     @IBOutlet weak var alertLabel: UILabel!
-    @IBOutlet weak var animationImageView: UIImageView!
-    @IBOutlet weak var countdownLabel: UILabel!
-
-    private let progressView = StereoCalibrationProgressView()
+    @IBOutlet weak var alertPanelContainerView: UIView!
+    @IBOutlet weak var alertControls: AlertControls!
+    @IBOutlet weak var progressView: StereoCalibrationProgressView!
 
     // MARK: - Private Properties
 
     private var viewModel: StereoCalibrationViewModel!
     private var cancellables = Set<AnyCancellable>()
+    private weak var alertPanel: HUDAlertPanelViewController?
 
-    private var fisrtAttributes: [NSAttributedString.Key: UIFont] {
+    private var firstAttributes: [NSAttributedString.Key: UIFont] {
         return isRegularSizeClass ?
         [NSAttributedString.Key.font: UIFont(name: "Rajdhani-Semibold", size: 18.0) ?? UIFont.systemFont(ofSize: 10)] :
         [NSAttributedString.Key.font: UIFont(name: "Rajdhani-Semibold", size: 15.0) ?? UIFont.systemFont(ofSize: 10)]
@@ -97,39 +96,15 @@ final class StereoCalibrationViewController: UIViewController {
 
         initUI()
         bindViewModel()
-
-        viewModel.ophtalmoService
-            .calibrationStatusPublisher
-            .compactMap { $0 }
-            .removeDuplicates()
-            .sink { [unowned self] status in
-                switch status {
-                case .idle:
-                    progressView.removeFromSuperview()
-                    welcomeStackView.isHidden = false
-                default:
-                    welcomeStackView.isHidden = true
-                    viewModel.updateCalibrationWith(altitude: viewModel.ophtalmoService.altitude)
-                    progressView.setup(viewModel: viewModel)
-                    rightPanelView.addWithConstraints(subview: progressView)
-                }
-            }
-            .store(in: &cancellables)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
         LogEvent.log(.screen(LogEvent.Screen.sensorCalibrationTutorial))
-
+        setupConstraints()
         viewModel.startMission()
         alertView.isHidden = true
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        viewModel.endMission()
     }
 
     override var prefersHomeIndicatorAutoHidden: Bool {
@@ -168,9 +143,11 @@ private extension StereoCalibrationViewController {
 
     func initUI() {
         titleLabel.text = L10n.loveCalibrationTitle
+        titleLabel.makeUp(with: .title, color: .defaultTextColor)
+        stateLabel.makeUp(with: .current, color: .defaultTextColor80)
         messageLabel.text = L10n.loveCalibrationSetupMessage
 
-        let optimalAttributedString = NSMutableAttributedString(string: L10n.loveCalibrationOptimal, attributes: fisrtAttributes)
+        let optimalAttributedString = NSMutableAttributedString(string: L10n.loveCalibrationOptimal, attributes: firstAttributes)
 
         let optimalAttributesText2 = NSAttributedString(string: "\n" + L10n.loveCalibrationOptimalDescription, attributes: secondeAttributes)
         optimalAttributedString.append(optimalAttributesText2)
@@ -178,7 +155,7 @@ private extension StereoCalibrationViewController {
         optimalCalibrationButton.setup(style: .default1)
         optimalCalibrationButton.setAttributedTitle(optimalAttributedString, for: .normal)
 
-        let quickAttributedString = NSMutableAttributedString(string: L10n.loveCalibrationQuick, attributes: fisrtAttributes)
+        let quickAttributedString = NSMutableAttributedString(string: L10n.loveCalibrationQuick, attributes: firstAttributes)
 
         let quickAttributedText2 = NSAttributedString(string: "\n" + L10n.loveCalibrationQuickDescription, attributes: secondeAttributes)
         quickAttributedString.append(quickAttributedText2)
@@ -193,10 +170,43 @@ private extension StereoCalibrationViewController {
         stopView.style = .classic
         stopView.delegate = self
 
-        countdownLabel.makeUp(with: .giant, and: .defaultTextColor)
+        progressView.setup(viewModel: viewModel)
     }
 
+    /// Adds left panel for proactive alerts.
+    func addAlertPanel() {
+        guard alertPanel == nil else { return }
+
+        let alertPanel = HUDAlertPanelViewController.instantiate()
+        alertPanel.delegate = alertControls
+        alertPanel.alertDelegate = self
+        add(alertPanel, in: alertPanelContainerView)
+        self.alertPanel = alertPanel
+    }
+
+    /// Removes left panel for proactive alerts.
+    func removeAlertPanel() {
+        alertControls.hideAlertPanel()
+        alertPanel?.remove()
+        alertPanel = nil
+    }
+
+    /// Sets up constraints.
+    func setupConstraints() {
+        alertControls.updateConstraints(animated: false)
+    }
+
+    /// Starts watcher of published properties from view model..
     func bindViewModel() {
+        viewModel.shouldHideProgressViewPublisher
+            .removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.progressView.isHidden = $0
+                self.welcomeStackView.isHidden = !$0
+            }
+            .store(in: &cancellables)
+
         viewModel.$calibrationMessage
             .removeDuplicates()
             .sink { [weak self] in
@@ -213,80 +223,61 @@ private extension StereoCalibrationViewController {
             }
             .store(in: &cancellables)
 
-        viewModel.$subtitle
-            .removeDuplicates()
-            .sink { [weak self] in
-                guard let self = self else { return }
-                self.subtitleLabel.text = $0
-                self.subtitleLabel.isHidden = $0 == nil
-            }
-            .store(in: &cancellables)
-
-        viewModel.$subtitleColor
-            .removeDuplicates()
-            .sink { [weak self] in
-                guard let self = self else { return }
-                self.subtitleLabel.textColor = $0
-            }
-            .store(in: &cancellables)
-
-        viewModel.$animationImages
-            .removeDuplicates()
-            .sink { [weak self] in
-                guard let self = self else { return }
-                if let animationImages = $0 {
-                    self.animationImageView.image = UIImage.animatedImage(with: animationImages,
-                                                                          duration: Style.longAnimationDuration)
-                    self.animationImageView.startAnimating()
-                } else {
-                    self.animationImageView.image = nil
-                }
-            }
-            .store(in: &cancellables)
-
-        viewModel.$countdownMessage
-            .removeDuplicates()
-            .sink { [weak self] in
-                guard let self = self else { return }
-                if let countdownMessage = $0 {
-                    self.countdownLabel.text = countdownMessage
-                }
-                self.countdownLabel.alphaHidden($0 == nil)
-            }
-            .store(in: &cancellables)
-
         viewModel.$warningText
-            .sink { [unowned self] warningText in
-                warningLabel.isHidden = warningText == nil
-                warningLabel.text = warningText
+            .removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.warningLabel.isHidden = $0 == nil
+                self.warningLabel.text = $0
             }
             .store(in: &cancellables)
 
         viewModel.$isCalibrationButtonEnabled
             .removeDuplicates()
-            .combineLatest(viewModel.$isCalibrationButtonHidden.removeDuplicates())
-            .sink { [unowned self] isCalibrationButtonEnabled, isCalibrationButtonHidden in
-                optimalCalibrationButton.isHidden = isCalibrationButtonHidden
-                quickCalibrationButton.isHidden = isCalibrationButtonHidden
-                stopView.isHidden = !isCalibrationButtonHidden
-                optimalCalibrationButton.isEnabled = isCalibrationButtonEnabled
-                quickCalibrationButton.isEnabled = isCalibrationButtonEnabled
-                optimalCalibrationButton.alphaWithEnabledState(isCalibrationButtonEnabled)
-                quickCalibrationButton.alphaWithEnabledState(isCalibrationButtonEnabled)
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.optimalCalibrationButton.isEnabled = $0
+                self.quickCalibrationButton.isEnabled = $0
+                self.optimalCalibrationButton.alphaWithEnabledState($0)
+                self.quickCalibrationButton.alphaWithEnabledState($0)
             }
             .store(in: &cancellables)
 
-        viewModel.errorMessage
-            .dropFirst()
-            .sink { [unowned self] error in
-                if let error = error {
-                    alertLabel.text = error.label
-                    alertLabel.isHidden = false
-                    alertView.isHidden = false
-                } else {
-                    alertLabel.isHidden = true
-                    alertView.isHidden = true
-                }
+        viewModel.$calibrationStateHidden
+            .removeDuplicates()
+            .sink { [unowned self] in
+                stateLabel.isHidden = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$calibrationStateColor
+            .removeDuplicates()
+            .sink { [unowned self] in
+                stateLabel.textColor = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$calibrationStateText
+            .removeDuplicates()
+            .sink { [unowned self] in
+                stateLabel.text = $0
+            }
+            .store(in: &cancellables)
+
+        viewModel.$alertMessage
+            .removeDuplicates()
+            .sink { [weak self] message in
+                guard let self = self else { return }
+                self.alertLabel.text = message
+                self.alertView.isHidden = message == nil
+            }
+            .store(in: &cancellables)
+
+        viewModel.shouldHideAlertPanelPublisher
+            .removeDuplicates()
+            .sink { [weak self] in
+                guard let self = self else { return }
+                $0 ? self.removeAlertPanel() : self.addAlertPanel()
             }
             .store(in: &cancellables)
     }
@@ -318,6 +309,13 @@ extension StereoCalibrationViewController: HUDTopBarViewControllerNavigation {
 // MARK: - StopViewDelegate
 extension StereoCalibrationViewController: StopViewDelegate {
     func didClickOnStop() {
-        viewModel.stop()
+        viewModel.stopHandLaunch()
+    }
+}
+
+// MARK: - StopViewDelegate
+extension StereoCalibrationViewController: HUDAlertPanelDelegate {
+    func actionButtonDidClick() {
+        viewModel.startHandCalibration()
     }
 }

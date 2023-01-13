@@ -65,6 +65,8 @@ class EditionSettingsViewModel {
         if let filter = settingsCategoryFilter {
             actualSettings = settings
                 .filter { $0.category == filter && $0.type != .fixed }
+            // Filter not editable settings for imported mavlinks.
+                .filter(for: savedFlightPlan)
                 .map { Setting.setting($0) }
         } else {
             actualSettings = settings
@@ -126,6 +128,7 @@ class EditionSettingsViewModel {
             self.fpSettings = settingsProvider?.settings
         case nil:
             self.fpSettings = []
+            settingsCategoryFilter = .custom(L10n.flightPlanSegmentSettingsTitle)
         default:
             break
         }

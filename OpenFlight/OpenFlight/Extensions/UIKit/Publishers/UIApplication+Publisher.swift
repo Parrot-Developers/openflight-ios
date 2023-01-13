@@ -30,6 +30,8 @@
 import Foundation
 import Combine
 
+// MARK: - App States
+
 /// An `UIApplication` extension dedicated to publish App state changes.
 public extension UIApplication {
 
@@ -61,5 +63,123 @@ public extension UIApplication {
                 .publisher(for: UIApplication.willTerminateNotification)
                 .map { _ in .willTerminate }
         ).eraseToAnyPublisher()
+    }
+}
+
+// MARK: - Memory Pressure
+
+/// - Note: This is the safest way to be informed about low memory issues, with the ability to distingish the severity
+///         of the memory pressure, while some delegate methods, such `applicationDidReceiveMemoryWarning(_)`,
+///         can, in certain circonstances (e.g. consumming loop without leting the system calling the delegate method before the crash),
+///         not be called when they should.
+///
+///      *Examples of use:*
+///         ```
+///            UIApplication.memoryPressurePublisher
+///            .sink { print("Memory Pressure changed: '\($0)'") }
+///            .store(in: &cancellables)
+///         ```
+///         ```
+///            UIApplication.memoryPressurePublisher(eventMask: [.critical, .warning])
+///            .sink { print("'\($0)' Memory Pressure: Please free up the memory!") }
+///            .store(in: &cancellables)
+///         ```
+
+/// The memory pressure publisher.
+public struct MemoryPressurePublisher: Publisher {
+    public typealias Output = DispatchSource.MemoryPressureEvent
+    public typealias Failure = Never
+
+    let eventMask: DispatchSource.MemoryPressureEvent
+
+    init(eventMask: DispatchSource.MemoryPressureEvent = .all) {
+        self.eventMask = eventMask
+    }
+
+    public func receive<S: Subscriber>(subscriber: S) where
+    S.Input == Output,
+    S.Failure == Failure {
+        let subscription = MemoryPressureSubscription(subscriber: subscriber,
+                                                      eventMask: eventMask)
+        subscriber.receive(subscription: subscription)
+    }
+}
+
+/// The memory pressure subscription.
+private class MemoryPressureSubscription<S: Subscriber>: Subscription where
+S.Input == DispatchSource.MemoryPressureEvent {
+
+    private var subscriber: S?
+    private let dispatchSource: DispatchSourceMemoryPressure
+
+    init(subscriber: S, eventMask: DispatchSource.MemoryPressureEvent) {
+        self.subscriber = subscriber
+        self.dispatchSource = DispatchSource.makeMemoryPressureSource(eventMask: eventMask)
+        configure()
+    }
+
+    private func configure() {
+        dispatchSource.setEventHandler { [weak self] in
+            // Ensure the DispatchSource has not been cancelled before publishing the event.
+            guard let self = self,
+                  !self.dispatchSource.isCancelled
+            else { return }
+            _ = self.subscriber?.receive(self.dispatchSource.data)
+        }
+    }
+
+    func request(_ demand: Subscribers.Demand) {
+        dispatchSource.activate()
+    }
+
+    func cancel() {
+        dispatchSource.cancel()
+        subscriber = nil
+    }
+}
+
+/// Adding Memory Pressure Publisher to UIApplication
+public extension UIApplication {
+    /// A publisher intended to listen all memory pressure events.
+    static var memoryPressurePublisher: MemoryPressurePublisher { MemoryPressurePublisher() }
+
+    /// A publisher intented to listen only specific types of event.
+    ///
+    /// - Parameter eventMask: the event mask applied
+    ///
+    /// - Description: In contrary of `memoryPressurePublisher`, this publisher allows to be 'called' only for
+    ///                events specified in parameters.
+    ///                Example: `UIApplication.memoryPressurePublisher(eventMask: [.critical, .warning])`
+    static func memoryPressurePublisher(eventMask: DispatchSource.MemoryPressureEvent)
+    -> MemoryPressurePublisher {
+        MemoryPressurePublisher(eventMask: eventMask)
+    }
+}
+
+/// Memory Pressure Event Custom String.
+extension DispatchSource.MemoryPressureEvent: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .normal: return ".normal"
+        case .warning: return ".warning"
+        case .critical: return ".critical"
+        case .all: return ".all"
+        default:
+            return "Unknown"
+        }
+    }
+}
+
+// MARK: - Disk Space
+
+/// An `UIApplication` extension dedicated to publish Low Disk Space events.
+public extension UIApplication {
+
+    /// Publisher informing about Low Disk Space Events.
+    static var lowDiskSpacePublisher: AnyPublisher<Void, Never> {
+        NotificationCenter.default
+            .publisher(for: .NSBundleResourceRequestLowDiskSpace)
+            .map { _ in }
+            .eraseToAnyPublisher()
     }
 }

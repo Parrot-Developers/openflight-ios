@@ -64,8 +64,8 @@ private extension SettingsCameraViewController {
     /// Sets up view model.
     func setupViewModel() {
         // Setup view model.
-        // TODO wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
-        viewModel = SettingsCameraViewModel(flightPlanCameraSettingsHandler: Services.hub.flightPlan.cameraSettingsHandler,
+        // TODO: wrong injection, viewModel should be prepared one level up (coordinator or upper VM)
+        viewModel = SettingsCameraViewModel(activeFlightPlanWatcher: Services.hub.flightPlan.activeFlightPlanWatcher,
                                             currentDroneHolder: Services.hub.currentDroneHolder)
         guard let viewModel = viewModel as? SettingsCameraViewModel else { return }
 

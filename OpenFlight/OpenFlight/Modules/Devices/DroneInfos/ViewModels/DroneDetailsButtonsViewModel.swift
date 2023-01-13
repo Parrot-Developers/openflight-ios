@@ -51,12 +51,8 @@ final class DroneDetailsButtonsViewModel {
     @Published private(set) var isStereoVisionSensorCalibrationNeeded: Bool = false
     /// Drone's last known position.
     @Published private(set) var lastKnownPosition: CLLocation?
-    /// Drone's cellular connection status.
-    @Published private(set) var cellularStatus: DetailsCellularStatus = .noState
     /// Drone's connection state.
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
-    /// Remote's connection state.
-    @Published private(set) var remoteConnectionState: DeviceState.ConnectionState = .disconnected
     /// Tells if we can display the cellular modal.
     @Published private(set) var mapThumbnail: UIImage? = Asset.MyFlights.poi.image
     /// Tells the health of the battery
@@ -77,15 +73,29 @@ final class DroneDetailsButtonsViewModel {
     private var remoteConnectionStateRef: Ref<DeviceState>?
     private var batteryRef: Ref<BatteryInfo>?
     private var cancellables = Set<AnyCancellable>()
-    private var currentDrone = Services.hub.currentDroneHolder
-    private var cellularService = Services.hub.drone.cellularService
-    private var currentRemote = Services.hub.currentRemoteControlHolder
-    private var locationsTracker = Services.hub.locationsTracker
+    private var currentDroneHolder: CurrentDroneHolder!
+    private var cellularDetailViewModel: DroneDetailCellularViewModel!
 
     // MARK: - Init
-
-    init() {
-        currentDrone.dronePublisher
+    init(coordinator: DroneCoordinator,
+         currentDroneHolder: CurrentDroneHolder,
+         cellularPairingService: CellularPairingService,
+         connectedRemoteControlHolder: ConnectedRemoteControlHolder,
+         connectedDroneHolder: ConnectedDroneHolder,
+         networkService: NetworkService,
+         cellularService: CellularService,
+         cellularSessionService: CellularSessionService,
+         locationsTracker: LocationsTracker) {
+        self.currentDroneHolder = currentDroneHolder
+        cellularDetailViewModel = DroneDetailCellularViewModel(coordinator: coordinator,
+                                                               currentDroneHolder: currentDroneHolder,
+                                                               cellularPairingService: cellularPairingService,
+                                                               connectedRemoteControlHolder: connectedRemoteControlHolder,
+                                                               connectedDroneHolder: connectedDroneHolder,
+                                                               networkService: networkService,
+                                                               cellularService: cellularService,
+                                                               cellularSessionService: cellularSessionService)
+        currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
                 listenGimbal(drone)
                 listenStereoVisionSensor(drone)
@@ -94,19 +104,6 @@ final class DroneDetailsButtonsViewModel {
                 listenFlyingIndicators(drone: drone)
                 listenConnectionState(drone: drone)
                 listenBatteryInfo(drone)
-            }
-            .store(in: &cancellables)
-
-        currentRemote.remoteControlPublisher
-            .sink { [weak self] remote in
-                guard let self = self else { return }
-                self.listenRemoteConnectionState(remote: remote)
-            }
-            .store(in: &cancellables)
-
-        cellularService.cellularStatusPublisher
-            .sink { [unowned self] cellularStatus in
-                updateCellularState(cellularStatus: cellularStatus)
             }
             .store(in: &cancellables)
 
@@ -125,9 +122,6 @@ final class DroneDetailsButtonsViewModel {
                 }
             }
             .store(in: &cancellables)
-
-        updateCellularState(cellularStatus: cellularStatus)
-
     }
 
     // MARK: Helpers
@@ -192,7 +186,7 @@ final class DroneDetailsButtonsViewModel {
                 } else if isCalibrationNeeded || isCalibrationRecommended {
                     return .white
                 } else {
-                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.titleColor ?? .defaultTextColor
+                    return currentDroneHolder.drone.getPeripheral(Peripherals.gimbal)?.titleColor ?? .defaultTextColor
                 }
             }
             .eraseToAnyPublisher()
@@ -211,7 +205,7 @@ final class DroneDetailsButtonsViewModel {
                 } else if isCalibrationRecommended {
                     return .warningColor
                 } else {
-                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.backgroundColor ?? .white
+                    return currentDroneHolder.drone.getPeripheral(Peripherals.gimbal)?.backgroundColor ?? .white
                 }
             }
             .eraseToAnyPublisher()
@@ -228,41 +222,31 @@ final class DroneDetailsButtonsViewModel {
                 } else if isCalibrationNeeded || isCalibrationRecommended {
                     return .white
                 } else {
-                    return currentDrone.drone.getPeripheral(Peripherals.gimbal)?.subtitleColor ?? .highlightColor
+                    return currentDroneHolder.drone.getPeripheral(Peripherals.gimbal)?.subtitleColor ?? .highlightColor
                 }
             }
             .eraseToAnyPublisher()
     }
 
-    var cellularButtonSubtitlePublisher: AnyPublisher<String, Never> {
-        $cellularStatus
-            .combineLatest($connectionState, $remoteConnectionState.removeDuplicates())
-            .map { [unowned self] (cellularStatus, connectionState, remoteConnectionState) in
-                if connectionState == .disconnected {
-                    return Style.dash
-                }
+    var connectionStatusColor: AnyPublisher<ColorName, Never> {
+        cellularDetailViewModel.$connectionStatusColor.eraseToAnyPublisher()
+    }
 
-                if remoteConnectionState == .disconnected {
-                    return L10n.controllerNotConnected
-                }
+    var operatorName: AnyPublisher<String?, Never> {
+        cellularDetailViewModel.operatorName.eraseToAnyPublisher()
+    }
 
-                var subtitle = cellularStatus.droneDetailsTileDescription ?? ""
-                if cellularStatus == .cellularConnected,
-                   let provider = currentDrone.drone.getPeripheral(Peripherals.cellular)?.operator {
-                    subtitle.append(Style.colon + Style.whiteSpace + provider)
-                }
-                return subtitle
-            }
-            .eraseToAnyPublisher()
+    var cellularLinkState: AnyPublisher<String?, Never> {
+        cellularDetailViewModel.cellularLinkState.eraseToAnyPublisher()
     }
 
     // MARK: - Internal Funcs
     /// Removes current drone uid in the dismissed pairing list.
     /// The pairing process for the current drone could be displayed again in the HUD.
     func resetPairingDroneListIfNeeded() {
-        let uid = currentDrone.drone.uid
+        let uid = currentDroneHolder.drone.uid
         guard Defaults.dronesListPairingProcessHidden.contains(uid),
-              currentDrone.drone.isAlreadyPaired == false else {
+              currentDroneHolder.drone.isAlreadyPaired == false else {
             return
         }
 
@@ -279,16 +263,6 @@ private extension DroneDetailsButtonsViewModel {
     func listenConnectionState(drone: Drone) {
         connectionStateRef = drone.getState { [weak self] state in
             self?.connectionState = state?.connectionState ?? .disconnected
-        }
-    }
-
-    /// Starts watcher for remote's connection state.
-    ///
-    /// - Parameter remote: the current remote controller
-    func listenRemoteConnectionState(remote: RemoteControl?) {
-        remoteConnectionStateRef = remote?.getState { [weak self] state in
-            guard let self = self else { return }
-            self.remoteConnectionState = state?.connectionState ?? .disconnected
         }
     }
 
@@ -394,10 +368,5 @@ private extension DroneDetailsButtonsViewModel {
     func updateMagnetometerCalibrationState(magnetometer: MagnetometerWith3StepCalibration?) {
         isMagnetometerCalibrationNeeded = magnetometer?.calibrationState == .required
         isMagnetometerCalibrationRecommended = magnetometer?.calibrationState == .recommended
-    }
-
-    /// Updates cellular state.
-    func updateCellularState(cellularStatus: DetailsCellularStatus) {
-        self.cellularStatus = cellularStatus
     }
 }

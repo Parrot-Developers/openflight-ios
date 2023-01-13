@@ -146,7 +146,7 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
     public func set(mode: MissionMode) {
         guard mode.key != modeSubject.value.key else { return }
         // If ophtalmo mission is active there is no need to stop the mission.
-        if Services.hub.drone.ophtalmoService.ophtalmoMissionState != .active {
+        if Services.hub.drone.ophtalmoService.ophtalmoLastMissionState != .active {
             ULog.i(.currentMissionManager, "stop current mission if needed")
             // Stops current mission if needed.
             modeSubject.value.missionActivationModel.stopMissionIfNeeded()
@@ -155,7 +155,7 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
         ULog.i(.currentMissionManager, "set mode '\(mode.name)'")
         // If ophtalmo mission is active, then do not start another mission.
         // Start mission will be called when ophtalmo is dismissed.
-        if Services.hub.drone.ophtalmoService.ophtalmoMissionState != .active {
+        if Services.hub.drone.ophtalmoService.ophtalmoLastMissionState != .active {
             ULog.i(.currentMissionManager, "start active mission")
             // Starts new mission if needed.
             mode.missionActivationModel.startMission()

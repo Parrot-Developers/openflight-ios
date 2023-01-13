@@ -72,17 +72,17 @@ public enum ButtonsDisplay: Equatable {
 
 public enum StreamElement: Equatable {
     case none
-    case waypoint(point: CGPoint, altitude: Double)
-    case poi(point: CGPoint, altitude: Double)
+    case waypoint(point: CGPoint, altitude: Double, distance: Double)
+    case poi(point: CGPoint, altitude: Double, distance: Double)
     case user(point: CGPoint)
 
     public static func == (lhs: StreamElement, rhs: StreamElement) -> Bool {
         switch (lhs, rhs) {
         case (.none, .none):
             return true
-        case (.waypoint(let pointLhs, let altitudeLhs), .waypoint(let pointRhs, let altitudeRhs)):
+        case (.waypoint(let pointLhs, let altitudeLhs, _), .waypoint(let pointRhs, let altitudeRhs, _)):
             return pointLhs == pointRhs && altitudeLhs == altitudeRhs
-        case (.poi(let pointLhs, let altitudeLhs), .poi(let pointRhs, let altitudeRhs)):
+        case (.poi(let pointLhs, let altitudeLhs, _), .poi(let pointRhs, let altitudeRhs, _)):
             return pointLhs == pointRhs && altitudeLhs == altitudeRhs
         case (.user(let pointLhs), .user(let pointRhs)):
             return pointLhs == pointRhs
@@ -145,7 +145,6 @@ class TouchAndFlyPanelViewModelImpl {
         listenStatusDrone()
         listenTarget()
         listenStream()
-        listenUser()
     }
 
     public func showStream() {
@@ -165,7 +164,6 @@ class TouchAndFlyPanelViewModelImpl {
     // Listening
     private func listenStatusDrone() {
         service.runningStatePublisher
-            .removeDuplicates()
             .combineLatest(service.targetPublisher)
             .sink { [weak self] runningState, target in
                 self?.setButtonsDisplay(runningState: runningState, target: target)
@@ -192,17 +190,8 @@ class TouchAndFlyPanelViewModelImpl {
     private func listenTarget() {
         service.targetPublisher
             .sink { [weak self] target in
-                self?.setDashboard(target: target)
                 self?.setValueSettingRuler(target)
-            }
-            .store(in: &cancellables)
-    }
-
-    private func listenUser() {
-        service.targetPublisher
-            .sink { [weak self] target in
                 self?.setDashboard(target: target)
-                self?.setValueSettingRuler(target)
             }
             .store(in: &cancellables)
     }
@@ -221,8 +210,12 @@ class TouchAndFlyPanelViewModelImpl {
     }
 
     // Setting functions
+
+    /// Enables or disables buttons according to the current running state and target.
+    /// - parameters:
+    ///   - runningState: current running state
+    ///   - target: current target
     private func setButtonsDisplay(runningState: TouchAndFlyRunningState, target: TouchAndFlyTarget) {
-        // check if it is waypoint case !
         switch runningState {
         case .noTarget:
             buttonsDisplay.value = .standard(playEnabled: false, deleteEnabled: false)
@@ -256,7 +249,6 @@ class TouchAndFlyPanelViewModelImpl {
     private func setMessageDrone(runningState: TouchAndFlyRunningState) {
         switch runningState {
         case .noTarget(let connection):
-            displayOnMap.value = .nothing
             switch connection {
             case true:
                 infoStatusDrone.message = L10n.touchFlyPlaceWaypointPoi
@@ -339,7 +331,7 @@ class TouchAndFlyPanelViewModelImpl {
         case .poi:
             if let location = service.setPoiLocation(point: point) {
                 result = true
-                update(location: location.coordinate, type: type, altitude: 0)
+                update(location: location.coordinate, type: type, altitude: location.altitude)
             }
         case .waypoint:
             if let location = service.setWaypointLocation(point: point) {

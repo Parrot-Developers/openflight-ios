@@ -35,11 +35,20 @@ public final class SettingsCoordinator: Coordinator {
     public weak var parentCoordinator: Coordinator?
 
     // This optional parameter allows to start settings view controller on a specific type of settings.
-    var startSettingType: SettingsType?
+    public var startSettingType: SettingsType?
+    public var settingsProvider: SettingsProvider?
+
+    public let services: ServiceHub
+
+    public init(services: ServiceHub) {
+        self.services = services
+    }
 
     // MARK: - Public Funcs
     public func start() {
-        let viewController = SettingsViewController.instantiate(coordinator: self, settingType: startSettingType)
+        let viewController = SettingsViewController.instantiate(coordinator: self,
+                                                                settingType: startSettingType,
+                                                                settingsProvider: settingsProvider)
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
     }

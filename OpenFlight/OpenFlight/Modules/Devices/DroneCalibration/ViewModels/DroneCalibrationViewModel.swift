@@ -35,8 +35,6 @@ final class DroneCalibrationViewModel {
 
     // MARK: - Published Properties
 
-    /// Drone's connection state.
-    @Published private(set) var droneState: DeviceState.ConnectionState?
     /// Drone's gimbal state.
     @Published private(set) var gimbalState: CalibratableGimbalState?
     /// Drone's front stereo gimbal state.
@@ -57,8 +55,6 @@ final class DroneCalibrationViewModel {
     @Published private(set) var gimbalCalibrationBackgroundColor: ColorName?
     /// Tells if a gimbal calibration has been requested.
     @Published private(set) var isCalibrationRequested: Bool = true
-    /// Tells if a strereo calibration is launched
-    @Published private(set) var isStereoCalibrationLaunched: Bool = false
     /// gimbalCalibrationState to represent model
     @Published private(set) var gimbalCalibrationProcessState: GimbalCalibrationProcessState = .none
     /// frontStereoGimbalCalibrationState object to represent model.
@@ -79,7 +75,6 @@ final class DroneCalibrationViewModel {
         connectedDroneHolder.dronePublisher
             .compactMap { $0 }
             .sink { [unowned self] drone in
-                listenState(drone)
                 listenFlyingIndicators(drone: drone)
                 listenGimbal(drone)
                 listenFrontStereoGimbal(drone)
@@ -110,12 +105,6 @@ final class DroneCalibrationViewModel {
     func cancelFrontStereoGimbalCalibration() {
         connectedDroneHolder.drone?.getPeripheral(Peripherals.frontStereoGimbal)?.cancelCalibration()
     }
-
-    /// Updates the value of isStereoCalibrationLaunched
-    /// - Parameter isLaunched: A boolean representing the state of the mission
-    func updateIsStereoCalibrationLaunched(isLaunched: Bool) {
-        isStereoCalibrationLaunched = isLaunched
-    }
 }
 
 private extension DroneCalibrationViewModel {
@@ -127,17 +116,10 @@ private extension DroneCalibrationViewModel {
         }
     }
 
-    /// Listens the state of the drone.
-    func listenState(_ drone: Drone) {
-        droneState = drone.state.connectionState
-    }
-
     /// Starts watcher for flying indicators.
     func listenFlyingIndicators(drone: Drone) {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] flyingIndicators in
-            guard let flyingState = flyingIndicators?.state else { return }
-
-            self?.flyingState = flyingState
+            self?.flyingState = flyingIndicators?.state
         }
     }
 

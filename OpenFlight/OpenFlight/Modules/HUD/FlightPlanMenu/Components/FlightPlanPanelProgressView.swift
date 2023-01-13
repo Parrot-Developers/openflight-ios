@@ -97,7 +97,6 @@ public final class FlightPlanPanelProgressView: UIView, NibOwnerLoadable {
     public func setExtraViews(_ extraViews: [UIView]) {
         extraViewsStackView.safelyRemoveArrangedSubviews(deactivateConstraint: false)
         extraViews
-            .filter { $0.frame != .zero }
             .forEach { extraViewsStackView.addArrangedSubview($0) }
     }
 }

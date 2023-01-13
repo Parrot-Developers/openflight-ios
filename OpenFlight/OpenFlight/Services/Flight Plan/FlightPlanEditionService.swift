@@ -49,6 +49,12 @@ public protocol FlightPlanEditionService {
     /// Current flight plan
     var currentFlightPlanValue: FlightPlanModel? { get }
 
+    /// Publisher telling when a flight plan edition did end.
+    var editionDidEndPublisher: AnyPublisher<FlightPlanModel?, Never> { get }
+
+    /// Whether the current flight plan supports the AMSL altitude reference.
+    var isAmslReferenceSupported: Bool? { get }
+
     // MARK: - High level management
     /// Sets up flight plan modell
     func setupFlightPlan(_ flightPlan: FlightPlanModel?)
@@ -221,6 +227,9 @@ public class FlightPlanEditionServiceImpl {
     private var currentFlightPlanSubject = CurrentValueSubject<FlightPlanModel?, Never>(nil)
 
     private var flightPlanSettedUpSubject = PassthroughSubject<FlightPlanModel, Never>()
+
+    /// Tells when the edition did ends.
+    private var editionDidEndSubject = PassthroughSubject<Void, Never>()
 
     private var currentFlightPlan: FlightPlanModel? {
         get {
@@ -468,6 +477,18 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
         currentFlightPlan = flightPlan
     }
 
+    // MARK: - Read
+
+    public var isAmslReferenceSupported: Bool? {
+        typeStore.typeForKey(currentFlightPlan?.type)?.isAmslReferenceSupported
+    }
+
+    /// Publisher telling when a flight plan edition did end.
+    public var editionDidEndPublisher: AnyPublisher<FlightPlanModel?, Never> {
+        editionDidEndSubject.map { [unowned self] in currentFlightPlan }
+            .eraseToAnyPublisher()
+    }
+
     // MARK: - Undo management
 
     /// Can undo.
@@ -488,7 +509,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
         // FlightPlan's currentFlightPlan must not point on undo stack.
         if let dataSetting = FlightPlanDataSetting.instantiate(with: undoStack.last),
            var flightPlan = currentFlightPlan {
-            flightPlan.dataSetting = dataSetting
+            flightPlan.dataSetting?.updateOnlyUndoableSettings(with: dataSetting)
             currentFlightPlan = flightPlan
         }
     }
@@ -562,13 +583,13 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
         guard var flightPlan = currentFlightPlan,
         var dataSetting = flightPlan.dataSetting else { return }
 
-        ULog.d(.tag, "updating light settings")
+        let difference = settings.difference(from: dataSetting.settings)
+        settingsChanged = []
+        for case .insert(_, let element, _) in difference {
+            settingsChanged.append(element)
+        }
 
-        let diff = zip(dataSetting.settings, settings)
-            .filter { $0.0 != $0.1 }
-        // use the old setting as flightPlan.dataSteting.settings will contain the updated setting
-            .map { $0.0 }
-        settingsChanged = diff
+        ULog.d(.tag, "updating light settings")
         dataSetting.settings = settings
         flightPlan.dataSetting = dataSetting
         currentFlightPlan = flightPlan
@@ -622,11 +643,12 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
             self.cloudUpdatedFlightPlan = nil
         }
 
-        // clear mavlink data if the data can be generated for this type.
-        // mavlink generation is done by FPRunManager > StartedNotFlyingState > MavlinkGenerator
+        // Clear mavlink data if the data can be generated for this type and current FP hasn't an imported mavlink.
+        // Mavlink generation is done by FPRunManager > StartedNotFlyingState > PlanGenerator
         let type = typeStore.typeForKey(flightPlan.type)
         let canGenerateMavlink = type?.canGenerateMavlink ?? false
-        if canGenerateMavlink {
+        if canGenerateMavlink,
+           !flightPlan.hasImportedMavlink {
             dataSetting.mavlinkDataFile = nil
             flightPlan.dataSetting = dataSetting
         }
@@ -676,6 +698,10 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
         }
 
         ULog.i(.tag, "Ended edition of flightPlan '\(flightPlan.uuid)'")
+
+        // Inform listeners about the ending.
+        editionDidEndSubject.send()
+
         completion()
         resetUndoStack()
     }
@@ -824,5 +850,22 @@ private extension FlightPlanInterpreter {
                                                                                    mavlinkString: mavlinkString,
                                                                                    flightPlan: flightPlan)
         }
+    }
+}
+
+extension FlightPlanDataSetting {
+    /// Updates only the undoable settings.
+    ///
+    /// - Parameter dataSettings: the updated data settings
+    ///
+    /// - Description: When performing an undo action during the FP edition, only settings related
+    ///     to the map edition must be undone. It prevents to reset some previously set settings (e.g RTH)
+    ///     which are not undoable.
+    mutating func updateOnlyUndoableSettings(with dataSettings: Self) {
+        polygonPoints = dataSettings.polygonPoints
+        pois = dataSettings.pois
+        wayPoints = dataSettings.wayPoints
+        // Should be needed for building selection.
+        freeSettings = dataSettings.freeSettings
     }
 }

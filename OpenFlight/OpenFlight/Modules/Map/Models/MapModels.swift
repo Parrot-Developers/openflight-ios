@@ -130,6 +130,14 @@ public struct OrientedLocation: Equatable {
         return isValid ? coordinates : nil
     }
 
+    /// The CLLocation version.
+    public var clLocation: CLLocation? {
+        guard let coordinates = coordinates else { return nil }
+        return .init(latitude: coordinates.coordinate.latitude,
+                     longitude: coordinates.coordinate.longitude,
+                     altitude: coordinates.altitude)
+    }
+
     public static func == (lhs: OrientedLocation, rhs: OrientedLocation) -> Bool {
         return lhs.heading == rhs.heading && lhs.coordinates == rhs.coordinates
     }

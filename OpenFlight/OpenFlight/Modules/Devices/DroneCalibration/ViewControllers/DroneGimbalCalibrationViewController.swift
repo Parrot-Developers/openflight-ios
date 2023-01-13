@@ -118,7 +118,7 @@ private extension DroneGimbalCalibrationViewController {
 
 // MARK: - Private Funcs
 private extension DroneGimbalCalibrationViewController {
-    /// Called when the view needs to be dismissed.
+    /// Dismiss the view.
     func dismissView() {
         self.view.backgroundColor = .clear
         coordinator?.dismissDroneCalibration()
@@ -142,6 +142,7 @@ private extension DroneGimbalCalibrationViewController {
         synchronisationImageView.isHidden = !isLoading
     }
 
+    /// Starts watcher of published properties from view model.
     func bindViewModel() {
         viewModel.$gimbalCalibrationProcessState
             .removeDuplicates()
@@ -179,7 +180,7 @@ private extension DroneGimbalCalibrationViewController {
             .store(in: &cancellables)
     }
 
-    /// Update gimbal view  after calibration success.
+    /// Update gimbal view after calibration success.
     func gimbalCalibrateSuccess() {
         gimbalImageView.contentMode = .center
         gimbalImageView.image = Asset.Common.Checks.icFillChecked.image

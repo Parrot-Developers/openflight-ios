@@ -34,9 +34,29 @@ public final class GalleryCoordinator: Coordinator {
     public var childCoordinators = [Coordinator]()
     public weak var parentCoordinator: Coordinator?
 
+    // MARK: - Private Properties
+    /// The media services.
+    private let mediaServices: MediaServices
+    /// The camera recording service.
+    private let cameraRecordingService: CameraRecordingService
+
+    // MARK: Init
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - mediaServices: the media services
+    ///    - cameraRecordingService: the camera recording service
+    init(mediaServices: MediaServices,
+         cameraRecordingService: CameraRecordingService) {
+        self.mediaServices = mediaServices
+        self.cameraRecordingService = cameraRecordingService
+    }
+
     // MARK: - Public Funcs
     public func start() {
-        let viewController = GalleryViewController.instantiate(coordinator: self)
+        let viewModel = GalleryViewModel(mediaServices: mediaServices)
+        viewModel.delegate = self
+        let viewController = GalleryViewController.instantiate(viewModel: viewModel)
         viewController.modalPresentationStyle = .fullScreen
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
@@ -46,21 +66,50 @@ public final class GalleryCoordinator: Coordinator {
 
 // MARK: - Internal Funcs
 extension GalleryCoordinator {
-    /// Dismisses gallery.
-    func dismissGallery() {
+
+    /// Presents a common alert in case of error.
+    ///
+    /// - Parameters:
+    ///     - title: alert title
+    ///     - message: alert message
+    func showErrorAlert(title: String = L10n.error, message: String) {
+        let cancelAction = AlertAction(title: L10n.ok, actionHandler: nil)
+        let alert = AlertViewController.instantiate(title: title,
+                                                    message: message,
+                                                    cancelAction: cancelAction,
+                                                    validateAction: nil)
+        navigationController?.present(alert, animated: true, completion: nil)
+    }
+}
+
+extension GalleryCoordinator: GalleryNavigationDelegate {
+
+    /// Closes gallery screen.
+    func close() {
         parentCoordinator?.dismissChildCoordinator()
     }
 
-    /// Shows media player.
+    /// Shows media browser.
     ///
     /// - Parameters:
-    ///    - viewModel: Gallery view model
-    ///    - index: Media index in the gallery media array
-    func showMediaPlayer(viewModel: GalleryMediaViewModel, index: Int) {
-        let playerViewController = GalleryMediaPlayerViewController.instantiate(coordinator: self,
-                                                                                viewModel: viewModel,
-                                                                                index: index)
+    ///    - media: the media to display
+    ///    - index: the media's index in filtered media list
+    ///    - filter: the filter to apply to media list
+    func showMediaBrowser(media: GalleryMedia, index: Int, filter: Set<GalleryMediaType>) {
+
+        let browserManager = MediaBrowserManager(mediaServices: mediaServices,
+                                                 cameraRecordingService: cameraRecordingService,
+                                                 activeMediaIndex: index,
+                                                 activeMedia: media,
+                                                 filter: filter)
+        browserManager.delegate = self
+        let playerViewController = MediaBrowserViewController.instantiate(browserManager: browserManager)
         push(playerViewController)
+    }
+
+    /// Closes media browser.
+    func closeMediaBrowser() {
+        back()
     }
 
     /// Shows sharing screen.
@@ -68,32 +117,115 @@ extension GalleryCoordinator {
     /// - Parameters:
     ///    - view: source view
     ///    - items: items to share
-    func showSharingScreen(fromView view: UIView, items: [Any]) {
+    ///    - completion: action to execute on complete
+    func showSharingScreen(fromView view: UIView, items: [Any], completion: (() -> Void)? = nil) {
         let activityViewController = UIActivityViewController(activityItems: items, applicationActivities: nil)
         navigationController?.presentSheet(viewController: activityViewController, sourceView: view)
-    }
-
-    /// Shows format SD card screen.
-    ///
-    /// - Parameters:
-    ///    - viewModel: Gallery view model
-    func showFormatSDCardScreen(viewModel: GalleryMediaViewModel) {
-        let viewController = GalleryFormatSDCardViewController.instantiate(coordinator: self,
-                                                                           viewModel: viewModel)
-        navigationController?.present(viewController, animated: true, completion: {})
-    }
-
-    /// Dismisses format SD card screen.
-    ///
-    /// - Parameters:
-    ///    - showToast: boolean to determine if we need to show the formatting toast message
-    ///    - duration: display duration
-    func dismissFormatSDCardScreen(showToast: Bool = false, duration: Double = Style.longAnimationDuration) {
-        dismiss()
-        if showToast {
-            navigationController?.topViewController?.showToast(message: L10n.galleryFormatComplete,
-                                                               duration: duration)
+        activityViewController.completionWithItemsHandler = { [weak self] (_, _, _, error) in
+            completion?()
+            if let error = error {
+                self?.showErrorAlert(title: L10n.alertSystemErrorTitle,
+                                     message: L10n.alertSystemErrorMessage + " \(error)")
+            }
         }
+    }
+
+    /// Shows formatting screen.
+    func showFormattingScreen() {
+        let formattingCoordinator = FormattingCoordinator(userStorageService: mediaServices.userStorageService)
+        formattingCoordinator.parentCoordinator = self
+        formattingCoordinator.start()
+        present(childCoordinator: formattingCoordinator, overFullScreen: true)
+    }
+
+    /// Shows a deletion confirmation popup alert.
+    ///
+    /// - Parameters:
+    ///   - message: the confirmation message to display
+    ///   - action: the delete action block
+    func showDeleteConfirmationPopup(message: String, action: (() -> Void)?) {
+        let deleteAction = AlertAction(title: L10n.commonDelete,
+                                       style: .destructive,
+                                       isActionDelayedAfterDismissal: false,
+                                       actionHandler: action)
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       style: .default2)
+        navigationController?.showAlert(title: L10n.commonDelete,
+                                        message: message,
+                                        cancelAction: cancelAction,
+                                        validateAction: deleteAction)
+    }
+
+    /// Shows an alert for full media or single resource removal choice proposal.
+    ///
+    /// - Parameters:
+    ///    - message: the popup message
+    ///    - resourcesCount: the number of resources of the media
+    ///    - mediaAction: the media delete action
+    ///    - resourceAction: the resource delete action
+    func showDeleteMediaOrResourceAlert(message: String,
+                                        resourcesCount: Int,
+                                        mediaAction: (() -> Void)?,
+                                        resourceAction: (() -> Void)?) {
+        let deleteResourceAction = AlertAction(title: L10n.galleryDeleteResource,
+                                               style: .destructive,
+                                               borderWidth: Style.mediumBorderWidth,
+                                               isActionDelayedAfterDismissal: false,
+                                               actionHandler: resourceAction)
+        let deleteMediaAction = AlertAction(title: L10n.galleryDeleteMedia(resourcesCount),
+                                            style: .destructive,
+                                            actionHandler: mediaAction)
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       style: .default2,
+                                       actionHandler: {})
+
+        navigationController?.showAlert(title: L10n.commonDelete,
+                                        message: message,
+                                        cancelAction: cancelAction,
+                                        validateAction: deleteResourceAction,
+                                        secondaryAction: deleteMediaAction)
+    }
+
+    /// Shows an action failure popup alert.
+    ///
+    /// - Parameters:
+    ///   - message: the error message to display
+    ///   - retryAction: the retry action block
+    func showActionErrorAlert(message: String, retryAction: @escaping () -> Void) {
+        let retryAction = AlertAction(title: L10n.commonRetry,
+                                      style: .destructive,
+                                      isActionDelayedAfterDismissal: false,
+                                      actionHandler: retryAction)
+        let cancelAction = AlertAction(title: L10n.cancel,
+                                       style: .default2,
+                                       isActionDelayedAfterDismissal: false) {}
+
+        navigationController?.showAlert(title: L10n.error,
+                                       message: message,
+                                       cancelAction: cancelAction,
+                                       validateAction: retryAction)
+    }
+
+    /// Shows panorama visualisation screen.
+    ///
+    /// - Parameter url: panorama url
+    func showImmersivePanoramaScreen(url: URL?) {
+        guard let url = url else { return }
+        let viewModel = ImmersivePanoramaViewModel(url: url)
+        viewModel.delegate = self
+        let viewController = ImmersivePanoramaViewController.instantiate(viewModel: viewModel)
+        push(viewController)
+    }
+
+    /// Shows panorama generation screen.
+    ///
+    /// - Parameter media: the panorama media to generate
+    func showPanoramaGenerationScreen(for media: GalleryMedia) {
+        let viewModel = GalleryPanoramaGenerationViewModel(mediaServices: mediaServices,
+                                                           media: media)
+        viewModel.delegate = self
+        let viewController = GalleryPanoramaGenerationViewController.instantiate(viewModel: viewModel)
+        presentModal(viewController: viewController)
     }
 
     /// Dismisses panorama generation screen.
@@ -101,31 +233,8 @@ extension GalleryCoordinator {
         navigationController?.dismiss(animated: true)
     }
 
-    /// Shows panorama visualisation screen.
-    ///
-    /// - Parameters:
-    ///    - viewModel: Gallery view model
-    ///    - url: panorama url
-    func showPanoramaVisualisationScreen(viewModel: GalleryMediaViewModel, url: URL) {
-        let viewController = GalleryPanoramaViewController.instantiate(coordinator: self,
-                                                                       viewModel: viewModel,
-                                                                       url: url)
-        push(viewController)
-    }
-
-    /// Show panorama generation screen.
-    ///
-    /// - Parameters:
-    ///    - viewModel: Gallery view model
-    ///    - index: Media index in the gallery media array
-    func showPanoramaGenerationScreen(viewModel: GalleryPanoramaViewModel, index: Int) {
-        let viewController = GalleryPanoramaGenerationViewController.instantiate(viewModel: viewModel,
-                                                                                 index: index)
-        presentModal(viewController: viewController)
-    }
-
-    /// Dismisses panorama visualisation screen.
-    func dismissPanoramaVisualisationScreen() {
+    /// Dismisses immersive panorama screen.
+    func dismissImmersivePanoramaScreen() {
         back()
     }
 }

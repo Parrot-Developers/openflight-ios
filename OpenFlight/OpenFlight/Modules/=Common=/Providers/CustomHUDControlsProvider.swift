@@ -33,7 +33,6 @@ import ArcGIS
 // MARK: - Protocol
 /// Defines a custom controls object for the HUD.
 public protocol CustomHUDControls: AnyObject {
-    var mapViewController: MapViewController? { get set }
     func start()
     func handleCustomMapTap(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?)
     func handleCustomMapLongPress(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?)

@@ -77,9 +77,9 @@ public class ProjectManagerViewModel {
 
     // MARK: - Private funcs
     private func listenDataSynchronization() {
-        cloudSynchroWatcher?.isSynchronizingDataPublisher
-            .sink { [unowned self] isSynch in
-                isSynchronizingSubject.value = isSynch
+        cloudSynchroWatcher?.synchroStatusPublisher
+            .sink { [unowned self] status in
+                isSynchronizingSubject.value = status.isSyncing
             }
             .store(in: &cancellables)
     }

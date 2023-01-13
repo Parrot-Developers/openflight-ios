@@ -46,12 +46,16 @@ final class InterfaceViewModel: SettingsViewModelProtocol {
                              itemLogKey: LogEvent.LogKeyAdvancedSettings.mapType),
                 SettingEntry(setting: UserMeasurementSetting.self,
                              title: L10n.settingsInterfaceMeasurementSystem,
-                             itemLogKey: LogEvent.LogKeyAdvancedSettings.measurementSystem)]
+                             itemLogKey: LogEvent.LogKeyAdvancedSettings.measurementSystem),
+                SettingEntry(setting: SettingsGridDisplayType.self,
+                             title: L10n.settingsInterfaceGridDisplayType,
+                             itemLogKey: LogEvent.LogKeyAdvancedSettings.gridDisplayType)]
     }
 
     func resetSettings() {
         Defaults.userMiniMapTypeSetting = InterfacePreset.miniMapType.rawValue
         Defaults.userMeasurementSetting = InterfacePreset.measurementSystem.rawValue
+        Defaults.userGridDisplayTypeSetting = InterfacePreset.gridDisplayType.rawValue
         resetSettingPublisher.send()
     }
 

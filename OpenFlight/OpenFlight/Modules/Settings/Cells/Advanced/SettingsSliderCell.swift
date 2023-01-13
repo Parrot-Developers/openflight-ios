@@ -59,10 +59,12 @@ final class SettingsSliderCell: MainTableViewCell, NibReusable {
     weak var delegate: SettingsSliderCellDelegate?
 
     // MARK: - Private Properties
-    private weak var settingEntry: SettingEntry?
+    private var settingEntry: SettingEntry?
     private var currentUnit: UnitType?
     private var sliderOverLimitValue: Float?
     private var sliderDefaultValue: Float?
+    private var currentValueIntervalStep: Float = 0.05
+    private var currentValueStepped: Float = 0.0
     private var indexPath: IndexPath!
     private var isEnabled: Bool = true {
         didSet {
@@ -70,6 +72,7 @@ final class SettingsSliderCell: MainTableViewCell, NibReusable {
             titleLabel.isEnabled = isEnabled
         }
     }
+
     /// Returns formated value according to setting unit.
     private var formattedValue: String {
         switch currentUnit {
@@ -129,9 +132,6 @@ final class SettingsSliderCell: MainTableViewCell, NibReusable {
         isEnabled = settingEntry.isEnabled
         updateSliderView()
     }
-
-    var currentValueIntervalStep: Float = 0.05
-    var currentValueStepped: Float = 0.0
 }
 
 // MARK: - Private Funcs

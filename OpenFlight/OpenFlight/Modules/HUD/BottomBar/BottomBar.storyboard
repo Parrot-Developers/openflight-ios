@@ -13,14 +13,14 @@
         <scene sceneID="O7F-eQ-vwc">
             <objects>
                 <viewController id="AlH-kU-2ES" customClass="BottomBarContainerViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="tCH-hA-9A2">
+                    <view key="view" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="tCH-hA-9A2" customClass="PassThroughView" customModule="OpenFlight" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="wKU-bT-8CJ" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
                                 <subviews>
-                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="osl-p9-VzU">
+                                    <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="osl-p9-VzU" customClass="PassThroughView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="896" height="50"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <connections>
@@ -217,6 +217,7 @@
                                 </constraints>
                             </stackView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="Bps-i3-L4M"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="y1v-VI-HpP" secondAttribute="bottom" id="0ns-oC-Zgf"/>

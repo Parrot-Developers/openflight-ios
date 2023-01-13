@@ -29,6 +29,7 @@
 
 import Reusable
 import SwiftyUserDefaults
+import Combine
 
 /// Settings control mode cell manage all the control settings.
 /// All the control settings are handled here because there are all linked.
@@ -53,10 +54,9 @@ final class SettingsControlModeCell: MainTableViewCell, NibReusable {
     @IBOutlet private weak var hudRightJoystick: UILabel!
 
     // MARK: - Private Properties
-    private var currentMode: ControlsSettingsMode = ControlsSettingsMode.defaultMode
-    private var jogsInversed = ControlsSettingsMode.defaultMode.jogsInversed
-    private var isSpecialMode = ControlsSettingsMode.defaultMode.isSpecialMode
+    private var currentState = ControlsState()
     private var viewModel: ControlsViewModel?
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     override func awakeFromNib() {
@@ -67,7 +67,14 @@ final class SettingsControlModeCell: MainTableViewCell, NibReusable {
     // MARK: - Internal Funcs
     func configureCell(viewModel: ControlsViewModel) {
         self.viewModel = viewModel
-        styleDidChanged(state: viewModel.state.value)
+        viewModel.$state
+            .removeDuplicates()
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                self.currentState = state
+                self.styleDidChanged(state: state)
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -75,10 +82,8 @@ final class SettingsControlModeCell: MainTableViewCell, NibReusable {
 private extension SettingsControlModeCell {
     /// Inverse button touched.
     @IBAction func inverseButtonTouchedUpInside(_ sender: AnyObject) {
-        LogEvent.log(.button(item: LogEvent.LogKeyControlsSettings.inverseJoys, value: String(!jogsInversed)))
-
-        jogsInversed.toggle()
-        deduceCurrentMode()
+        LogEvent.log(.button(item: LogEvent.LogKeyControlsSettings.inverseJoys, value: String(!currentState.controlMode.isJogsInversed)))
+        toggleJogsInversed()
         updateJogsDisplay()
     }
 }
@@ -97,9 +102,8 @@ extension SettingsControlModeCell: SettingsSegmentedControlDelegate {
             LogEvent.log(.button(item: LogEvent.LogKeyControlsSettings.special,
                                  value: String(isSpecialMode)))
 
-            self.isSpecialMode = isSpecialMode
+            setIsSpecialMode(isSpecialMode)
         }
-        deduceCurrentMode()
         updateJogsDisplay()
     }
 }
@@ -122,51 +126,72 @@ private extension SettingsControlModeCell {
     /// - Parameters:
     ///     - state: current control state
     func styleDidChanged(state: ControlsState) {
-        guard let viewModel = viewModel else { return }
-
-        let showVirtualJogs = viewModel.state.value.isVirtualJogsAvailable
+        let showVirtualJogs = state.isVirtualJogsAvailable
         remoteJogsView.isHidden = showVirtualJogs
         virtualJogsView.isHidden = !showVirtualJogs
-        currentMode = viewModel.currentControlMode
-
         setupJoystickModeSegmentedControl()
         updateJogsDisplay()
     }
 
     /// Updates jogs display regarding current mode.
     func updateJogsDisplay() {
-        let style: ActionButtonStyle = currentMode.jogsInversed ? .validate : .default2
+        let style: ActionButtonStyle = currentState.controlMode.isJogsInversed ? .validate : .default2
         inverseJoystickButton.setup(image: Asset.Settings.Controls.reverseJoys.image.withRenderingMode(.alwaysTemplate),
                                     title: L10n.settingsControlsOptionInverseJoys,
                                     style: style)
-        joystickImage.image = currentMode.getJoystickImage(isRegularSizeClass: isRegularSizeClass)
-        jogsInversed = currentMode.jogsInversed
-        isSpecialMode = currentMode.isSpecialMode
+        joystickImage.image = currentState.controlMode.getJoystickImage(isRegularSizeClass: isRegularSizeClass)
         updateJoystickLabels()
     }
 
-    /// Deduces current mode regarding states.
-    func deduceCurrentMode() {
-        if !isSpecialMode && !jogsInversed {
-            currentMode = .mode1
-        } else if !isSpecialMode && jogsInversed {
-            currentMode = .mode1Inversed
-        } else if isSpecialMode && !jogsInversed {
-            currentMode = .mode2
-        } else if isSpecialMode && jogsInversed {
-            currentMode = .mode2Inversed
+    /// Toggle the inversed jogs.
+    func toggleJogsInversed() {
+        let isJogsInversed = !currentState.controlMode.isJogsInversed
+        let isSpecialMode = currentState.controlMode.isSpecialMode
+
+        updateControlMode(isJogsInversed: isJogsInversed,
+                          isSpecialMode: isSpecialMode)
+    }
+
+    /// Toggle the inversed jogs.
+    ///
+    /// - Parameters:
+    ///    - isSpecialMode: `true` if jogs is in special mode, `false` otherwise
+    func setIsSpecialMode(_ isSpecialMode: Bool) {
+        let isJogsInversed = currentState.controlMode.isJogsInversed
+        let isSpecialMode = isSpecialMode
+
+        updateControlMode(isJogsInversed: isJogsInversed,
+                          isSpecialMode: isSpecialMode)
+    }
+
+    /// Updates control mode.
+    ///
+    /// - Parameters:
+    ///    - isJogsInversed: `true` if jogs is inverted, `false` otherwise
+    ///    - isSpecialMode: `true` if jogs is in special mode, `false` otherwise
+    func updateControlMode(isJogsInversed: Bool, isSpecialMode: Bool) {
+        var controlMode: ControlsSettingsMode!
+        if !isSpecialMode && !isJogsInversed {
+            controlMode = .mode1
+        } else if !isSpecialMode && isJogsInversed {
+            controlMode = .mode1Inversed
+        } else if isSpecialMode && !isJogsInversed {
+            controlMode = .mode2
+        } else if isSpecialMode && isJogsInversed {
+            controlMode = .mode2Inversed
         }
 
-        viewModel?.updateRemoteMapping(withMode: currentMode)
+        viewModel?.updateRemoteMapping(withMode: controlMode)
     }
 
     /// Update joystick labels regarding the current mode.
     func updateJoystickLabels() {
-        controllerCameraLabel.text = currentMode.controllerCameraText
-        controllerLeftJoystickLabel.text = currentMode.leftJoystickText
-        hudLeftJoystick.text = currentMode.leftJoystickText
-        controllerRightJoystickLabel.text = currentMode.rightJoystickText
-        hudRightJoystick.text = currentMode.rightJoystickText
+        let controlMode = currentState.controlMode
+        controllerCameraLabel.text = controlMode.controllerCameraText
+        controllerLeftJoystickLabel.text = controlMode.leftJoystickText
+        hudLeftJoystick.text = controlMode.leftJoystickText
+        controllerRightJoystickLabel.text = controlMode.rightJoystickText
+        hudRightJoystick.text = controlMode.rightJoystickText
         hudZoom.text = L10n.settingsControlsMappingZoom
         controllerSpeedModeLabel.text = L10n.settingsControlsMappingReset
         controllerRecordLabel.text = L10n.settingsControlsMappingRecord
@@ -188,7 +213,7 @@ private extension SettingsControlModeCell {
 
     /// Sets up joystick mode segmented control.
     func setupJoystickModeSegmentedControl() {
-        let selectedSegmentIndex = !currentMode.isSpecialMode ? 0 : 1
+        let selectedSegmentIndex = !currentState.controlMode.isSpecialMode ? 0 : 1
         let modes = [1, 2]
         let segments = modes.map {
             SettingsSegment(title: L10n.settingsControlsOptionJoystickModeNumber($0), disabled: false, image: nil)

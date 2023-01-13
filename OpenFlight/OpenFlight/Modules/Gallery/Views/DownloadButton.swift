@@ -67,21 +67,23 @@ private extension DownloadButton {
     func updateLayout() {
         isHidden = model == nil
 
-        guard let state = model?.state else { return }
+        guard let model = model else { return }
 
-        isUserInteractionEnabled = state != .downloading
-        backgroundColor = state.backgroundColor
+        isUserInteractionEnabled = model.isUserInteractionEnabled
+        backgroundColor = model.backgroundColor
         layer.cornerRadius = Style.mediumCornerRadius
 
+        let state = model.state
         imageView.image = state.icon
+        imageView.alphaWithEnabledState(model.isIconEnabled)
         imageView.tintColor = state.tintColor
 
-        let title = state.title(model?.title)
+        let title = state.title(model.title)
         titleLabel.text = title
         titleLabel.isHiddenInStackView = title == nil
         titleLabel.textColor = state.tintColor
 
-        if state == .downloading {
+        if state == .downloading || state == .deleting {
             imageView?.startRotate()
         } else {
             imageView?.stopRotate()
@@ -94,11 +96,30 @@ class DownloadButtonModel {
     /// The title of the button.
     var title: String?
     /// The download state of the button.
-    var state: GalleryMediaDownloadState?
+    var state: GalleryMediaActionState
+    /// Whether the button action is available.
+    var isActionAvailable: Bool
 
     init(title: String? = nil,
-         state: GalleryMediaDownloadState? = nil) {
+         state: GalleryMediaActionState,
+         isAvailable: Bool = true) {
         self.title = title
         self.state = state
+        self.isActionAvailable = isAvailable
+    }
+
+    /// Whether button's user interaction is enabled according to its state and availability.
+    var isUserInteractionEnabled: Bool {
+        state.isUserInteractionEnabled(isAvailable: isActionAvailable)
+    }
+
+    /// The button's background color according to its state and availability.
+    var backgroundColor: UIColor {
+        state.backgroundColor(isAvailable: isActionAvailable)
+    }
+
+    /// Whether button's icon is enabled according to its state and availability.
+    var isIconEnabled: Bool {
+        state.isIconEnabled(isAvailable: isActionAvailable)
     }
 }

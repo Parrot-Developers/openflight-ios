@@ -32,7 +32,7 @@ import Combine
 
 /// Panorama download and generation ViewController.
 final class GalleryPanoramaGenerationViewController: UIViewController {
-    var viewModel: GalleryPanoramaViewModel?
+    private(set) var viewModel: GalleryPanoramaGenerationViewModel!
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -43,9 +43,6 @@ final class GalleryPanoramaGenerationViewController: UIViewController {
     @IBOutlet private weak var circleProgressView: CircleProgressView!
     @IBOutlet private weak var progressLabel: UILabel!
     @IBOutlet private weak var stepsStackView: UIStackView!
-
-    // MARK: - Private Properties
-    private var index: Int = 0
 
     // MARK: - Init
     override func viewDidLoad() {
@@ -58,20 +55,22 @@ final class GalleryPanoramaGenerationViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        viewModel?.startProcessAsked()
+        viewModel.startProcessAsked()
     }
 
     override var prefersStatusBarHidden: Bool { true }
 
     /// Observe panorama VM updates.
     func observeViewModel() {
-        viewModel?.$generationProgress
+        viewModel.$generationProgress
+            .receive(on: DispatchQueue.main)
             .sink { [unowned self] progress in
                 updateProgressView(progress)
             }
             .store(in: &cancellables)
 
-        viewModel?.$generationStepModels
+        viewModel.$generationStepModels
+            .receive(on: DispatchQueue.main)
             .sink { [unowned self] models in
                 updateSteps(models)
             }
@@ -84,11 +83,9 @@ final class GalleryPanoramaGenerationViewController: UIViewController {
     ///    - viewModel: gallery panorama viewModel.
     ///    - index: Media index in the gallery media array
     /// - Returns: a GalleryPanoramaGenerationViewController.
-    static func instantiate(viewModel: GalleryPanoramaViewModel,
-                            index: Int) -> GalleryPanoramaGenerationViewController {
+    static func instantiate(viewModel: GalleryPanoramaGenerationViewModel) -> GalleryPanoramaGenerationViewController {
         let viewController = StoryboardScene.GalleryPanorama.galleryPanoramaGenerationViewController.instantiate()
         viewController.viewModel = viewModel
-        viewController.index = index
 
         return viewController
     }
@@ -97,7 +94,7 @@ final class GalleryPanoramaGenerationViewController: UIViewController {
 // MARK: - Actions
 private extension GalleryPanoramaGenerationViewController {
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        viewModel?.cancelButtonTapped()
+        viewModel.cancelButtonTapped()
     }
 }
 
@@ -107,24 +104,17 @@ private extension GalleryPanoramaGenerationViewController {
 private extension GalleryPanoramaGenerationViewController {
     /// Sets up all the UI for the view controller.
     func setupUI() {
-        guard let galleryMediaViewModel = viewModel?.galleryMediaViewModel,
-              let currentMedia = galleryMediaViewModel.getMedia(index: index) else {
-            return
-        }
-
-        mediaTitleView.model = currentMedia
+        mediaTitleView.model = viewModel.media
         progressLabel.makeUp(with: .huge, and: ColorName.defaultTextColor)
         progressLabel.font = FontStyle.title.font(isRegularSizeClass, monospacedDigits: true)
         titleLabel.makeUp(with: .large, and: ColorName.defaultTextColor)
-        titleLabel.attributedText = currentMedia.titleAttributedString
+        titleLabel.attributedText = viewModel.media.titleAttributedString
 
         initStepsStackView()
     }
 
     /// Inits steps stackView according to model content.
     func initStepsStackView() {
-        guard let viewModel = viewModel else { return }
-
         stepsStackView.removeSubViews()
         for model in viewModel.generationStepModels {
             let view = GalleryPanoramaStepView()

@@ -29,15 +29,6 @@
 
 import SwiftyUserDefaults
 
-// MARK: - Protocols
-public protocol FlightPlanEditionViewControllerDelegate: AnyObject {
-    /// Starts flight plan edition mode.
-    ///
-    /// - Parameters:
-    ///    - shouldCenter: should center position on map
-    func startFlightPlanEdition(shouldCenter: Bool)
-}
-
 /// Protocol for `ManagePlansViewController` navigation.
 public protocol FlightPlanManagerCoordinator: AnyObject {
     /// Starts manage plans modal.
@@ -84,7 +75,9 @@ public final class FlightPlanPanelCoordinator: Coordinator {
                                                  runStateProgress: services.flightPlan.run,
                                                  currentMissionManager: services.currentMissionManager,
                                                  flightService: services.flight.service,
-                                                 coordinator: self, splitControls: splitControls)
+                                                 coordinator: self,
+                                                 rthSettingsMonitor: services.rthSettingsMonitor,
+                                                 splitControls: splitControls)
         // FlightPlanPanel : ViewController + viewModel
         let flightPlanPanelVC = FlightPlanPanelViewController.instantiate(flightPlanPanelViewModel: viewModel)
 
@@ -96,17 +89,18 @@ public final class FlightPlanPanelCoordinator: Coordinator {
     }
 }
 
-// MARK: - FlightPlanEditionViewControllerDelegate
+// MARK: - FlightPlanPanelCoordinator
 public extension FlightPlanPanelCoordinator {
     func startFlightPlanEdition(centerMapOnDroneOrUser: Bool = false) {
-        guard let splitControls = splitControls,
-              let mapViewController = splitControls.mapViewController else { return }
-        if centerMapOnDroneOrUser {
-            mapViewController.centerMapOnDroneOrUser()
-        }
+        guard let splitControls = splitControls else { return }
 
-        showHudControls(show: false) // Hide HUD controls in edition mode.
-        startFlightPlanEdition(mapViewController: mapViewController)
+        if let mapViewController = splitControls.commonMapViewController as? FlightPlanMapViewController {
+            showHudControls(show: false) // Hide HUD controls in edition mode.
+            startFlightPlanEdition(mapViewController: mapViewController)
+        } else if let sceneViewController = splitControls.commonMapViewController as? FlightPlanSceneViewController {
+            showHudControls(show: false) // Hide HUD controls in edition mode.
+            startFlightPlanEdition(mapViewController: sceneViewController)
+        }
     }
 
     func back(animated: Bool = true) {
@@ -124,7 +118,7 @@ public extension FlightPlanPanelCoordinator {
         } else {
             services.ui.hudTopBarService.forbidTopBarDisplay()
         }
-        splitControls.mapViewController?.navBarView.isHidden = show
+        splitControls.commonMapViewController?.navBarView.isHidden = show
         splitControls.hideCameraSliders(hide: !show)
         splitControls.hideBottomBar(hide: !show)
     }
@@ -145,21 +139,31 @@ extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
 
     public func startFlightPlanHistory(projectModel: ProjectModel) {
         guard let splitControls = splitControls,
-              let mapViewController = splitControls.mapViewController else { return }
+              let mapViewController = splitControls.commonMapViewController else { return }
 
         // FP history panel uses map VC navigation bar instead of HUD top bar.
         services.ui.hudTopBarService.forbidTopBarDisplay()
         showNavBar(show: true)
 
-        let viewController = mapViewController.executionsListProvider(
+        if let viewController = (mapViewController as? FlightPlanMapViewController)?.executionsListProvider(
             delegate: self,
             flightPlanHandler: services.flightPlan.manager,
             projectManager: services.flightPlan.projectManager,
             projectModel: projectModel,
             flightService: services.flight.service,
             flightPlanRepo: services.repos.flightPlan,
-            topBarService: services.ui.hudTopBarService)
-        navigationController?.pushViewController(viewController, animated: true)
+            topBarService: services.ui.hudTopBarService) {
+            navigationController?.pushViewController(viewController, animated: true)
+        } else if let viewController = (mapViewController as? FlightPlanSceneViewController)?.executionsListProvider(
+            delegate: self,
+            flightPlanHandler: services.flightPlan.manager,
+            projectManager: services.flightPlan.projectManager,
+            projectModel: projectModel,
+            flightService: services.flight.service,
+            flightPlanRepo: services.repos.flightPlan,
+            topBarService: services.ui.hudTopBarService) {
+            navigationController?.pushViewController(viewController, animated: true)
+        }
     }
 }
 
@@ -169,7 +173,29 @@ private extension FlightPlanPanelCoordinator {
     ///
     /// - Parameters:
     ///    - mapViewController: controller for the map
-    func startFlightPlanEdition(mapViewController: MapViewController) {
+    func startFlightPlanEdition(mapViewController: FlightPlanMapViewController) {
+        let viewController = mapViewController
+            .editionProvider(panelCoordinator: self,
+                             flightPlanServices: services.flightPlan,
+                             navigationStack: services.ui.navigationStack)
+
+        // Ensure that last VC of navigation stack is not of same type as `editionProvider`
+        // in order to avoid incorrectly pushing same VC twice (may occur on potential
+        // double taps on Edition button).
+        if let lastVC = navigationController?.viewControllers.last,
+           type(of: viewController) == type(of: lastVC) {
+            // `viewController` is already last VC of navigation stack => exit.
+            return
+        }
+
+        navigationController?.pushViewController(viewController, animated: true)
+    }
+
+    /// Starts flight plan edition coordinator.
+    ///
+    /// - Parameters:
+    ///    - mapViewController: controller for the map
+    func startFlightPlanEdition(mapViewController: FlightPlanSceneViewController) {
         let viewController = mapViewController
             .editionProvider(panelCoordinator: self,
                              flightPlanServices: services.flightPlan,
@@ -191,7 +217,7 @@ private extension FlightPlanPanelCoordinator {
     ///
     /// - Parameter show: whether the navigation bar needs to be shown
     private func showNavBar(show: Bool) {
-        splitControls?.mapViewController?.navBarView.isHidden = !show
+        splitControls?.commonMapViewController?.navBarView.isHidden = !show
     }
 }
 

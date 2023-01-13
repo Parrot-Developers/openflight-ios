@@ -31,7 +31,7 @@ import Reusable
 import UIKit
 
 /// Custom view for calibration choice.
-final class CalibrationChoiceView: UIControl, NibOwnerLoadable {
+final public class CalibrationChoiceView: UIControl, NibOwnerLoadable {
 
     // MARK: - Outlets
     @IBOutlet private weak var imageView: UIImageView!
@@ -45,14 +45,14 @@ final class CalibrationChoiceView: UIControl, NibOwnerLoadable {
     }
 
     // MARK: - Internal Properties
-    var viewModel: CalibrationChoiceModel? {
+    public var viewModel: CalibrationChoiceModel? {
         didSet {
             update(with: viewModel)
         }
     }
 
     // MARK: - Override Properties
-    override var isEnabled: Bool {
+    public override var isEnabled: Bool {
         didSet {
             imageView.alpha = isEnabled ? Constants.alphaEnabled : Constants.alphaDisabled
             titleLabel.alpha = isEnabled ? Constants.alphaEnabled : Constants.alphaDisabled

@@ -40,7 +40,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     private(set) var originWayPoint: WayPoint?
     /// Destination waypoint.
     private(set) var destinationWayPoint: WayPoint?
-
+    private let symbolTouchArea: AGSSimpleLineSymbol
     // MARK: - Private Properties
     private var lineSymbol: AGSSimpleLineSymbol? {
         guard let compositeSymbol = symbol as? AGSCompositeSymbol else { return nil }
@@ -64,6 +64,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
         static let selectedColor: UIColor = ColorName.highlightColor.color
         static let touchAreaColor: UIColor = .clear
         static let lineWidth: CGFloat = 2.0
+        static let lineWidthBig: CGFloat = 5.0
         static let lineWidthTouchArea: CGFloat = 60.0
     }
 
@@ -78,13 +79,14 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     init(origin: WayPoint,
          destination: WayPoint,
          originIndex: Int) {
+
         let polyline = AGSPolyline(points: [origin.agsPoint,
                                             destination.agsPoint])
 
         // Symbol used to make touch area bigger, invisible.
-        let symbolTouchArea = AGSSimpleLineSymbol(style: .solid,
-                                                  color: Constants.touchAreaColor,
-                                                  width: Constants.lineWidthTouchArea)
+        symbolTouchArea = AGSSimpleLineSymbol(style: .solid,
+                                                color: Constants.touchAreaColor,
+                                                width: Constants.lineWidthTouchArea)
         // visible line
         let symbol = AGSSimpleLineSymbol(style: .solid,
                                          color: Constants.defaultColor,
@@ -97,6 +99,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
                    attributes: nil)
 
         originWayPoint = origin
+        self.zIndex = FlightPlanConstants.minZIndex
         destinationWayPoint = destination
         attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = originIndex
         attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = originIndex + 1
@@ -124,6 +127,7 @@ public final class FlightPlanWayPointLineGraphic: FlightPlanGraphic {
     ///    - endPoint: new end point
     func updateEndPoint(_ endPoint: AGSPoint) {
         geometry = polyline?.replacingLastPoint(endPoint)
+        updateColors(isSelected: graphicIsSelected)
     }
 }
 
@@ -162,5 +166,20 @@ extension FlightPlanWayPointLineGraphic: WayPointRelatedGraphic {
 
         attributes[FlightPlanAGSConstants.lineOriginWayPointAttributeKey] = index - 1
         attributes[FlightPlanAGSConstants.lineDestinationWayPointAttributeKey] = index
+    }
+
+    /// Set reduced mode, this is used when map is mini.
+    ///
+    /// - Parameters:
+    ///    - value: the new value
+    func setReduced(_ value: Bool) {
+        // visible line
+        let symbol = AGSSimpleLineSymbol(style: .solid,
+                                         color: Constants.defaultColor,
+                                         width: value ? Constants.lineWidthBig : Constants.lineWidth)
+        let compositeSymbol = AGSCompositeSymbol(symbols: [symbolTouchArea, symbol])
+
+        self.symbol = compositeSymbol
+        updateColors(isSelected: graphicIsSelected)
     }
 }

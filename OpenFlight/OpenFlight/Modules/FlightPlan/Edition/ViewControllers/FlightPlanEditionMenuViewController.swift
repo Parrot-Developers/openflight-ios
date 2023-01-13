@@ -129,14 +129,7 @@ final class FlightPlanEditionMenuViewController: UIViewController {
             case .image:
                 return L10n.flightPlanMenuImage.uppercased()
             case .settings(let category):
-                switch category {
-                case .custom(let title):
-                    return title.uppercased()
-                case .rth:
-                    return L10n.flightPlanSettingsRthTitle.uppercased()
-                default:
-                    return L10n.flightPlanSettingsTitle.uppercased()
-                }
+                return category.title.uppercased()
             case .estimation:
                 return L10n.flightPlanEstimations.uppercased()
             }
@@ -257,7 +250,9 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
         let type = dataSource[section]
         switch type {
         case .settings(let category):
-            return fpSettings?.filter({ $0.category == category }).count ?? 0
+            return fpSettings?.filter({ $0.category == category })
+                .filter(for: flightPlan) // Filter settings which are not available for imported mavlink.
+                .count ?? 0
         case .mode,
              .image,
              .project,
@@ -267,22 +262,17 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
         }
     }
 
-    func getEditableState(category: FlightPlanSettingCategory, customRth: Bool) -> Bool {
-        guard category == FlightPlanSettingCategory.rth else { return true }
-        return customRth
-    }
-
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let type = dataSource[indexPath.section]
         switch type {
         case .settings(let category):
             let cell = tableView.dequeueReusableCell(for: indexPath) as SettingsMenuTableViewCell
-            let customRth = fpSettings?
-                .first(where: { $0.key == ClassicFlightPlanSettingType.customRth.key })?
-                .currentValue == 0
-            let isEditable = getEditableState(category: category, customRth: customRth)
+            let customRth = flightPlan?.dataSetting?.customRth == true
+            let isEditable = isEditableSettingCategory(category)
             if let categorizedSettings = fpSettings?.filter({ $0.category == category }) {
-                let setting = categorizedSettings[indexPath.row]
+                // Filter settings which are not available for imported mavlink.
+                let filteredSettings = categorizedSettings.filter(for: flightPlan)
+                let setting = filteredSettings[indexPath.row]
                 cell.setup(setting: setting,
                            index: indexPath.row,
                            numberOfRows: tableView.numberOfRows(inSection: indexPath.section),
@@ -322,15 +312,14 @@ extension FlightPlanEditionMenuViewController: UITableViewDataSource {
 extension FlightPlanEditionMenuViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
+        // Force `endEditing` in order to dismiss keyboard whenever a new panel is shown
+        // in order to avoid UI textField selection glitch.
+        view.endEditing(true)
+
         let type = dataSource[indexPath.section]
         switch type {
         case .settings(let category):
-            // If the setting category is rth & the custom RTH is disabled
-            // do not show the settings.
-            if category == FlightPlanSettingCategory.rth {
-                let customRth = fpSettings?.first(where: { $0.key == ClassicFlightPlanSettingType.customRth.key })
-                guard customRth?.currentValue == 0 else { return }
-            }
+            guard isEditableSettingCategory(category) else { return }
             menuDelegate?.showSettings(category: category)
         case .image:
             menuDelegate?.showSettings(category: .image)
@@ -374,5 +363,21 @@ extension FlightPlanEditionMenuViewController: UITableViewDelegate {
 extension FlightPlanEditionMenuViewController: ModesChoiceTableViewCellDelegate {
     func updateMode(tag: Int) {
         settingsDelegate?.updateMode(tag: tag)
+    }
+}
+
+// MARK: - Private methods
+extension FlightPlanEditionMenuViewController {
+    /// Returns the editable state of a setting category.
+    ///
+    /// - Parameter category: the category
+    /// - Returns: `true` if category settings can be edited, `false` otherwise
+    func isEditableSettingCategory(_ category: FlightPlanSettingCategory) -> Bool {
+        // Altitude reference category settings can't be edited.
+        if category == .altitudeRef { return false }
+        // All other categories, except the custom RTH, are always editable.
+        if category != .rth { return true }
+        // Custom RTH can be edited depending the selected mission setting.
+        return flightPlan?.dataSetting?.customRth == true
     }
 }

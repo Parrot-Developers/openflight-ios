@@ -71,6 +71,10 @@ final class SettingsNetworkViewModel {
         isChannelsEnabledPublisher.value
     }
 
+    // MARK: Constants
+
+    static let driIdCharacterMaxCount: Int = 16
+
     // MARK: Ground SDK References
 
     private var wifiAccessPointRef: Ref<WifiAccessPoint>?
@@ -129,11 +133,8 @@ final class SettingsNetworkViewModel {
         return dismissDriAlertSubject.eraseToAnyPublisher()
     }
 
-    var driOperatorFullId: String {
-        guard let operatorId = driOperatorId,
-              let key = driKey
-        else { return L10n.settingsConnectionDriOperatorPlaceholder }
-        return "\(operatorId) \(key)"
+    var driOperatorFullId: (mainEntry: String?, key: String?) {
+        return (mainEntry: driOperatorId, key: driKey)
     }
 
     var driOperatorColor: UIColor {
@@ -145,6 +146,9 @@ final class SettingsNetworkViewModel {
 
     var infoHandler: ((SettingMode.Type) -> Void)?
     var editionHandler: (() -> Void)?
+    var isOnEuropeanRegulation: Bool {
+        return Defaults.isOnEuropeanRegulation
+    }
 
     var settingEntries: [SettingEntry] {
         let hasChannelsOccupation = channelsOccupations.isEmpty == false
@@ -173,7 +177,7 @@ final class SettingsNetworkViewModel {
         var subtitle: String?
         if let droneId = driId,
            driMode {
-            subtitle = L10n.settingsConnectionDriName
+            subtitle = L10n.settingsConnectionDriAbbreviatedName
                 + Style.whiteSpace
                 + droneId
         }
@@ -244,6 +248,20 @@ final class SettingsNetworkViewModel {
 
         let driMode = currentDroneHolder.drone.getPeripheral(Peripherals.dri)
         driMode?.mode?.value = SettingsNetworkPreset.defaultDriMode
+    }
+
+    /// Tells if the dri entry is the same as the already registered one.
+    ///
+    /// - Parameters:
+    ///    - driId: DRI operator id
+    ///    - driKey: DRI key
+    ///    - isOnEuropeanRegulation: index selected from the regulation toggle
+    /// - Returns: true if changed, false otherwise
+    func isDriEntryNew(driId: String, driKey: String, isOnEuropeanRegulation: Bool) -> Bool {
+        guard let currentDriTypeConfig = currentDroneHolder.drone.getPeripheral(Peripherals.dri)?.type.type else { return true }
+        let config = getDriConfig(for: driId, and: driKey, isOnEuropeanRegulation: isOnEuropeanRegulation)
+
+        return currentDriTypeConfig != config
     }
 }
 
@@ -344,10 +362,17 @@ private extension SettingsNetworkViewModel {
                     self.driPublisher.send(dri)
                     return
                 }
+
+                self.persistChoosenRegulationState(with: dri?.type.type?.type)
                 self.dismissDriEdition()
                 self.driPublisher.send(dri)
             }
         }
+    }
+
+    /// Save the new settings default regulation bool value
+    func persistChoosenRegulationState(with type: DriType?) {
+        Defaults.isOnEuropeanRegulation = type == .en4709_002
     }
 
     /// Show explanatory DRI page.
@@ -408,14 +433,13 @@ extension SettingsNetworkViewModel {
     /// - Parameters:
     ///    - driId: DRI operator id
     ///    - driKey: DRI key
-    ///    - driIdLength: DRI operator id length
-    ///    - driKeyLength: DRI key length
-    func submitDRI(driId: String?, driKey: String?, driIdLength: Int, driKeyLength: Int) {
+    ///    - isOnEuropeanRegulation: index selected from the regulation toggle
+    func submitDRI(driId: String, driKey: String, isOnEuropeanRegulation: Bool) {
         guard let dri = currentDroneHolder.drone.getPeripheral(Peripherals.dri),
               let config = validateUserEntries(driId: driId,
                                                driKey: driKey,
-                                               driIdLength: driIdLength,
-                                               driKeyLength: driKeyLength)
+                                               isOnEuropeanRegulation: isOnEuropeanRegulation),
+              dri.type.type != config
         else { return }
         isLoadingDri = true
         dri.type.type = config
@@ -426,23 +450,15 @@ extension SettingsNetworkViewModel {
     /// - Parameters:
     ///    - driId: DRI operator id
     ///    - driKey: DRI key
-    ///    - driIdLength: DRI operator id length
-    ///    - driKeyLength: DRI key length
+    ///    - isOnEuropeanRegulation: index selected from the regulation toggle
     /// - Returns: DRI type config, nil if user entries or config are invalid.
-    private func validateUserEntries(driId: String?, driKey: String?, driIdLength: Int, driKeyLength: Int) -> DriTypeConfig? {
-        guard let driId = driId,
-              driId.count == driIdLength else {
-                  errorMessageDri = L10n.settingsEditDriErrorOperatorIdLength
+    private func validateUserEntries(driId: String, driKey: String, isOnEuropeanRegulation: Bool) -> DriTypeConfig? {
+        guard driId.count <= Self.driIdCharacterMaxCount else {
+            errorMessageDri = L10n.settingsEditDriErrorInvalidId
             return nil
         }
 
-        guard let driKey = driKey,
-              driKey.count == driKeyLength else {
-            errorMessageDri = L10n.settingsEditDriErrorKeyLength
-            return nil
-        }
-
-        guard let config = validConfig(for: driId, and: driKey) else {
+        guard let config = getDriConfig(for: driId, and: driKey, isOnEuropeanRegulation: isOnEuropeanRegulation), config.isValid else {
             errorMessageDri = L10n.settingsEditDriErrorInvalidId
             return nil
         }
@@ -455,10 +471,14 @@ extension SettingsNetworkViewModel {
     /// - Parameters:
     ///    - driId: DRI operator id
     ///    - driKey: DRI key
+    ///    - isOnEuropeanRegulation: index selected from the regulation toggle
     /// - Returns: DRI type config if valid, nil otherwise
-    private func validConfig(for driId: String, and driKey: String) -> DriTypeConfig? {
-        let operatorId = String(format: "%@-%@", driId, driKey)
-        let config = DriTypeConfig.en4709_002(operatorId: operatorId)
-        return config.isValid ? config : nil
+    private func getDriConfig(for driId: String, and driKey: String, isOnEuropeanRegulation: Bool) -> DriTypeConfig? {
+        if isOnEuropeanRegulation == true {
+            let operatorId = String(format: "%@-%@", driId, driKey)
+            return DriTypeConfig.en4709_002(operatorId: operatorId)
+        } else {
+            return DriTypeConfig.astmF3411(operatorId: driId)
+        }
     }
 }

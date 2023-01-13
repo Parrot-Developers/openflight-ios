@@ -198,6 +198,11 @@ final class CameraCaptureModeViewModel: BarButtonViewModel<CameraBarButtonState>
             editor.applyValueNotForced(Camera2Params.photoFormat, .rectilinear)
             editor.applyValueNotForced(Camera2Params.photoFileFormat, .jpeg)
             editor.applyValueNotForced(Camera2Params.photoDynamicRange, .sdr)
+
+            // Apply current camera photo resolution in order to ensure that `photoDynamicRange` parameter
+            // is not overwritten when applying persistent setting in `saveSettings`.
+            let cameraPhotoResolution = camera.config[Camera2Params.photoResolution]?.value
+            editor.applyValueNotForced(Camera2Params.photoResolution, cameraPhotoResolution)
         }
 
         // Update timelapse/gpslapse with preset value if

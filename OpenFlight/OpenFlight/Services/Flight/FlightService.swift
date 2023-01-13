@@ -173,12 +173,14 @@ open class FlightServiceImpl {
 
     public func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.cloudSynchroWatcher = cloudSynchroWatcher
-        self.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynchronizingData in
-            if !isSynchronizingData {
-                flightsDidChangeSubject.send()
-                refreshAllFlightsSummary()
+        self.cloudSynchroWatcher?.synchroStatusPublisher
+            .sink { [unowned self] status in
+                if !status.isSyncing {
+                    flightsDidChangeSubject.send()
+                    refreshAllFlightsSummary()
+                }
             }
-        }.store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
 }
@@ -277,17 +279,12 @@ extension FlightServiceImpl: FlightService {
     }
 
     public func refreshAllFlightsSummary() {
-        let allFlight = repo.getAllFlightLites()
-        var duration: Double = 0
-        var distance: Double = 0
-        allFlight.forEach({
-            duration += $0.duration
-            distance += $0.distance
-        })
+        let allFlightsCount = repo.getAllFlightsCount()
+        let allFlightsInfo = repo.getTotalDurationAndDistance()
 
-        allFlightSummarySubject.value = AllFlightsSummary(numberOfFlights: allFlight.count,
-                                                          totalDuration: duration,
-                                                          totalDistance: distance)
+        allFlightSummarySubject.value = AllFlightsSummary(numberOfFlights: allFlightsCount,
+                                                          totalDuration: allFlightsInfo.duration,
+                                                          totalDistance: allFlightsInfo.distance)
     }
 
     public func update(flight: FlightModel, title: String) -> FlightModel {

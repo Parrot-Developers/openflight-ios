@@ -87,13 +87,13 @@ public protocol MapViewEditionControllerDelegate: AnyObject {
     ///
     /// - Parameters:
     ///    - index: Integer
-    func removeWayPointAt(_ index: Int)
+    func removeWayPoint(at index: Int)
 
     /// Removes poi at sepecific index.
     ///
     /// - Parameters:
     ///    - index: Integer
-    func removePOIAt(_ index: Int)
+    func removePOI(at index: Int)
 
     /// Notifys when delete corner.
     func didTapDeleteCorner()
@@ -149,7 +149,7 @@ public protocol FlightEditionDelegate: AnyObject {
 }
 
 // MARK: - FlightPlanEditionViewModel
-class FlightPlanEditionViewModel {
+public class FlightPlanEditionViewModel {
     /// The view state reflecting current subject value. Private setter.
     private(set) var viewState: ViewState? {
         get { viewStateSubject.value }
@@ -220,6 +220,10 @@ class FlightPlanEditionViewModel {
             .sink(receiveValue: { [unowned self] flightPlan in
                 self.globalSettingsProvider?.updateType(key: flightPlan.type)
                 self.flightPlanEditionMenuViewModel?.updateModel(flightPlan)
+                guard editionSettingsViewModel?.settingsCategoryFilter != .custom(L10n.flightPlanSegmentSettingsTitle) else {
+                    closeSettings()
+                    return
+                }
                 self.editionSettingsViewModel?.updateDataSource(with: self.settingsProvider,
                                                                 savedFlightPlan: flightPlan,
                                                                 selectedGraphic: self.selectedGraphic)
@@ -411,11 +415,11 @@ extension FlightPlanEditionViewModel {
             switch selectedGraphic {
             case let wayPointGraphic as FlightPlanWayPointGraphic:
                 if let index = wayPointGraphic.wayPointIndex {
-                    mapDelegate?.removeWayPointAt(index)
+                    mapDelegate?.removeWayPoint(at: index)
                 }
             case let poiPointGraphic as FlightPlanPoiPointGraphic:
                 if let index = poiPointGraphic.poiIndex {
-                    mapDelegate?.removePOIAt(index)
+                    mapDelegate?.removePOI(at: index)
                 }
             default:
                 break
@@ -569,11 +573,11 @@ private extension FlightPlanEditionViewModel {
 // MARK: - FlightEditionDelegate
 // Communicate with map view Controller
 extension FlightPlanEditionViewModel: FlightEditionDelegate {
-    func didTapGraphicalItem(_ graphic: FlightPlanGraphic?) {
+    public func didTapGraphicalItem(_ graphic: FlightPlanGraphic?) {
         handleFlightPlanItemSelection(graphic)
     }
 
-    func didChangePointOfView() {
+    public func didChangePointOfView() {
         updateUndoStack()
 
         // Update the edition service's modifiedFlightPlan to handle changes.
@@ -582,7 +586,7 @@ extension FlightPlanEditionViewModel: FlightEditionDelegate {
         }
     }
 
-    func didChangeCourse() {
+    public func didChangeCourse() {
         /// TODO update estimation
         //        self.estimations = edition.currentFlightPlanValue?.dataSetting?.estimations ?? FlightPlanEstimationsModel()
         updateUndoStack()

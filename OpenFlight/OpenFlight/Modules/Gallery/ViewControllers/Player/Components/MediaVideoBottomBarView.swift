@@ -89,6 +89,34 @@ final class MediaVideoBottomBarView: UIView, NibOwnerLoadable {
         showFromEdge(.bottom, show: duration != 0, fadeFrom: 1) // hide bar if duration is 0
     }
 
+    /// Updates slider's position.
+    ///
+    /// - Parameter position: the position to update the slider to
+    func updateSlider(position: TimeInterval?) {
+        guard !slider.isTracking else { return }
+        guard let position = position else {
+            slider.setValue(0, animated: false)
+            return
+        }
+        positionLabel.text = position.formattedString
+        slider.setValue(Float(position), animated: true)
+    }
+
+    /// Updates slider's duration.
+    ///
+    /// - Parameter duration: the duration to update the slider to
+    func updateSlider(duration: TimeInterval?) {
+        guard !slider.isTracking else { return }
+        guard let duration = duration else {
+            slider.maximumValue = 0
+            showFromEdge(.bottom, show: false)
+            return
+        }
+        slider.maximumValue = Float(duration)
+        durationLabel.text = duration.formattedString
+        showFromEdge(.bottom, show: duration != 0, fadeFrom: 1) // hide bar if duration is 0
+    }
+
     func updateSliderStyle() {
         timingInfosView.showFromEdge(.bottom, show: sliderStyle == .full, fadeFrom: 1)
         slider.updateThumbImage(sliderStyle.thumbImage)

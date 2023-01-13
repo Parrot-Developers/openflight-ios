@@ -37,7 +37,7 @@ final class SettingsCellularDataViewModel {
 
     // MARK: - Published Properties
     /// Tells if the current network selection is manual or auto.
-    @Published private(set) var cellularSelectionMode: SettingsCellularSelection = .auto
+    @Published private(set) var cellularSelectionMode: SettingsCellularSelection?
     /// Current cellular network url
     @Published private(set) var cellularNetworkUrl: String = ""
     /// Current cellular network username
@@ -59,6 +59,7 @@ final class SettingsCellularDataViewModel {
     // MARK: - Ground SDK References
 
     private var cellularRef: Ref<Cellular>?
+    private var droneStateRef: Ref<DeviceState>?
     private var networkControlRef: Ref<NetworkControl>?
     private var flyingIndicatorsRef: Ref<FlyingIndicators>?
 
@@ -68,6 +69,7 @@ final class SettingsCellularDataViewModel {
         currentDroneHolder.dronePublisher
             .sink { [weak self] drone in
                 guard let self = self else { return }
+                self.listenConnectionState(drone)
                 self.listenCellular(drone)
                 self.listenNetworkControl(drone)
                 self.listenFlyingIndicators(drone)
@@ -130,15 +132,18 @@ final class SettingsCellularDataViewModel {
 
 // MARK: - Private Funcs
 private extension SettingsCellularDataViewModel {
-
     /// Starts watcher for cellular.
     func listenCellular(_ drone: Drone) {
         cellularRef = drone.getPeripheral(Peripherals.cellular) { [unowned self] cellular in
-            cellularSelectionMode = cellular?.apnConfigurationSetting.isManual == true ? .manual : .auto
-            cellularNetworkUrl = cellular?.apnConfigurationSetting.url ?? ""
-            cellularNetworkUsername = cellular?.apnConfigurationSetting.username ?? ""
-            cellularNetworkPassword = cellular?.apnConfigurationSetting.password ?? ""
+            updateCellularNetwork()
             cellularPublisher.send(cellular)
+        }
+    }
+
+    /// Starts watcher for drone state.
+    func listenConnectionState(_ drone: Drone) {
+        droneStateRef = drone.getState { [unowned self] _ in
+            updateCellularNetwork()
         }
     }
 
@@ -156,17 +161,33 @@ private extension SettingsCellularDataViewModel {
         }
     }
 
+    /// Updates cellular network informations.
+    func updateCellularNetwork() {
+        let drone = currentDroneHolder.drone
+        let cellular = drone.getPeripheral(Peripherals.cellular)
+        if drone.isConnected {
+            cellularSelectionMode = cellular?.apnConfigurationSetting.isManual == true ? .manual : .auto
+        } else {
+            cellularSelectionMode = nil
+        }
+        cellularNetworkUrl = cellular?.apnConfigurationSetting.url ?? ""
+        cellularNetworkUsername = cellular?.apnConfigurationSetting.username ?? ""
+        cellularNetworkPassword = cellular?.apnConfigurationSetting.password ?? ""
+
+    }
+
     /// Updates cellular network selection mode.
     ///
     /// - Parameters:
     ///     - selectionMode: the selection mode
     func updateSelectionMode(selectionMode: SettingsCellularSelection) {
+        let cellular = currentDroneHolder.drone.getPeripheral(Peripherals.cellular)
         if selectionMode == .manual {
-            _ = currentDroneHolder.drone.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToManual(url: cellularNetworkUrl,
-                                                                                                                  username: cellularNetworkUsername,
-                                                                                                                  password: cellularNetworkPassword)
+            _ = cellular?.apnConfigurationSetting.setToManual(url: cellularNetworkUrl,
+                                                              username: cellularNetworkUsername,
+                                                              password: cellularNetworkPassword)
         } else {
-            _ = currentDroneHolder.drone.getPeripheral(Peripherals.cellular)?.apnConfigurationSetting.setToAuto()
+            _ = cellular?.apnConfigurationSetting.setToAuto()
         }
     }
 

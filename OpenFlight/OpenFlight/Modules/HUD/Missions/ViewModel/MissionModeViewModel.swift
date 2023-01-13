@@ -80,10 +80,10 @@ public class MissionProviderState: ViewModelState, EquatableState, Copying {
 
 /// View model to listen mission mode updates.
 
-final class MissionProviderViewModel: BaseViewModel<MissionProviderState> {
+open class MissionProviderViewModel: BaseViewModel<MissionProviderState> {
 
     // MARK: - Private Properties
-    private var cancellables = Set<AnyCancellable>()
+    open var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
     override init() {

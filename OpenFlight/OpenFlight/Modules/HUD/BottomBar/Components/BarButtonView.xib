@@ -61,6 +61,7 @@
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="mode" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oh8-xp-Wct">
                                                             <rect key="frame" x="0.0" y="0.0" width="67" height="13"/>
+                                                            <accessibility key="accessibilityConfiguration" identifier="missionState"/>
                                                             <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="13"/>
                                                             <color key="textColor" name="default_text_color"/>
                                                             <nil key="highlightedColor"/>

@@ -33,6 +33,7 @@ import GroundSdk
 /// Manager for flight plan files
 public protocol FlightPlanFilesManager {
 
+    // MARK: - MAVLink
     /// Build the URL where the flight plan mavlink file is expected to be written
     /// - Parameter flightPlan: the flight plan
     func defaultUrl(flightPlan: FlightPlanModel) -> URL
@@ -56,6 +57,32 @@ public protocol FlightPlanFilesManager {
 
     /// Clear temporary mavlink files
     func clearTemporaryMavlinks()
+
+    // MARK: - Plan
+    /// Returns the URL where the flight plan's Plan file is expected to be written.
+    ///
+    /// - Parameter flightPlan: the flight plan
+    /// - Returns the Plan file `URL`
+    func planFileUrl(for flightPlan: FlightPlanModel) -> URL
+
+    /// Stores in filesystem the Plan file to upload to the Drone.
+    ///
+    /// - Parameters:
+    ///   - flightPlan: the flight plan
+    ///   - data: the data to write in the file
+    /// - Throws an error in case of file writing failure
+    func savePlanFile(of flightPlan: FlightPlanModel, with data: Data) throws
+
+    /// Removes an FP's Plan file saved in filesystem.
+    ///
+    /// - Parameter flightPlan: the flight plan
+    /// - Throws an error in case of file removing failure
+    func removePlanFile(of flightPlan: FlightPlanModel) throws
+
+    // MARK: - Debug / Test
+    func createFilesDirectory(for flightPlan: FlightPlanModel,
+                              planFileData: Data?,
+                              mavlinkFileData: Data?) throws -> URL
 }
 
 private extension ULogTag {
@@ -64,15 +91,24 @@ private extension ULogTag {
 
 open class FlightPlanFilesManagerImpl {
 
+    /// The user's temporary directory is used as root directory for the Plan/Mavlink files.
+    static let filesRootDirectory = FileManager.default.temporaryDirectory
+
+    // MARK: - Private Enums
     private enum Constants {
+        // MARK: - MAVLink
         static let mavlinkExtension: String = "mavlink"
-        static let tmpMavlinksFolderUrl: URL = FileManager.default.temporaryDirectory.appendingPathComponent("tmp-mavlinks", isDirectory: true)
+        static let tmpMavlinksFolderUrl: URL = filesRootDirectory.appendingPathComponent("tmp-mavlinks", isDirectory: true)
+        // Debug/Test Purpose Only.
         static var exportedMavlinksFolderUrl: URL {
-            let fileManager = FileManager.default
-            let documentPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-            return documentPath.appendingPathComponent("mavlink")
+            FileManager.default
+            // swiftlint:disable:next force_unwrapping
+                .urls(for: .documentDirectory, in: .userDomainMask).first!
+                .appendingPathComponent("mavlink")
         }
 
+        // MARK: - Plan
+        static let planExtension: String = "plan"
     }
 
     init() {
@@ -163,5 +199,96 @@ extension FlightPlanFilesManagerImpl: FlightPlanFilesManager {
         Constants.tmpMavlinksFolderUrl
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension(Constants.mavlinkExtension)
+    }
+
+    // MARK: - Plan
+    public func planFileUrl(for flightPlan: FlightPlanModel) -> URL {
+        Self.filesRootDirectory
+            .appendingPathComponent(flightPlan.uuid)
+            .appendingPathExtension(Constants.planExtension)
+    }
+
+    public func savePlanFile(of flightPlan: FlightPlanModel, with data: Data) throws {
+        let fileUrl = planFileUrl(for: flightPlan)
+        try? FileManager.default.removeItem(at: fileUrl)
+        try data.write(to: fileUrl)
+    }
+
+    public func removePlanFile(of flightPlan: FlightPlanModel) throws {
+        let fileUrl = planFileUrl(for: flightPlan)
+        try FileManager.default.removeItem(at: fileUrl)
+    }
+
+    // MARK: - Debug / Test
+    public func createFilesDirectory(for flightPlan: FlightPlanModel,
+                                     planFileData: Data?,
+                                     mavlinkFileData: Data?) throws -> URL {
+        let directoryUrl = Self.filesRootDirectory.appendingPathComponent(flightPlan.uuid)
+        try FileManager.default.createDirectory(at: directoryUrl, withIntermediateDirectories: true)
+        // Build URLs
+        let planUrl = directoryUrl
+            .appendingPathComponent(flightPlan.customTitle)
+            .appendingPathExtension(Constants.planExtension)
+        let mavlinkUrl = directoryUrl
+            .appendingPathComponent(flightPlan.customTitle)
+            .appendingPathExtension(Constants.mavlinkExtension)
+        let fpUrl = directoryUrl
+            .appendingPathComponent("FlightPlanDescription")
+            .appendingPathExtension("txt")
+        let planPrettyJsonUrl = directoryUrl
+            .appendingPathComponent("Plan")
+            .appendingPathExtension("json")
+        let mavlinkCmdsUrl = directoryUrl
+            .appendingPathComponent("MAVLinkCommands")
+            .appendingPathExtension("txt")
+        // Save files
+        try? planFileData?.write(to: planUrl)
+        try? mavlinkFileData?.write(to: mavlinkUrl)
+        try? "\(flightPlan.lightDescription)".data(using: .utf8)?.write(to: fpUrl)
+        try? planFileData?.prettyJson?.write(to: planPrettyJsonUrl)
+        try? mavlinkFileData?.mavlinkCommandsFileData?.write(to: mavlinkCmdsUrl)
+        return directoryUrl
+    }
+}
+
+// MARK: - Debug / Test
+// Quick & Dirty temp. code used for DBG purpose.
+extension Data {
+    /// The data Pretty JSON representation of the current Data.
+    var prettyJson: Data? {
+        if let object = try? JSONSerialization.jsonObject(with: self, options: []) {
+            return try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted])
+        }
+        return nil
+    }
+    /// Returns a more readable list of parsed mavlink commands.
+    var mavlinkCommandsFileData: Data? {
+        guard let dataString = String(data: self, encoding: .utf8),
+              let commands = try? MavlinkStandard.MavlinkFiles.parse(mavlinkString: dataString)
+        else { return nil }
+        var cmd = "\(commands)".replacingOccurrences(of: "GroundSdk.MavlinkStandard.", with: "")
+        _ = cmd.removeFirst()
+        _ = cmd.removeLast()
+        return cmd.components(separatedBy: ", ")
+            .enumerated()
+            .map { "\($0.0): \($0.1)" }
+            .joined(separator: "\n")
+            .data(using: .utf8)
+    }
+}
+
+extension FlightPlanModel {
+    /// The Flight Plan description without some useless fields (e.g. thumbnail)
+    /// (Quick and dirty implementation)
+    var lightDescription: String {
+        var flightPlan = self
+        flightPlan.thumbnail = nil
+        var description = "\(flightPlan)"
+        _ = description.popLast()
+        description = String(description.suffix(description.count - "FlightPlanModel(".count))
+        description = description.replacingOccurrences(of: ", ", with: ",\n")
+        description = description.replacingOccurrences(of: "dataSetting:", with: "\ndataSetting:")
+        description = description.replacingOccurrences(of: "parrotCloudUploadUrl:", with: "\nparrotCloudUploadUrl:")
+        return description
     }
 }

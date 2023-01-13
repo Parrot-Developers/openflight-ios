@@ -37,7 +37,7 @@ extension AGSSceneView {
     /// - Parameters:
     ///    - key: an overlay key
     /// - Returns: matching overlay if it exists, nil otherwise
-    func graphicOverlay(forKey key: String) -> AGSGraphicsOverlay? {
+    public func graphicOverlay(forKey key: String) -> AGSGraphicsOverlay? {
         return graphicsOverlays
             .compactMap { $0 as? AGSGraphicsOverlay}
             .first(where: { $0.overlayID == key })

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GD6-ss-0eY">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="GD6-ss-0eY">
     <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -34,7 +34,7 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G1H-BN-fL2" customClass="DeviceDetailsButtonView" customModule="OpenFlight" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="67" width="896" height="60"/>
                                         <subviews>
-                                            <view hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="M77-Se-NVD">
+                                            <view hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="M77-Se-NVD" customClass="AGSMapView">
                                                 <rect key="frame" x="8" y="8" width="44" height="44"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <constraints>
@@ -109,7 +109,7 @@
                         <outlet property="cellularAccessButtonView" destination="naE-FZ-7Cg" id="qxZ-QL-mPA"/>
                         <outlet property="firmwareUpdateButtonView" destination="vWN-fC-h5d" id="IUv-O4-tFJ"/>
                         <outlet property="mapButtonView" destination="G1H-BN-fL2" id="Y3Z-o3-bL4"/>
-                        <outlet property="mapContainerView" destination="M77-Se-NVD" id="sSJ-Xs-720"/>
+                        <outlet property="mapView" destination="M77-Se-NVD" id="hjW-tT-YP8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="sgx-Wg-MDM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

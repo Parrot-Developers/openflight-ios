@@ -45,6 +45,7 @@ public class UserParrot: NSManagedObject {
                     avatar: avatar,
                     latestCloudAvatarModificationDate: latestCloudAvatarModificationDate,
                     pilotNumber: pilotNumber,
+                    isCaligoffEnabled: isCaligoffEnabled,
                     tmpApcUser: tmpApcUser,
                     userInfoChanged: userInfoChanged,
                     syncWithCloud: syncWithCloud,
@@ -71,6 +72,7 @@ public class UserParrot: NSManagedObject {
         isSynchronizeFlightDataExtended = user.isSynchronizeFlightDataExtended
         freemiumProjectCounter = user.freemiumProjectCounter
         pilotNumber = user.pilotNumber
+        isCaligoffEnabled = user.isCaligoffEnabled
         // synchronization
         isLocalDeleted = user.isLocalDeleted
         latestSynchroStatusDate = user.latestSynchroStatusDate

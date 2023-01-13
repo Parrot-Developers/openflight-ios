@@ -109,9 +109,11 @@ class MavlinkGenerationTest: XCTestCase {
         let flightPlanRepo = MockFlightPlanRepository()
         let flightPlanFilesManager = Services.hub.flightPlan.filesManager
         let flightPlanTypeStore = Services.hub.flightPlan.typeStore
-        let mavlinkGenerator = MavlinkGeneratorImpl(typeStore: flightPlanTypeStore,
-                                                    filesManager: flightPlanFilesManager,
-                                                    repo: flightPlanRepo)
+        let projectManager = Services.hub.flightPlan.projectManager
+        let planFileGenerator = PlanFileGeneratorImpl(typeStore: flightPlanTypeStore,
+                                                      filesManager: flightPlanFilesManager,
+                                                      projectManager: projectManager,
+                                                      repo: flightPlanRepo)
         // urls for test data
         guard let urls = testBundle.urls(forResourcesWithExtension: "flightplan", subdirectory: "") else { return }
         for url in urls {
@@ -140,25 +142,18 @@ class MavlinkGenerationTest: XCTestCase {
                                     mavlink: originalMavlinkDataFile)
 
                 // generate mavlink
-                mavlinkGenerator.generateMavlink(for: flightPlan.flightPlanModel()) { result in
-                    switch result {
-                    case .success(let generatedMavlink):
-                        // check that mavlink was generated
-                        assertThat(generatedMavlink.flightPlan.dataSetting?.mavlinkDataFile, present())
-
+                Task {
+                    do {
+                        let generatedMavlinkData = try await planFileGenerator.generateMavlink(for: flightPlan.flightPlanModel(), with: nil)
                         // convert generated mavlink
-                        let generatedMavlinkDataFile = String(
-                            decoding: (generatedMavlink.flightPlan.dataSetting?.mavlinkDataFile)!, as: UTF8.self)
+                        let generatedMavlinkDataFile = String(decoding: generatedMavlinkData, as: UTF8.self)
 
                         // check and compare original and generated mavlinks
                         assertThat(generatedMavlinkDataFile, not(equalTo("")))
                         assertThat(generatedMavlinkDataFile, equalTo(originalMavlinkDataFile))
 
-                        // fullfill expectation
                         expectation.fulfill()
-
-                    case .failure(let error):
-                        // Failure to generate mavlink is always an error
+                   } catch {
                         assertThat(error.localizedDescription, nilValue())
                     }
                 }

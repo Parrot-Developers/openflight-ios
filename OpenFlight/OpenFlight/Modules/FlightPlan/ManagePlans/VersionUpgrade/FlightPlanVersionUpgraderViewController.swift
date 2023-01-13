@@ -69,11 +69,10 @@ class FlightPlanVersionUpgraderViewController: UIViewController {
         // Avoid the ability to cancel the process.
         cancelButton.isHidden = true
         // Configure Title.
-        titleLabel.text = "Data base Upgrade" // TODO: Fix wording and localize
+        titleLabel.text = L10n.flightPlanDatabaseUpgradeTitle
         // Configure description.
         descriptionLabel.makeUp(with: .readingText, color: .defaultTextColor)
-        // TODO: Fix wording and localize
-        descriptionLabel.text = "The data base needs to be upgraded to use the app.\nPlease wait until the end of the process..."
+        descriptionLabel.text = L10n.flightPlanDatabaseUpgradeDescription
     }
 
     /// Close the current screen.
@@ -95,8 +94,7 @@ class FlightPlanVersionUpgraderViewController: UIViewController {
                 case .updating(progress: let progress):
                     self.progressView.update(percentProgress: progress)
                 case .saving:
-                    // TODO: Fix wording and localize
-                    self.progressView.startIndeterminateProgress(text: "Finalizing")
+                    self.progressView.startIndeterminateProgress(text: L10n.flightPlanDatabaseUpgradeStateFinalizing)
                 case .ended:
                     DispatchQueue.main.asyncAfter(deadline: .now() + Constants.dismissDelay) {
                         self.closeView()

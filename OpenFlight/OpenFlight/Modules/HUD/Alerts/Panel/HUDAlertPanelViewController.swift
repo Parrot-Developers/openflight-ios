@@ -36,10 +36,8 @@ private extension ULogTag {
 
 // MARK: - Protocols
 public protocol HUDAlertPanelDelegate: AnyObject {
-    /// Shows alert panel view.
-    func showAlertPanel()
-    /// Hides alert panel view.
-    func hideAlertPanel()
+    /// The action button did click.
+    func actionButtonDidClick()
 }
 
 /// Manages HUD's left panel alert view.
@@ -55,10 +53,13 @@ final class HUDAlertPanelViewController: AlertPanelViewController {
 
     // MARK: - Private Properties
     private let alertViewModel = HUDAlertPanelViewModel<HUDAlertPanelState>(services: Services.hub)
+    public weak var alertDelegate: HUDAlertPanelDelegate!
 
     // MARK: - Setup
     static func instantiate() -> HUDAlertPanelViewController {
-        return StoryboardScene.HUDAlertPanel.initialScene.instantiate()
+        let controller = StoryboardScene.HUDAlertPanel.initialScene.instantiate()
+        controller.alertDelegate = controller
+        return controller
     }
 
     // MARK: - Override Funcs
@@ -98,7 +99,7 @@ final class HUDAlertPanelViewController: AlertPanelViewController {
 // MARK: - Actions
 private extension HUDAlertPanelViewController {
     @IBAction func actionButtonTouchedUpInside(_ sender: Any) {
-        alertViewModel.startAction()
+        alertDelegate.actionButtonDidClick()
     }
 }
 
@@ -107,6 +108,8 @@ private extension HUDAlertPanelViewController {
     /// Init the view.
     func initView() {
         // Default style.
+        titleLabel.makeUp(with: .title, color: .defaultTextColor)
+        subtitleLabel.makeUp(with: .current, color: .defaultTextColor)
         stopView.style = .cancelAlert
         stopView.delegate = self
         actionButton.delegate = self
@@ -219,5 +222,12 @@ extension HUDAlertPanelViewController: StopViewDelegate {
 extension HUDAlertPanelViewController: HUDAlertPanelActionButtonDelegate {
     func progressDidFinish() {
         alertViewModel.progressDidFinish()
+    }
+}
+
+// MARK: - HUDAlertPanelDelegate
+extension HUDAlertPanelViewController: HUDAlertPanelDelegate {
+    func actionButtonDidClick() {
+        alertViewModel.startAction()
     }
 }

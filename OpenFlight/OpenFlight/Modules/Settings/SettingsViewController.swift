@@ -43,6 +43,7 @@ final class SettingsViewController: UIViewController {
     // MARK: - Private Properties
     private var selectedSection: SettingsType = SettingsType.defaultType
     private var selectedPanel: SettingsPanelType = SettingsPanelType.defaultPanel
+    private var settingsProvider: SettingsProvider?
     private weak var coordinator: SettingsCoordinator?
     fileprivate var sections = [SettingsType]()
 
@@ -52,9 +53,12 @@ final class SettingsViewController: UIViewController {
     /// - Parameters:
     ///    - coordinator: settings coordinator
     ///    - settingType: if settingType is not nil, the related settings will be presented on launch
-    static func instantiate(coordinator: SettingsCoordinator, settingType: SettingsType?) -> SettingsViewController {
+    static func instantiate(coordinator: SettingsCoordinator,
+                            settingType: SettingsType?,
+                            settingsProvider: SettingsProvider?) -> SettingsViewController {
         let viewController = StoryboardScene.Settings.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.settingsProvider = settingsProvider
         if let settingType = settingType {
             viewController.selectedSection = settingType
         }
@@ -135,7 +139,7 @@ private extension SettingsViewController {
 
     /// Reload TableView sections.
     func reloadTableViewSections() {
-        sections = selectedPanel.settingsTypes
+        sections = selectedPanel.getSettingsTypes(from: settingsProvider)
         sectionsTableView?.reloadData()
     }
 
@@ -152,7 +156,6 @@ private extension SettingsViewController {
     /// Reload container view.
     func reloadContainerView() {
         let controller: UIViewController
-
         switch selectedSection {
         case .interface:
             controller = StoryboardScene.SettingsInterfaceViewController.initialScene.instantiate()
@@ -172,6 +175,8 @@ private extension SettingsViewController {
             controller = StoryboardScene.SettingsNetworkViewController.initialScene.instantiate()
         case .developer:
             controller = StoryboardScene.SettingsDeveloperViewController.initialScene.instantiate()
+        case .provider(_, let sectionController):
+            controller = sectionController
         }
 
         if let controller = controller as? SettingsContentViewController {

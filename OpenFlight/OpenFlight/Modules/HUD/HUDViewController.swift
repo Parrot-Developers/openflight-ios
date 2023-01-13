@@ -82,7 +82,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
 
     private var cancellables = Set<AnyCancellable>()
     private var customIndicatorViewModel: CustomIndicatorProvider?
-    private var defaultMapViewController: MapViewController?
+    private var defaultMapViewController: CommonMapViewController?
 
     /// View models.
     private let topBannerViewModel = HUDTopBannerViewModel()
@@ -158,14 +158,11 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
     public override func viewDidLoad() {
         super.viewDidLoad()
         guard let currentMissionManager = currentMissionManager,
-              let touchAndFly = touchAndFly,
+              touchAndFly != nil,
               let ophtalmoService = ophtalmoService else { return }
 
         listenWillEnterForeground()
         splitControls.start(currentMissionManager: currentMissionManager)
-        // TODO: this part needs to be fixed, some interactions with the map do not work without that (drag mostly)
-        customControls = touchAndFly
-        customControls?.start()
         setupAlertPanel()
         setupActionWidgetContainer()
         setupBannerAlertsManagerContainer()
@@ -182,14 +179,12 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         // Handle rotation when coming from Onboarding.
         let value = UIInterfaceOrientation.landscapeRight.rawValue
         UIDevice.current.setValue(value, forKey: Constants.orientationKeyWord)
-        ophtalmoService.ophtalmoMissionStatePublisher
+        ophtalmoService.ophtalmoLastMissionStatePublisher
             .sink { [unowned self] in
                 guard let coordinator = coordinator else { return }
                 if $0 == .active, self.isViewLoaded && view.window != nil {
                     // check if viewIsDisplayed
-                    if (coordinator.childCoordinators.last as? OphtalmoCoordinator) == nil {
-                        coordinator.presentCoordinatorWithAnimator(childCoordinator: OphtalmoCoordinator(services: Services.hub))
-                    }
+                    coordinator.startOphtalmo()
                 }
             }
             .store(in: &cancellables)
@@ -202,7 +197,7 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
               let ophtalmoService = ophtalmoService else { return }
 
         if (coordinator.childCoordinators.last as? OphtalmoCoordinator) != nil,
-           ophtalmoService.ophtalmoMissionState != .active {
+           ophtalmoService.ophtalmoLastMissionState != .active {
                 coordinator.childCoordinators.removeLast()
         }
 
@@ -210,10 +205,8 @@ final public class HUDViewController: UIViewController, DelayedTaskProvider {
         splitControls.updateConstraintForForeground()
 
         // check if ophtalmo is active and show it if it is the case.
-        if ophtalmoService.ophtalmoMissionState == .active {
-            if (coordinator.childCoordinators.last as? OphtalmoCoordinator) == nil {
-                coordinator.presentCoordinatorWithAnimator(childCoordinator: OphtalmoCoordinator(services: Services.hub))
-            }
+        if ophtalmoService.ophtalmoLastMissionState == .active {
+            coordinator.startOphtalmo()
         } else {
             coordinator.displayCriticalAlertsIfNeeded()
             // Show flight plan panel if needed.
@@ -478,20 +471,15 @@ private extension HUDViewController {
         guard let currentMissionManager = currentMissionManager else { return }
 
         let mode = currentMissionManager.mode
-        if let map = mode.customMapProvider?() as? MapViewController {
+        if let map = mode.customMapProvider?() as? CommonMapViewController {
             // Add custom map.
-            map.customControls = customControls
-            customControls?.mapViewController = map
             self.splitControls.addMap(map, parent: self)
             // Force recreate default map next time it will be necessary (this will deinit it).
             defaultMapViewController = nil
         } else {
             // Add default map, create it if needed.
-            // defaultMapViewController is used to keep map when mission modes use same default map.
-            let map = defaultMapViewController ?? StoryboardScene.Map.initialScene.instantiate()
+            let map = defaultMapViewController ?? StoryboardScene.PilotingMap.initialScene.instantiate()
             defaultMapViewController = map
-            map.customControls = customControls
-            customControls?.mapViewController = map
             self.splitControls.addMap(map, parent: self)
         }
         updateCenterButtonBottomConstraint()

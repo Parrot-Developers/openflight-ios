@@ -71,8 +71,8 @@ final class AlertControls: NSObject {
     }
 }
 
-// MARK: - HUDAlertPanelDelegate
-extension AlertControls: HUDAlertPanelDelegate {
+// MARK: - AlertPanelDelegate
+extension AlertControls: AlertPanelDelegate {
     func showAlertPanel() {
         guard alertPanelMode == .closed else { return }
         // End any potential edition in order to dismiss keyboard and avoid UI textField selection glitch.

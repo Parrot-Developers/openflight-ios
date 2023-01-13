@@ -43,9 +43,10 @@ public extension DefaultsKeys {
     var userMeasurementSetting: DefaultsKey<String?> { DefaultsKeys.userMeasurementSettingKey }
     var secondaryScreenSetting: DefaultsKey<String?> { DefaultsKeys.secondaryScreenSettingKey }
     var userMiniMapTypeSetting: DefaultsKey<String?> { DefaultsKeys.userMiniMapTypeSettingKey }
+    var userGridDisplayTypeSetting: DefaultsKey<String?> { DefaultsKeys.userGridDisplayTypeSettingKey }
 
     // Controls settings
-    var userControlModeSetting: DefaultsKey<String?> { .init("key_userControlModeSetting") }
+    var userControlModeSetting: DefaultsKey<String> { .init("key_userControlModeSetting", defaultValue: ControlsSettingsMode.defaultMode.value) }
     var evTriggerSetting: DefaultsKey<Bool> { .init("key_evTriggerSetting", defaultValue: false) }
 
     // MARK: - Camera
@@ -79,6 +80,9 @@ public extension DefaultsKeys {
 
     // MARK: - Projects
     var isFlightPlanProjectType: DefaultsKey<Bool> { .init("key_isFlightPlanProjectType", defaultValue: true) }
+
+    // MARK: - DRI
+    var isOnEuropeanRegulation: DefaultsKey<Bool> { .init("key_isOnEuropeanRegulation", defaultValue: true) }
 }
 
 /// Define keys as static let for cases which need direct access to the key, not the defaultKey.
@@ -100,24 +104,18 @@ public extension DefaultsKeys {
     static let sportInclinedRollModeKey: DefaultsKey<Bool?> = DefaultsKey<Bool?>("key_sportInclinedRoll")
     static let sportCameraTiltKey: DefaultsKey<Double?> = DefaultsKey<Double?>("key_sportCameraTilt")
 
-    // Interface settings
+    // MARK: Interface settings
     static let userMeasurementSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_userMeasurementSetting")
     static let secondaryScreenSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_secondaryScreenSettingKey",
                                                                                       defaultValue: String(describing: SecondaryScreenType.map.rawValue))
     static let userMiniMapTypeSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_userMiniMapTypeSetting",
                                                                                       defaultValue: String(describing: SettingsMapDisplayType.hybrid.rawValue))
+    static let userGridDisplayTypeSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_userGridDisplayTypeSetting",
+                                                                                          defaultValue: String(describing: SettingsGridDisplayType.none.rawValue))
 
     // MARK: - Camera
     static let overexposureSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_overexposureSetting")
     static let userPanoramaSettingKey: DefaultsKey<String> = DefaultsKey<String>("key_userPanoramaSetting", defaultValue: PanoramaMode.vertical.rawValue)
-
-    // MARK: - Last sync dates
-    static let profileLastSyncDateKey: DefaultsKey<Date?> = DefaultsKey<Date?>("key_profileLastSyncDate")
-    static let academyProfileLastSyncDateKey: DefaultsKey<Date?> = DefaultsKey<Date?>("key_academyProfileLastSyncDate")
-    static let personalDataLastSyncDateKey: DefaultsKey<Date?> = DefaultsKey<Date?>("key_personalDataLastSyncDate")
-    static let flightsAndFlightPlansLastSyncDateKey: DefaultsKey<Date?> = DefaultsKey<Date?>("key_flightsAndFlightPlansLastSyncDate")
-    static let lastSyncProcessErrorDate: DefaultsKey<Date?> = DefaultsKey<Date?>("key_lastSyncProcessErrorDate")
-    static let isSyncProcessError: DefaultsKey<Bool> = DefaultsKey<Bool>("key_isSyncProcessError", defaultValue: false)
 
     // MARK: - Terms Of Use
     /// Bool which indicates if terms of use are accepted.

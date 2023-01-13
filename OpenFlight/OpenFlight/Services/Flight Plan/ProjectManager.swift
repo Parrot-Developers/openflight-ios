@@ -292,6 +292,11 @@ public protocol ProjectManager {
     ///  - isBrandNew: indicates whether a project has just been created or duplicated
     func loadEverythingAndOpen(project: ProjectModel, isBrandNew: Bool)
 
+    /// Loads latest opened project of a specific type.
+    ///
+    /// - Parameter type: the type of the latest opened project to load
+    func loadLastOpenedProject(type: ProjectType)
+
     /// Starts edition of current project.
     func startEdition()
 
@@ -487,12 +492,14 @@ extension ProjectManagerImpl: ProjectManager {
 
     public func updateCloudSynchroWatcher(_ cloudSynchroWatcher: CloudSynchroWatcher?) {
         self.cloudSynchroWatcher = cloudSynchroWatcher
-        self.cloudSynchroWatcher?.isSynchronizingDataPublisher.sink { [unowned self] isSynchronizingData in
-            if !isSynchronizingData {
-                projectsDidChangeSubject.send()
-                refreshAllProjectsSummary()
+        self.cloudSynchroWatcher?.synchroStatusPublisher
+            .sink { [unowned self] status in
+                if !status.isSyncing {
+                    projectsDidChangeSubject.send()
+                    refreshAllProjectsSummary()
+                }
             }
-        }.store(in: &cancellables)
+            .store(in: &cancellables)
     }
 
     public func loadAllProjects() -> [ProjectModel] {
@@ -528,6 +535,8 @@ extension ProjectManagerImpl: ProjectManager {
                           completion(nil)
                           return
                 }
+                // Synchronize project
+                self.persistenceProject.saveOrUpdateProject(newProject, byUserUpdate: true, toSynchro: true)
 
                 var flightPlan = newFlightPlan
                 flightPlan = MavlinkToFlightPlanParser
@@ -535,7 +544,9 @@ extension ProjectManagerImpl: ProjectManager {
                                                            flightPlan: flightPlan) ?? flightPlan
                 var dataSetting = flightPlan.dataSetting
                 dataSetting?.readOnly = true
-                dataSetting?.mavlinkDataFile = try? Data(contentsOf: url)
+                // To support iCloud URLs we must grant access to the ressource.
+                let mavlinkData = try? url.accessResource { url in try Data(contentsOf: url) }
+                dataSetting?.mavlinkDataFile = mavlinkData
                 flightPlan.dataSetting = dataSetting
                 self.flightPlanRepo.saveOrUpdateFlightPlan(flightPlan,
                                                            byUserUpdate: true,
@@ -804,6 +815,9 @@ extension ProjectManagerImpl: ProjectManager {
         // (Used in `setLastOpenedProjectAsCurrent` and `loadLastProject()`)
         project.lastOpened = Date()
 
+        // Update `lastUpdated` date only if the execution is launched.
+        if autoStart { project.lastUpdated = Date() }
+
         var missionProvider: MissionProvider?
         var missionMode: MissionMode?
         for provider in missionsStore.allMissions {
@@ -845,6 +859,16 @@ extension ProjectManagerImpl: ProjectManager {
         loadEverythingAndOpen(flightPlan: flightPlan,
                               autoStart: false,
                               isBrandNew: isBrandNew)
+    }
+
+    public func loadLastOpenedProject(type: ProjectType) {
+        setLastOpenedProjectAsCurrent(type: type)
+
+        guard let project = currentProject,
+              let flightPlan = editableFlightPlan(for: project) else { return }
+
+        ULog.i(.tag, "Opening flightPlan '\(flightPlan.uuid)' of project '\(project.uuid)' '\(project.title ?? "")'")
+        currentMissionManager.mode.stateMachine?.open(flightPlan: flightPlan)
     }
 
     public func startEdition() {
@@ -928,6 +952,7 @@ extension ProjectManagerImpl: ProjectManager {
         let latestExecutionRank = project.latestExecutionRank ?? 0
         let nextExecutionRank = latestExecutionRank + 1
         project.latestExecutionRank = nextExecutionRank
+        project.lastUpdated = Date()
         persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true)
         ULog.d(.tag, "setNextExecutionRank for projectId \(projectId) with execution rank = \(nextExecutionRank)")
         return nextExecutionRank
@@ -947,6 +972,7 @@ extension ProjectManagerImpl: ProjectManager {
         } else {
             project.latestExecutionRank = nil
         }
+        project.lastUpdated = Date()
 
         persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true)
     }
@@ -973,6 +999,7 @@ private extension ProjectManagerImpl {
                                                 pois: [],
                                                 wayPoints: [],
                                                 disablePhotoSignature: false,
+                                                isPhotoSignatureEnabled: UserDefaults.photoDigitalSignature.isEnabled,
                                                 captureMode: captureMode)
 
         let flightPlan = FlightPlanModel(apcId: userService.currentUser.apcId,
@@ -984,7 +1011,6 @@ private extension ProjectManagerImpl {
                                          projectUuid: uuid,
                                          dataStringType: "json",
                                          dataString: dataSetting.toJSONString(),
-                                         pgyProjectId: nil,
                                          state: .editable,
                                          lastMissionItemExecuted: nil,
                                          mediaCount: 0,
@@ -997,8 +1023,6 @@ private extension ProjectManagerImpl {
                                          parrotCloudUploadUrl: nil,
                                          isLocalDeleted: false,
                                          latestCloudModificationDate: nil,
-                                         uploadAttemptCount: nil,
-                                         lastUploadAttempt: nil,
                                          thumbnail: nil,
                                          flightPlanFlights: [],
                                          latestLocalModificationDate: Date(),
@@ -1014,13 +1038,13 @@ private extension ProjectManagerImpl {
         var didSaveFlightPlan = false
 
         dispatchGroup.enter()
-        persistenceProject.saveOrUpdateProject(project, byUserUpdate: true, toSynchro: true, completion: { didSave in
+        persistenceProject.saveOrUpdateProject(project, byUserUpdate: false, toSynchro: false, completion: { didSave in
             didSaveProject = didSave
             dispatchGroup.leave()
         })
 
         dispatchGroup.enter()
-        flightPlanRepo.saveOrUpdateFlightPlan(flightPlan, byUserUpdate: true, toSynchro: true, withFileUploadNeeded: false, completion: { didSave in
+        flightPlanRepo.saveOrUpdateFlightPlan(flightPlan, byUserUpdate: false, toSynchro: false, withFileUploadNeeded: false, completion: { didSave in
             didSaveFlightPlan = didSave
             dispatchGroup.leave()
         })
@@ -1093,19 +1117,6 @@ private extension ProjectManagerImpl {
         editionService.resetFlightPlan()
     }
 
-    /// Loads latest opened project of a specific type.
-    ///
-    /// - Parameter type: the type of the latest opened project to load
-    func loadLastOpenedProject(type: ProjectType) {
-        setLastOpenedProjectAsCurrent(type: type)
-
-        guard let project = currentProject,
-              let flightPlan = editableFlightPlan(for: project) else { return }
-
-        ULog.i(.tag, "Opening flightPlan '\(flightPlan.uuid)' of project '\(project.uuid)' '\(project.title ?? "")'")
-        currentMissionManager.mode.stateMachine?.open(flightPlan: flightPlan)
-    }
-
     /// Returns the project's executions.
     ///
     /// - Parameters:
@@ -1147,8 +1158,7 @@ private extension ProjectManagerImpl {
         // 1 - Get the existing Projects' titles list.
         // 2 - Extract titles.
         // 3 - Generate the duplicated project title.
-        return persistenceProject.getAllProjects()
-            .compactMap(\.title)
+        return persistenceProject.getProjectsTitle(like: projectName, excludeUuids: nil)
             .nextDuplicatedProjectTitle(for: projectName)
     }
 
@@ -1161,9 +1171,11 @@ private extension ProjectManagerImpl {
         // 2 - Exclude the project to rename.
         // 3 - Extract titles.
         // 4 - Generate the new project title.
-        persistenceProject.getAllProjects()
-            .filter { $0.uuid != project?.uuid }
-            .compactMap(\.title)
+        var excludeUuids: [String]?
+        if let uuid = project?.uuid {
+            excludeUuids = [uuid]
+        }
+        return persistenceProject.getProjectsTitle(like: name, excludeUuids: excludeUuids)
             .newProjectTitle(for: name)
     }
 
@@ -1176,8 +1188,7 @@ private extension ProjectManagerImpl {
         // 1 - Get the existing Projects' titles list.
         // 2 - Extract titles.
         // 3 - Generate the new project title.
-        persistenceProject.getAllProjects()
-            .compactMap(\.title)
+        persistenceProject.getProjectsTitle(like: name, excludeUuids: nil)
             .newProjectTitle(for: name)
     }
 

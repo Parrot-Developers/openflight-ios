@@ -29,14 +29,48 @@
 
 import Combine
 
+public enum SynchroServiceStatus {
+    case syncing(SynchroServiceRunningStep)
+    case stopped(SynchroServiceStopState)
+    case synced
+
+    public var isSyncing: Bool {
+        if case .syncing = self {
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+public enum SynchroServiceRunningStep {
+    case userProfile
+    case multiSession
+    case incremental
+    case sanityCheck
+    case nextStep
+}
+
+public enum SynchroServiceStopState {
+    case generic
+    case multiSession
+    case incremental
+    case sanityCheck
+    case userError
+    case userInPrivateMode
+    case userAuthentificationNeeded
+    case userDeleted
+    case databaseUpgradeNeeded
+    case networkError
+    case accessDenied
+    case serverError
+}
+
 /// Allow to notify if there's a synchronization process is loading with Cloud
 public protocol CloudSynchroWatcher: AnyObject {
-
-    /// Contains if there's a synchro process loading
-    var isSynchronizingData: Bool { get }
-
-    /// Publisher of isSynchronizingData
-    var isSynchronizingDataPublisher: AnyPublisher<Bool, Never> { get }
+    // - State
+    var synchroStatus: SynchroServiceStatus { get }
+    var synchroStatusPublisher: AnyPublisher<SynchroServiceStatus, Never> { get }
 
     ///  Published when we receive an update from the Cloud for a Flight Plan.
     var flightPlanCloudStateUpdatedPublisher: AnyPublisher<FlightPlanModel, Never>? { get }

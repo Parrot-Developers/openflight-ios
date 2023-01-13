@@ -127,6 +127,7 @@ private extension HUDAlertPanelHandLandViewModel {
         flyingIndicatorsRef = drone.getInstrument(Instruments.flyingIndicators) { [weak self] _ in
             self?.updateHandLandState()
         }
+        updateHandLandState()
     }
 
     /// Update current Hand Land state.

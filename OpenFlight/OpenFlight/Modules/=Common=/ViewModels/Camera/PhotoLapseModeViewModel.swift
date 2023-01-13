@@ -183,7 +183,7 @@ private extension PhotoLapseModeViewModel {
             updateMode(withCamera: camera)
             guard let photoCaptureState = photoCapture?.state else { return }
             switch photoCaptureState {
-            case .started(_, let captureCount, _):
+            case .started(_, _, _, let captureCount, _):
                 if adjustPhotoCount {
                     // substract to this photo count the number of current photo capture
                     // in order to not count them twice when displaying photo count

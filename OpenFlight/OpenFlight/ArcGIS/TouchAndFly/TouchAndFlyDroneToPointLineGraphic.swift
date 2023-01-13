@@ -53,6 +53,7 @@ final class TouchAndFlyDroneToPointLineGraphic: AGSGraphic {
                    attributes: nil)
         self.attributes[Constants.wayPointAttributeKey] = isWayPoint
         self.attributes[AGSConstants.touchAndFlyGraphicKey] = true
+        self.zIndex = FlightPlanConstants.minZIndex
     }
 }
 

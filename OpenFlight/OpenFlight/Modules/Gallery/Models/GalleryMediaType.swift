@@ -190,4 +190,15 @@ extension GalleryMediaType: CaseIterable {
             return nil
         }
     }
+
+    /// The default resource index (resource with the most significant information).
+    var defaultResourceIndex: Int {
+        switch self {
+        case .panoWide: return 0
+        case .panoHorizontal: return 1
+        case .panoVertical: return 2
+        case .pano360: return 18
+        default: return 0
+        }
+    }
 }

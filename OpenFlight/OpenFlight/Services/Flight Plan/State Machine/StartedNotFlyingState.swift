@@ -30,40 +30,67 @@
 import GameKit
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "FPStartedNotFlyingState")
+}
+
 public protocol StartedNotFlyingStateDelegate: AnyObject {
 
     func mavlinkGenerationStarted(flightPlan: FlightPlanModel)
 
     func mavlinkSendingStarted(flightPlan: FlightPlanModel)
 
-    func handleMavlinkGenerationError(flightPlan: FlightPlanModel, _ error: MavlinkGenerationError)
+    func handleMavlinkGenerationError(flightPlan: FlightPlanModel, _ error: Error)
 
-    func handleMavlinkSendingError(flightPlan: FlightPlanModel, _ error: MavlinkDroneSenderError)
+    func handleMavlinkSendingError(flightPlan: FlightPlanModel, _ error: Error)
 
     func handleMavlinkSendingSuccess(flightPlan: FlightPlanModel, commands: [MavlinkStandard.MavlinkCommand])
+
+    /// Handles execution starting prohibited.
+    ///
+    /// - Parameters:
+    ///   - flightPlan: the flight plan
+    ///   - reason: the start prohibited reason
+    func handleStartProhibited(for flightPlan: FlightPlanModel, reason: StartProhibitedReason)
+}
+
+/// Reasons preventing to start an execution.
+public enum StartProhibitedReason: Error {
+    /// The first way point is too far from the current Drone location.
+    case firstWayPointTooFar
 }
 
 open class StartedNotFlyingState: GKState {
 
+    /// Plan File State.
+    enum PlanFileState { case generating, uploading }
+
     private weak var delegate: StartedNotFlyingStateDelegate?
     private let flightPlanManager: FlightPlanManager
     private let projectManager: ProjectManager
-    private let mavlinkGenerator: MavlinkGenerator
-    private let mavlinkSender: MavlinkDroneSender
+    private let planFileGenerator: PlanFileGenerator
+    private let planFileSender: PlanFileDroneSender
+    private let filesManager: FlightPlanFilesManager
+    private let locationTracker: LocationsTracker
     private var stopped = false
+    private var planFileProcessingTask: Task<Void, Never>?
 
     var flightPlan: FlightPlanModel!
 
     required public init(delegate: StartedNotFlyingStateDelegate,
                          flightPlanManager: FlightPlanManager,
                          projectManager: ProjectManager,
-                         mavlinkGenerator: MavlinkGenerator,
-                         mavlinkSender: MavlinkDroneSender) {
+                         planFileGenerator: PlanFileGenerator,
+                         planFileSender: PlanFileDroneSender,
+                         filesManager: FlightPlanFilesManager,
+                         locationTracker: LocationsTracker) {
         self.delegate = delegate
         self.flightPlanManager = flightPlanManager
         self.projectManager = projectManager
-        self.mavlinkGenerator = mavlinkGenerator
-        self.mavlinkSender = mavlinkSender
+        self.planFileGenerator = planFileGenerator
+        self.planFileSender = planFileSender
+        self.filesManager = filesManager
+        self.locationTracker = locationTracker
         super.init()
     }
 
@@ -86,27 +113,64 @@ open class StartedNotFlyingState: GKState {
             flightPlan = flightPlanManager.update(flightplan: newFlightPlan, with: .flying)
         }
 
-        delegate?.mavlinkGenerationStarted(flightPlan: flightPlan)
-        mavlinkGenerator.generateMavlink(for: flightPlan) { [unowned self] in
-            guard !stopped else { return }
-            switch $0 {
-            case .success(let result):
-                let flightPlan = result.flightPlan
-                delegate?.mavlinkSendingStarted(flightPlan: flightPlan)
-                mavlinkSender.sendToDevice(result.path, customFlightPlanId: flightPlan.uuid) { [weak self] in
-                    guard let self = self,
-                          !self.stopped else {
-                        return
-                    }
-                    switch $0 {
-                    case .success:
-                        self.delegate?.handleMavlinkSendingSuccess(flightPlan: flightPlan, commands: result.commands)
-                    case .failure(let error):
-                        self.delegate?.handleMavlinkSendingError(flightPlan: flightPlan, error)
-                    }
+        // Start File Processing.
+        planFileProcessingTask = Task {
+            ULog.i(.tag, "Generating Plan File")
+            var planFileState = PlanFileState.generating
+            await handleMavlinkGenerationStarted(for: flightPlan)
+            do {
+                // Generate the Plan.
+                let planGenerationResult = try await planFileGenerator.generatePlan(for: flightPlan)
+                try Task.checkCancellation()
+                // Ensure nothing prevents to start the FP (e.g. first WP too far).
+                try ensureExecutionIsPossible(for: planGenerationResult.plan)
+                ULog.i(.tag, "Uploading Plan File to the Drone")
+                planFileState = .uploading
+                try await planFileSender.sendToDevice(planGenerationResult.path,
+                                                      customFlightPlanId: flightPlan.uuid)
+                try Task.checkCancellation()
+                // Inform about FP has been successfully uploaded to the Drone.
+                await handlePlanFileSent(for: planGenerationResult.flightPlan,
+                                         with: planGenerationResult.commands)
+            } catch is CancellationError {
+                // Don't call delegate error in case of Task Cancellation.
+            } catch let reason as StartProhibitedReason {
+                await handleStartProhibited(for: flightPlan, reason: reason)
+            } catch {
+                await handlePlanFileError(error, for: planFileState, flightPlan: flightPlan)
+            }
+        }
+        logAltitude()
+    }
+
+    private func logAltitude() {
+        _ = Services.hub.connectedDroneHolder.drone?.getInstrument(Instruments.altimeter) {
+            guard let altitude = $0 else {
+                ULog.e(.tag, "Can't get drone altitude !")
+                return
+            }
+            guard let droneLocation = Services.hub.locationsTracker.droneLocation.coordinates?.agsPoint else {
+                ULog.e(.tag, "Can't get drone location !")
+                return
+            }
+            guard let baseSurface = SceneSingleton.shared.sceneView.scene?.baseSurface else {
+                ULog.e(.tag, "Can't get baseSurface !")
+                return
+            }
+            baseSurface.elevation(for: droneLocation) { (elevation, error) in
+                guard error == nil else {
+                    ULog.e(.tag, "Can't get elevation : '\(error?.localizedDescription ?? "")' !")
+                    return
                 }
-            case .failure(let error):
-                delegate?.handleMavlinkGenerationError(flightPlan: flightPlan, error)
+                let infos = [
+                    "sceneAltitude": "\(elevation)",
+                    "takeoffRelativeAltitude": "\(altitude.takeoffRelativeAltitude ?? -1)",
+                    "absoluteAltitude": "\(altitude.absoluteAltitude ?? -1)",
+                    "groundRelativeAltitude": "\(altitude.groundRelativeAltitude ?? -1)",
+                    "verticalSpeed": "\(altitude.verticalSpeed ?? -1)"
+                ]
+                LogEvent.log(LogEvent.Event.sanityCheck("map_elevation", info: infos))
+                ULog.i(.tag, "MapElevation : \(infos)")
             }
         }
     }
@@ -126,7 +190,60 @@ open class StartedNotFlyingState: GKState {
     }
 
     open func stop() {
-        mavlinkSender.cleanup()
+        planFileSender.cleanup()
+        planFileProcessingTask?.cancel()
         stopped = true
+        // The Plan file is no more needed, it can be removed from the filesystem.
+        try? filesManager.removePlanFile(of: flightPlan)
+    }
+}
+
+// MARK: - StartedNotFlyingStateDelegate
+// Handle delegate calls on Main thread as it was done previously.
+extension StartedNotFlyingState {
+    @MainActor private func handleMavlinkGenerationStarted(for flightPlan: FlightPlanModel) {
+        delegate?.mavlinkGenerationStarted(flightPlan: flightPlan)
+    }
+
+    @MainActor private func handlePlanFileError(_ error: Error, for state: PlanFileState, flightPlan: FlightPlanModel) {
+        switch state {
+        case .generating:
+            delegate?.handleMavlinkGenerationError(flightPlan: flightPlan, error)
+        case .uploading:
+            try? filesManager.removePlanFile(of: flightPlan)
+            delegate?.handleMavlinkSendingError(flightPlan: flightPlan, error)
+        }
+    }
+
+    @MainActor private func handlePlanFileSent(for flightPlan: FlightPlanModel, with commands: [MavlinkStandard.MavlinkCommand]) {
+        delegate?.handleMavlinkSendingSuccess(flightPlan: flightPlan,
+                                              commands: commands)
+    }
+
+    @MainActor private func handleStartProhibited(for flightPlan: FlightPlanModel, reason: StartProhibitedReason) {
+        delegate?.handleStartProhibited(for: flightPlan, reason: reason)
+    }
+}
+
+// MARK: - Start Prohibition extension.
+private extension StartedNotFlyingState {
+    enum Constants {
+        /// Farthest distance, in meters, between the drone and the FP's first WP, before preventing a start.
+        static let droneFirstWpFarthestDistance: CLLocationDistance = 50_000
+    }
+
+    func ensureExecutionIsPossible(for plan: Plan) throws {
+        guard let droneLocation = locationTracker.connectedDroneCurrentLocation?.clLocation
+        else {
+            // No drone location found (i.e. GPS not fixed). Don't prevent the start
+            // to let the possibility to the drone to fix a GPS location while flying
+            // to the first WP.
+            return
+        }
+        // Avoid the start if the first way point is farther than the max distance with the Drone.
+        if let firstWayPointLocation = plan.mavlinkCommands.firstWayPointLocation,
+           firstWayPointLocation.distance(from: droneLocation) > Constants.droneFirstWpFarthestDistance {
+            throw StartProhibitedReason.firstWayPointTooFar
+        }
     }
 }

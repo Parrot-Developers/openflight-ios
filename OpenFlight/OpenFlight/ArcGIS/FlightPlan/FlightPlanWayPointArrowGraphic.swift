@@ -42,6 +42,8 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
     /// Symbols
     private var arrow: AGSPictureMarkerSymbol?
     private var selectionCircle: AGSSimpleMarkerSymbol?
+    /// Hide arrow. This is used when in miniMap
+    private var hideArrow = false
 
     // MARK: - Override Properties
     override var itemType: FlightPlanGraphicItemType {
@@ -86,7 +88,7 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
                    symbol: nil,
                    attributes: nil)
 
-        zIndex = Int(wayPoint.altitude)
+        zIndex = Int(wayPoint.altitude) + FlightPlanConstants.minZIndex
         self.wayPoint = wayPoint
         self.poiPoint = poiPoint
         attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = wayPointIndex
@@ -100,10 +102,10 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
     /// - Returns: symbol
     private func getSymbol() -> AGSCompositeSymbol {
         var array = [AGSSymbol]()
-        if let arrow = arrow {
+        if let arrow = arrow, !hideArrow {
             array.append(arrow)
         }
-        if isSelected, let selectionCircle = selectionCircle {
+        if graphicIsSelected, let selectionCircle = selectionCircle, !hideArrow {
             array.append(selectionCircle)
         }
         return AGSCompositeSymbol(symbols: array)
@@ -114,7 +116,7 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
         let innerColor = FlightPlanWayPointArrowGraphic.innerColor(poiIndex: poiIndex,
                                                                        isSelected: poiIsSelected)
 
-        if isSelected {
+        if graphicIsSelected {
             if poiPoint != nil {
                 let triangleView = TriangleView(frame: CGRect(x: 0, y: 0,
                                                               width: !poiIsSelected ? Constants.selectedArrowSizeWidth : Constants.arrowSizeWidth,
@@ -145,19 +147,28 @@ final class FlightPlanWayPointArrowGraphic: FlightPlanPointGraphic, WayPointRela
             arrow?.offsetY = Constants.arrowOffset
         }
 
-        arrow?.angle = FlightPlanGraphic.Constants.rotationFactor * Float(wayPoint?.yaw ?? 0.0)
+        arrow?.angle = Float(wayPoint?.yaw ?? 0.0)
         arrow?.angleAlignment = .map
         self.symbol = getSymbol()
     }
 
     // MARK: - Override Funcs
     override func updateColors(isSelected: Bool) {
+        if graphicIsSelected {
+            zIndex = FlightPlanConstants.maxZIndex
+        } else {
+            zIndex = Int(wayPoint?.altitude ?? 0) + FlightPlanConstants.minZIndex
+        }
         refreshArrow()
     }
 
     override func updateAltitude(_ altitude: Double) {
-        self.geometry = mapPoint?.withAltitude(altitude)
-        zIndex = Int(altitude)
+        if !graphicIsSelected {
+            self.geometry = mapPoint?.withAltitude(altitude + Double(FlightPlanConstants.minZIndex))
+            zIndex = Int(altitude) + FlightPlanConstants.minZIndex
+        } else {
+            zIndex = FlightPlanConstants.maxZIndex
+        }
     }
 }
 
@@ -178,7 +189,7 @@ extension FlightPlanWayPointArrowGraphic {
     func removePoiPoint() {
         poiPoint = nil
         attributes.removeObject(forKey: FlightPlanAGSConstants.poiIndexAttributeKey)
-        isSelected = false
+        graphicIsSelected = false
         refreshOrientation()
     }
 
@@ -208,6 +219,12 @@ extension FlightPlanWayPointArrowGraphic {
     /// Refreshes arrow orientation with associated `WayPoint` object.
     func refreshOrientation() {
         refreshArrow()
+    }
+
+    /// Hide waypoint arrow. This is used when the map is mini.
+    func hideArrow(_ value: Bool) {
+        self.hideArrow = value
+        symbol = getSymbol()
     }
 }
 

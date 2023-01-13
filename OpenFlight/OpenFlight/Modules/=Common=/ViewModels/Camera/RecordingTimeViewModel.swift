@@ -113,9 +113,9 @@ private extension RecordingTimeViewModel {
 
             // Start/stop recording timer.
             switch recordingState {
-            case .started(let startTime, _, _) where self?.recordingTimeTimer == nil:
+            case .started(_, _, let duration, _, _) where self?.recordingTimeTimer == nil:
                 self?.startRecordingTimeTimer()
-                copy?.recordingTime = recordingState.getDuration(startTime: startTime)
+                copy?.recordingTime = duration()
             case .stopped where self?.recordingTimeTimer != nil,
                  .stopping(reason: .errorInternal, savedMediaId: nil):
                 self?.stopRecordingTimeTimer()
@@ -152,12 +152,13 @@ private extension RecordingTimeViewModel {
         let copy = state.value.copy()
 
         switch camera.recording?.state {
-        case .started(let startTime, let bitrate, let mediaStorage):
-            copy.recordingTime = camera.recording?.state.getDuration(startTime: startTime)
+        case .started(_, _, let duration,
+                      let videoBitrate, let mediaStorage):
+            copy.recordingTime = duration()
             if let mediaStorage = mediaStorage {
                 let availableStorageSpace = drone.availableStorageSpace(mediaStorage: mediaStorage)
                 copy.remainingRecordTime = StorageUtils.remainingTime(availableSpace: availableStorageSpace,
-                                                                      bitrate: Int64(bitrate))
+                                                                      bitrate: Int64(videoBitrate))
             } else {
                 copy.remainingRecordTime = nil
             }

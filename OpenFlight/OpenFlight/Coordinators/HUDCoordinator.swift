@@ -174,6 +174,37 @@ open class HUDCoordinator: Coordinator {
         present(childCoordinator: droneCoordinator)
     }
 
+    /// Starts ophtalmo coordinator if view is not displayed.
+    open func startOphtalmo() {
+        // check if viewIsDisplayed
+        if (childCoordinators.last as? OphtalmoCoordinator) == nil {
+            let ophtalmoCoordinator = OphtalmoCoordinator(services: Services.hub)
+            presentCoordinatorWithAnimator(childCoordinator: ophtalmoCoordinator)
+        }
+    }
+
+    /// Starts settings coordinator.
+    ///
+    /// - Parameters:
+    ///    - type: settings type
+    open func startSettings(_ type: SettingsType?) {
+        // hide mission launcher if it was opened
+        hideMissionLauncher()
+
+        // open settings screen
+        let settingsCoordinator = SettingsCoordinator(services: services)
+        settingsCoordinator.startSettingType = type
+        presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
+    }
+
+    /// Shows formatting screen.
+    func showFormattingScreen() {
+        let formattingCoordinator = FormattingCoordinator(userStorageService: services.media.userStorageService)
+        formattingCoordinator.parentCoordinator = self
+        formattingCoordinator.start()
+        present(childCoordinator: formattingCoordinator, overFullScreen: true)
+    }
+
     /// Returns to the previous displayed view according navigation stack service.
     ///
     /// - Parameters:
@@ -239,20 +270,6 @@ extension HUDCoordinator {
     ///    - cameraSlidersViewController: the sliders view controller
     func handleCameraSlidersViewController(_ cameraSlidersViewController: CameraSlidersViewController) {
         cameraSlidersCoordinator = CameraSlidersCoordinator(services: services, viewController: cameraSlidersViewController)
-    }
-
-    /// Starts settings coordinator.
-    ///
-    /// - Parameters:
-    ///    - type: settings type
-    func startSettings(_ type: SettingsType?) {
-        // hide mission launcher if it was opened
-        hideMissionLauncher()
-
-        // open settings screen
-        let settingsCoordinator = SettingsCoordinator()
-        settingsCoordinator.startSettingType = type
-        presentCoordinatorWithAnimator(childCoordinator: settingsCoordinator)
     }
 
     /// Starts pairing coordinator.
@@ -353,6 +370,10 @@ extension HUDCoordinator: HUDCriticalAlertDelegate {
             dismiss()
             services.ui.criticalAlert.dismissCurrentAlert()
             startDroneCalibration()
+        case .sdCardNeedsFormat:
+            dismiss()
+            services.ui.criticalAlert.dismissCurrentAlert()
+            showFormattingScreen()
         default:
             dismissAlert()
         }

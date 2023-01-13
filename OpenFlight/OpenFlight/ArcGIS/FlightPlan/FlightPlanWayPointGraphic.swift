@@ -43,6 +43,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     private var selectedLargeCircle: AGSSimpleMarkerSymbol
     private var smallCircle: AGSSimpleMarkerSymbol?
     private var touchAreaCircle: AGSSimpleMarkerSymbol?
+    private var isReduced = false
 
     /// Camera heading
     private var heading: Int = 0
@@ -179,7 +180,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
         if let touchAreaCircle = touchAreaCircle {
             array.append(touchAreaCircle)
         }
-        if isSelected {
+        if graphicIsSelected {
             array.append(selectedLargeCircle)
         } else {
             array.append(largeCircle)
@@ -187,10 +188,10 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
         if let mainLabel = mainLabel {
             array.append(mainLabel)
         }
-        if let smallCircle = smallCircle {
+        if let smallCircle = smallCircle, !isReduced {
             array.append(smallCircle)
         }
-        if let subLabel = subLabel {
+        if let subLabel = subLabel, !isReduced {
             array.append(subLabel)
         }
         return AGSCompositeSymbol(symbols: array)
@@ -198,7 +199,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
 
     // MARK: - Override Funcs
     override func updateColors(isSelected: Bool) {
-        if isSelected {
+        if graphicIsSelected {
             smallCircle?.offsetX = Constants.selectedSmallCircleOffset
             smallCircle?.offsetY = Constants.selectedSmallCircleOffset
             subLabel?.offsetX = Constants.selectedSmallCircleOffset
@@ -208,6 +209,11 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
             smallCircle?.offsetY = Constants.smallCircleOffset
             subLabel?.offsetX = Constants.smallCircleOffset
             subLabel?.offsetY = Constants.smallCircleOffset
+        }
+        if graphicIsSelected {
+            zIndex = FlightPlanConstants.maxZIndex
+        } else {
+            zIndex = Int(altitude ?? 0)
         }
         refreshText(altitude: wayPoint?.formattedAltitude ?? "")
         applyRotation()
@@ -220,7 +226,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
         wayPoint?.altitude = altitude
 
         if changeAltitude {
-            zIndex = Int(altitude)
+            zIndex = graphicIsSelected ? FlightPlanConstants.maxZIndex : Int(altitude)
             refreshText(altitude: wayPoint?.formattedAltitude ?? "")
             applyRotation()
             symbol = getSymbol()
@@ -233,7 +239,7 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
     ///     - altitude: altitude to display
     private func refreshText(altitude: String) {
         let altitudeImage = FlightPlanPointGraphic.imageWith(name: altitude,
-                            textColor: isSelected ? Constants.mainTextSelectedColor : Constants.mainTextColor,
+                            textColor: graphicIsSelected ? Constants.mainTextSelectedColor : Constants.mainTextColor,
                             fontSize: Constants.fontSizeMainLabel,
                             size: CGSize(width: Constants.largeCircleSize, height: Constants.largeCircleSize))
 
@@ -272,9 +278,9 @@ public final class FlightPlanWayPointGraphic: FlightPlanPointGraphic, WayPointRe
 
     /// Applies rotation to symbols.
     private func applyRotation() {
-        mainLabel?.angle = Float(heading) * FlightPlanGraphic.Constants.rotationFactor
-        subLabel?.angle = Float(heading) * FlightPlanGraphic.Constants.rotationFactor
-        smallCircle?.angle = Float(heading) * FlightPlanGraphic.Constants.rotationFactor
+        mainLabel?.angle = Float(heading)
+        subLabel?.angle = Float(heading)
+        smallCircle?.angle = Float(heading)
     }
 }
 
@@ -285,6 +291,7 @@ public extension FlightPlanWayPointGraphic {
     /// - Parameters:
     ///    - location: new location to apply
     func update(location: Location3D) {
+        self.location = location
         geometry = location.agsPoint
         zIndex = Int(location.altitude)
         refreshText(altitude: location.formattedAltitude)
@@ -305,6 +312,15 @@ public extension FlightPlanWayPointGraphic {
         attributes[FlightPlanAGSConstants.wayPointIndexAttributeKey] = index + 1
         refreshIndex(index: String(index + 1 + Constants.displayedIndexOffset))
         applyRotation()
+        symbol = getSymbol()
+    }
+
+    /// Set reduced mode, this is used when map is mini.
+    ///
+    /// - Parameters:
+    ///    - value: the new value
+    func setReduced(_ value: Bool) {
+        self.isReduced = value
         symbol = getSymbol()
     }
 }

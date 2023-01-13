@@ -37,7 +37,6 @@ public final class DroneDetailsCellularViewController: UIViewController {
 
     @IBOutlet private weak var enterPinButton: ActionButton!
     @IBOutlet private weak var forgetPinButton: ActionButton!
-    @IBOutlet private weak var showDebugButton: ActionButton!
     @IBOutlet private weak var showSupportButton: ActionButton!
     @IBOutlet private weak var cellularView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
@@ -98,10 +97,6 @@ public final class DroneDetailsCellularViewController: UIViewController {
         viewModel.dismissView()
     }
 
-    @IBAction func showCellularDebug(_ sender: Any) {
-        viewModel.showDebug()
-    }
-
     @IBAction func showCellularSupport(_ sender: Any) {
         viewModel.showSupport()
     }
@@ -144,7 +139,6 @@ private extension DroneDetailsCellularViewController {
         // Setup buttons
         enterPinButton.setup(title: L10n.drone4gEnterPin, style: .default2)
         forgetPinButton.setup(title: L10n.cellularForgetPin, style: .default2)
-        showDebugButton.setup(title: L10n.drone4gShowDebug, style: .secondary1)
         showSupportButton.setup(title: "", style: .secondary1)
         cellularView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
 
@@ -178,7 +172,7 @@ private extension DroneDetailsCellularViewController {
             }
             .store(in: &cancellables)
 
-	viewModel.controllerStatus
+        viewModel.controllerStatus
             .sink { [unowned self] remoteStatus in
                 controllerErrorLabel.text = remoteStatus
             }

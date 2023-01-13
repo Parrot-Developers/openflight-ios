@@ -32,7 +32,7 @@ import UIKit
 /// Describes all settings.
 /// Settings screen is split in multiple parts.
 /// Each settings is identified by a SettingsType.
-enum SettingsType {
+public enum SettingsType: Equatable {
     case quick
     case interface
     case controls
@@ -42,6 +42,26 @@ enum SettingsType {
     case camera
     case network
     case developer
+    case provider(SettingsSection, UIViewController)
+
+    public static func == (lhs: SettingsType, rhs: SettingsType) -> Bool {
+        switch (lhs, rhs) {
+        case (.quick, .quick),
+            (.interface, .interface),
+            (.controls, .controls),
+            (.behaviour, .behaviour),
+            (.geofence, .geofence),
+            (.rth, .rth),
+            (.camera, .camera),
+            (.network, .network),
+            (.developer, .developer):
+            return true
+        case let (.provider(lhsSection, lhsController), .provider(rhsSection, rhsController)):
+            return lhsSection == rhsSection && lhsController == rhsController
+        default:
+            return false
+        }
+    }
 }
 
 // MARK: - Internal functions
@@ -84,6 +104,8 @@ extension SettingsType {
         case .quick:
             section = SettingsSection(title: L10n.settingsCategoryQuick,
                                       icon: UIImage()) // no image requied
+        case .provider(let settingSection, _):
+            section = settingSection
         }
         return section
     }
@@ -92,7 +114,12 @@ extension SettingsType {
 // MARK: - Helpers
 
 /// Helper struct for display.
-struct SettingsSection {
+public struct SettingsSection: Equatable {
     let title: String
     let icon: UIImage
+
+    public init(title: String, icon: UIImage) {
+        self.title = title
+        self.icon = icon
+    }
 }

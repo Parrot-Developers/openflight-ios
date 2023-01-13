@@ -51,7 +51,6 @@ class ProposalAndTrackingView: UIView {
     private var contentZone: CGRect?
     private var panGesture: UIPanGestureRecognizer?
     private var longPressGesture: UILongPressGestureRecognizer?
-    private var tilt: Double = 0.0
     private weak var delegate: ProposalAndTrackingDelegate?
 
     // MARK: - Constants
@@ -93,14 +92,6 @@ extension ProposalAndTrackingView {
     func updateFrame(_ frame: CGRect) {
         self.frame = frame
         contentZone = frame
-    }
-
-    /// Updates the tilt value.
-    ///
-    /// - Parameters:
-    ///    - tilt: new tilt
-    func updateTilt(_ tilt: Double) {
-        self.tilt = tilt
     }
 
     /// Updates tracking info from drone.
@@ -189,13 +180,12 @@ private extension ProposalAndTrackingView {
                     // if proposal already exists, we update it with the new frame;
                     // if not, we create it
                     if proposalViews[UInt(proposal.uid)] != nil {
-                        proposalViews[UInt(proposal.uid)]?.updateView(frame: proposalFrame, tilt: tilt)
+                        proposalViews[UInt(proposal.uid)]?.updateView(frame: proposalFrame)
                     } else {
                         let view = TargetView(frame: proposalFrame,
                                               targetId: UInt(proposal.uid),
                                               state: .proposal,
-                                              delegate: delegate,
-                                              tilt: tilt)
+                                              delegate: delegate)
                         addSubview(view)
                         proposalViews[UInt(proposal.uid)] = view
                     }
@@ -260,11 +250,11 @@ private extension ProposalAndTrackingView {
     ///    - state: new target state
     func updateTrackingView(frame: CGRect, state: TargetState) {
         if trackingView == nil {
-            let view = TargetView(frame: frame, delegate: delegate, tilt: tilt)
+            let view = TargetView(frame: frame, delegate: delegate)
             addSubview(view)
             trackingView = view
         } else if state != .pending {
-            trackingView?.updateView(frame: frame, tilt: tilt)
+            trackingView?.updateView(frame: frame)
         }
         trackingView?.state = state
     }

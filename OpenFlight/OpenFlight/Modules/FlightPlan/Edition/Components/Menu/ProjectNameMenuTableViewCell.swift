@@ -90,13 +90,22 @@ final class ProjectNameMenuTableViewCell: MainTableViewCell, NibReusable {
     }
 
     private func listenNameTextFieldSubscribers() {
-        projectNameTextField.returnPressedPublisher
+        projectNameTextField.editingDidEndPublisher
             .sink { [weak self] in
                 guard let self = self else { return }
                 // Prevent to update the title with empty text (should be handled by `enablesReturnKeyAutomatically`).
                 guard let title = self.projectNameTextField.text,
                       !title.isEmpty else { return }
+                // Update provider's title whenever the project's name textField edition ends.
                 self.provider?.title = title
+            }
+            .store(in: &cancellables)
+
+        projectNameTextField.returnPressedPublisher
+            .sink { [weak self] in
+                // Simply dismiss keyboard on return key press, as provider's title will be
+                // updated on `editingDidEndPublisher` event.
+                self?.projectNameTextField.resignFirstResponder()
             }
             .store(in: &cancellables)
 

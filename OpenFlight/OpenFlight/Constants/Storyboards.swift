@@ -48,19 +48,19 @@ internal enum StoryboardScene {
 
     internal static let initialScene = InitialSceneType<OpenFlight.CameraSlidersViewController>(storyboard: CameraSliders.self)
   }
+  internal enum CameramanMap: StoryboardType {
+    internal static let storyboardName = "CameramanMap"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.CameramanMapViewController>(storyboard: CameramanMap.self)
+
+    internal static let cameramanMapViewController = SceneType<OpenFlight.CameramanMapViewController>(storyboard: CameramanMap.self, identifier: "CameramanMapViewController")
+  }
   internal enum CellularAccessCardPin: StoryboardType {
     internal static let storyboardName = "CellularAccessCardPin"
 
     internal static let initialScene = InitialSceneType<OpenFlight.CellularAccessCardPinViewController>(storyboard: CellularAccessCardPin.self)
 
     internal static let cellularAccessCardPin = SceneType<OpenFlight.CellularAccessCardPinViewController>(storyboard: CellularAccessCardPin.self, identifier: "CellularAccessCardPin")
-  }
-  internal enum CellularDebugLogs: StoryboardType {
-    internal static let storyboardName = "CellularDebugLogs"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.CellularDebugLogsViewController>(storyboard: CellularDebugLogs.self)
-
-    internal static let cellularDebugLogsViewController = SceneType<OpenFlight.CellularDebugLogsViewController>(storyboard: CellularDebugLogs.self, identifier: "CellularDebugLogsViewController")
   }
   internal enum Dashboard: StoryboardType {
     internal static let storyboardName = "Dashboard"
@@ -202,12 +202,26 @@ internal enum StoryboardScene {
 
     internal static let flightPlanListHeaderViewController = SceneType<OpenFlight.FlightPlanListHeaderViewController>(storyboard: FlightPlanListHeaderViewController.self, identifier: "FlightPlanListHeaderViewController")
   }
+  internal enum FlightPlanMap: StoryboardType {
+    internal static let storyboardName = "FlightPlanMap"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.FlightPlanMapViewController>(storyboard: FlightPlanMap.self)
+
+    internal static let flightPlanMapViewController = SceneType<OpenFlight.FlightPlanMapViewController>(storyboard: FlightPlanMap.self, identifier: "FlightPlanMapViewController")
+  }
   internal enum FlightPlanPanel: StoryboardType {
     internal static let storyboardName = "FlightPlanPanel"
 
     internal static let initialScene = InitialSceneType<OpenFlight.FlightPlanPanelViewController>(storyboard: FlightPlanPanel.self)
 
     internal static let missionModeSelectorViewController = SceneType<OpenFlight.FlightPlanPanelViewController>(storyboard: FlightPlanPanel.self, identifier: "MissionModeSelectorViewController")
+  }
+  internal enum FlightPlanScene: StoryboardType {
+    internal static let storyboardName = "FlightPlanScene"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.FlightPlanSceneViewController>(storyboard: FlightPlanScene.self)
+
+    internal static let flightPlanMapViewController = SceneType<OpenFlight.FlightPlanSceneViewController>(storyboard: FlightPlanScene.self, identifier: "FlightPlanMapViewController")
   }
   internal enum FlightPlanVersionUpgrader: StoryboardType {
     internal static let storyboardName = "FlightPlanVersionUpgrader"
@@ -241,19 +255,6 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.GalleryFormatSDCardViewController>(storyboard: GalleryFormatSDCard.self)
 
     internal static let droneCalibrationViewController = SceneType<OpenFlight.GalleryFormatSDCardViewController>(storyboard: GalleryFormatSDCard.self, identifier: "DroneCalibrationViewController")
-  }
-  internal enum GalleryMediaPlayerViewController: StoryboardType {
-    internal static let storyboardName = "GalleryMediaPlayerViewController"
-
-    internal static let initialScene = InitialSceneType<OpenFlight.GalleryMediaPlayerViewController>(storyboard: GalleryMediaPlayerViewController.self)
-
-    internal static let galleryImageViewController = SceneType<OpenFlight.GalleryImageViewController>(storyboard: GalleryMediaPlayerViewController.self, identifier: "GalleryImageViewController")
-
-    internal static let galleryMediaPlayerViewController = SceneType<OpenFlight.GalleryMediaPlayerViewController>(storyboard: GalleryMediaPlayerViewController.self, identifier: "GalleryMediaPlayerViewController")
-
-    internal static let galleryPanoramaViewController = SceneType<OpenFlight.GalleryPanoramaViewController>(storyboard: GalleryMediaPlayerViewController.self, identifier: "GalleryPanoramaViewController")
-
-    internal static let galleryVideoViewController = SceneType<OpenFlight.GalleryVideoViewController>(storyboard: GalleryMediaPlayerViewController.self, identifier: "GalleryVideoViewController")
   }
   internal enum GalleryPanorama: StoryboardType {
     internal static let storyboardName = "GalleryPanorama"
@@ -338,12 +339,18 @@ internal enum StoryboardScene {
 
     internal static let loveBlendedViewController = SceneType<OpenFlight.StereoVisionBlendedViewController>(storyboard: LoveBlended.self, identifier: "LoveBlendedViewController")
   }
-  internal enum Map: StoryboardType {
-    internal static let storyboardName = "Map"
+  internal enum MediaBrowserViewController: StoryboardType {
+    internal static let storyboardName = "MediaBrowserViewController"
 
-    internal static let initialScene = InitialSceneType<OpenFlight.MapViewController>(storyboard: Map.self)
+    internal static let initialScene = InitialSceneType<OpenFlight.MediaBrowserViewController>(storyboard: MediaBrowserViewController.self)
 
-    internal static let mapViewController = SceneType<OpenFlight.MapViewController>(storyboard: Map.self, identifier: "MapViewController")
+    internal static let galleryImageViewController = SceneType<OpenFlight.PhotoViewerViewController>(storyboard: MediaBrowserViewController.self, identifier: "GalleryImageViewController")
+
+    internal static let galleryPanoramaViewController = SceneType<OpenFlight.ImmersivePanoramaViewController>(storyboard: MediaBrowserViewController.self, identifier: "GalleryPanoramaViewController")
+
+    internal static let galleryVideoViewController = SceneType<OpenFlight.VideoPlayerViewController>(storyboard: MediaBrowserViewController.self, identifier: "GalleryVideoViewController")
+
+    internal static let mediaBrowserViewController = SceneType<OpenFlight.MediaBrowserViewController>(storyboard: MediaBrowserViewController.self, identifier: "MediaBrowserViewController")
   }
   internal enum Missions: StoryboardType {
     internal static let storyboardName = "Missions"
@@ -351,6 +358,13 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.MissionProviderSelectorViewController>(storyboard: Missions.self)
 
     internal static let missionProviderSelectorViewController = SceneType<OpenFlight.MissionProviderSelectorViewController>(storyboard: Missions.self, identifier: "MissionProviderSelectorViewController")
+  }
+  internal enum MyFlightsMap: StoryboardType {
+    internal static let storyboardName = "MyFlightsMap"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.MyFlightsMapViewController>(storyboard: MyFlightsMap.self)
+
+    internal static let myFlightsMapViewController = SceneType<OpenFlight.MyFlightsMapViewController>(storyboard: MyFlightsMap.self, identifier: "MyFlightsMapViewController")
   }
   internal enum MyFlightsViewController: StoryboardType {
     internal static let storyboardName = "MyFlightsViewController"
@@ -421,6 +435,13 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.ParrotDebugViewController>(storyboard: ParrotDebug.self)
 
     internal static let parrotDebugViewController = SceneType<OpenFlight.ParrotDebugViewController>(storyboard: ParrotDebug.self, identifier: "ParrotDebugViewController")
+  }
+  internal enum PilotingMap: StoryboardType {
+    internal static let storyboardName = "PilotingMap"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.PilotingMapViewController>(storyboard: PilotingMap.self)
+
+    internal static let pilotingMapViewController = SceneType<OpenFlight.PilotingMapViewController>(storyboard: PilotingMap.self, identifier: "PilotingMapViewController")
   }
   internal enum ProjectManager: StoryboardType {
     internal static let storyboardName = "ProjectManager"
@@ -571,6 +592,13 @@ internal enum StoryboardScene {
     internal static let initialScene = InitialSceneType<OpenFlight.StereoVisionBlendedViewController>(storyboard: StereoVisionBlended.self)
 
     internal static let stereoVisionBlendedViewController = SceneType<OpenFlight.StereoVisionBlendedViewController>(storyboard: StereoVisionBlended.self, identifier: "StereoVisionBlendedViewController")
+  }
+  internal enum TouchAndFlyMap: StoryboardType {
+    internal static let storyboardName = "TouchAndFlyMap"
+
+    internal static let initialScene = InitialSceneType<OpenFlight.TouchAndFlyMapViewController>(storyboard: TouchAndFlyMap.self)
+
+    internal static let touchAndFlyMapViewController = SceneType<OpenFlight.TouchAndFlyMapViewController>(storyboard: TouchAndFlyMap.self, identifier: "TouchAndFlyMapViewController")
   }
   internal enum TouchAndFlyPanel: StoryboardType {
     internal static let storyboardName = "TouchAndFlyPanel"

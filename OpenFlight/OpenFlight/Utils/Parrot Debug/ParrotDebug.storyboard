@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21179.7" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
     <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21169.4"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -103,7 +103,7 @@
                                                 </prototypes>
                                             </tableView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="PWK-JL-I2n">
-                                                <rect key="frame" x="205" y="41" width="307" height="155"/>
+                                                <rect key="frame" x="205" y="21" width="307" height="195"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="hCt-zJ-CKN">
                                                         <rect key="frame" x="5.5" y="0.0" width="296" height="34"/>
@@ -174,6 +174,18 @@
                                                         </state>
                                                         <connections>
                                                             <segue destination="1w5-Qk-Zho" kind="show" id="SeJ-dT-aiM"/>
+                                                        </connections>
+                                                    </button>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vGk-Sk-GZ3" userLabel="exportFlightPlanFiles">
+                                                        <rect key="frame" x="77" y="165" width="153" height="30"/>
+                                                        <state key="normal" title="Export current FP files">
+                                                            <color key="titleColor" name="highlight_color"/>
+                                                        </state>
+                                                        <state key="disabled">
+                                                            <color key="titleColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="exportFlightPlanFiles:" destination="1UJ-SD-ecA" eventType="touchUpInside" id="wh3-bg-wa9"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
@@ -291,6 +303,7 @@
                         <outlet property="activateLogsLabel" destination="Mrz-ox-D1m" id="vmm-FG-Rku"/>
                         <outlet property="customMissionButton" destination="VLN-fA-bB7" id="SMK-Fm-icC"/>
                         <outlet property="enableStreamRecord" destination="GPA-T6-ekH" id="BHj-a6-bgl"/>
+                        <outlet property="exportFlightPlanFilesButton" destination="vGk-Sk-GZ3" id="oDl-Bu-6Uv"/>
                         <outlet property="filesTableView" destination="QtU-FA-YFk" id="v67-kt-ziN"/>
                         <outlet property="informationsLabel" destination="ihn-4O-EJ6" id="N8A-mp-oZj"/>
                         <outlet property="sendDebugTagButton" destination="TcC-lw-z5W" id="qcR-er-hRG"/>

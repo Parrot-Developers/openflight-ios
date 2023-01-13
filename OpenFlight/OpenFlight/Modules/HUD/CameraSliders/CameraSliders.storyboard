@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zxS-jz-EQH">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -92,7 +92,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="51" height="153"/>
                                         <subviews>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Zoom max reached" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qKA-eY-Yh4" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="48" y="-13.5" width="113" height="31"/>
+                                                <rect key="frame" x="48" y="-13.5" width="101.5" height="31"/>
                                                 <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="31" id="Ctw-z2-ZQH"/>
@@ -116,7 +116,7 @@
                                                 </userDefinedRuntimeAttributes>
                                             </label>
                                             <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Max Tilt" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ydd-Y8-qtH" customClass="PaddingLabel" customModule="OpenFlight" customModuleProvider="target">
-                                                <rect key="frame" x="48" y="149" width="46" height="31"/>
+                                                <rect key="frame" x="48" y="149" width="41.5" height="31"/>
                                                 <color key="backgroundColor" name="white_90"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="31" id="R73-a7-w7k"/>
@@ -214,6 +214,9 @@
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hIo-6M-owq" customClass="TiltButton" customModule="OpenFlight" customModuleProvider="target">
                                                                 <rect key="frame" x="10" y="10" width="31" height="31"/>
                                                                 <color key="backgroundColor" name="white_90"/>
+                                                                <accessibility key="accessibilityConfiguration" identifier="Gimbal">
+                                                                    <bool key="isElement" value="YES"/>
+                                                                </accessibility>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="31" id="kHB-iB-ong"/>
                                                                 </constraints>
@@ -280,6 +283,7 @@
                     </view>
                     <size key="freeformSize" width="51" height="153"/>
                     <connections>
+                        <outlet property="defaultViewContainer" destination="isA-wO-5rC" id="WME-hX-YJf"/>
                         <outlet property="infoTiltLabel" destination="LMP-tc-3wq" id="C9Z-5u-19W"/>
                         <outlet property="joysticksButton" destination="e40-LM-tfB" id="RnC-lf-jJF"/>
                         <outlet property="joysticksButtonContainer" destination="J4w-8c-R7m" id="RN6-yh-HlY"/>
@@ -309,13 +313,13 @@
     </scenes>
     <designables>
         <designable name="PDV-ei-r2q">
-            <size key="intrinsicContentSize" width="43" height="15.5"/>
+            <size key="intrinsicContentSize" width="40" height="13"/>
         </designable>
         <designable name="Ydd-Y8-qtH">
-            <size key="intrinsicContentSize" width="46" height="15.5"/>
+            <size key="intrinsicContentSize" width="41.5" height="13"/>
         </designable>
         <designable name="qKA-eY-Yh4">
-            <size key="intrinsicContentSize" width="113" height="15.5"/>
+            <size key="intrinsicContentSize" width="101.5" height="13"/>
         </designable>
     </designables>
     <resources>

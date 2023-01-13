@@ -71,7 +71,6 @@ final class FlightPlanPanelViewController: UIViewController {
     private var flightPlanPanelViewModel: FlightPlanPanelViewModel!
     private var pendingExecutionCell: FlightPlanExecutionCell = FlightPlanExecutionCell.loadFromNib()
     private weak var cameraStreamingViewController: HUDCameraStreamingViewController?
-    private weak var mapViewController: MapViewController?
     /// Whether the main RTH widget is shown.
     private var isMainRthWidgetShown = false {
         didSet { updateActionButtonsVisibility() }
@@ -137,6 +136,8 @@ final class FlightPlanPanelViewController: UIViewController {
         Services.hub.ui.hudTopBarService.allowTopBarDisplay()
         containerStatus = .streaming
         startStream()
+        // check for last opened project
+        flightPlanPanelViewModel.checkForLastOpenedProject()
         // Update pending execution in case it was removed from execution details view.
         flightPlanPanelViewModel.updatePendingExecution()
     }
@@ -202,8 +203,10 @@ extension FlightPlanPanelViewController {
     /// Starts streaming component.
     func startStream() {
         guard cameraStreamingViewController == nil else { return }
+        // TODO: variable always nil
         cameraStreamingViewController?.doNotPauseStreamOnDisappear = true
         let cameraStreamingVC = HUDCameraStreamingViewController.instantiate()
+        cameraStreamingVC.isMiniStreamView = true
         addChild(cameraStreamingVC)
 
         cameraStreamingContainerView.addWithConstraints(subview: cameraStreamingVC.view)
@@ -234,18 +237,55 @@ extension FlightPlanPanelViewController {
 
     /// Show the map in container
     func showMiniMap() {
-        let mapViewControllerVC = MapViewController.instantiate(isMiniMap: true)
-        self.addChild(mapViewControllerVC)
-        cameraStreamingContainerView.addWithConstraints(subview: mapViewControllerVC.view)
-        mapViewControllerVC.didMove(toParent: self)
-        mapViewController = mapViewControllerVC
+        guard let bigMap = flightPlanPanelViewModel.splitControls?.commonMapViewController else { return }
+
+        flightPlanPanelViewModel.splitControls?.commonMapViewController?.mapViewModel.isMiniMap.value = true
+        flightPlanPanelViewModel.splitControls?.commonMapViewController?.mapViewModel.largeMapRatio = bigMap.view.frame.width / bigMap.view.frame.height
+        bigMap.view.removeFromSuperview()
+        cameraStreamingContainerView.subviews.first?.removeFromSuperview()
+
+        var scale = 0.5
+        if bigMap.view.frame.width > 0, bigMap.view.frame.height > 0,
+           cameraStreamingContainerView.frame.width > 0, cameraStreamingContainerView.frame.height > 0 {
+            let scaleX = cameraStreamingContainerView.frame.width / bigMap.view.frame.width
+            let scaleY = cameraStreamingContainerView.frame.height / bigMap.view.frame.height
+            scale = min(scaleX, scaleY)
+        }
+        bigMap.view.transform = CGAffineTransform(scaleX: scale, y: scale)
+        addChild(bigMap)
+        cameraStreamingContainerView.addSubview(bigMap.view)
+        addView(bigMap.view, parent: cameraStreamingContainerView,
+                offsetX: bigMap.view.bounds.width * (1 - scale),
+                offsetY: bigMap.view.bounds.height * (1 - scale) / 2)
+        bigMap.didMove(toParent: self)
+        flightPlanPanelViewModel.splitControls?.commonMapViewController?.view.isUserInteractionEnabled = false
     }
 
     /// Hide the map in container.
     func hideMiniMap() {
+        // put map back in splitcontrols
+        flightPlanPanelViewModel.splitControls?.commonMapViewController?.mapViewModel.isMiniMap.value = false
+        flightPlanPanelViewModel.splitControls?.commonMapViewController?.mapViewModel.largeMapRatio = nil
         cameraStreamingContainerView.subviews.first?.removeFromSuperview()
-        mapViewController?.removeFromParent()
-        mapViewController = nil
+        flightPlanPanelViewModel.splitControls?.commonMapViewController?.view.transform = CGAffineTransform.identity
+        flightPlanPanelViewModel.splitControls?.commonMapViewController?.view.isUserInteractionEnabled = true
+    }
+
+    /// Add view to container
+    ///
+    /// - Parameters:
+    ///     - view: the view
+    ///     - parent: the parent view
+    ///     - offsetX: the x offset
+    ///     - offsetY: the y offset
+    private func addView(_ view: UIView, parent: UIView, offsetX: CGFloat = 0, offsetY: CGFloat = 0) {
+        parent.addConstraints([
+            view.leadingAnchor.constraint(equalTo: parent.leadingAnchor, constant: -offsetX),
+            view.trailingAnchor.constraint(equalTo: parent.trailingAnchor, constant: offsetX),
+            view.topAnchor.constraint(equalTo: parent.topAnchor, constant: -offsetY),
+            view.bottomAnchor.constraint(equalTo: parent.bottomAnchor, constant: offsetY)
+        ])
+        parent.layoutIfNeeded()
     }
 }
 
@@ -414,6 +454,7 @@ private extension FlightPlanPanelViewController {
             .store(in: &cancellables)
 
         flightPlanPanelViewModel.$titleExecution
+            .removeDuplicates()
             .sink { [weak self] title in
                 guard let self = self else { return }
                 self.executionNameLabel.text = title
@@ -426,6 +467,7 @@ private extension FlightPlanPanelViewController {
                 guard let self = self else { return }
                 UIView.animate {
                     self.updateButtons(viewState: viewState)
+                    self.updateHeader(viewState: viewState)
                 }
             }
             .store(in: &cancellables)
@@ -484,7 +526,6 @@ private extension FlightPlanPanelViewController {
     private func updateButtons(viewState: FlightPlanPanelViewModel.ViewState) {
         // Reset states.
         actionButtons.forEach { $0.isHiddenInStackView = true }
-        updateHeader(viewState: viewState)
 
         let isCreationState = viewState == .creation
         let isRthState = viewState == .rth
@@ -496,18 +537,17 @@ private extension FlightPlanPanelViewController {
         case .creation:
             createButton.isHiddenInStackView = false
 
-        case let .edition(hasHistory, canEdit):
+        case let .edition(hasHistory, editionMode):
             playButton.isHiddenInStackView = false
             editButton.isHiddenInStackView = false
             historyButton.isHiddenInStackView = false
-            editButton.isEnabled = canEdit
+            editButton.isEnabled = editionMode != .disabled
             historyButton.isEnabled = hasHistory
 
         case .playing, .navigatingToStartingPoint:
             stopLeadingSpacer.isHiddenInStackView = false
             stopTrailingSpacer.isHiddenInStackView = false
             stopButton.isHiddenInStackView = false
-            executionNameLabel.isHiddenInStackView = false
 
         case .paused, .resumable:
             resumeButton.isHiddenInStackView = false
@@ -543,14 +583,8 @@ private extension FlightPlanPanelViewController {
     ///
     /// - Parameter viewState: the state of the view model
     private func updateHeader(viewState: FlightPlanPanelViewModel.ViewState) {
-        var inProgress = false
-        switch viewState {
-        case .playing, .rth, .navigatingToStartingPoint:
-            inProgress = true
-        default:
-            break
-        }
-
+        // Consider there is an execution 'in progress' when the view state is either in a 'running' or 'paused' state.
+        let inProgress = viewState.isExecutionRunning || viewState.isExecutionPaused
         folderButton.animateIsHiddenInStackView(inProgress)
         executionNameLabel.animateIsHiddenInStackView(!inProgress)
         projectNameLabel.numberOfLines = (!inProgress).toInt + 1

@@ -43,6 +43,7 @@ public class ParrotDebugViewController: UIViewController {
     @IBOutlet private weak var sendDebugTagButton: UIButton!
     @IBOutlet private weak var sendDebugTagTextField: POFTextField!
     @IBOutlet private weak var customMissionButton: UIButton!
+    @IBOutlet private weak var exportFlightPlanFilesButton: UIButton!
 
     // MARK: - Private Properties
     private var drone: Drone?
@@ -104,6 +105,7 @@ public class ParrotDebugViewController: UIViewController {
         displayInformations()
         updateStreamRecordDisplay()
         LogEvent.log(.screen(LogEvent.Screen.debugLogs))
+       exportFlightPlanFilesButton.isEnabled = Services.hub.flightPlan.edition.currentFlightPlanValue != nil
         super.viewWillAppear(animated)
     }
 
@@ -184,6 +186,10 @@ private extension ParrotDebugViewController {
 
         // Send debug tag
         devToolBox.sendDebugTag(tag: tagValue)
+    }
+
+    @IBAction private func exportFlightPlanFiles(_ sender: AnyObject) {
+        shareCurrentFlightPlanFiles()
     }
 }
 
@@ -353,4 +359,41 @@ extension ParrotDebugViewController: UITextFieldDelegate {
 /// Class used for log file cell.
 class ParrotLogFileCell: UITableViewCell {
     @IBOutlet var fileName: UILabel!
+}
+
+// MARK: - Flight Plan files DBG
+extension ParrotDebugViewController {
+    func shareCurrentFlightPlanFiles() {
+        Task {
+            // Ensure there is an opened FP.
+            guard let flightPlan = Services.hub.flightPlan.edition.currentFlightPlanValue
+            else { return }
+
+            let planGenerator = Services.hub.flightPlan.planFileGenerator
+            let flightPlanFilesManager = Services.hub.flightPlan.filesManager
+
+            // Generate folder files files.
+            if let result = try? await planGenerator.generatePlan(for: flightPlan) {
+                let planDataFile = try? Data(contentsOf: flightPlanFilesManager.planFileUrl(for: flightPlan))
+                let mavlinkFileData = result.flightPlan.dataSetting?.mavlinkDataFile
+
+                if let folderUrl = try? flightPlanFilesManager.createFilesDirectory(for: result.flightPlan,
+                                                                                    planFileData: planDataFile,
+                                                                                    mavlinkFileData: mavlinkFileData) {
+                    // Share the zipped folder.
+                    await shareCurrentFlightPlanFilesFolder(folderUrl)
+                    // Remove the created files.
+                    try? FileManager.default.removeItem(at: folderUrl)
+                    try? flightPlanFilesManager.removePlanFile(of: flightPlan)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func shareCurrentFlightPlanFilesFolder(_ url: URL) async {
+        self.share(url: url,
+                   sourceFrame: sendDebugTagButton.frame,
+                   coordinateSpace: sendDebugTagButton)
+    }
 }

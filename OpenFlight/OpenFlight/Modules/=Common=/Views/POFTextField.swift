@@ -208,4 +208,12 @@ extension POFTextField {
 
         secureEntryDelegate?.didChangeSecureEntry(sender: self, isSecure: isSecureTextEntry)
     }
+
+    /// Set custom background color
+    ///
+    /// - Parameters:
+    ///    - color: Custom background color
+    public func setCustomBackgroundColor(color: Color) {
+        backgroundColor = color
+    }
 }

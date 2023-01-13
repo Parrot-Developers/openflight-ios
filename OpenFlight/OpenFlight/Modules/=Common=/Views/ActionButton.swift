@@ -124,7 +124,7 @@ public class ActionButton: UIButton {
     ///
     /// - Parameters:
     ///    - title: The title of the button.
-    func updateTitle(_ title: String?) {
+    public func updateTitle(_ title: String?) {
         model?.title = title
     }
 
@@ -132,7 +132,7 @@ public class ActionButton: UIButton {
     ///
     /// - Parameters:
     ///    - style: The style of the button.
-    func updateStyle(_ style: ActionButtonStyle) {
+    public func updateStyle(_ style: ActionButtonStyle) {
         model?.updateWithStyle(style)
         updateLayout()
     }

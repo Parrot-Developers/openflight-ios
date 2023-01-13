@@ -57,37 +57,6 @@ extension DetailsCellularStatus {
             && self != .cellularConnected
     }
 
-    /// Returns the descrition on drone details tile.
-    var droneDetailsTileDescription: String? {
-        switch self {
-        case .simBlocked:
-            return L10n.drone4gSimBlocked
-        case .simNotDetected:
-            return L10n.cellularDetailsNoSimCard
-        case .simNotRecognized:
-            return nil
-        case .simLocked:
-            return L10n.drone4gSimLocked
-        case .userNotPaired:
-            return L10n.cellularDetailsNotPaired
-        case .networkStatusError:
-            return L10n.cellularDetailsNoConnection
-        case .airplaneMode:
-            return L10n.cellularErrorNoInternetTitle
-        case .noData, .modemStatusOff:
-            return L10n.cellularDetailsDataDisabled
-        case .cellularConnected:
-            return L10n.connected
-        case .cellularConnecting,
-             .notRegistered,
-             .networkStatusDenied,
-             .connectionFailed:
-            return L10n.connecting
-        case .noState, .initializing:
-            return Style.dash
-        }
-    }
-
     /// Returns error title in drone cellular details.
     var cellularDetailsTitle: String? {
         switch self {

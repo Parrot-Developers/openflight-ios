@@ -200,39 +200,38 @@ class FlightPlanExporter {
             $0.actions?.forEach {
                 // Only send tilt command if new tilt is different from current.
                 // Send tilt only for the first element of POI (before enabling POI)
-                guard $0.type == .tilt &&
-                        lastPoiCommand == nil &&
-                        $0.angle != currentTilt else {
-                    return
-                }
-                // Insert all waypoint actions commands.
-                commands.append($0.mavlinkCommand)
-
                 if $0.type == .tilt {
+                    // Ensure the tilt command must be sent.
+                    if lastPoiCommand != nil || $0.angle == currentTilt { return }
                     // Update current tilt.
                     currentTilt = $0.angle
                 }
+                // Insert the action command.
+                commands.append($0.mavlinkCommand)
             }
 
             // Start capture if needed.
-            // A single waypoint mavlink does not require a media capture
-            if !didAddStartCaptureCommand,
-               let wptCount = flightPlan.dataSetting?.wayPoints.count,
-               wptCount > 1,
-               let captureCommand = flightPlan.dataSetting?.startCaptureCommand {
-                // Add delay command before starting capture.
-                let delay = Action.delayAction(delay: 0.0)
-                commands.append(delay.mavlinkCommand)
+            if !didAddStartCaptureCommand {
+                // A single waypoint mavlink does not require a media capture
+                if let wptCount = flightPlan.dataSetting?.wayPoints.count,
+                   wptCount > 1 {
+                    if let captureCommand = flightPlan.dataSetting?.startCaptureCommand {
+                        // Add delay command before starting capture.
+                        let delay = Action.delayAction(delay: 0.0)
+                        commands.append(delay.mavlinkCommand)
 
-                // Add start capture command.
-                commands.append(captureCommand)
+                        // Add start capture command.
+                        commands.append(captureCommand)
+                    }
+                }
                 didAddStartCaptureCommand = true
             }
         }
 
-        // Stop capture if started
-        if didAddStartCaptureCommand,
-           let endCaptureCommand = flightPlan.dataSetting?.endCaptureCommand {
+        // Stop capture is necessary even if no media has been started.
+        // As openflight does not allow a FP without media capture,
+        // it requires a stop media to signal the type of media requested.
+        if let endCaptureCommand = flightPlan.dataSetting?.endCaptureCommand {
             commands.append(endCaptureCommand)
             didAddStartCaptureCommand = false
         }

@@ -37,6 +37,16 @@ public extension Array where Element == MavlinkStandard.MavlinkCommand {
         firstIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
     }
 
+    // The first way point location.
+    var firstWayPointLocation: CLLocation? {
+        guard let cmd = first(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })
+                as? MavlinkStandard.NavigateToWaypointCommand
+        else { return nil }
+        return .init(latitude: cmd.latitude,
+                     longitude: cmd.longitude,
+                     altitude: cmd.altitude)
+    }
+
     // Returns the last way point index.
     var lastWayPointIndex: Int? {
         lastIndex(where: { $0 is MavlinkStandard.NavigateToWaypointCommand })

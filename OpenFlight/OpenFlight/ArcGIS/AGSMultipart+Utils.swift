@@ -35,7 +35,7 @@ extension AGSGeometry {
     ///
     /// - Parameters:
     ///    - marginFactor: factor of self's max dimention to add, as a margin
-    ///    - altitudeOffset: altitude offset to apply to envelope, in meters
+    ///    - altitudeOffset: altitude offset to apply to envelope, in meters. Altitude off set should be nil if overlay is in drapedFlat.
     ///
     /// - Returns: AGSEnvelope.
     func envelopeWithMargin(_ marginFactor: Double = ArcGISStyle.envelopeMarginFactor,

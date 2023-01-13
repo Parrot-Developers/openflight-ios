@@ -36,6 +36,8 @@ extension DriTypeConfig {
         switch self {
         case .en4709_002(operatorId: let operatorId):
             return operatorId.components(separatedBy: "-").first
+        case .astmF3411(operatorId: let operatorId):
+            return operatorId
         case .french:
             return nil
         }
@@ -46,7 +48,7 @@ extension DriTypeConfig {
         switch self {
         case .en4709_002(operatorId: let operatorId):
             return operatorId.components(separatedBy: "-").last
-        case .french:
+        case .french, .astmF3411(operatorId: _):
             return nil
         }
     }

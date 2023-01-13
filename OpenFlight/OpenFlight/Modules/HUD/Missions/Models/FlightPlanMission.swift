@@ -136,6 +136,16 @@ enum FlightPlanMissionMode: String, CaseIterable {
         return flightPlanPanelCoordinator
     }
 
+    func newCustomMap() -> FlightPlanMapViewController {
+        // TODO: Fix services injection.
+        return FlightPlanMapViewController.instantiate(bamService: Services.hub.bamService,
+                                                       missionsStore: Services.hub.missionsStore,
+                                                       flightPlanEditionService: Services.hub.flightPlan.edition,
+                                                       flightPlanRunManager: Services.hub.flightPlan.run,
+                                                       rthService: Services.hub.drone.rthService,
+                                                       memoryPressureMonitor: Services.hub.memoryPressureMonitor)
+    }
+
     var missionMode: MissionMode {
         let configurator = MissionModeConfigurator(key: self.rawValue,
                                                    name: self.title,
@@ -153,6 +163,9 @@ enum FlightPlanMissionMode: String, CaseIterable {
                            flightPlanProvider: self.flightPlanProvider,
                            missionActivationModel: FlightPlanActivationModel(),
                            mapMode: .flightPlan,
+                           customMapProvider: {
+                            self.newCustomMap()
+                           },
                            bottomBarLeftStack: {
                             self.bottomBarViews
                            },

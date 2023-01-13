@@ -62,6 +62,8 @@ public struct User {
     public var isSynchronizeFlightDataExtended: Bool
     public var freemiumProjectCounter: Int16
     public var pilotNumber: String?
+    public var isCaligoffEnabled: Bool
+
     // MARK: __ Synchronization
     ///  Boolean to know if is deleted locally but needs to be deleted on server
     public var isLocalDeleted: Bool
@@ -89,6 +91,7 @@ public struct User {
                 avatar: String?,
                 latestCloudAvatarModificationDate: Date?,
                 pilotNumber: String?,
+                isCaligoffEnabled: Bool?,
                 tmpApcUser: Bool?,
                 userInfoChanged: Bool?,
                 syncWithCloud: Bool?,
@@ -106,12 +109,14 @@ public struct User {
         self.apcToken = apcToken
         self.avatar = avatar
         self.pilotNumber = pilotNumber
+        self.isCaligoffEnabled = isCaligoffEnabled ?? false
         self.tmpApcUser = tmpApcUser ?? DefaultValues.tempApcUserDefault
         self.userInfoChanged = userInfoChanged ?? DefaultValues.userInfoChangedDefault
         self.syncWithCloud = syncWithCloud ?? DefaultValues.syncWithCloudDefault
         self.agreementChanged = agreementChanged ?? DefaultValues.agreementChangedDefault
         self.isSynchronizeFlightDataExtended = isSynchronizeFlightDataExtended ?? DefaultValues.shareDataOptionDefault
         self.freemiumProjectCounter = Int16(freemiumProjectCounter ?? DefaultValues.freemiumProjectCounterDefault)
+        self.latestCloudAvatarModificationDate = latestCloudAvatarModificationDate
         /// Synchronization
         self.isLocalDeleted = false
         self.synchroStatus = .synced
@@ -132,6 +137,7 @@ public struct User {
                     avatar: nil,
                     latestCloudAvatarModificationDate: nil,
                     pilotNumber: nil,
+                    isCaligoffEnabled: false,
                     tmpApcUser: true,
                     userInfoChanged: nil,
                     syncWithCloud: true,

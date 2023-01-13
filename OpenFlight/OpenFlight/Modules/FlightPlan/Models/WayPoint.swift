@@ -383,9 +383,19 @@ extension WayPoint: Equatable {
     }
 }
 
+// MARK: - Debug description
+
 /// Extension for debug description.
 extension WayPoint: CustomStringConvertible {
     public var description: String {
         "\(latitude) \(longitude) \(altitude)"
+    }
+}
+
+extension Array where Element == WayPoint {
+    /// Provide a short description of an array of waypoints.
+    /// This can be used to prevent very long logs by printing only the number of way points and the first and the last one values.
+    public var shortDescription: String {
+        "{ count: \(count), first: (\(first?.description ?? "-")), last: (\(last?.description ?? "-"))}"
     }
 }

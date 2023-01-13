@@ -36,6 +36,7 @@ enum InterfacePreset {
     static let miniMapType = SettingsMapDisplayType.hybrid
     static let secondaryScreenType = SecondaryScreenType.map
     static let measurementSystem = UserMeasurementSetting.auto
+    static let gridDisplayType = SettingsGridDisplayType.none
 }
 
 /// Defines settings map display type.
@@ -72,6 +73,18 @@ enum SettingsMapDisplayType: String, SettingEnum, CaseIterable {
         }
     }
 
+    /// Returns associated ArcGIS basemap style.
+    var agsBasemapStyle: AGSBasemapStyle {
+        switch self {
+        case .roadmap:
+            return AGSBasemapStyle.arcGISStreets
+        case .satellite:
+            return AGSBasemapStyle.arcGISImageryStandard
+        case .hybrid:
+            return AGSBasemapStyle.arcGISImagery
+        }
+    }
+
     /// Returns associated ArcGIS basemap.
     var agsBasemap: AGSBasemap {
         switch self {
@@ -81,6 +94,41 @@ enum SettingsMapDisplayType: String, SettingEnum, CaseIterable {
             return AGSBasemap.imagery()
         case .hybrid:
             return AGSBasemap.imageryWithLabels()
+        }
+    }
+}
+
+/// Defines settings grid display type.
+
+enum SettingsGridDisplayType: String, SettingEnum, CaseIterable {
+    case none
+    case s3x3
+    case s6x6
+
+    static var allValues: [SettingEnum] {
+        return SettingsGridDisplayType.allCases
+    }
+
+    static var defaultKey: DefaultsKey<String?> {
+        return DefaultsKeys.userGridDisplayTypeSettingKey
+    }
+
+    static var current: SettingsGridDisplayType {
+        guard let defaultValue = Defaults.userGridDisplayTypeSetting,
+              let type = SettingsGridDisplayType(rawValue: defaultValue) else {
+            return .none
+        }
+        return type
+    }
+
+    var localized: String {
+        switch self {
+        case .none:
+            return L10n.commonNo
+        case .s3x3:
+            return "3×3"
+        case .s6x6:
+            return "6×6"
         }
     }
 }

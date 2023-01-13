@@ -172,12 +172,12 @@ open class FlightPlanExecutionViewModel {
             }
     }
 
-    /// Whether trajectory points altitudes are in ASML.
-    public var hasAsmlAltitude: Bool {
+    /// Whether trajectory points altitudes are in AMSL.
+    public var hasAmslAltitude: Bool {
         if let flightPlanFlight = flightPlan.flightPlanFlights?.first,
            let flight = flightRepository?.getFlight(withUuid: flightPlanFlight.flightUuid),
            let gutma = flightService.gutma(flight: flight) {
-            return gutma.hasAsmlAltitude
+            return gutma.hasAmslAltitude
         } else {
             return false
         }

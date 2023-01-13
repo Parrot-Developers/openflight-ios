@@ -56,10 +56,11 @@ class DevToolboxViewController: UITableViewController {
             .sink { [unowned self] drone in
                 self.drone = drone
                 devToolboxRef = drone.getPeripheral(Peripherals.devToolbox) { [weak self] devToolbox in
-                    guard let devToolbox = devToolbox else { return }
+                    guard let self = self,
+                          let devToolbox = devToolbox else { return }
 
-                    self?.dataSource = devToolbox.debugSettings
-                    self?.tableView.reloadData()
+                    self.dataSource = devToolbox.debugSettings.sorted(by: { $0.name.lowercased() < $1.name.lowercased() })
+                    self.tableView.reloadData()
                 }
             }
             .store(in: &cancellables)

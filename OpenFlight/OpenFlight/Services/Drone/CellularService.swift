@@ -64,6 +64,13 @@ final class CellularServiceImpl {
                 listenNetworkControl(drone)
             }
             .store(in: &cancellables)
+
+        cellularStatusPublisher
+            .removeDuplicates()
+            .sink { cellularStatus in
+                ULog.i(.tag, "Cellular status: \(cellularStatus.cellularDetailsTitle ?? "No value")")
+            }
+            .store(in: &cancellables)
     }
 
     /// Updates cellular state.
@@ -143,7 +150,6 @@ final class CellularServiceImpl {
     /// - Parameters:
     ///     - cellularStatus: 4G status to update
     func updateCellularSubject(with cellularStatus: DetailsCellularStatus) {
-        ULog.i(.tag, "Cellular status: \(cellularStatus.cellularDetailsTitle ?? "No value")")
         cellularStatusSubject.send(cellularStatus)
     }
 

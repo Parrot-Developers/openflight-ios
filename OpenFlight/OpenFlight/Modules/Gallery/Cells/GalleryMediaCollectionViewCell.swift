@@ -73,7 +73,7 @@ final class GalleryMediaCollectionViewCell: UICollectionViewCell, NibReusable {
 private extension GalleryMediaCollectionViewCell {
     @IBAction func downloadTouchedUpInside(_ sender: Any) {
         guard let media = self.media,
-              media.downloadState == .toDownload else {
+              !media.isDownloaded else {
                 return
         }
         delegate?.shouldDownloadMedia(media)
@@ -85,27 +85,30 @@ internal extension GalleryMediaCollectionViewCell {
     /// Setup cell.
     ///
     /// - Parameters:
-    ///    - media: Gallery Media
-    ///    - index: image index
-    ///    - delegate: Gallery Media Cell Delegate
-    ///    - selected: Selected state
+    ///    - media: the media
+    ///    - delegate: the media cell delegate
+    ///    - selected: whether the cell is selected
+    ///    - actionState: the media action state (can either be a download state or an ongoing delete)
+    ///    - isDownloadAvailable: whether media can be downloaded via cell's download button
     func setup(media: GalleryMedia,
-               index: Int,
                delegate: GalleryMediaCellDelegate?,
-               selected: Bool = false) {
-        setupViewModel(media: media, index: index)
+               selected: Bool = false,
+               actionState: GalleryMediaActionState,
+               isDownloadAvailable: Bool) {
+        setupViewModel(media: media)
         setupView(media: media,
                   delegate: delegate,
-                  selected: selected)
+                  selected: selected,
+                  actionState: actionState,
+                  isDownloadAvailable: isDownloadAvailable)
     }
 
     /// Setup view model.
     ///
     /// - Parameters:
     ///    - media: Gallery Media
-    ///    - index: image index
-    func setupViewModel(media: GalleryMedia, index: Int) {
-        viewModel = GalleryMediaThumbnailViewModel(media: media, index: index)
+    func setupViewModel(media: GalleryMedia) {
+        viewModel = GalleryMediaThumbnailViewModel(media: media, index: media.defaultResourceIndex)
         viewModel?.getThumbnail { [weak self] image in
             self?.thumbnailImageView.image = image
         }
@@ -114,12 +117,16 @@ internal extension GalleryMediaCollectionViewCell {
     /// Setup view.
     ///
     /// - Parameters:
-    ///    - media: Gallery Media
-    ///    - delegate: Gallery Media Cell Delegate
-    ///    - selected: Selected state
+    ///    - media: the media
+    ///    - delegate: the media cell delegate
+    ///    - selected: whether the cell is selected
+    ///    - actionState: the media action state (can either be a download state or an ongoing delete)
+    ///    - isDownloadAvailable: whether media can be downloaded via cell's download button
     func setupView(media: GalleryMedia,
                    delegate: GalleryMediaCellDelegate?,
-                   selected: Bool = false) {
+                   selected: Bool = false,
+                   actionState: GalleryMediaActionState,
+                   isDownloadAvailable: Bool) {
         self.media = media
         self.delegate = delegate
 
@@ -129,7 +136,8 @@ internal extension GalleryMediaCollectionViewCell {
         Asset.Gallery.icBracketingDNG.image :
         media.type.image
         downloadButton.model = DownloadButtonModel(title: media.formattedSize,
-                                                   state: media.downloadState)
+                                                   state: actionState,
+                                                   isAvailable: isDownloadAvailable)
         downloadButton.isHidden = media.source == .mobileDevice
         selectionView.isHidden = !selected
         selectionCheckmarkView.isHidden = !selected
@@ -140,5 +148,6 @@ internal extension GalleryMediaCollectionViewCell {
         nameLabel.text = media.cellTitle
         accessibilityLabel = nameLabel.text ?? ""
         accessibilityValue = media.type.stringValue
+        isUserInteractionEnabled = actionState != .deleting
     }
 }
