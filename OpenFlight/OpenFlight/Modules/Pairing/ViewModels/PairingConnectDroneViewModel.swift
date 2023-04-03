@@ -30,6 +30,7 @@
 import GroundSdk
 import SwiftyUserDefaults
 import Combine
+import Pictor
 
 private extension ULogTag {
     static let tag = ULogTag(name: "PairingConnectDroneViewModel")
@@ -66,11 +67,11 @@ final class PairingConnectDroneViewModel {
     private var droneStateRef: Ref<DeviceState>?
     private var remoteControlStateRef: Ref<DeviceState>?
     private var timer: Timer?
-    private var academyApiService: AcademyApiService = Services.hub.academyApiService
-    private var networkService: NetworkService = Services.hub.systemServices.networkService
-    private var currentDroneHolder: CurrentDroneHolder = Services.hub.currentDroneHolder
-    private var currentRemoteControlHolder: CurrentRemoteControlHolder = Services.hub.currentRemoteControlHolder
-    private var pairingService: CellularPairingService = Services.hub.drone.cellularPairingService
+    private var academyApiDroneService: AcademyApiDroneService!
+    private var networkService: NetworkService!
+    private var currentDroneHolder: CurrentDroneHolder!
+    private var currentRemoteControlHolder: CurrentRemoteControlHolder!
+    private var pairingService: CellularPairingService!
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
@@ -79,7 +80,17 @@ final class PairingConnectDroneViewModel {
     }
 
     // MARK: - Init
-    init() {
+    init(currentDroneHolder: CurrentDroneHolder,
+         currentRemoteControlHolder: CurrentRemoteControlHolder,
+         networkService: NetworkService,
+         pairingService: CellularPairingService,
+         academyApiDroneService: AcademyApiDroneService) {
+        self.currentDroneHolder = currentDroneHolder
+        self.currentRemoteControlHolder = currentRemoteControlHolder
+        self.networkService = networkService
+        self.pairingService = pairingService
+        self.academyApiDroneService = academyApiDroneService
+
         currentDroneHolder.dronePublisher
             .compactMap { $0 }
             .sink { [unowned self] drone in
@@ -163,8 +174,8 @@ final class PairingConnectDroneViewModel {
             return
         }
 
-        academyApiService.unpairDrone(commonName: drone.commonName) { [weak self] _, error in
-            guard error == nil else {
+        academyApiDroneService.unpairDrone(commonName: drone.commonName) { [weak self] result in
+            guard case .success = result else {
                 self?.updateUnpairStatus(with: .forgetError(context: .discover))
                 self?.refreshDroneList()
                 return
@@ -289,8 +300,8 @@ private extension PairingConnectDroneViewModel {
                                                    commonName: "")
                 }
 
-            academyApiService.performPairedDroneListRequest { [weak self] pairedDroneListResponse in
-                guard let pairedDroneListResponse = pairedDroneListResponse else {
+            academyApiDroneService.getPairedDroneList { [weak self] result in
+                guard case let .success(pairedDroneListResponse) = result else {
                     self?.isListScanning = false
                     return
                 }

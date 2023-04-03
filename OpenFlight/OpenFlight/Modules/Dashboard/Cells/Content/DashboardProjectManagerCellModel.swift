@@ -29,6 +29,7 @@
 
 import Foundation
 import Combine
+import Pictor
 
 /// Summary about all projects.
 public struct ProjectsSummary {
@@ -55,17 +56,17 @@ public class DashboardProjectManagerCellModel {
 
     // MARK: - Private properties
     private let manager: ProjectManager
-    private let cloudSynchroWatcher: CloudSynchroWatcher?
+    private let synchroService: SynchroService?
     private let projectManagerUiProvider: ProjectManagerUiProvider!
     private var summarySubject = CurrentValueSubject<ProjectsSummary, Never>(ProjectsSummary.zero)
     private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
     private var cancellables = Set<AnyCancellable>()
 
     init(manager: ProjectManager,
-         cloudSynchroWatcher: CloudSynchroWatcher?,
+         synchroService: SynchroService?,
          projectManagerUiProvider: ProjectManagerUiProvider) {
         self.manager = manager
-        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.synchroService = synchroService
         self.projectManagerUiProvider = projectManagerUiProvider
 
         listenProjectsPublisher()
@@ -86,8 +87,7 @@ public class DashboardProjectManagerCellModel {
     }
 
     private func listenDataSynchronization() {
-        cloudSynchroWatcher?.synchroStatusPublisher
-            .receive(on: RunLoop.main)
+        synchroService?.statusPublisher
             .sink { [weak self] status in
                 self?.isSynchronizingSubject.value = status.isSyncing
             }

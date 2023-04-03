@@ -33,7 +33,7 @@
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="igG-Tb-Tz5" customClass="MainContainerView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="37" y="60" width="822" height="354"/>
+                                <rect key="frame" x="37" y="108" width="822" height="306"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DzY-Mu-b8Z" userLabel="Close Button">
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
@@ -55,7 +55,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Aqt-dV-aZw" customClass="UpdatingTableView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="45" y="49" width="732" height="275"/>
+                                        <rect key="frame" x="45" y="49" width="732" height="227"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </tableView>
                                 </subviews>
@@ -92,6 +92,8 @@
                     </view>
                     <connections>
                         <outlet property="contentView" destination="igG-Tb-Tz5" id="yfg-th-7Ra"/>
+                        <outlet property="popupLeadingConstraint" destination="a7m-sk-jOv" id="5qI-H3-PGR"/>
+                        <outlet property="popupTrailingConstraint" destination="ylC-oc-lqi" id="zE1-Lc-LaG"/>
                         <outlet property="tableView" destination="Aqt-dV-aZw" id="As6-3X-wJk"/>
                         <outlet property="titleLabel" destination="1wA-Iw-hxE" id="6SQ-4Q-9HA"/>
                     </connections>

@@ -219,7 +219,7 @@ private extension RemoteUpdateViewModel {
     ///     - updater: current updater
     func updateCurrentDownload(_ updater: Updater) {
         guard let currentDownload = updater.currentDownload else { return }
-        ULog.d(.remoteUpdateTag, "Current download: \(currentDownload)")
+        ULog.i(.remoteUpdateTag, "Current download: \(currentDownload)")
 
         let copy = state.value.copy()
         switch currentDownload.state {
@@ -243,7 +243,7 @@ private extension RemoteUpdateViewModel {
     ///     - updater: current updater
     func updateCurrentUpdate(_ updater: Updater) {
         guard let currentUpdate = updater.currentUpdate else { return }
-        ULog.d(.remoteUpdateTag, "Current update: \(currentUpdate)")
+        ULog.i(.remoteUpdateTag, "Current update: \(currentUpdate)")
 
         let copy = state.value.copy()
         switch currentUpdate.state {

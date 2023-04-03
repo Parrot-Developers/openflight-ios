@@ -456,14 +456,21 @@ extension GalleryMedia {
 
     /// The default resource index.
     var defaultResourceIndex: Int {
+        // Return 0 in case of an empty previable resources array.
+        // Do not use an optional return value in order to avoid superfluous optional checks in parent.
+        // (Keep empty array access checks responsability on caller side, this property is only intended
+        // to provide the expected default resource index information.)
+        guard previewableResourcesCount > 0 else { return 0 }
+
         if type == .bracketing {
-            // Bracketing media => return middle resource (ev0) index.
-            return Int((Float(resourcesCount) / 2).rounded(.up))
+            // Bracketing media => return middle previewable resource (ev0) index.
+            let index = Int((Float(previewableResourcesCount) / 2).rounded(.up)) - 1
+            return (0...previewableResourcesCount - 1).clamp(index)
         }
 
         if panoramaGenerationState != .none {
             // Non-generated panorama media => return type-based default resource index.
-            return (0...resourcesCount - 1).clamp(type.defaultResourceIndex)
+            return (0...previewableResourcesCount - 1).clamp(type.defaultResourceIndex)
         }
 
         // Return first resource index in default case.
@@ -554,5 +561,20 @@ private extension GalleryMedia {
         default:
             return 0
         }
+    }
+}
+
+/// A drone/media pair identifier ensuring 2 medias with same `uid` captured by different drones can be distinguished.
+struct DroneMediaIdentifier: Hashable {
+
+    let droneUid: String
+    let mediaUid: String
+}
+
+extension GalleryMedia {
+
+    /// The drone/media pair identifier of current media.
+    var droneMediaIdentifier: DroneMediaIdentifier {
+        DroneMediaIdentifier(droneUid: droneUid, mediaUid: uid)
     }
 }

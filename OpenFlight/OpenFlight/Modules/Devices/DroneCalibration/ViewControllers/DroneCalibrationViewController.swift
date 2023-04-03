@@ -34,6 +34,8 @@ import Combine
 open class DroneCalibrationViewController: UIViewController {
 
     // MARK: - Outlets
+    @IBOutlet private weak var popupLeadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var popupTrailingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var gimbalCalibrationChoiceView: CalibrationChoiceView!
     @IBOutlet private weak var correctHorizonChoiceView: CalibrationChoiceView!
@@ -46,8 +48,6 @@ open class DroneCalibrationViewController: UIViewController {
     weak public var coordinator: DroneCalibrationCoordinator?
     private var viewModel = DroneCalibrationViewModel()
     private var cancellables = Set<AnyCancellable>()
-    private var firmwareAndMissionsUpdateListener: FirmwareAndMissionsListener?
-    private var firmwareAndMissionToUpdateModel: FirmwareAndMissionToUpdateModel?
     private var moreMissionsProvider: DroneCalibrationMoreMissionsProvider?
 
     // MARK: - Private Enums
@@ -70,7 +70,6 @@ open class DroneCalibrationViewController: UIViewController {
         super.viewDidLoad()
 
         setupAdditionalMissions()
-        listenFirmwareUpdate()
         initUI()
         setupViewModels()
     }
@@ -128,13 +127,11 @@ private extension DroneCalibrationViewController {
             coordinator?.startMagnetometerCalibration()
         } else if view == obstacleDetectionChoiceView {
             logEvent(with: LogEvent.LogKeyDroneDetailsCalibrationButton.sensorCalibrationTutorial)
-            if let firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel {
-                if firmwareAndMissionToUpdateModel.updateRequired {
+            if viewModel.updateState == .required {
                     coordinator?.displayCriticalAlert()
                 } else {
                     coordinator?.startStereoVisionCalibration()
                 }
-            }
         }
     }
 
@@ -155,6 +152,8 @@ private extension DroneCalibrationViewController {
 private extension DroneCalibrationViewController {
     /// Initializes all the UI for the view controller.
     func initUI() {
+        popupLeadingConstraint.constant = Layout.popupHMargin(isRegularSizeClass)
+        popupTrailingConstraint.constant = popupLeadingConstraint.constant
         titleLabel.text = L10n.remoteDetailsCalibration
         titleLabel.font = FontStyle.title.font(isRegularSizeClass)
         mainView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
@@ -273,13 +272,6 @@ private extension DroneCalibrationViewController {
     ///     - itemName: Button name
     func logEvent(with itemName: String) {
         LogEvent.log(.simpleButton(itemName))
-    }
-
-    func listenFirmwareUpdate() {
-        firmwareAndMissionsUpdateListener = FirmwareAndMissionsInteractor.shared
-            .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
-                self?.firmwareAndMissionToUpdateModel = firmwareAndMissionToUpdateModel
-            }
     }
 
     /// Adds additional missions to the missionsStackView.

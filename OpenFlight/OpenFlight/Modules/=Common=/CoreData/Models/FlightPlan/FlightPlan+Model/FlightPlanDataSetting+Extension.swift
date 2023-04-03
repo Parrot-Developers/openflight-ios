@@ -39,7 +39,7 @@ extension FlightPlanDataSetting {
         static let timeLapse1s = 1000
     }
 
-    var pgyProjectDeleted: Bool {
+    public var pgyProjectDeleted: Bool {
         get {
             notPropagatedSettings[Constants.pgyProjectDeletedKey].map { Bool($0) ?? false } ?? false
         }

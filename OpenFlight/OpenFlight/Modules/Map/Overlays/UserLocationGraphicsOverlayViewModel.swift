@@ -44,8 +44,4 @@ public class UserLocationGraphicsOverlayViewModel {
     public var userLocationPublisher: AnyPublisher<OrientedLocation, Never> { locationsTracker.userLocationPublisher }
     public var isMiniMapPublisher: AnyPublisher<Bool, Never> { isMiniMap.eraseToAnyPublisher() }
     public var isMiniMap = CurrentValueSubject<Bool, Never>(false)
-
-    public var userLocation: OrientedLocation? {
-        locationsTracker.userLocation
-    }
 }

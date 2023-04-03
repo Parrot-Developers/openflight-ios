@@ -33,10 +33,24 @@ final class DroneFirmwaresCoordinator: Coordinator {
     var navigationController: NavigationController?
     var childCoordinators = [Coordinator]()
     weak var parentCoordinator: Coordinator?
+    public let services: ServiceHub
+
+    public init(services: ServiceHub) {
+        self.services = services
+    }
 
     // MARK: - Internal Funcs
     func start() {
-        let viewController = DroneFirmwaresViewController.instantiate(coordinator: self)
+        let viewModel = DroneFirmwaresViewModel(
+            currentDroneHolder: services.currentDroneHolder,
+            networkService: services.systemServices.networkService,
+            updateService: services.update,
+            firmwareUpdateService: services.drone.firmwareUpdateService,
+            airSdkMissionsUpdaterService: services.drone.airsdkMissionsUpdaterService,
+            airSdkMissionManager: services.drone.airsdkMissionsManager,
+            batteryGaugeUpdaterService: services.drone.batteryGaugeUpdaterService
+        )
+        let viewController = DroneFirmwaresViewController.instantiate(coordinator: self, viewModel: viewModel)
         viewController.modalPresentationStyle = .overFullScreen
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true
@@ -45,7 +59,7 @@ final class DroneFirmwaresCoordinator: Coordinator {
 
     /// Quits the update processes.
     func quitUpdateProcesses() {
-        FirmwareAndMissionsInteractor.shared.manuallyBrowse()
+        services.drone.airsdkMissionsUpdaterService.manuallyBrowse()
         self.parentCoordinator?.dismissChildCoordinator()
     }
 
@@ -56,14 +70,44 @@ final class DroneFirmwaresCoordinator: Coordinator {
     func goToUpdatingViewController(functionalUpdateChoice: FirmwareAndMissionUpdateFunctionalChoice) {
         switch functionalUpdateChoice {
         case .firmware:
-            let viewController = FirmwareUpdatingViewController.instantiate(coordinator: self)
+            let viewModel = FirmwareUpdatingViewModel(
+                firmwareUpdateService: services.drone.firmwareUpdateService,
+                currentDroneHolder: services.currentDroneHolder)
+            let viewController = FirmwareUpdatingViewController.instantiate(coordinator: self, viewModel: viewModel)
             push(viewController)
         case .airSdkMissions:
-            let viewController = AirSdkMissionsUpdatingViewController.instantiate(coordinator: self)
+            let viewModel = AirSdkMissionsUpdatingViewModel(
+                airSdkMissionsUpdaterService: services.drone.airsdkMissionsUpdaterService,
+                currentDroneHolder: services.currentDroneHolder)
+            let viewController = AirSdkMissionsUpdatingViewController.instantiate(
+                coordinator: self,
+            viewModel: viewModel)
             push(viewController)
         case .firmwareAndAirSdkMissions:
-            let viewController = FirmwareAndMissionsUpdateViewController.instantiate(coordinator: self)
+            let viewModel = FirmwareAndMissionsUpdateViewModel(
+                airSdkMissionsUpdaterService: services.drone.airsdkMissionsUpdaterService,
+                firmwareUpdateService: services.drone.firmwareUpdateService,
+                currentDroneHolder: services.currentDroneHolder)
+            let viewController = FirmwareAndMissionsUpdateViewController.instantiate(
+                coordinator: self,
+            viewModel: viewModel)
+            push(viewController)
+        case .batteryGauge:
+            // Push the battery checklist view.
+            let viewModel = BatteryUpdateChecklistViewModel(batteryGaugeUpdaterService: services.drone.batteryGaugeUpdaterService)
+            let viewController = BatteryUpdateChecklistViewController.instantiate(coordinator: self, viewModel: viewModel)
             push(viewController)
         }
+    }
+
+    /// Pushes the battery updating interface.
+    ///
+    /// Called after the battery check list has been validated.
+    func goToBatteryUpdate() {
+        let viewModel = BatteryUpdatingViewModel(
+            batteryGaugeUpdaterService: services.drone.batteryGaugeUpdaterService,
+            connectedDroneHolder: services.connectedDroneHolder)
+        let viewController = BatteryUpdatingViewController.instantiate(coordinator: self, viewModel: viewModel)
+        push(viewController)
     }
 }

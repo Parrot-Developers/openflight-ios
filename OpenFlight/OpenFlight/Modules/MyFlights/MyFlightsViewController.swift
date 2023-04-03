@@ -228,6 +228,7 @@ private extension MyFlightsViewController {
                 guard let coordinator = coordinator else { return }
                 // TODO: wrong injection
                 let viewModel = FlightsViewModel(service: Services.hub.flight.service,
+                                                 thumbnailGeneratorService: Services.hub.thumbnailGeneratorService,
                                                  coordinator: coordinator,
                                                  navigationStack: Services.hub.ui.navigationStack)
                 let newViewController = FlightsViewController.instantiate(viewModel: viewModel)
@@ -247,7 +248,7 @@ private extension MyFlightsViewController {
                 newViewController.setupViewModel(with: FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
                                                                                 flightPlanTypeStore: Services.hub.flightPlan.typeStore,
                                                                                 navigationStack: Services.hub.ui.navigationStack,
-                                                                                cloudSynchroWatcher: Services.hub.cloudSynchroWatcher,
+                                                                                synchroService: Services.hub.synchroService,
                                                                                 selectedHeaderUuid: defaultSelectedHeaderUuid),
                                                  delegate: self)
                 self.flightPlanViewController = newViewController

@@ -125,6 +125,10 @@ private extension HorizonCorrectionViewController {
         horizonCorrectionTitle.font = FontStyle.title.font(isRegularSizeClass)
         horizonCorrectionTitle.addShadow(shadowOpacity: 1.0)
         horizonLevels.forEach { $0.layer.cornerRadius = $0.frame.size.height / 2.0 }
+        horizonLevels.forEach {
+            $0.layer.borderWidth = 1
+            $0.layer.borderColor = UIColor.black.withAlphaComponent(0.25).cgColor
+        }
 
         if !UIApplication.isLandscape {
             let value = UIInterfaceOrientation.landscapeRight.rawValue

@@ -113,7 +113,7 @@ private extension RecordingTimeViewModel {
 
             // Start/stop recording timer.
             switch recordingState {
-            case .started(_, _, let duration, _, _) where self?.recordingTimeTimer == nil:
+            case .started(_, let duration, _, _) where self?.recordingTimeTimer == nil:
                 self?.startRecordingTimeTimer()
                 copy?.recordingTime = duration()
             case .stopped where self?.recordingTimeTimer != nil,
@@ -152,7 +152,7 @@ private extension RecordingTimeViewModel {
         let copy = state.value.copy()
 
         switch camera.recording?.state {
-        case .started(_, _, let duration,
+        case .started(_, let duration,
                       let videoBitrate, let mediaStorage):
             copy.recordingTime = duration()
             if let mediaStorage = mediaStorage {

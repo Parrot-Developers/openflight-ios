@@ -132,7 +132,7 @@ private extension DroneDetailsInformationsViewController {
             .removeDuplicates()
             .sink { [weak self] serialNumber in
                 guard let self = self else { return }
-                self.serialContainerView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber,
+                self.serialContainerView.model = DeviceInformationsModel(title: L10n.commonProductReference,
                                                                          description: serialNumber)
             }
             .store(in: &cancellables)

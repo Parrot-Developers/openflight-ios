@@ -30,6 +30,7 @@
 import XCTest
 import Hamcrest
 @testable import OpenFlight
+import Pictor
 
 class MavlinkGenerationTest: XCTestCase {
     var testBundle: Bundle!
@@ -106,14 +107,14 @@ class MavlinkGenerationTest: XCTestCase {
 
     func testMavlinkGenerator() {
         // services and mocks
-        let flightPlanRepo = MockFlightPlanRepository()
         let flightPlanFilesManager = Services.hub.flightPlan.filesManager
         let flightPlanTypeStore = Services.hub.flightPlan.typeStore
         let projectManager = Services.hub.flightPlan.projectManager
-        let planFileGenerator = PlanFileGeneratorImpl(typeStore: flightPlanTypeStore,
-                                                      filesManager: flightPlanFilesManager,
-                                                      projectManager: projectManager,
-                                                      repo: flightPlanRepo)
+        let currentDroneHolder = Services.hub.currentDroneHolder
+        let planFileGenerator = PlanFileGeneratorNoSaveImpl(typeStore: flightPlanTypeStore,
+                                                            filesManager: flightPlanFilesManager,
+                                                            projectManager: projectManager,
+                                                            currentDroneHolder: currentDroneHolder)
         // urls for test data
         guard let urls = testBundle.urls(forResourcesWithExtension: "flightplan", subdirectory: "") else { return }
         for url in urls {

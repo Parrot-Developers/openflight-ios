@@ -240,7 +240,7 @@ private extension PhotoViewerViewController {
         let image = try await browserManager.fetchResource(of: viewModel.media,
                                                            at: resourceIndex,
                                                            after: delay)
-        ULog.d(.tag, "[galleryRework] Resource \(resourceIndex) fetched.")
+        ULog.i(.tag, "[galleryRework] Resource \(resourceIndex) fetched.")
         try Task.checkCancellation()
 
         if clearRefetch {
@@ -264,7 +264,7 @@ private extension PhotoViewerViewController {
         // running or won't be completed for this cell (can occur on quick scroll: willDisplay
         // may return the next cell) => force a refetch (after an optional delay).
         refetchTask = Task {
-            ULog.d(.tag, "[galleryRework] Refetch \(resourceIndex).")
+            ULog.i(.tag, "[galleryRework] Refetch \(resourceIndex).")
             try await fetch(cell: cell,
                             at: resourceIndex,
                             after: Constants.refetchDelay * 1_000_000_000,

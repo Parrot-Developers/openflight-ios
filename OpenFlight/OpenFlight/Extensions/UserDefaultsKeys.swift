@@ -31,6 +31,8 @@ import SwiftyUserDefaults
 
 /// Defines defaultKeys to store in UserDefaults.
 public extension DefaultsKeys {
+    // MARK: - Application
+    var applicationVersion: DefaultsKey<String?> { .init("application_version") }
 
     // MARK: - User Settings
 
@@ -64,7 +66,9 @@ public extension DefaultsKeys {
     // MARK: - Parrot Debug
     var activatedLog: DefaultsKey<Bool> { .init("key_activatedLog", defaultValue: false) }
     var debugC: DefaultsKey<Bool> { .init("key_checkC", defaultValue: false) }
+    var debugLevel: DefaultsKey<String?> { .init("key_debugLevel", defaultValue: nil) }
     var activatedCalibration: DefaultsKey<Bool> { .init("key_activatedCalibration", defaultValue: false) }
+    var isMetricKitEnabled: DefaultsKey<Bool> { .init("key_isMetricKitEnabled", defaultValue: false) }
 
     // MARK: - Gallery
     var localMediaCounts: DefaultsKey<[String: Any]?> { .init("key_localMediaCounts") }
@@ -111,7 +115,7 @@ public extension DefaultsKeys {
     static let userMiniMapTypeSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_userMiniMapTypeSetting",
                                                                                       defaultValue: String(describing: SettingsMapDisplayType.hybrid.rawValue))
     static let userGridDisplayTypeSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_userGridDisplayTypeSetting",
-                                                                                          defaultValue: String(describing: SettingsGridDisplayType.none.rawValue))
+                                                                                          defaultValue: String(describing: SettingsGridDisplayType.s3x3.rawValue))
 
     // MARK: - Camera
     static let overexposureSettingKey: DefaultsKey<String?> = DefaultsKey<String?>("key_overexposureSetting")
@@ -141,6 +145,9 @@ public extension DefaultsKeys {
     }
     var latestSuccessfulSanityCheckDate: DefaultsKey<Date?> {
         DefaultsKey<Date?>.init("cloudSync.service.latestSuccessfulSanityCheck")
+    }
+    var skipSanityCheck: DefaultsKey<Bool> {
+        DefaultsKey<Bool>.init("cloudSync.service.skipSanityCheck", defaultValue: false)
     }
 
     // - Incremental

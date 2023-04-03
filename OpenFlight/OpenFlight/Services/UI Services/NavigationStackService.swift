@@ -154,7 +154,7 @@ extension NavigationStackScreen {
         case .projectManager(let selectedProject):
             return ProjectManagerCoordinator(flightPlanServices: services.flightPlan,
                                              uiServices: services.ui,
-                                             cloudSynchroWatcher: services.cloudSynchroWatcher,
+                                             synchroService: services.synchroService,
                                              defaultSelectedProject: selectedProject)
         case .myFlights(let selectedFlight):
             return MyFlightsCoordinator(flightServices: services.flight,

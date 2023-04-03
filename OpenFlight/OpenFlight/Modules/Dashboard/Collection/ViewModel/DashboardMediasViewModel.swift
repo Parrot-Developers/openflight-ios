@@ -71,12 +71,29 @@ final class DashboardMediasViewModel {
     init(mediaServices: MediaServices) {
         userStorageService = mediaServices.userStorageService
 
+        listen(to: mediaServices.mediaListService)
         listen(to: mediaServices.mediaStoreService)
         listen(to: userStorageService)
     }
 }
 
 private extension DashboardMediasViewModel {
+
+    /// Listens to media list service in order to update media list if needed.
+    ///
+    /// - Parameter mediaListService: the media list service
+    func listen(to mediaListService: MediaListService) {
+        mediaListService.mediaListPublisher.sink { [weak self] _ in
+            // Update active media list in case of a published event.
+            // Published value is not relevant, as `mediaListService.mediaList` contains medias of a specific
+            // storage source (depending on user's selection in gallery view), while dashboard media cell's
+            // preferred source is drone (depending on connection state and medias availability).
+            // Active media list update is however required in case of a media list service event in order
+            // to ensure `deviceMedias` is correctly refreshed via its computed property.
+            self?.updateActiveMediaList()
+        }
+        .store(in: &cancellables)
+    }
 
     /// Listens to media store service in order to update states accordingly.
     ///

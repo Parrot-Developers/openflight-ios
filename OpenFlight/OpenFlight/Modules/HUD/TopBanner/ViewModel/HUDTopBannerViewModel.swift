@@ -230,7 +230,7 @@ private extension HUDTopBannerViewModel {
                   return
               }
 
-        if returnHome.state == .active {
+        if returnHome.state == .active && !returnHome.suspended {
             homeState = .preciseRthInProgress
         } else if flyingIndicators.flyingState == .landing {
             homeState = .preciseLandingInProgress

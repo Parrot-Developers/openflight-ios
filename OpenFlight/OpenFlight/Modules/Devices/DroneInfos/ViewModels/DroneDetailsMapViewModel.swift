@@ -47,14 +47,25 @@ final class DroneDetailsMapViewModel {
     private var connectionStateRef: Ref<DeviceState>?
     private var gpsRef: Ref<Gps>?
     private var beeperRef: Ref<Beeper>?
+    private let locationsTracker: LocationsTracker
 
     // MARK: - Init
-    init() {
+    init(locationTracker: LocationsTracker) {
+        self.locationsTracker = locationTracker
         currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
-                listenGps(drone)
                 listenBeeper(drone)
                 listenConnectionState(drone)
+            }
+            .store(in: &cancellables)
+        if let droneLocation = locationsTracker.droneLocation {
+            self.location = CLLocation(latitude: droneLocation.latitude, longitude: droneLocation.longitude, altitude: 0)
+        }
+
+        locationsTracker.drone2DLocationPublisher(animated: false)
+            .removeDuplicates()
+            .sink { [weak self] location in
+                self?.location = CLLocation(latitude: location.latitude, longitude: location.longitude, altitude: 0)
             }
             .store(in: &cancellables)
     }
@@ -141,15 +152,6 @@ private extension DroneDetailsMapViewModel {
     func listenConnectionState(_ drone: Drone) {
         connectionStateRef = drone.getState { [weak self] state in
             self?.droneIsConnected = state?.connectionState == .connected
-        }
-    }
-
-    /// Starts watcher for drone gps.
-    ///
-    /// - Parameter drone: the current drone
-    func listenGps(_ drone: Drone) {
-        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            self?.location = gps?.lastKnownLocation
         }
     }
 

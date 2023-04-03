@@ -32,6 +32,8 @@ import GroundSdk
 import SwiftyUserDefaults
 import CoreData
 import ArcGIS
+import Combine
+import Pictor
 
 // MARK: - Internal Enums
 /// Constants for all missions.
@@ -50,16 +52,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Public Properties
     var window: UIWindow?
 
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = PersistentContainer(name: "Model")
-        container.loadPersistentStores { _, error in
-            if let error = error {
-                fatalError("Unable to load persistent stores: \(error)")
-            }
-        }
-        return container
-    }()
-
     // MARK: - Private Properties
     /// Main coordinator of the application.
     private var appCoordinator: AppCoordinator!
@@ -76,7 +68,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UIDevice.current.isBatteryMonitoringEnabled = true
         // ARCGIS KEY - Openflight
         AGSArcGISRuntimeEnvironment.apiKey =
-            "put your key here (https://developers.arcgis.com/)"
+            "AAPK68aea864d0ab428f96ca87b1207f248fkidAHOOEgM-2pAf7AYMjkL9Wn0BtqWs_IvBPtSiu4JfOoYlkZ1Vl7Rl6rGAReckQ"
 
         // Enable gsdk system log
         ULog.redirectToSystemLog(enabled: true)
@@ -85,13 +77,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         groundSdk = AppDelegateSetup.sdkSetup()
 
         ULog.i(.appDelegate, "Application start \(AppUtils.version)")
+        Defaults.applicationVersion = AppUtils.version
+
+        // Sets up Pictor
+        AppDelegateSetup.pictorSetup()
 
         // Create instance of services
         let missionsToLoadAtStart: [AirSdkMissionSignature] = [OFMissionSignatures.defaultMission,
                                                                OFMissionSignatures.helloWorld]
 
         let services = Services.createInstance(variableAssetsService: VariableAssetsServiceImpl(),
-                                               persistentContainer: persistentContainer,
                                                missionsToLoadAtStart: missionsToLoadAtStart,
                                                dashboardUiProvider: DashboardUiProviderImpl())
         self.services = services
@@ -102,8 +97,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Sets up grabber view model
         grabberViewModel = RemoteControlGrabberViewModel(zoomService: services.drone.zoomService,
                                                          gimbalTiltService: services.drone.gimbalTiltService)
-
-        setupFirmwareAndMissionsInteractor()
 
         // Start AppCoordinator.
         self.appCoordinator = AppCoordinator(services: services)
@@ -117,6 +110,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // Keep screen on while app is running (Enable).
         application.isIdleTimerDisabled = true
+
+        // Check for database update
+        self.services.databaseUpdateService.checkForUpdate()
 
         NSSetUncaughtExceptionHandler { exception in
             ULog.e(.appDelegate, "Uncaught exception \(exception). Backtrace: \(exception.callStackSymbols)")
@@ -149,11 +145,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 // MARK: - AirSdkMissionsSetupProtocol
 extension AppDelegate: AirSdkMissionsSetupProtocol {
-    /// Sets up `FirmwareAndMissionsInteractor`
-    func setupFirmwareAndMissionsInteractor() {
-        FirmwareAndMissionsInteractor.shared.setup()
-    }
-
     /// Add AirSdk missions to the HUD Panel.
     func addMissionsToHUDPanel() {
         services.missionsStore.add(missions: [FlightPlanMission(),
@@ -168,16 +159,12 @@ extension AppDelegate: AirSdkMissionsSetupProtocol {
 ///  to prevent from missing changes in other targets.
 
 public class AppDelegateSetup {
+    static var cancellables = Set<AnyCancellable>()
+
     /// Setup GroundSDK.
     public static func sdkSetup() -> GroundSdk {
         // Set optional config BEFORE starting GroundSdk
-        #if DEBUG
-        setenv("ULOG_LEVEL", "D", 1)
-        #else
-        if Bundle.main.isInHouseBuild {
-            setenv("ULOG_LEVEL", "D", 1)
-        }
-        #endif
+        AppUtils.setLogLevel()
         ParrotDebug.smartStartLog()
 
         // Activate DevToolbox.
@@ -189,4 +176,32 @@ public class AppDelegateSetup {
         return GroundSdk()
     }
 
+    public static func pictorSetup() {
+        PictorConfiguration.shared.userAgent = "\(AppInfoCore.appBundle)/\(AppInfoCore.appVersion) " +
+        "(\(UIDevice.current.systemName); \(UIDevice.identifier); \(UIDevice.current.systemVersion)) " +
+        "\(AppInfoCore.sdkBundle)/\(AppInfoCore.sdkVersion)"
+
+        let container = PersistentContainer(name: "Model")
+        container.loadPersistentStores { _, error in
+            if let error = error {
+                fatalError("Unable to load persistent stores: \(error)")
+            }
+        }
+        PictorConfiguration.shared.oldPersistentContainer = container
+
+        Pictor.shared.logPublisher
+            .sink { log in
+                switch log.level {
+                case .warning:
+                    ULog.w(ULogTag(name: log.tag), log.message)
+                case .info:
+                    ULog.i(ULogTag(name: log.tag), log.message)
+                case .debug:
+                    ULog.d(ULogTag(name: log.tag), log.message)
+                case .error:
+                    ULog.e(ULogTag(name: log.tag), log.message)
+                }
+            }
+            .store(in: &cancellables)
+    }
 }

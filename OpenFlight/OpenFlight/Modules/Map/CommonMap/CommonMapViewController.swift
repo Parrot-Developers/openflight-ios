@@ -43,8 +43,6 @@ public enum CommonMapConstants {
     static let maxZoomLevel: Double = 2000000.0
     static let defaultLocation = CLLocationCoordinate2D(latitude: 48.879, longitude: 2.3673)
     public static let cameraDistanceToCenterLocation: Double = 1000
-    static let mapBorderVertical: Double = 0.1
-    static let mapBorderHorizontal: Double = 0.1
 }
 
 /// View controller for common map display.
@@ -61,7 +59,10 @@ open class CommonMapViewController: UIViewController {
     public var applyDefaultCentering: Bool = true
     public var ignoreCameraAdjustments: Bool = false
     public var lastValidPoints: (screen: CGPoint?, map: AGSPoint?)
-    var currentMapType: SettingsMapDisplayType?
+
+    // Common vars used by the scene and the map to fix the camera altitude issue.
+    public var hasBeenReset: Bool = false
+    public var isNavigatingObserver: NSKeyValueObservation?
 
     // MARK: - Internal Properties
     private var cancellables = Set<AnyCancellable>()
@@ -81,16 +82,35 @@ open class CommonMapViewController: UIViewController {
         super.viewDidLoad()
         setArcGISLicense()
         setupNavBar()
-        listenNetwork()
 
         mapViewModel.isMiniMapPublisher.removeDuplicates()
             .sink { [weak self] isMiniMap in
-            self?.miniMapChanged(value: isMiniMap)
-        }.store(in: &cancellables)
+                self?.miniMapChanged(value: isMiniMap)
+            }.store(in: &cancellables)
+
+        mapViewModel.mapTypePublisher
+            .dropFirst()
+            .sink { [weak self] _ in
+                self?.setBaseMap()
+            }.store(in: &cancellables)
+
+        mapViewModel.networkReachablePublisher.removeDuplicates()
+            .dropFirst()
+            .sink { [weak self] reachable in
+                if reachable {
+                    self?.setBaseMap()
+                }
+            }.store(in: &cancellables)
     }
 
-    override open func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
+    open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        mapViewModel.isViewControllerVisible = true
+    }
+
+    override open func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        mapViewModel.isViewControllerVisible = false
         applyDefaultCentering = false
     }
 
@@ -99,30 +119,12 @@ open class CommonMapViewController: UIViewController {
         navBarStackView?.isLayoutMarginsRelativeArrangement = true
     }
 
-    /// Listens network reachability changes.
-    func listenNetwork() {
-        var cancellable: AnyCancellable?
-        cancellable = mapViewModel.networkReachablePublisher
-            .removeDuplicates()
-            .sink { [weak self] reachable in
-                guard let self = self else { return }
-                if reachable {
-                    self.resetBaseMap()
-                    cancellable?.cancel()
-                }
-            }
-    }
-
     // MARK: - Funcs to override
     open func miniMapChanged(value: Bool) {
         // to override
     }
 
     public func centerMap() {
-        // to override
-    }
-
-    public func centerMapWithoutAnyChanges() {
         // to override
     }
 
@@ -136,10 +138,6 @@ open class CommonMapViewController: UIViewController {
     }
 
     open func setBaseMap() {
-        // to override
-    }
-
-    open func resetBaseMap() {
         // to override
     }
 
@@ -172,48 +170,6 @@ open class CommonMapViewController: UIViewController {
     /// Makes the map available for CommonMapViewController.
     var geoView: AGSGeoView {
         fatalError("// to override")
-    }
-
-    /// Whether the point is inside the zone.
-    ///
-    /// - Parameters:
-    ///    - point: ags point
-    ///    - referenceToAmsl: if the scene is in 3D and the point altitude is not in amsl,
-    ///    you should specify the altitude diference between your point reference and amsl
-    /// - Returns: boolean indicating if the location is inside the zone
-    public func isInside(point: AGSPoint, referenceToAmsl: Double = 0) -> Bool {
-        let locationPoint: AGSPoint
-        if (geoView as? AGSSceneView)?.scene?.baseSurface?.isEnabled == true {
-            locationPoint = AGSPoint(x: point.x, y: point.y, z: point.z + referenceToAmsl, spatialReference: .wgs84())
-        } else {
-            locationPoint = AGSPoint(x: point.x, y: point.y, z: 0.0, spatialReference: .wgs84())
-        }
-        let screenPoint: CGPoint
-        if let mapView = geoView as? AGSMapView {
-            screenPoint = mapView.location(toScreen: locationPoint)
-        } else if let sceneView = geoView as? AGSSceneView {
-            screenPoint = sceneView.location(toScreen: locationPoint).screenPoint
-        } else {
-            return false
-        }
-        guard !screenPoint.isOriginPoint else { return false }
-        let zone: CGRect
-        if mapViewModel.isMiniMap.value, let mapRatio = mapViewModel.largeMapRatio {
-            let isMiniMapWider = geoView.bounds.width / geoView.bounds.height > mapRatio
-            let width = (isMiniMapWider ? geoView.bounds.height * mapRatio : geoView.bounds.width) * (1 - CommonMapConstants.mapBorderHorizontal * 2)
-            let height = (isMiniMapWider ? geoView.bounds.height : geoView.bounds.width / mapRatio) * (1 - CommonMapConstants.mapBorderVertical * 2)
-            let minX = (geoView.bounds.width - width) / 2
-            let minY = (geoView.bounds.height - height) / 2
-            zone = CGRect(x: minX, y: minY, width: width, height: height)
-        } else {
-            let minX = geoView.bounds.width * CommonMapConstants.mapBorderHorizontal
-            let minY = geoView.bounds.height * CommonMapConstants.mapBorderVertical
-            let width = geoView.bounds.width * (1 - CommonMapConstants.mapBorderHorizontal * 2)
-            let height = geoView.bounds.height * (1 - CommonMapConstants.mapBorderVertical * 2)
-            zone = CGRect(x: minX, y: minY, width: width, height: height)
-        }
-
-        return zone.contains(screenPoint)
     }
 
     // MARK: - Map Funcs

@@ -367,6 +367,8 @@
                         <outlet property="enterPinButton" destination="lYv-jY-pT8" id="gCl-2j-QTg"/>
                         <outlet property="forgetPinButton" destination="Jag-2W-lRz" id="YPO-tp-6hN"/>
                         <outlet property="leftInternetImage" destination="nNg-kH-E2h" id="umQ-RT-1Hc"/>
+                        <outlet property="popupLeadingConstraint" destination="hsJ-zL-Gxu" id="WAE-p3-5JV"/>
+                        <outlet property="popupTrailingConstraint" destination="y4L-Ev-Zte" id="4bZ-id-fKw"/>
                         <outlet property="rightInternetImage" destination="v1O-m1-SXx" id="fkY-2f-DiZ"/>
                         <outlet property="showSupportButton" destination="40F-Qu-hPw" id="hgj-yM-M6g"/>
                         <outlet property="titleLabel" destination="LgE-0s-FVR" id="LcN-id-TxK"/>

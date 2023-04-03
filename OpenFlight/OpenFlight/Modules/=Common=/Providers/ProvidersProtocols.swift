@@ -45,7 +45,7 @@ public protocol AccountProvider {
     /// Returns a coordinator to start for the account details.
     var destinationCoordinator: Coordinator? { get }
     /// Returns a user avatar, if a user is connected.
-    var userAvatar: String { get }
+    var userAvatar: UIImage? { get }
     /// Returns a user name, if a user is connected.
     var userName: String? { get }
     /// Returns if current user is connected or not.

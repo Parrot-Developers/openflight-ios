@@ -30,6 +30,10 @@
 import Combine
 import GroundSdk
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "GalleryViewModel")
+}
+
 /// The gallery navigation-related protocol.
 protocol GalleryNavigationDelegate: AnyObject {
 
@@ -171,10 +175,10 @@ final class GalleryViewModel {
     /// The media list state.
     @Published private(set) var mediaListState: MediaListState = .unknown
     /// The publisher for uids of currently selected medias.
-    var selectedMediaUidsPublisher: AnyPublisher<Set<String>, Never> { selectedMediaUidsSubject.eraseToAnyPublisher() }
+    var selectedMediaUidsPublisher: AnyPublisher<Set<DroneMediaIdentifier>, Never> { selectedMediaUidsSubject.eraseToAnyPublisher() }
     /// The currently selected medias.
     var selectedMedias: [GalleryMedia] {
-        Array(filteredMedias.filter({ selectedMediaUids.contains($0.uid) }))
+        Array(filteredMedias.filter({ selectedMediaUids.contains($0.droneMediaIdentifier) }))
     }
     /// The filters media types of current media list.
     private(set) var filteredMediaTypes = Set<GalleryMediaType>()
@@ -222,14 +226,14 @@ final class GalleryViewModel {
     /// The removable storage state.
     private var removableStorageState: UserStorageState = .unknown
     /// The subject of currently selected medias uids.
-    private var selectedMediaUidsSubject = CurrentValueSubject<Set<String>, Never>([])
+    private var selectedMediaUidsSubject = CurrentValueSubject<Set<DroneMediaIdentifier>, Never>([])
     /// The filtered media list.
     private var filteredMedias: [GalleryMedia] {
         filteredMediaData.flatMap { $0.medias }
     }
     /// The filtered media list uids.
-    private var filteredMediaUids: Set<String> {
-        Set(filteredMedias.map { $0.uid })
+    private var filteredMediaUids: Set<DroneMediaIdentifier> {
+        Set(filteredMedias.map { $0.droneMediaIdentifier })
     }
     /// Whether all medias are selected.
     private var isAllSelected: Bool {
@@ -331,7 +335,7 @@ extension GalleryViewModel {
     func didSelectMedia(_ media: GalleryMedia) {
         if activeActionTypes.contains(.select) {
             // Selection mode is enabled => toggle `media` selection state.
-            toggleSelection(for: media.uid)
+            toggleSelection(for: media.droneMediaIdentifier)
         } else if let index = filteredMediaData.flatMap({ $0.medias }).firstIndex(of: media) {
             // Browsing mode => ask delegate to show media browser for `media`.
             delegate?.showMediaBrowser(media: media,
@@ -341,7 +345,7 @@ extension GalleryViewModel {
     }
 
     /// The currently selected medias uids.
-    var selectedMediaUids: Set<String> {
+    var selectedMediaUids: Set<DroneMediaIdentifier> {
         get { selectedMediaUidsSubject.value }
         set {
             selectedMediaUidsSubject.value = newValue
@@ -385,8 +389,8 @@ extension GalleryViewModel {
 
     /// Toggles selection for a specific media uid.
     ///
-    /// - Parameter uid: the uid of the media to select/deselect
-    func toggleSelection(for uid: String) {
+    /// - Parameter uid: the drone/media uid pair of the media to select/deselect
+    func toggleSelection(for uid: DroneMediaIdentifier) {
         let isSelected = selectedMediaUids.contains(uid)
         if isSelected {
             deselectMedia(with: uid)
@@ -397,8 +401,8 @@ extension GalleryViewModel {
 
     /// Whether a media with a specific uid is selected.
     ///
-    /// - Parameter uid: the uid of the media to check
-    func isSelected(uid: String) -> Bool {
+    /// - Parameter uid: the drone/media uid pair of the media to check
+    func isSelected(uid: DroneMediaIdentifier) -> Bool {
         selectedMediaUids.contains(uid)
     }
 
@@ -483,7 +487,6 @@ extension GalleryViewModel {
         start(action: .delete)
 
         try await mediaListService.delete(medias: medias)
-
         stop(action: .delete)
     }
 
@@ -518,6 +521,7 @@ extension GalleryViewModel {
     ///
     /// - Parameter srcView: the source view of the sharing process
     func showSharingScreen(srcView: UIView, completion: (() -> Void)?) {
+        ULog.d(.tag, "Share medias \(selectedMedias.map { ($0.droneUid, $0.uid) })")
         let urls = selectedMedias.urls
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.showSharingScreen(fromView: srcView, items: urls, completion: completion)
@@ -597,6 +601,14 @@ private extension GalleryViewModel {
             self?.sourceDetails = details
         }
         .store(in: &cancellables)
+
+        $mediaListState
+            .sink { [weak self] _ in
+                if self?.mediaListState == .empty {
+                    self?.setSelectMode(false)
+                }
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -638,6 +650,9 @@ private extension GalleryViewModel {
             }
         } else {
             mediaListState = mediaContentState
+        }
+        if mediaListState == .empty {
+            setSelectMode(false) // Exit select mode.
         }
     }
 
@@ -720,13 +735,13 @@ private extension GalleryViewModel {
     // MARK: Media Selection
     /// Selects a media with a specific uid.
     ///
-    /// - Parameter uid: the uid of the media to select
-    func selectMedia(with uid: String) { selectedMediaUids.insert(uid) }
+    /// - Parameter uid: the drone/media uid pair of the media to select
+    func selectMedia(with uid: DroneMediaIdentifier) { selectedMediaUids.insert(uid) }
 
     /// Deselects a media with a specific uid.
     ///
-    /// - Parameter uid: the uid of the media to deselect
-    func deselectMedia(with uid: String) { selectedMediaUids.remove(uid) }
+    /// - Parameter uid: the drone/media uid pair of the media to deselect
+    func deselectMedia(with uid: DroneMediaIdentifier) { selectedMediaUids.remove(uid) }
 
     /// Adds all displayed medias to current selection.
     func selectAll() { selectedMediaUids = selectedMediaUids.union(filteredMediaUids) }

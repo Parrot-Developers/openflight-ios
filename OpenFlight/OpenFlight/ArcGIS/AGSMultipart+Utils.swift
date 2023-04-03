@@ -38,8 +38,8 @@ extension AGSGeometry {
     ///    - altitudeOffset: altitude offset to apply to envelope, in meters. Altitude off set should be nil if overlay is in drapedFlat.
     ///
     /// - Returns: AGSEnvelope.
-    func envelopeWithMargin(_ marginFactor: Double = ArcGISStyle.envelopeMarginFactor,
-                            altitudeOffset: Double? = nil) -> AGSEnvelope {
+    public func envelopeWithMargin(_ marginFactor: Double = ArcGISStyle.envelopeMarginFactor,
+                                   altitudeOffset: Double? = nil) -> AGSEnvelope {
         let envelopeBuilder = AGSEnvelopeBuilder(envelope: extent)
         envelopeBuilder.expand(byFactor: marginFactor)
         if let altitudeOffset = altitudeOffset {

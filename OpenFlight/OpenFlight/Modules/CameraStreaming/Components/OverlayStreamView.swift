@@ -44,4 +44,13 @@ public class OverlayStreamView: UIView {
     func update(frame: CGRect) {
         self.frame = frame
     }
+
+    /// Converts a normalized point into stream view coordinates.
+    ///
+    /// - Parameters:
+    ///    - point: the point to convert
+    /// - Returns: the converted point
+    func pointInStreamView(point: CGPoint) -> CGPoint {
+        return CGPoint(x: frame.width * point.x, y: frame.height * point.y)
+    }
 }

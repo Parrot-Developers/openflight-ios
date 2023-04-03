@@ -40,11 +40,14 @@ public final class PairingCoordinator: Coordinator {
     public weak var parentCoordinator: Coordinator?
 
     // MARK: - Private Properties
+    private unowned var services: ServiceHub
     private weak var delegate: PairingCoordinatorDelegate?
 
     // MARK: - Init
-    public init(navigationController: NavigationController? = nil,
+    public init(services: ServiceHub,
+                navigationController: NavigationController? = nil,
                 delegate: PairingCoordinatorDelegate) {
+        self.services = services
         self.navigationController = navigationController
         self.delegate = delegate
     }
@@ -78,7 +81,11 @@ extension PairingCoordinator {
 
     /// Starts drones list.
     func startRemoteConnectDrone() {
-        let viewModel = PairingConnectDroneViewModel()
+        let viewModel = PairingConnectDroneViewModel(currentDroneHolder: services.currentDroneHolder,
+                                                     currentRemoteControlHolder: services.currentRemoteControlHolder,
+                                                     networkService: services.systemServices.networkService,
+                                                     pairingService: services.drone.cellularPairingService,
+                                                     academyApiDroneService: services.academyApiDroneService)
         let viewController = PairingConnectDroneViewController.instantiate(coordinator: self,
                                                                            viewModel: viewModel)
         push(viewController)

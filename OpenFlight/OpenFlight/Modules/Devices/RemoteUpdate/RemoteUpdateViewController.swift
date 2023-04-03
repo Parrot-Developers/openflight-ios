@@ -154,7 +154,7 @@ private extension RemoteUpdateViewController {
             downloadingStepView?.model.step = .error
             if !isDownloadOnly,
                let targetVersion = viewModel?.latestApplicableFirmwareVersion {
-                ULog.d(.remoteUpdateTag, "download of firmware \(viewModel?.state.value.idealFirmwareVersion ?? "")"
+                ULog.i(.remoteUpdateTag, "download of firmware \(viewModel?.state.value.idealFirmwareVersion ?? "")"
                        + " failed, start update with local firmware \(targetVersion)")
                 sendingStepView?.model.title = L10n.firmwareMissionUpdateSendingToRemoteControl(targetVersion)
                 viewModel?.startUpdate()

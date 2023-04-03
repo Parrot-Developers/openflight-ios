@@ -45,31 +45,25 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
     }
 
     // MARK: - Internal Properties
-    /// Associated waypoint.
-    private(set) var originWayPoint: WayPoint?
-
     private var cone: AGSSimpleMarkerSceneSymbol
-
-    /// Camera heading
-    private var heading: Int = 0
 
     // MARK: - Init
     /// Init.
     ///
     /// - Parameters:
     ///    - origin: origin waypoint
-    public init(origin: WayPoint) {
-        originWayPoint = origin
+    public init?(wayPoints: [WayPoint]) {
+        guard let origin = wayPoints.first?.agsPoint else { return nil }
         cone = AGSSimpleMarkerSceneSymbol.cone(with: Constants.defaultColor,
                                                diameter: Constants.coneSideSize,
                                                height: Constants.coneLengthSize,
                                                anchorPosition: .center)
         cone.pitch = 90
 
-        super.init(geometry: origin.agsPoint,
-                   symbol: cone,
-                   attributes: nil)
-        applyRotation()
+        super.init(geometry: origin, symbol: cone, attributes: nil)
+        adjustSize(wayPoints: wayPoints)
+        applyRotation(wayPoints: wayPoints)
+        adjustPositionOffset(point: origin)
     }
 
     /// Hides arrow symbol.
@@ -81,27 +75,13 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
         }
     }
 
-    /// Updates camera heading.
-    ///
-    /// - Parameters:
-    ///     - heading: camera heading
-    public func update(heading newHeading: Double) {
-        if heading != Int(newHeading) {
-            heading = Int(newHeading)
-            applyRotation()
-            symbol = cone
-        }
-    }
-
     /// Applies rotation to symbols.
-    private func applyRotation() {
-        guard let origin = originWayPoint,
-              let coordinateNextWayPoint = origin.nextWayPoint?.coordinate else { return }
-        cone.heading = coordinateNextWayPoint.bearingTo(origin.coordinate)
-        adjustPositionOffset()
+    private func applyRotation(wayPoints: [WayPoint]) {
+        guard wayPoints.count >= 2 else { return }
+        cone.heading = wayPoints[1].coordinate.bearingTo(wayPoints[0].coordinate)
     }
 
-    public func adjustSize(wayPoints: [WayPoint]) {
+    private func adjustSize(wayPoints: [WayPoint]) {
         guard !wayPoints.isEmpty else { return }
         let latitudes = wayPoints.map { $0.coordinate.latitude }.sorted()
         let longitudes = wayPoints.map { $0.coordinate.longitude }.sorted()
@@ -114,13 +94,11 @@ public final class FlightPlanOriginGraphic: FlightPlanGraphic {
         cone.width = Constants.coneSideSize * resizeFactor
         cone.depth = Constants.coneSideSize * resizeFactor
         symbol = cone
-        adjustPositionOffset()
     }
 
-    private func adjustPositionOffset() {
+    private func adjustPositionOffset(point: AGSPoint) {
         let size = Double(cone.height) / 2 * Constants.coneTraitOverlap
         let heading = Double(cone.heading).toRadians()
-        guard let point = originWayPoint?.agsPoint else { return }
         let deltaX = (size / Constants.lngToMeters) * sin(heading) / cos(Double(point.y).toRadians())
         let deltaY = (size / Constants.latToMeters) * cos(heading)
         geometry = AGSPoint(x: point.x + deltaX, y: point.y + deltaY, z: point.z, spatialReference: .wgs84())

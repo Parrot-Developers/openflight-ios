@@ -142,7 +142,7 @@ private extension PhotoLapseModeViewModel {
             photoCount = mediaList
                 .filter { $0.customId == activeFlightPlan.uuid && ($0.mediaType == .timeLapse || $0.mediaType == .gpsLapse) }
                 .reduce(0, { $0 + $1.resources.count })
-            ULog.d(.tag, "Retrieve \(photoCount) media for activeFlightPlan \(activeFlightPlan.uuid)")
+            ULog.i(.tag, "Retrieve \(photoCount) media for activeFlightPlan \(activeFlightPlan.uuid)")
             listenCamera(drone: drone, adjustPhotoCount: true)
             mediaListRef = nil
         }
@@ -183,16 +183,16 @@ private extension PhotoLapseModeViewModel {
             updateMode(withCamera: camera)
             guard let photoCaptureState = photoCapture?.state else { return }
             switch photoCaptureState {
-            case .started(_, _, _, let captureCount, _):
+            case .started(_, _, let captureCount, _):
                 if adjustPhotoCount {
                     // substract to this photo count the number of current photo capture
                     // in order to not count them twice when displaying photo count
                     photoCount -= captureCount
-                    ULog.d(.tag, "Adjust photo count to \(photoCount)")
+                    ULog.i(.tag, "Adjust photo count to \(photoCount)")
                     adjustPhotoCount = false
                 }
                 photoCaptureCount = captureCount
-                ULog.d(.tag, "Photo capture started: photoCount \(photoCount), photoCaptureCount \(photoCaptureCount)")
+                ULog.i(.tag, "Photo capture started: photoCount \(photoCount), photoCaptureCount \(photoCaptureCount)")
                 updatePhotoCount(photoCount: photoCount + photoCaptureCount)
             case .stopped:
                 // save last photo capture count if a flight plan is active.
@@ -200,7 +200,7 @@ private extension PhotoLapseModeViewModel {
                     photoCount += photoCaptureCount
                 }
                 photoCaptureCount = 0
-                ULog.d(.tag, "Photo capture stopped: photoCount \(photoCount), photoCaptureCount \(photoCaptureCount)")
+                ULog.i(.tag, "Photo capture stopped: photoCount \(photoCount), photoCaptureCount \(photoCaptureCount)")
                 updatePhotoCount(photoCount: photoCount + photoCaptureCount)
             default:
                 break

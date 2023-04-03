@@ -59,17 +59,17 @@ private extension FrontRightButtonViewModel {
         }
 
         if drone.isStateFlying || drone.isHandLaunchReady {
-            ULog.d(.tag, "performDroneAction, drone is flying or ready to handlaunch")
+            ULog.i(.tag, "performDroneAction, drone is flying or ready to handlaunch")
             takeOffOrLandDrone()
         } else {
             // Notifies that takeOff is requested.
-            ULog.d(.tag, "performDroneAction, notify takeoff request")
+            ULog.i(.tag, "performDroneAction, notify takeoff request")
             NotificationCenter.default.post(name: .takeOffRequestedDidChange,
                                             object: nil,
                                             userInfo: [HUDCriticalAlertConstants.takeOffRequestedNotificationKey: true])
             // Checks is there are no critical alerts.
             guard Services.hub.ui.criticalAlert.canTakeOff else {
-                ULog.d(.tag, "performDroneAction, criticalAlert.canTakeOff is true ")
+                ULog.i(.tag, "performDroneAction, criticalAlert.canTakeOff is true ")
                 return
             }
 
@@ -88,10 +88,10 @@ private extension FrontRightButtonViewModel {
         if !drone.isManualPilotingActive {
             // Deactivates RTH if it is the current pilotingItf.
             if drone.getPilotingItf(PilotingItfs.returnHome)?.state == .active {
-                ULog.d(.tag, "takeOffOrLandDrone deactivate rth")
+                ULog.i(.tag, "takeOffOrLandDrone deactivate rth")
                 _ = drone.getPilotingItf(PilotingItfs.returnHome)?.deactivate()
             } else {
-                ULog.d(.tag, "takeOffOrLandDrone activate manual")
+                ULog.i(.tag, "takeOffOrLandDrone activate manual")
                 _ = manualPilotingItf.activate()
             }
         }
@@ -100,23 +100,23 @@ private extension FrontRightButtonViewModel {
         case .thrownTakeOff:
             if Services.hub.drone.handLaunchService.canStart {
                 if Services.hub.drone.ophtalmoService.canStartHandCalibration {
-                    ULog.d(.tag, "takeOffOrLandDrone execute ophtalmo start hand")
+                    ULog.i(.tag, "takeOffOrLandDrone execute ophtalmo start hand")
                     Services.hub.drone.ophtalmoService.startHandCalibration()
                 } else {
-                    ULog.d(.tag, "takeOffOrLandDrone execute thrownTakeOff")
+                    ULog.i(.tag, "takeOffOrLandDrone execute thrownTakeOff")
                     manualPilotingItf.thrownTakeOff()
                 }
             } else {
-                ULog.d(.tag, "takeOffOrLandDrone execute takeOff")
+                ULog.i(.tag, "takeOffOrLandDrone execute takeOff")
                 Services.hub.drone.handLaunchService.updateTakeOffButtonPressed(true)
                 manualPilotingItf.takeOff()
             }
         case .takeOff:
-            ULog.d(.tag, "takeOffOrLandDrone action is .takeOff")
+            ULog.i(.tag, "takeOffOrLandDrone action is .takeOff")
             Services.hub.drone.handLaunchService.updateTakeOffButtonPressed(true)
             manualPilotingItf.takeOff()
         case .land:
-            ULog.d(.tag, "takeOffOrLandDrone action is .land")
+            ULog.i(.tag, "takeOffOrLandDrone action is .land")
             manualPilotingItf.land()
         default:
             ULog.e(.tag, "takeOffOrLandDrone action is other: \(manualPilotingItf.smartTakeOffLandAction.description)")

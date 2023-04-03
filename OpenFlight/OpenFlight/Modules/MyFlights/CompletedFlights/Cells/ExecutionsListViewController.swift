@@ -30,6 +30,7 @@
 import UIKit
 import CoreData
 import Combine
+import Pictor
 
 // MARK: - Protocol
 public protocol ExecutionsListDelegate: AnyObject {
@@ -61,7 +62,7 @@ final class ExecutionsListViewController: UIViewController {
     private var selectedFlightItem: FlightPlanModel?
     private var projectModel: ProjectModel!
     private var flightService: FlightService!
-    private var flightPlanRepo: FlightPlanRepository!
+    private var flightPlanRepository: PictorFlightPlanRepository!
     private var topBarService: HudTopBarService!
     private weak var delegate: ExecutionsListDelegate?
     private var cancellables: [AnyCancellable] = []
@@ -73,7 +74,7 @@ final class ExecutionsListViewController: UIViewController {
                             projectManager: ProjectManager,
                             projectModel: ProjectModel,
                             flightService: FlightService,
-                            flightPlanRepo: FlightPlanRepository,
+                            flightPlanRepository: PictorFlightPlanRepository,
                             topBarService: HudTopBarService,
                             backButtonPublisher: AnyPublisher<Void, Never>) -> ExecutionsListViewController {
         let viewController = StoryboardScene.ExecutionsListViewController.initialScene.instantiate()
@@ -82,7 +83,7 @@ final class ExecutionsListViewController: UIViewController {
         viewController.projectManager = projectManager
         viewController.projectModel = projectModel
         viewController.flightService = flightService
-        viewController.flightPlanRepo = flightPlanRepo
+        viewController.flightPlanRepository = flightPlanRepository
         viewController.topBarService = topBarService
         viewController.backButtonPublisher = backButtonPublisher
         return viewController

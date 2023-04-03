@@ -28,37 +28,6 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import Pictor
 
-public struct DroneModel: Equatable {
-
-    // MARK: __ Academy
-    public var apcId: String
-    public var droneSerial: String
-    public var droneCommonName: String?
-    public var modelId: String?
-    public var pairedFor4G: Bool
-
-    // MARK: __ Synchronization
-    public var synchroStatus: SynchroStatus?
-    public var synchroDate: Date?
-
-    // MARK: - Public init
-    public init(apcId: String,
-                droneSerial: String,
-                droneCommonName: String?,
-                modelId: String?,
-                pairedFor4G: Bool,
-                synchroDate: Date? = nil,
-                synchroStatus: SynchroStatus? = .notSync) {
-        // Academy
-        self.apcId = apcId
-        self.droneSerial = droneSerial
-        self.droneCommonName = droneCommonName
-        self.modelId = modelId
-        self.pairedFor4G = pairedFor4G
-        // Synchronization
-        self.synchroStatus = synchroStatus
-        self.synchroDate = synchroDate
-
-    }
-}
+public typealias DroneModel = PictorDroneModel

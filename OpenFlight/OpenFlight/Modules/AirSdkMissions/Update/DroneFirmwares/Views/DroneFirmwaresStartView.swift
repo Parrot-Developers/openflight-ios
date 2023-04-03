@@ -130,6 +130,10 @@ private extension DroneFirmwaresStartView {
             startUpdateButton.setup(title: L10n.firmwareMissionUpdateInstallOne(mission.missionVersion),
                                     style: .secondary1)
             startUpdateButton.isEnabled = droneIsConnected
+        case .batteryGaugeUpdate:
+            startUpdateButton.setup(title: L10n.batteryUpdateInstall,
+                                    style: .secondary1)
+            startUpdateButton.isEnabled = droneIsConnected
         }
     }
 

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="25" id="F38-UQ-N7s" customClass="BatteryUpdateReasonsCell" customModule="OpenFlight" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="310" height="25"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="F38-UQ-N7s" id="dAZ-3I-F6g">
+                <rect key="frame" x="0.0" y="0.0" width="310" height="25"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ArI-xU-f7E">
+                        <rect key="frame" x="0.0" y="5.6666666666666679" width="14" height="14"/>
+                        <constraints>
+                            <constraint firstAttribute="width" secondItem="ArI-xU-f7E" secondAttribute="height" multiplier="1:1" id="uZh-5C-ndf"/>
+                            <constraint firstAttribute="height" constant="14" id="uch-Hl-kCE"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xQo-Fm-U5U">
+                        <rect key="frame" x="30" y="5" width="280" height="15"/>
+                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstItem="ArI-xU-f7E" firstAttribute="centerY" secondItem="dAZ-3I-F6g" secondAttribute="centerY" id="CTA-56-29u"/>
+                    <constraint firstItem="xQo-Fm-U5U" firstAttribute="centerY" secondItem="dAZ-3I-F6g" secondAttribute="centerY" id="JLd-DE-njY"/>
+                    <constraint firstItem="xQo-Fm-U5U" firstAttribute="leading" secondItem="ArI-xU-f7E" secondAttribute="trailing" constant="16" id="aOb-Fm-6RQ"/>
+                    <constraint firstItem="ArI-xU-f7E" firstAttribute="leading" secondItem="dAZ-3I-F6g" secondAttribute="leading" id="xVC-1g-aMa"/>
+                    <constraint firstAttribute="trailing" secondItem="xQo-Fm-U5U" secondAttribute="trailing" id="xt1-ko-TZu"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <accessibility key="accessibilityConfiguration">
+                <accessibilityTraits key="traits" notEnabled="YES"/>
+            </accessibility>
+            <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+            <connections>
+                <outlet property="label" destination="xQo-Fm-U5U" id="h9e-Ex-QuD"/>
+                <outlet property="statusImage" destination="ArI-xU-f7E" id="Ccz-WJ-tz5"/>
+            </connections>
+            <point key="canvasLocation" x="-35.114503816793892" y="103.16901408450705"/>
+        </tableViewCell>
+    </objects>
+</document>

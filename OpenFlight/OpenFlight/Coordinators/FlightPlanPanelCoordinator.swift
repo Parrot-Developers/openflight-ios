@@ -76,6 +76,7 @@ public final class FlightPlanPanelCoordinator: Coordinator {
                                                  currentMissionManager: services.currentMissionManager,
                                                  flightService: services.flight.service,
                                                  coordinator: self,
+                                                 rthService: services.drone.rthService,
                                                  rthSettingsMonitor: services.rthSettingsMonitor,
                                                  splitControls: splitControls)
         // FlightPlanPanel : ViewController + viewModel
@@ -130,7 +131,7 @@ extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
         let selectedProject = services.flightPlan.projectManager.currentProject
         let projectManagerCoordinator = ProjectManagerCoordinator(flightPlanServices: services.flightPlan,
                                                                   uiServices: services.ui,
-                                                                  cloudSynchroWatcher: services.cloudSynchroWatcher,
+                                                                  synchroService: services.synchroService,
                                                                   defaultSelectedProject: selectedProject)
         projectManagerCoordinator.parentCoordinator = self
         projectManagerCoordinator.start()
@@ -151,7 +152,7 @@ extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
             projectManager: services.flightPlan.projectManager,
             projectModel: projectModel,
             flightService: services.flight.service,
-            flightPlanRepo: services.repos.flightPlan,
+            flightPlanRepository: services.repos.flightPlan,
             topBarService: services.ui.hudTopBarService) {
             navigationController?.pushViewController(viewController, animated: true)
         } else if let viewController = (mapViewController as? FlightPlanSceneViewController)?.executionsListProvider(
@@ -160,7 +161,7 @@ extension FlightPlanPanelCoordinator: FlightPlanManagerCoordinator {
             projectManager: services.flightPlan.projectManager,
             projectModel: projectModel,
             flightService: services.flight.service,
-            flightPlanRepo: services.repos.flightPlan,
+            flightPlanRepository: services.repos.flightPlan,
             topBarService: services.ui.hudTopBarService) {
             navigationController?.pushViewController(viewController, animated: true)
         }

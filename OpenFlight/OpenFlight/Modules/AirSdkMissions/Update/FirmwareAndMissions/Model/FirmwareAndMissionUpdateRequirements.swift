@@ -32,7 +32,7 @@ import GroundSdk
 
 // MARK: - Internal Enums
 /// Enum order by priority to trigger a missing requirement alert view for missions and firmware updates .
-enum FirmwareAndMissionUpdateRequirements: Int {
+public enum FirmwareAndMissionUpdateRequirements: Int {
     case droneIsNotConnected
     case notEnoughBattery
     case droneIsFlying

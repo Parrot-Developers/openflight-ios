@@ -98,7 +98,7 @@ class TouchStreamStateMachine {
     private var currentState: TouchStreamStateMachineState {
         didSet {
             if oldValue != currentState {
-                ULog.d(.tag, "state changed from \(oldValue) to \(currentState)")
+                ULog.i(.tag, "state changed from \(oldValue) to \(currentState)")
             }
         }
     }

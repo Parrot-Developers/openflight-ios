@@ -39,77 +39,90 @@ public class DroneLocationGraphicsOverlayViewModel {
     /// Combine cancellables
     private var cancellables = Set<AnyCancellable>()
     private let locationsTracker: LocationsTracker
-    private var droneConnectionStateSubject = CurrentValueSubject<Bool, Never>(false)
-    private var droneModelSceneSymbolWithGPS = AGSModelSceneSymbol(name: "Drone3DOK", extension: "dae", scale: 1)
-    private let droneModelSceneSymbolNoGPS = AGSModelSceneSymbol(name: "Drone3DKO", extension: "dae", scale: 1)
+    private let connectedDroneHolder: ConnectedDroneHolder
 
     /// Whether the drone location is displayed in a scene or a map.
-
-    public var droneIconSubject = CurrentValueSubject<AssetImageTypeAlias?, Never>(nil)
-    public var droneIconSubject3D = CurrentValueSubject<AGSModelSceneSymbol?, Never>(nil)
+    public var droneIconSubject = CurrentValueSubject<AGSSymbol?, Never>(nil)
+    public var isDroneConnectedPublisher: AnyPublisher<Bool, Never> {
+        connectedDroneHolder.dronePublisher.map({ $0 != nil }).removeDuplicates().eraseToAnyPublisher()
+    }
 
     // MARK: Public Properties
-    /// Drone location publisher
-    public var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> { locationsTracker.droneAbsoluteLocationPublisher }
-    public var droneIconPublisher: AnyPublisher<AssetImageTypeAlias?, Never> { droneIconSubject.eraseToAnyPublisher() }
-    public var droneIcon3DPublisher: AnyPublisher<AGSModelSceneSymbol?, Never> { droneIconSubject3D.eraseToAnyPublisher() }
+    /// Returns the drone location as displayed in the map
+    @Published public var droneLocation: OrientedLocation?
+    public var droneIconPublisher: AnyPublisher<AGSSymbol?, Never> { droneIconSubject.eraseToAnyPublisher() }
 
-    public var isMiniMapPublisher: AnyPublisher<Bool, Never> { isMiniMap.eraseToAnyPublisher() }
-    public var isMiniMap = CurrentValueSubject<Bool, Never>(false)
+    public let isScene: Bool
+    private let showWhenDisconnected: Bool
+    private var isMiniMapSubject = CurrentValueSubject<Bool, Never>(false)
 
-    public var isScenePublisher: AnyPublisher<Bool, Never> { isScene.eraseToAnyPublisher() }
-    public var isScene = CurrentValueSubject<Bool, Never>(false)
-
-    /// Drone connection state publisher
-    public var droneConnectionStatePublisher: AnyPublisher<Bool, Never> {
-        droneConnectionStateSubject.eraseToAnyPublisher() }
-    public var droneLocation: OrientedLocation {
-        locationsTracker.droneLocation
+    private enum Constants {
+        static let icon3DWidth = 3.2823805809020996
+        static let icon3DDepth = 1.0493721961975098
+        static let icon3DHeight = 3.4851346015930176
+        static let icon2DWidth = 116.0
+        static let icon2DHeight = 116.0
     }
-    /// Reference to GPS Instrument
-    private var gpsRef: Ref<Gps>?
 
     /// Init
     /// - Parameters:
     ///  - networkService: the network service
-    init(connectedDroneHolder: ConnectedDroneHolder, locationsTracker: LocationsTracker) {
+    init(isScene: Bool, showWhenDisconnected: Bool, connectedDroneHolder: ConnectedDroneHolder, locationsTracker: LocationsTracker) {
+        self.isScene = isScene
+        self.showWhenDisconnected = showWhenDisconnected
+        self.connectedDroneHolder = connectedDroneHolder
         self.locationsTracker = locationsTracker
 
-        connectedDroneHolder.dronePublisher
-            .sink { [weak self] drone in
-                guard let self = self else { return }
-                self.droneConnectionStateSubject.value = drone != nil
-                self.listenGps(drone: drone)
+        if let coordinates = locationsTracker.droneLocation, let heading = locationsTracker.droneHeading {
+            let altitude = isScene ? (locationsTracker.droneAbsoluteAltitude ?? 0) : 0
+            self.droneLocation = OrientedLocation(coordinates: Location3D(coordinate: coordinates, altitude: altitude), heading: heading)
+        }
+
+        let droneLocationPublisher = isScene
+        ? locationsTracker.drone3DLocationPublisher(animated: true, absoluteAltitude: true)
+        : locationsTracker.drone2DOrientedLocationPublisher(animated: true)
+        droneLocationPublisher
+            .sink { [weak self] location in
+                self?.droneLocation = location
             }
             .store(in: &cancellables)
 
+        isDroneConnectedPublisher.removeDuplicates().combineLatest(
+            locationsTracker.droneGpsFixedPublisher.removeDuplicates(), isMiniMapSubject.removeDuplicates())
+            .sink { [weak self] (isConnected, isGpsFixed, isMiniMap) in
+                self?.updateDroneIcon(isConnected: isConnected, isGpsFixed: isGpsFixed, isMiniMap: isMiniMap)
+            }
+            .store(in: &cancellables)
     }
 
-    /// Starts observing changes for gps strength and updates the gps Strength published property.
+    /// Updates drone icon
     ///
-    /// - Parameter drone: the current drone
-    func listenGps(drone: Drone?) {
-        guard let drone = drone else {
-            updateDroneIcon(gps: .none)
-            return
-        }
-        gpsRef = drone.getInstrument(Instruments.gps) { [weak self] gps in
-            self?.updateDroneIcon(gps: gps?.gpsStrength ?? .none)
-        }
-    }
+    /// - Parameters:
+    ///  - isConnected: if the drone is connected
+    ///  - isGpsFixed: if we have a fixed gps location
+    ///  - isMiniMap: if the map is displayed on the minimap
+    func updateDroneIcon(isConnected: Bool, isGpsFixed: Bool, isMiniMap: Bool) {
+        let shouldDisplay = isConnected || showWhenDisconnected
+        if isScene {
+            let symbol = AGSModelSceneSymbol(name: isGpsFixed ? "Drone3DOK" : "Drone3DKO", extension: "dae", scale: 1)
+            symbol.anchorPosition = .bottom
+            symbol.symbolSizeUnits = .dips
+            let scale: Double = shouldDisplay ? (isMiniMap ? 14 : 7) : 0
 
-    /// Updates drone icon according to its gps strength
-    ///
-    /// - Parameter gps: the current gps strength
-    func updateDroneIcon(gps: GpsStrength) {
-        if !isScene.value {
-            droneIconSubject3D.value = nil
-            droneIconSubject.value = (gps == .none || gps == .notFixed)
-            ? (isMiniMap.value ? Asset.Map.mapDroneDisconnectedMiniMap.image: Asset.Map.mapDroneDisconnected.image )
-            : (isMiniMap.value ? Asset.Map.mapDroneMiniMap.image : Asset.Map.mapDrone.image)
+            symbol.width = Constants.icon3DWidth * scale
+            symbol.height = Constants.icon3DHeight * scale
+            symbol.depth = Constants.icon3DDepth * scale
+            droneIconSubject.value = symbol
         } else {
-            droneIconSubject.value = nil
-            droneIconSubject3D.value = (gps == .none || gps == .notFixed) ? droneModelSceneSymbolNoGPS : droneModelSceneSymbolWithGPS
+            let image = isGpsFixed ? Asset.Map.mapDrone.image : Asset.Map.mapDroneDisconnected.image
+            let symbol = AGSPictureMarkerSymbol(image: image)
+            symbol.angleAlignment = .map
+            symbol.opacity = shouldDisplay ? 1 : 0
+
+            let scale: Double = isMiniMap ? 2 : 1
+            symbol.width = Constants.icon2DWidth * scale
+            symbol.height = Constants.icon2DHeight * scale
+            droneIconSubject.value = symbol
         }
     }
 
@@ -117,7 +130,6 @@ public class DroneLocationGraphicsOverlayViewModel {
     ///
     /// - Parameter isMiniMap: the new value of isMiniMap
     func update(isMiniMap: Bool) {
-        self.isMiniMap.value = isMiniMap
-        updateDroneIcon(gps: gpsRef?.value?.gpsStrength ?? .none)
+        isMiniMapSubject.value = isMiniMap
     }
 }

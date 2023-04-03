@@ -1,4 +1,4 @@
-//    Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2023 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -27,11 +27,9 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import Foundation
 import CoreData
-import GroundSdk
 
-/// Custom persistent container, so that other packages can load the OpenFlight's persistent store.
-
+// - Subclass of NSPersistentContainer to load .xcdatamodel from OpenFlight Bundle
 public class PersistentContainer: NSPersistentContainer {
-
 }

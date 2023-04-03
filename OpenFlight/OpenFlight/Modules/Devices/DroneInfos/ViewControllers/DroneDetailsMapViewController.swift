@@ -39,7 +39,7 @@ protocol DroneDetailsMapViewProtocol: AnyObject {
 }
 
 /// Display map into drone details screen.
-final class DroneDetailsMapViewController: AGSMapViewController {
+final class DroneDetailsMapViewController: MapWithOverlaysViewController {
     // MARK: - Outlets
     @IBOutlet private weak var mainView: UIView!
     @IBOutlet private weak var lastPositionTitleLabel: UILabel!
@@ -53,7 +53,7 @@ final class DroneDetailsMapViewController: AGSMapViewController {
 
     // MARK: - Private Properties
     private weak var coordinator: Coordinator?
-    private let viewModel = DroneDetailsMapViewModel()
+    private var viewModel: DroneDetailsMapViewModel!
     private var cancellables = Set<AnyCancellable>()
     private var droneLocationOverlay: DroneLocationGraphicsOverlay?
 
@@ -61,11 +61,12 @@ final class DroneDetailsMapViewController: AGSMapViewController {
     private weak var delegate: DroneDetailsMapViewProtocol?
 
     // MARK: - Setup
-    static func instantiate(coordinator: Coordinator, delegate: DroneDetailsMapViewProtocol) -> DroneDetailsMapViewController {
-
+    static func instantiate(coordinator: Coordinator, delegate: DroneDetailsMapViewProtocol,
+                            droneDetailsMapViewModel: DroneDetailsMapViewModel) -> DroneDetailsMapViewController {
         let viewController = StoryboardScene.DroneDetailsMap.initialScene.instantiate()
         viewController.coordinator = coordinator
         viewController.delegate = delegate
+        viewController.viewModel = droneDetailsMapViewModel
         return viewController
     }
 
@@ -73,7 +74,7 @@ final class DroneDetailsMapViewController: AGSMapViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initView()
-        initMap()
+        droneLocationOverlay = addDroneOverlay(showWhenDisconnected: true)
         setupViewModel()
     }
 
@@ -135,15 +136,6 @@ private extension DroneDetailsMapViewController {
         coordinateView.layer.cornerRadius = Style.largeCornerRadius
         bellStackView.layer.cornerRadius = Style.largeCornerRadius
         lastPositionTitleLabel.text = L10n.droneDetailsLastKnownPosition
-    }
-
-    /// Init map view controller.
-    func initMap() {
-        // Drone Overlay
-        droneLocationOverlay = DroneLocationGraphicsOverlay()
-        droneLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-        guard let droneLocationOverlay = droneLocationOverlay else { return }
-        mapView.graphicsOverlays.insert(droneLocationOverlay, at: 0)
     }
 
     /// Sets up the view model.

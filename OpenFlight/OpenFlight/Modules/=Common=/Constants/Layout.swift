@@ -60,6 +60,11 @@ public enum Layout {
         : tableViewCellContainerInsets.compact
     }
 
+    /// The popup horizontal margin according to device's size class.
+    public static func popupHMargin(_ isRegularSizeClass: Bool) -> CGFloat {
+        isRegularSizeClass ? popupHMargins.regular : popupHMargins.compact
+    }
+
     // MARK: - Information Screen Spacings
     /// leftSafeAreaMargin mainPaddings leftInfoMargin
     public static func leftInfoContainerMargin(_ isRegularSizeClass: Bool) -> CGFloat {
@@ -83,9 +88,9 @@ public enum Layout {
                 bottom: 0,
                 trailing: 40)
         : .init(top: 0,
-                leading: UIDevice.current.hasLeftSafeAreaInset ? leftSafeAreaMargin + Layout.mainPaddings.compact : Layout.mainPaddings.compact,
+                leading: leftSafeAreaPadding + Layout.mainPaddings.compact,
                 bottom: 0,
-                trailing: UIDevice.current.hasLeftSafeAreaInset ? leftSafeAreaMargin + Layout.mainPaddings.compact : Layout.mainPaddings.compact)
+                trailing: leftSafeAreaPadding + Layout.mainPaddings.compact)
     }
 
     // MARK: - Buttons
@@ -324,7 +329,9 @@ private extension Layout {
     /// Bottom safe area margins.
     static let bottomSafeAreaMargins: (compact: CGFloat, regular: CGFloat) = (19, 20)
     /// Left safe area margin.
-    static let leftSafeAreaMargin: CGFloat = 30
+    /// System left safe area is wider than padding defined in UI guidelines. `leftSafeAreaMargin` still needs to
+    /// rely on system's value, as notch occupancy may vary depending on the device used.
+    static let leftSafeAreaMargin: CGFloat = max(0, UIDevice.current.leftSafeAreaInset - 16)
     /// Left safe area adjustment offset (needed because `leftSafeAreaMargin` is slightly narrower than actual notch).
     static let leftSafeAreaAdjustmentOffset: CGFloat = 4
     /// Safe area corners margin. Used to compensate rounded corners lost space.
@@ -336,6 +343,11 @@ private extension Layout {
     static let tableViewCellContainerSpacing: (compact: CGFloat, regular: CGFloat) = (10, 10)
     /// Table view cell settings spacing
     static let tableViewCellSettingsSpacings: (compact: CGFloat, regular: CGFloat) = (5, 10)
+    /// Popup horizontal margins.
+    static let popupHMargins: (compact: CGFloat, regular: CGFloat) = (
+        max(37, leftSafeAreaMargin + 6),
+        30
+    )
 
     // MARK: - Information screen Spacings
     /// Left safe area info margin.

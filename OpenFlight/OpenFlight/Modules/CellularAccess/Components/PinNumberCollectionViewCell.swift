@@ -82,11 +82,15 @@ final class PinNumberCollectionViewCell: UICollectionViewCell, NibReusable {
 private extension PinNumberCollectionViewCell {
     @IBAction func numberButtonTouchedUpInside(_ sender: Any) {
         updateView()
+        delegate?.updatePinNumber(number: number)
+    }
+
+    @IBAction func numberButtonTouchedUpOutside(_ sender: Any) {
+        updateView()
     }
 
     @IBAction func numberButtonTouchedDown(_ sender: Any) {
-        updateView(isSelected: true)
-        delegate?.updatePinNumber(number: number)
+        updateView(isHighlighted: true)
     }
 }
 
@@ -96,9 +100,9 @@ private extension PinNumberCollectionViewCell {
     ///
     /// - Parameters:
     ///     - isSelected: tells if the view is selected
-    func updateView(isSelected: Bool = false) {
+    func updateView(isHighlighted: Bool = false) {
         let cornerRadius = mainView.frame.width / 2
-        let backgroundColor = isSelected ? ColorName.highlightColor.color : .clear
+        let backgroundColor = isHighlighted ? ColorName.highlightColor.color : .clear
         numberButton.cornerRadiusedWith(backgroundColor: backgroundColor,
                                         borderColor: ColorName.defaultTextColor.color,
                                         radius: cornerRadius,

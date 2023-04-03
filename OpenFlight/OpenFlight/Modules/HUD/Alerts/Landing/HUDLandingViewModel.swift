@@ -53,6 +53,9 @@ final class HUDLandingViewModel {
     private(set) var isBasicRthActive = CurrentValueSubject<Bool, Never>(false)
     private(set) var isFlightPlanRthActive = CurrentValueSubject<Bool, Never>(false)
 
+    // A PassthroughSubject publishing an image when a forced update is needed.
+    var forceImageUpdateSubject = PassthroughSubject<UIImage?, Never>()
+
     var isReturnHomeActive: AnyPublisher<Bool, Never> {
         isBasicRthActive
             .combineLatest(isFlightPlanRthActive)
@@ -66,10 +69,10 @@ final class HUDLandingViewModel {
     private var landedState: FlyingIndicatorsLandedState = .none
 
     var isLandingOrRth: Bool {
-        isReturHomeActiveValue || isLanding.value
+        isReturnHomeActiveValue || isLanding.value
     }
 
-    var isReturHomeActiveValue: Bool {
+    var isReturnHomeActiveValue: Bool {
         isBasicRthActive.value || isFlightPlanRthActive.value
     }
 
@@ -77,25 +80,18 @@ final class HUDLandingViewModel {
         isReturnHomeActive
             .removeDuplicates()
             .combineLatest(isLanding.removeDuplicates())
-            .map { (isReturnHomeActive, isLanding) in
-                if isLanding {
-                    return Asset.Common.Icons.landing.image
-                }
-                if isReturnHomeActive {
-                    return Asset.Alertes.Rth.icRthHUD.image
-                }
-                return nil
-            }
+            .map { [weak self] _ in self?.currentImage }
             .eraseToAnyPublisher()
     }
 
     init() {
         connectedDroneHolder.dronePublisher
             .compactMap { $0 }
-            .sink { [unowned self] drone in
-                listenDrone(drone: drone)
+            .sink { [weak self] drone in
+                self?.listenDrone(drone: drone)
             }
             .store(in: &cancellables)
+        listenAppState()
     }
 
 }
@@ -172,13 +168,23 @@ private extension HUDLandingViewModel {
             .store(in: &cancellables)
     }
 
+    /// Listens the App State to force image update when coming from background.
+    func listenAppState() {
+        UIApplication.statePublisher
+            .sink { [weak self] in
+                guard $0 == .didBecomeActive else { return }
+                self?.forceImageUpdateSubject.send(self?.currentImage)
+            }
+            .store(in: &cancellables)
+    }
+
     /// Updates return home state.
     ///
     ///  - Parameters:
     ///     - drone: current drone
     func updateReturnHomeState(drone: Drone) {
         let isForceLanding = drone.isForceLanding(alarms: self.alarms, flyingIndicators: self.flyingIndicators)
-        let isReturningHome = returnHome?.state == .active
+        let isReturningHome = returnHome?.state == .active && returnHome?.suspended == false
         ULog.i(.tag, "updateReturnHomeState isReturningHome: \(isReturningHome) isForceLandingInProgress: \(isForceLanding)")
         // Bypass `drone.isReturningHome` value if a force landing is in progress.
         isBasicRthActive.value = isReturningHome && !isForceLanding
@@ -189,5 +195,12 @@ private extension HUDLandingViewModel {
         // ignore landing state if previous state was hand launch
         isLanding.value = flyingIndicators?.flyingState == .landing && landedState != .waitingUserAction
         landedState = flyingIndicators?.landedState ?? .none
+    }
+
+    /// The image to display according to the current state.
+    var currentImage: UIImage? {
+        guard isLandingOrRth else { return nil }
+        return isLanding.value ? Asset.Common.Icons.landing.image
+        : Asset.Alertes.Rth.icRthHUD.image
     }
 }

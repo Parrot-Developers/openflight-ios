@@ -43,6 +43,8 @@ public final class DroneDetailsCellularViewController: UIViewController {
     @IBOutlet private weak var cellularStatusLabel: UILabel!
     @IBOutlet private weak var connectionStatusLabel: UILabel!
     @IBOutlet private weak var controllerErrorLabel: UILabel!
+    @IBOutlet private weak var popupLeadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var popupTrailingConstraint: NSLayoutConstraint!
 
     // Cellular view outlet
 
@@ -131,6 +133,8 @@ private extension DroneDetailsCellularViewController {
 
     /// Setsup the basic UI
     func setupUI() {
+        popupLeadingConstraint.constant = Layout.popupHMargin(isRegularSizeClass)
+        popupTrailingConstraint.constant = popupLeadingConstraint.constant
 
         // Label's title
         titleLabel.text = L10n.droneDetailsCellularAccess

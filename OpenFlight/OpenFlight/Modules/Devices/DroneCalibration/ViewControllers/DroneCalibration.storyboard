@@ -154,6 +154,8 @@
                         <outlet property="mainView" destination="EJ5-A0-gWb" id="WZW-H9-JUX"/>
                         <outlet property="missionsStackView" destination="onA-sq-O3a" id="0Ko-dH-V3A"/>
                         <outlet property="obstacleDetectionChoiceView" destination="rY2-2Z-1G1" id="bbA-3b-zzh"/>
+                        <outlet property="popupLeadingConstraint" destination="kcv-Nf-XEb" id="K47-32-ciE"/>
+                        <outlet property="popupTrailingConstraint" destination="hzH-mI-4Xg" id="LFl-gI-jto"/>
                         <outlet property="titleLabel" destination="Ggq-2k-hfe" id="3N1-qN-eHI"/>
                     </connections>
                 </viewController>

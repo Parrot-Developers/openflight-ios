@@ -86,19 +86,19 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
     ///     - project: project model
     ///     - isSelected: Whether cell is selected.
     func configureCell(project: ProjectModel, isSelected: Bool) {
-        let lastExecution = project.flightPlans?.first
+        let lastExecution = project.latestExecutedFlightPlan?.flightPlanModel
 
-        titleLabel.text = project.title ?? lastExecution?.dataSetting?.coordinate?.coordinatesDescription
-        var date: Date = project.lastUpdated
-        if let lastFlightExecutionDate = lastExecution?.lastFlightExecutionDate {
+        titleLabel.text = project.title.isEmpty ? lastExecution?.dataSetting?.coordinate?.coordinatesDescription : project.title
+        var date: Date = project.lastUpdated ?? Date.distantPast
+        if let lastFlightExecutionDate = lastExecution?.pictorModel.lastFlightExecutionDate {
             date = lastFlightExecutionDate
         }
         dateLabel.text = date.commonFormattedString
 
-        backgroundImageView.image = lastExecution?.thumbnail?.thumbnailImage ?? UIImage(asset: Asset.MyFlights.projectPlaceHolder)
+        backgroundImageView.image = lastExecution?.pictorModel.thumbnail?.image ?? UIImage(asset: Asset.MyFlights.projectPlaceHolder)
 
         if project.type != FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType,
-           let flightStoreProvider = getFligthPlanType(with: lastExecution?.type) {
+           let flightStoreProvider = getFlightPlanType(with: lastExecution?.pictorModel.flightPlanType) {
             // Set image for custom Flight Plan types
             typeImage.image = flightStoreProvider.icon
             typeImage.isHidden = false
@@ -107,13 +107,13 @@ final class FlightPlanCollectionViewCell: UICollectionViewCell, NibReusable {
             typeImage.isHidden = true
         }
 
-        projectExecutedIcon.isHidden = !project.isProjectExecuted
+        projectExecutedIcon.isHidden = project.latestExecutedFlightPlan == nil
 
         gradientView.backgroundColor = isSelected ? ColorName.white50.color : .clear
         selectedView.isHidden = !isSelected
     }
 
-    private func getFligthPlanType(with type: String?) -> FlightPlanType? {
+    private func getFlightPlanType(with type: String?) -> FlightPlanType? {
         return Services.hub.flightPlan.typeStore.typeForKey(type)
     }
 }

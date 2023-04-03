@@ -53,20 +53,20 @@ class ProjectCellModel {
 
         thumbnail = Constants.defaultThumbnail
 
-        let editableFlightPlan = project.flightPlans?.first { $0.state == .editable }
+        let editableFlightPlan = project.editableFlightPlan?.flightPlanModel
 
-        title = project.title ?? editableFlightPlan?.dataSetting?.coordinate?.coordinatesDescription
-        description = project.lastUpdated.commonFormattedString
+        title = project.title.isEmpty ? editableFlightPlan?.dataSetting?.coordinate?.coordinatesDescription : project.title
+        description = project.lastUpdated?.commonFormattedString
 
-        thumbnail = editableFlightPlan?.thumbnail?.thumbnailImage ?? Constants.defaultThumbnail
+        thumbnail = editableFlightPlan?.pictorModel.thumbnail?.image ?? Constants.defaultThumbnail
 
         if !project.isSimpleFlightPlan,
-           let executionType = Services.hub.flightPlan.typeStore.typeForKey(editableFlightPlan?.type) {
+           let executionType = Services.hub.flightPlan.typeStore.typeForKey(editableFlightPlan?.pictorModel.flightPlanType) {
             projectTypeIcon = executionType.icon
         } else {
             projectTypeIcon = nil
         }
 
-        hasExecutions = project.isProjectExecuted
+        hasExecutions = project.latestExecutedFlightPlan != nil
     }
 }

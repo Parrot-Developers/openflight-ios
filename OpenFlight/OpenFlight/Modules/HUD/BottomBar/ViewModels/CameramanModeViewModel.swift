@@ -315,7 +315,6 @@ private extension CameramanModeViewModel {
         } else {
             if !isStopping, onboardTracker.trackingEngineState == .activated {
                 isStopping = true
-                onboardTracker.removeAllTargets()
                 onboardTracker.stopTrackingEngine()
             }
         }

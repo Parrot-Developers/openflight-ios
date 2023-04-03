@@ -67,7 +67,6 @@ final class HelloWorldDepthView: UIView, NibOwnerLoadable {
     /// - Parameters:
     ///     - viewController: The View Controller
     func display(in viewController: UIViewController) {
-
         addConstraints(in: viewController)
     }
 }
@@ -97,7 +96,7 @@ private extension HelloWorldDepthView {
     func addConstraints(in viewController: UIViewController) {
         translatesAutoresizingMaskIntoConstraints = false
         viewController.view.addSubview(self)
-        centerXAnchor.constraint(equalTo: viewController.view.trailingAnchor, constant: -50).isActive = true
+        trailingAnchor.constraint(equalTo: viewController.view.trailingAnchor, constant: -50).isActive = true
         centerYAnchor.constraint(equalTo: viewController.view.centerYAnchor).isActive = true
     }
 }

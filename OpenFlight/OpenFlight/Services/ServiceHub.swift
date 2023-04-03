@@ -28,8 +28,8 @@
 //    SUCH DAMAGE.
 
 import CoreData
-
-// swiftlint:disable file_length
+import Pictor
+import SwiftyUserDefaults
 
 /// Service hub that presents services through their protocols
 ///
@@ -44,12 +44,8 @@ import CoreData
 /// While refactoring for this to be possible, we keep a singleton of this hub, but any new code should use proper injection as much as possible
 public protocol ServiceHub: AnyObject {
 
-    /// The apc API manager
-    var apcApiManager: APCApiManager { get }
     /// User Service
-    var userService: UserService { get }
-    /// Synchronise API calls
-    var apiRequestQueue: ApiRequestQueue { get }
+    var userService: PictorUserService { get }
     /// Store of available missions
     var missionsStore: MissionsStore { get }
     /// Current mission manager
@@ -83,10 +79,12 @@ public protocol ServiceHub: AnyObject {
     var flightPlan: FlightPlanServices { get }
     /// Access to flight services
     var flight: FlightServices { get }
-    /// Access to Academy API service
-    var academyApiService: AcademyApiService { get }
+    /// Thumbnail generator service
+    var thumbnailGeneratorService: ThumbnailGeneratorService { get }
+    /// Access to Academy API drone service
+    var academyApiDroneService: AcademyApiDroneService { get }
     /// Watch pending synchro process with cloud
-    var cloudSynchroWatcher: CloudSynchroWatcher? { get set }
+    var synchroService: SynchroService { get set }
     /// Panorama capture mode service
     var panoramaService: PanoramaService { get }
     /// Touch and fly service
@@ -105,8 +103,6 @@ public protocol ServiceHub: AnyObject {
     var databaseUpdateService: DatabaseUpdateService { get }
     /// Media services
     var media: MediaServices { get }
-    /// Memory Pressure Monitor
-    var memoryPressureMonitor: MemoryPressureMonitorService { get }
     /// Start active services
     func start()
 }
@@ -117,11 +113,9 @@ public enum Services {
     public private(set) static var hub: ServiceHub!
 
     public static func createInstance(variableAssetsService: VariableAssetsService,
-                                      persistentContainer: NSPersistentContainer,
                                       missionsToLoadAtStart: [AirSdkMissionSignature],
                                       dashboardUiProvider: DashboardUiProvider) -> ServiceHub {
         hub = ServiceHubImpl(variableAssetsService: variableAssetsService,
-                             persistentContainer: persistentContainer,
                              missionsToLoadAtStart: missionsToLoadAtStart,
                              dashboardUiProvider: dashboardUiProvider)
         return hub
@@ -130,17 +124,13 @@ public enum Services {
 
 /// Data Repositories
 public struct Repositories {
-
-    public let repoServices: CoreDataService
-    public let user: UserRepository
-    public let drone: DroneDataRepository
-    public let project: ProjectRepository
-    public let flight: FlightRepository
-    public let flightPlanFlight: FlightPlanFlightsRepository
-    public let flightPlan: FlightPlanRepository
-    public let thumbnail: ThumbnailRepository
-    public let pgyProject: PgyProjectRepository
-
+    public let session: PictorSessionRepository
+    public let project: PictorProjectRepository
+    public let flight: PictorFlightRepository
+    public let flightPlan: PictorFlightPlanRepository
+    public let thumbnail: PictorThumbnailRepository
+    public let pgyProject: PictorProjectPix4dRepository
+    public let gutmaLink: PictorGutmaLinkRepository
 }
 
 /// UI services
@@ -202,9 +192,11 @@ public struct DroneServices {
     public let exposureService: ExposureService
     /// Camera exposure lock service
     public let exposureLockService: ExposureLockService
-    /// AirSdk mission listener service
-    public let airsdkMissionsManager: AirSdkMissionsManager
     /// AirSdk mission manager service
+    public let airsdkMissionsManager: AirSdkMissionsManager
+    /// AirSdk mission updater service
+    public let airsdkMissionsUpdaterService: AirSdkMissionsUpdaterService
+    /// AirSdk mission listener service
     public let airsdkMissionsListener: AirSdkMissionsListener
     /// Pin code handler
     public let pinCodeService: PinCodeService
@@ -222,6 +214,10 @@ public struct DroneServices {
     let timelapseRestartService: TimelapseRestartService
     /// Hand launch service.
     let handLaunchService: HandLaunchService
+    /// Firmware update service.
+    let firmwareUpdateService: FirmwareUpdateService
+    /// Battery gauge updater service.
+    let batteryGaugeUpdaterService: BatteryGaugeUpdaterService
 }
 
 /// Flight plan services
@@ -264,13 +260,15 @@ public struct FlightServices {
 public struct SystemServices {
     /// Access to network service
     public let networkService: NetworkService
+    /// Memory Pressure Monitor.
+    public let memoryPressureMonitor: MemoryPressureMonitorService
+    /// Metric Kit Service.
+    public let metricKitService: MetricKitService
 }
 
 /// Implementation of the service hub
 private class ServiceHubImpl: ServiceHub {
-    let apcApiManager: APCApiManager
-    let userService: UserService
-    let apiRequestQueue: ApiRequestQueue
+    let userService: PictorUserService
     let flightPlanTypeStore: FlightPlanTypeStore
     let missionsStore: MissionsStore
     let currentMissionManager: CurrentMissionManager
@@ -289,8 +287,10 @@ private class ServiceHubImpl: ServiceHub {
     let drone: DroneServices
     let flightPlan: FlightPlanServices
     let flight: FlightServices
-    let academyApiService: AcademyApiService
-    var cloudSynchroWatcher: CloudSynchroWatcher?
+    let thumbnailGeneratorService: ThumbnailGeneratorService
+    let academyApiDroneService: AcademyApiDroneService
+    var synchroService: SynchroService
+    let databaseMigrationService: PictorDatabaseMigrationService
     let panoramaService: PanoramaService
     var touchAndFly: TouchAndFlyService
     var touchAndFlyUi: TouchAndFlyUiService
@@ -301,41 +301,45 @@ private class ServiceHubImpl: ServiceHub {
     let presetService: PresetsService
     let databaseUpdateService: DatabaseUpdateService
     let media: MediaServices
-    let memoryPressureMonitor: MemoryPressureMonitorService
 
     /// Legacy drone store, implements some side effects of current drone change
     private let legacyCurrentDroneStore: LegacyCurrentDroneStore
 
     // swiftlint:disable:next function_body_length
     fileprivate init(variableAssetsService: VariableAssetsService,
-                     persistentContainer: NSPersistentContainer,
                      missionsToLoadAtStart: [AirSdkMissionSignature],
                      dashboardUiProvider: DashboardUiProvider) {
 
-        memoryPressureMonitor = MemoryPressureMonitorServiceImpl()
+        let networkService = NetworkServiceImpl()
+        let memoryPressureMonitor = MemoryPressureMonitorServiceImpl()
+        let metricKitService = MetricKitServiceImpl(autoStart: Defaults.isMetricKitEnabled)
+        systemServices = SystemServices(networkService: networkService,
+                                        memoryPressureMonitor: memoryPressureMonitor,
+                                        metricKitService: metricKitService)
 
-        apcApiManager = APCApiManager()
+        if let oldPersistentContainer = PictorConfiguration.shared.oldPersistentContainer {
+            Pictor.shared.service.databaseMigration.setup(withOldPersistentContainer: oldPersistentContainer)
+        }
 
-        let userServiceImpl = UserServiceImpl(apcApiManager: apcApiManager)
+        userService = Pictor.shared.service.user
+        repos = Repositories(session: Pictor.shared.repository.session,
+                             project: Pictor.shared.repository.project,
+                             flight: Pictor.shared.repository.flight,
+                             flightPlan: Pictor.shared.repository.flightPlan,
+                             thumbnail: Pictor.shared.repository.thumbnail,
+                             pgyProject: Pictor.shared.repository.projectPix4d,
+                             gutmaLink: Pictor.shared.repository.gutmaLink)
 
-        let coredataService = CoreDataServiceImpl(with: persistentContainer,
-                                                  and: userServiceImpl)
-        userServiceImpl.setup(userRepo: coredataService)
-        userService = userServiceImpl
+        synchroService = Pictor.shared.service.synchroService
 
-        repos = Repositories(repoServices: coredataService,
-                             user: coredataService,
-                             drone: coredataService,
-                             project: coredataService,
-                             flight: coredataService,
-                             flightPlanFlight: coredataService,
-                             flightPlan: coredataService,
-                             thumbnail: coredataService,
-                             pgyProject: coredataService)
-
-        apiRequestQueue = ApiRequestQueueImpl()
+        databaseMigrationService = Pictor.shared.service.databaseMigration
 
         flightPlanTypeStore = FlightPlanTypeStoreImpl()
+
+        thumbnailGeneratorService = ThumbnailGeneratorServiceImpl(userService: userService,
+                                                                  flightRepository: Pictor.shared.repository.flight,
+                                                                  flightPlanRepository: Pictor.shared.repository.flightPlan,
+                                                                  metricKitService: metricKitService)
 
         connectedDroneHolder = ConnectedDroneHolderImpl()
 
@@ -343,19 +347,16 @@ private class ServiceHubImpl: ServiceHub {
 
         let airsdkMissionsManagerService = AirSdkMissionsManagerImpl(connectedDroneHolder: connectedDroneHolder,
                                                                      missionsToLoadAtDroneConnection: missionsToLoadAtStart)
-        missionsStore = MissionsStoreImpl(connectedDroneHolder: connectedDroneHolder,
-                                          missionsManager: airsdkMissionsManagerService)
+        let airsdkMissionsUpdaterService = AirSdkMissionsUpdaterServiceImpl(
+            connectedDroneHolder: connectedDroneHolder,
+            airSdkMissionsManager: airsdkMissionsManagerService)
+        missionsStore = MissionsStoreImpl(
+            connectedDroneHolder: connectedDroneHolder,
+            missionsManager: airsdkMissionsManagerService)
 
         currentMissionManager = CurrentMissionManagerImpl(store: missionsStore)
 
         legacyCurrentDroneStore = LegacyCurrentDroneStore(droneHolder: currentDroneHolder)
-
-        let academySessionProvider = AcademySessionProviderImpl(userService: userService,
-                                                                xApiKey: ServicesConstants.academySecretKey)
-
-        academyApiService = AcademyApiServiceImpl(requestQueue: apiRequestQueue,
-                                                  academySession: academySessionProvider,
-                                                  userService: userService)
 
         connectedRemoteControlHolder = ConnectedRemoteControlHolderImpl()
 
@@ -387,26 +388,26 @@ private class ServiceHubImpl: ServiceHub {
                                           activeFlightPlanWatcher: activeFlightPlanWatcher)
         let gimbalTiltService = GimbalTiltServiceImpl(connectedDroneHolder: connectedDroneHolder,
                                                       activeFlightPlanWatcher: activeFlightPlanWatcher)
-        let networkService = NetworkServiceImpl()
-        systemServices = SystemServices(networkService: networkService)
 
         fixedLocationMonitor = FixedLocationMonitorImpl(currentDroneHolder: currentDroneHolder,
                                                         locationsTracker: locationsTracker,
                                                         networkService: networkService)
 
+        academyApiDroneService = Pictor.shared.service.academyApi.drone
+
         let cellularService = CellularServiceImpl(connectedDroneHolder: connectedDroneHolder)
         let cellularSessionService = CellularSessionServiceImpl(connectedDroneHolder: connectedDroneHolder,
-                                                                connectedRemoteControlHolder: connectedRemoteControlHolder)
+                                                                connectedRemoteControlHolder: connectedRemoteControlHolder,
+                                                                cellularService: cellularService)
         let cellularPairingService = CellularPairingServiceImpl(currentDroneHolder: currentDroneHolder,
-                                                                apcApiManager: apcApiManager,
                                                                 connectedDroneHolder: connectedDroneHolder,
-                                                                academyApiService: academyApiService,
+                                                                academyApiDroneService: academyApiDroneService,
                                                                 networkService: systemServices.networkService,
                                                                 userService: userService,
                                                                 cellularService: cellularService)
         let cellularPairingAvailabilityService = CellularPairingAvailabilityServiceImpl(currentDroneHolder: currentDroneHolder,
                                                                                         connectedDroneHolder: connectedDroneHolder,
-                                                                                        academyApiService: academyApiService,
+                                                                                        academyApiDroneService: academyApiDroneService,
                                                                                         cellularPairingService: cellularPairingService,
                                                                                         cellularService: cellularService)
         let exposureService = ExposureServiceImpl(currentDroneHolder: currentDroneHolder)
@@ -430,6 +431,8 @@ private class ServiceHubImpl: ServiceHub {
                                                                   cameraPhotoCaptureService: cameraPhotoCaptureService,
                                                                   cameraConfigWatcher: cameraConfigWatcher,
                                                                   activeFlightPlanWatcher: activeFlightPlanWatcher)
+        let firmwareUpdateService = FirmwareUpdateServiceImpl(currentDroneHolder: currentDroneHolder)
+        let batteryGaugeUpdaterService = BatteryGaugeUpdaterServiceImpl(currentDroneHolder: currentDroneHolder)
         drone = DroneServices(rthService: rthService,
                               zoomService: zoomService,
                               gimbalTiltService: gimbalTiltService,
@@ -440,6 +443,7 @@ private class ServiceHubImpl: ServiceHub {
                               exposureService: exposureService,
                               exposureLockService: exposureLockService,
                               airsdkMissionsManager: airsdkMissionsManagerService,
+                              airsdkMissionsUpdaterService: airsdkMissionsUpdaterService,
                               airsdkMissionsListener: airSdkMissionListenerService,
                               pinCodeService: pinCodeService,
                               ophtalmoService: ophtalmoService,
@@ -448,7 +452,9 @@ private class ServiceHubImpl: ServiceHub {
                               cameraConfigWatcher: cameraConfigWatcher,
                               gpslapseRestartService: gpslapseRestartService,
                               timelapseRestartService: timelapseRestartService,
-                              handLaunchService: handLaunchService)
+                              handLaunchService: handLaunchService,
+                              firmwareUpdateService: firmwareUpdateService,
+                              batteryGaugeUpdaterService: batteryGaugeUpdaterService)
 
         let userStorageService = UserStorageServiceImpl(currentDroneHolder: currentDroneHolder)
         update = UpdateServiceImpl(currentDroneHolder: currentDroneHolder,
@@ -462,20 +468,20 @@ private class ServiceHubImpl: ServiceHub {
 
         let flightPlanFilesManager = FlightPlanFilesManagerImpl()
 
-        let flightPlanManager = FlightPlanManagerImpl(persistenceFlightPlan: repos.flightPlan,
+        let flightPlanManager = FlightPlanManagerImpl(flightPlanRepository: repos.flightPlan,
                                                       userService: userService,
                                                       filesManager: flightPlanFilesManager,
                                                       pgyProjectRepo: repos.pgyProject)
 
-        let flightPlanEditionService = FlightPlanEditionServiceImpl(flightPlanRepo: repos.flightPlan,
+        let flightPlanEditionService = FlightPlanEditionServiceImpl(flightPlanRepository: repos.flightPlan,
                                                                     flightPlanManager: flightPlanManager,
                                                                     typeStore: flightPlanTypeStore,
                                                                     currentMissionManager: currentMissionManager,
                                                                     userService: userService,
-                                                                    cloudSynchroWatcher: cloudSynchroWatcher)
+                                                                    thumbnailGeneratorService: thumbnailGeneratorService)
 
         let flightPlanRunManager = FlightPlanRunManagerImpl(typeStore: flightPlanTypeStore,
-                                                            projectRepo: repos.project,
+                                                            projectRepository: repos.project,
                                                             currentDroneHolder: currentDroneHolder,
                                                             activeFlightPlanWatcher: activeFlightPlanWatcher,
                                                             flightPlanManager: flightPlanManager,
@@ -486,32 +492,31 @@ private class ServiceHubImpl: ServiceHub {
 
         let projectManager = ProjectManagerImpl(missionsStore: missionsStore,
                                                 flightPlanTypeStore: flightPlanTypeStore,
-                                                persistenceProject: repos.project,
-                                                flightPlanRepo: repos.flightPlan,
+                                                projectRepository: repos.project,
+                                                flightPlanRepository: repos.flightPlan,
                                                 editionService: flightPlanEditionService,
                                                 currentMissionManager: currentMissionManager,
                                                 userService: userService,
                                                 filesManager: flightPlanFilesManager,
                                                 flightPlanManager: flightPlanManager,
-                                                flightPlanRunManager: flightPlanRunManager,
-                                                cloudSynchroWatcher: cloudSynchroWatcher)
+                                                flightPlanRunManager: flightPlanRunManager)
 
         flightPlanEditionService.updateProjectManager(projectManager)
 
         let planFileGenerator = PlanFileGeneratorImpl(typeStore: flightPlanTypeStore,
                                                       filesManager: flightPlanFilesManager,
                                                       projectManager: projectManager,
-                                                      repo: repos.flightPlan)
+                                                      currentDroneHolder: currentDroneHolder)
 
         let flightPlanStateMachine = FlightPlanStateMachineImpl(manager: flightPlanManager,
                                                                 projectManager: projectManager,
+                                                                flightPlanRepository: repos.flightPlan,
                                                                 runManager: flightPlanRunManager,
                                                                 planFileGenerator: planFileGenerator,
                                                                 planFileSender: planFileSender,
                                                                 filesManager: flightPlanFilesManager,
                                                                 startAvailabilityWatcher: flightPlanStartAvailabilityWatcher,
                                                                 edition: flightPlanEditionService,
-                                                                cloudSynchroWatcher: cloudSynchroWatcher,
                                                                 locationTracker: locationsTracker)
         let flightPlanUiStateProvider = FlightPlanUiStateProviderImpl(stateMachine: flightPlanStateMachine,
                                                                       startAvailabilityWatcher: flightPlanStartAvailabilityWatcher,
@@ -551,8 +556,8 @@ private class ServiceHubImpl: ServiceHub {
                                              currentMissionManager: currentMissionManager,
                                              bamService: bamService)
         touchAndFlyUi = TouchAndFlyUiServiceImpl(service: touchAndFly,
-                                                     locations: locationsTracker,
-                                                     currentMissionManager: currentMissionManager)
+                                                 locations: locationsTracker,
+                                                 currentMissionManager: currentMissionManager)
 
         ui = UIServices(joysticksAvailabilityService: joysticksAvailabilityService,
                         variableAssetsService: variableAssetsService,
@@ -567,11 +572,9 @@ private class ServiceHubImpl: ServiceHub {
                         touchAndFly: touchAndFlyUi,
                         criticalAlert: criticalAlert)
 
-        let flightService = FlightServiceImpl(repo: repos.flight,
-                                              fpFlightRepo: repos.flightPlanFlight,
-                                              thumbnailRepo: repos.thumbnail,
+        let flightService = FlightServiceImpl(flightRepository: repos.flight,
+                                              gutmaLinkRepository: repos.gutmaLink,
                                               userService: userService,
-                                              cloudSynchroWatcher: cloudSynchroWatcher,
                                               flightPlanRunManager: flightPlanRunManager)
 
         let gutmaWatcher = GutmaWatcherImpl(userService: userService,
@@ -590,7 +593,11 @@ private class ServiceHubImpl: ServiceHub {
                                             flightPlanEditionService: flightPlanEditionService)
         presetService = PresetsServiceImpl(currentDroneHolder: currentDroneHolder)
 
-        databaseUpdateService = DatabaseUpdateServiceImpl(repositories: repos)
+        databaseUpdateService = DatabaseUpdateServiceImpl(repositories: repos,
+                                                          userService: userService,
+                                                          synchroService: synchroService,
+                                                          databaseMigrationService: databaseMigrationService,
+                                                          thumbnailGeneratorService: thumbnailGeneratorService)
 
         let mediaListService = MediaListServiceImpl(mediaStoreService: mediaStoreService)
         let streamReplayService = StreamReplayServiceImpl(currentDroneHolder: currentDroneHolder,

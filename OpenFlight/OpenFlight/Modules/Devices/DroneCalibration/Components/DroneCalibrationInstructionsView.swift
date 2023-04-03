@@ -95,8 +95,8 @@ extension DroneCalibrationInstructionsView {
         self.animationView.removeSubViews()
         self.animationView.isHidden = false
         self.imageView.isHidden = true
-        let lottieAnimationView = AnimationView()
-        lottieAnimationView.animation = Animation.filepath(filePath)
+        let lottieAnimationView = LottieAnimationView()
+        lottieAnimationView.animation = LottieAnimation.filepath(filePath)
         lottieAnimationView.loopMode = .loop
         animationView.addWithConstraints(subview: lottieAnimationView)
         lottieAnimationView.play()
@@ -104,7 +104,7 @@ extension DroneCalibrationInstructionsView {
 
     /// Clears animation view.
     func clearAnimation() {
-        let lottieAnimationView = animationView.subviews.first(where: { $0 is AnimationView })
+        let lottieAnimationView = animationView.subviews.first(where: { $0 is LottieAnimationView })
         lottieAnimationView?.removeFromSuperview()
         imageView.isHidden = false
     }

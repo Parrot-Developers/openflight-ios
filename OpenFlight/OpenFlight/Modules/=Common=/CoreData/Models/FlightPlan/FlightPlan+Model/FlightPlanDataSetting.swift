@@ -117,6 +117,7 @@ public struct FlightPlanDataSetting: Codable {
     public var rthHeight: Int?
     public var rthEndBehaviour: Bool = true
     public var rthHoveringHeight: Int?
+    public var defaultGSD: Int?
 
     /// Pgy data
     public var pgyProjectId: Int64?

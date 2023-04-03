@@ -147,7 +147,7 @@ private extension HUDAlertPanelViewController {
     ///    - alert: current alert state
     func updateView(with alert: AlertPanelState) {
         if let type = alert.rthAlertType, let countdown = alert.countdown, let total = alert.initialCountdown {
-            ULog.d(.tag, "type \(type) | countdown \(countdown)/\(total)")
+            ULog.i(.tag, "type \(type) | countdown \(countdown)/\(total)")
         }
 
         if actionButton.rthAlertType != alert.rthAlertType {

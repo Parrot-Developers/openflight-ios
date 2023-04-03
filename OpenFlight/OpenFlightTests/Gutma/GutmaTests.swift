@@ -31,6 +31,7 @@ import XCTest
 import Hamcrest
 import CoreLocation
 @testable import OpenFlight
+import Pictor
 
 class GutmaTests: XCTestCase {
     func get(gutma: String) -> Data? {
@@ -76,7 +77,7 @@ class GutmaTests: XCTestCase {
             let fileName = file.deletingPathExtension().lastPathComponent
             guard let flight = get(flight: fileName),
                   let data = flight.gutmaFile,
-                  let gutma = try? JSONDecoder().decode(Gutma.self, from: data)
+                  let gutma = try? JSONDecoder().decode(PictorGutma.self, from: data)
             else {
                 XCTFail("flight or gutma not found")
                 return
@@ -430,7 +431,7 @@ class GutmaTests: XCTestCase {
         let result = getExecutionDetailsProvider(flightPlan: flightPlan, flights: [flight]).summaryProvider
 
         guard let data = flight.gutmaFile,
-              let gutma = try? JSONDecoder().decode(Gutma.self, from: data)
+              let gutma = try? JSONDecoder().decode(PictorGutma.self, from: data)
         else {
             XCTFail("flight or gutma not found")
             return

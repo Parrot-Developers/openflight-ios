@@ -29,9 +29,9 @@
 
 import Foundation
 
-// MARK: - Internal Enums
+// MARK: - Public Enums
 /// Represents the choice of the user for an update process.
-enum FirmwareAndMissionUpdateChoice: Comparable {
+public enum FirmwareAndMissionUpdateChoice: Comparable {
     case firmwareAndAirSdkMissions(firmware: FirmwareToUpdateData,
                                    missions: [AirSdkMissionToUpdateData])
     case airSdkMission(AirSdkMissionToUpdateData,
@@ -40,10 +40,12 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
     case upToDateAirSdkMission(AirSdkMissionBasicInformation,
                                isLastBuiltIn: Bool = false)
     case firmware(FirmwareToUpdateData)
+    case batteryGaugeUpdate
 
     // MARK: - Comparable
-    static func == (lhs: FirmwareAndMissionUpdateChoice,
-                    rhs: FirmwareAndMissionUpdateChoice) -> Bool {
+    static public func == (
+        lhs: FirmwareAndMissionUpdateChoice,
+        rhs: FirmwareAndMissionUpdateChoice) -> Bool {
         switch (lhs, rhs) {
         case (.firmwareAndAirSdkMissions, .firmwareAndAirSdkMissions):
             return true
@@ -57,7 +59,7 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
         }
     }
 
-    static func < (lhs: FirmwareAndMissionUpdateChoice,
+    static public func < (lhs: FirmwareAndMissionUpdateChoice,
                    rhs: FirmwareAndMissionUpdateChoice) -> Bool {
         switch (lhs, rhs) {
         case (.firmwareAndAirSdkMissions, _):
@@ -87,11 +89,13 @@ enum FirmwareAndMissionUpdateChoice: Comparable {
     }
 }
 
+// MARK: - Internal Enums
 /// Represents the functional choice of the user for an update process.
 enum FirmwareAndMissionUpdateFunctionalChoice {
     case firmwareAndAirSdkMissions
     case firmware
     case airSdkMissions
+    case batteryGauge
 }
 
 // MARK: - Internal Properties
@@ -107,6 +111,8 @@ extension FirmwareAndMissionUpdateChoice {
             return nil
         case .airSdkMission:
             return nil
+        case .batteryGaugeUpdate:
+            return nil
         }
     }
 
@@ -121,6 +127,8 @@ extension FirmwareAndMissionUpdateChoice {
             return []
         case let .airSdkMission(mission, missionOnDrone: _, compatibility: _):
             return [mission]
+        case .batteryGaugeUpdate:
+            return []
         }
     }
 
@@ -131,7 +139,8 @@ extension FirmwareAndMissionUpdateChoice {
              .firmwareAndAirSdkMissions:
             return true
         case .upToDateAirSdkMission,
-             .airSdkMission:
+             .airSdkMission,
+             .batteryGaugeUpdate:
             return false
         }
     }
@@ -143,7 +152,8 @@ extension FirmwareAndMissionUpdateChoice {
             return ParrotFontStyle.small.font
         case .firmware,
              .airSdkMission,
-             .upToDateAirSdkMission:
+             .upToDateAirSdkMission,
+             .batteryGaugeUpdate:
             return ParrotFontStyle.large.font
         }
     }
@@ -160,6 +170,8 @@ extension FirmwareAndMissionUpdateChoice {
                 ColorName.defaultTextColor.color : ColorName.disabledTextColor.color
         case let .upToDateAirSdkMission(missionOnDrone, _):
             return missionOnDrone.isCompatible ? ColorName.defaultTextColor.color : ColorName.disabledTextColor.color
+        case .batteryGaugeUpdate:
+            return ColorName.defaultTextColor80.color
         }
     }
 }

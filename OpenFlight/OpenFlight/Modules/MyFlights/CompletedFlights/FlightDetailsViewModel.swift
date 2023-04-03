@@ -32,6 +32,7 @@ import Combine
 import CoreLocation
 import GroundSdk
 import MapKit
+import Pictor
 
 open class FlightDetailsViewModel {
 
@@ -77,7 +78,7 @@ open class FlightDetailsViewModel {
         flightPoints = gutma?.points() ?? []
         hasAmslAltitude = gutma?.hasAmslAltitude ?? false
 
-        name = flight.title ?? ""
+        name = flight.title
         drone.dronePublisher
             .sink { [unowned self] drone in
                 listenRemovableStorage(drone: drone)
@@ -112,7 +113,7 @@ public extension FlightDetailsViewModel {
     func askForDeletion() {
         coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: {
             self.service.delete(flight: self.flight)
-            self.coordinator?.dismissCoordinatorWithAnimator()
+            self.coordinator?.dismissDetails()
         })
      }
 }

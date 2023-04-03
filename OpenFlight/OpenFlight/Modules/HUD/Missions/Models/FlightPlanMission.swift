@@ -142,8 +142,7 @@ enum FlightPlanMissionMode: String, CaseIterable {
                                                        missionsStore: Services.hub.missionsStore,
                                                        flightPlanEditionService: Services.hub.flightPlan.edition,
                                                        flightPlanRunManager: Services.hub.flightPlan.run,
-                                                       rthService: Services.hub.drone.rthService,
-                                                       memoryPressureMonitor: Services.hub.memoryPressureMonitor)
+                                                       memoryPressureMonitor: Services.hub.systemServices.memoryPressureMonitor)
     }
 
     var missionMode: MissionMode {

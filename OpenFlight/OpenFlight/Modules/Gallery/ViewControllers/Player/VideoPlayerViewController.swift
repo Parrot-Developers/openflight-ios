@@ -148,7 +148,6 @@ final class VideoPlayerViewController: UIViewController, MediaContainer {
         super.viewDidDisappear(animated)
 
         autoPlayTask?.cancel()
-        viewModel.pauseVideo()
         viewModel.detachStream(from: streamView)
         resetTimer()
     }

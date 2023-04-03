@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="2CR-rr-Vd9">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="2CR-rr-Vd9">
     <device id="retina4_7" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -28,6 +28,10 @@
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lMp-kN-nw3" customClass="HomeStreamView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dZP-bN-RL5" customClass="SnowView" customModule="OpenFlight" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -42,9 +46,13 @@
                             <constraint firstAttribute="bottom" secondItem="dZP-bN-RL5" secondAttribute="bottom" id="DJx-ev-vDD"/>
                             <constraint firstItem="i0k-lN-fma" firstAttribute="top" secondItem="Qqi-Ph-Cof" secondAttribute="top" id="DuA-FV-elw"/>
                             <constraint firstItem="dZP-bN-RL5" firstAttribute="leading" secondItem="Qqi-Ph-Cof" secondAttribute="leading" id="KPv-Qd-HpV"/>
+                            <constraint firstItem="lMp-kN-nw3" firstAttribute="leading" secondItem="Qqi-Ph-Cof" secondAttribute="leading" id="L7O-wO-LTY"/>
                             <constraint firstItem="SyZ-iE-80b" firstAttribute="top" secondItem="Qqi-Ph-Cof" secondAttribute="top" id="VmZ-FR-Mzi"/>
+                            <constraint firstAttribute="bottom" secondItem="lMp-kN-nw3" secondAttribute="bottom" id="cCf-hC-OEL"/>
                             <constraint firstAttribute="trailing" secondItem="dZP-bN-RL5" secondAttribute="trailing" id="dUe-kc-Qa0"/>
                             <constraint firstItem="i0k-lN-fma" firstAttribute="leading" secondItem="Qqi-Ph-Cof" secondAttribute="leading" id="hE3-Hf-OIH"/>
+                            <constraint firstAttribute="trailing" secondItem="lMp-kN-nw3" secondAttribute="trailing" id="j7I-uz-9Jp"/>
+                            <constraint firstItem="lMp-kN-nw3" firstAttribute="top" secondItem="Qqi-Ph-Cof" secondAttribute="top" id="jDT-l6-cRO"/>
                             <constraint firstItem="dZP-bN-RL5" firstAttribute="top" secondItem="Qqi-Ph-Cof" secondAttribute="top" id="mgt-iv-4Uf"/>
                             <constraint firstAttribute="trailing" secondItem="i0k-lN-fma" secondAttribute="trailing" id="oYC-oh-x0b"/>
                             <constraint firstAttribute="bottom" secondItem="SyZ-iE-80b" secondAttribute="bottom" id="w6U-GH-VVS"/>
@@ -52,12 +60,19 @@
                     </view>
                     <connections>
                         <outlet property="gridView" destination="SyZ-iE-80b" id="7gD-Df-aeF"/>
+                        <outlet property="homeView" destination="lMp-kN-nw3" id="VaW-JI-iCI"/>
                         <outlet property="snowView" destination="dZP-bN-RL5" id="Zzp-w8-fFS"/>
                         <outlet property="streamView" destination="i0k-lN-fma" id="9uX-ly-C1A"/>
                         <outlet property="touchView" destination="JCh-jJ-wtE" id="nvi-BO-E8Y"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="RA0-Hx-x51" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <view hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" id="iAU-En-aS1" customClass="GridView" customModule="OpenFlight" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <viewLayoutGuide key="safeArea" id="Tc8-gD-CJH"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
             </objects>
             <point key="canvasLocation" x="355" y="-754"/>
         </scene>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="om2-Bk-pxl">
     <device id="retina6_5" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -106,32 +106,18 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dba-uz-dLb" customClass="BottomGradientView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="377" width="245" height="37"/>
+                                <rect key="frame" x="0.0" y="364" width="245" height="50"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZKL-Em-A7r" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="377" width="245" height="37"/>
+                                <rect key="frame" x="0.0" y="364" width="245" height="50"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rIt-5N-twX" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="37" height="37"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" secondItem="rIt-5N-twX" secondAttribute="height" id="O3O-Pp-ulK"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                                        <state key="normal" title="Undo">
-                                            <color key="titleColor" name="default_text_color"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="undoButtonTouchedUpInside:" destination="l6C-73-gMO" eventType="touchUpInside" id="X0M-0H-XMr"/>
-                                        </connections>
-                                    </button>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="E2R-Gt-jRB" customClass="HSpacerView" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="37" y="0.0" width="163" height="37"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="50"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                     </view>
                                     <button opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fYp-zW-LmG" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
-                                        <rect key="frame" x="200" y="0.0" width="45" height="37"/>
+                                        <rect key="frame" x="200" y="0.0" width="45" height="50"/>
                                         <color key="backgroundColor" name="highlight_color"/>
                                         <state key="normal" title="Delete">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -167,7 +153,6 @@
                         <outlet property="stackView" destination="USo-da-8tQ" id="Q7v-TI-nNq"/>
                         <outlet property="tableView" destination="E4L-K4-ZSC" id="pAH-Ep-C0u"/>
                         <outlet property="topBarContainer" destination="p7l-oS-yF8" id="eaQ-WP-1eO"/>
-                        <outlet property="undoButton" destination="rIt-5N-twX" id="Ufa-cH-sa5"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CDX-XM-mk3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -459,7 +444,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="u4b-wJ-2Mq"/>
+        <segue reference="7X9-hV-wxK"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="icCloseMedium" width="17" height="17"/>

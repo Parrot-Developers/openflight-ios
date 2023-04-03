@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="1UJ-SD-ecA">
     <device id="retina4_0" orientation="landscape" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -69,44 +69,60 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="9He-g4-Ikd" userLabel="Table and buttons Stack View">
                                         <rect key="frame" x="0.0" y="29" width="512" height="237"/>
                                         <subviews>
-                                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="QtU-FA-YFk">
-                                                <rect key="frame" x="0.0" y="0.0" width="205" height="237"/>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <color key="tintColor" red="0.28536473159999998" green="1" blue="0.24004633680000001" alpha="1" colorSpace="calibratedRGB"/>
-                                                <prototypes>
-                                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="FileCell" id="Ksm-JP-BRV" customClass="ParrotLogFileCell" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="50" width="205" height="43.5"/>
-                                                        <autoresizingMask key="autoresizingMask"/>
-                                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ksm-JP-BRV" id="rDw-aq-kzy">
-                                                            <rect key="frame" x="0.0" y="0.0" width="205" height="43.5"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
-                                                            <subviews>
-                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="File Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0bD-DI-M1N">
-                                                                    <rect key="frame" x="16" y="11.5" width="75.5" height="20.5"/>
-                                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                                                    <color key="textColor" name="highlight_color"/>
-                                                                    <color key="highlightedColor" red="1" green="0.39627434299999997" blue="0.00074388167699999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                                </label>
-                                                            </subviews>
-                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                            <constraints>
-                                                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="0bD-DI-M1N" secondAttribute="trailingMargin" id="7pR-Eh-2XN"/>
-                                                                <constraint firstItem="0bD-DI-M1N" firstAttribute="leading" secondItem="rDw-aq-kzy" secondAttribute="leadingMargin" id="TFd-1I-AV5"/>
-                                                                <constraint firstItem="0bD-DI-M1N" firstAttribute="centerY" secondItem="rDw-aq-kzy" secondAttribute="centerY" id="yOD-ot-DW3"/>
-                                                            </constraints>
-                                                        </tableViewCellContentView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="IAB-XN-dfm">
+                                                <rect key="frame" x="0.0" y="0.0" width="178.5" height="237"/>
+                                                <subviews>
+                                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="QtU-FA-YFk">
+                                                        <rect key="frame" x="0.0" y="0.0" width="178.5" height="205"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <color key="tintColor" red="0.28536473159999998" green="1" blue="0.24004633680000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <prototypes>
+                                                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="FileCell" id="Ksm-JP-BRV" customClass="ParrotLogFileCell" customModule="OpenFlight" customModuleProvider="target">
+                                                                <rect key="frame" x="0.0" y="50" width="178.5" height="43.5"/>
+                                                                <autoresizingMask key="autoresizingMask"/>
+                                                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Ksm-JP-BRV" id="rDw-aq-kzy">
+                                                                    <rect key="frame" x="0.0" y="0.0" width="178.5" height="43.5"/>
+                                                                    <autoresizingMask key="autoresizingMask"/>
+                                                                    <subviews>
+                                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="File Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0bD-DI-M1N">
+                                                                            <rect key="frame" x="16" y="11.5" width="75.5" height="20.5"/>
+                                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                                            <color key="textColor" name="highlight_color"/>
+                                                                            <color key="highlightedColor" red="1" green="0.39627434299999997" blue="0.00074388167699999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                        </label>
+                                                                    </subviews>
+                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="0bD-DI-M1N" secondAttribute="trailingMargin" id="7pR-Eh-2XN"/>
+                                                                        <constraint firstItem="0bD-DI-M1N" firstAttribute="leading" secondItem="rDw-aq-kzy" secondAttribute="leadingMargin" id="TFd-1I-AV5"/>
+                                                                        <constraint firstItem="0bD-DI-M1N" firstAttribute="centerY" secondItem="rDw-aq-kzy" secondAttribute="centerY" id="yOD-ot-DW3"/>
+                                                                    </constraints>
+                                                                </tableViewCellContentView>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <connections>
+                                                                    <outlet property="fileName" destination="0bD-DI-M1N" id="v43-UF-Z7m"/>
+                                                                </connections>
+                                                            </tableViewCell>
+                                                        </prototypes>
+                                                    </tableView>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QAn-6O-2tY">
+                                                        <rect key="frame" x="0.0" y="205" width="178.5" height="32"/>
+                                                        <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="20"/>
+                                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                                        <state key="normal" title="Metric logs...">
+                                                            <color key="titleColor" name="highlight_color"/>
+                                                        </state>
                                                         <connections>
-                                                            <outlet property="fileName" destination="0bD-DI-M1N" id="v43-UF-Z7m"/>
+                                                            <segue destination="lQp-xH-e15" kind="show" identifier="parrotDbg2MetricLogs" id="p7i-6z-rKO"/>
                                                         </connections>
-                                                    </tableViewCell>
-                                                </prototypes>
-                                            </tableView>
+                                                    </button>
+                                                </subviews>
+                                            </stackView>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="PWK-JL-I2n">
-                                                <rect key="frame" x="205" y="21" width="307" height="195"/>
+                                                <rect key="frame" x="178.5" y="20.5" width="333.5" height="196"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="hCt-zJ-CKN">
-                                                        <rect key="frame" x="5.5" y="0.0" width="296" height="34"/>
+                                                        <rect key="frame" x="19" y="0.0" width="296" height="34"/>
                                                         <subviews>
                                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Debug tag..." textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="BNv-Hd-hA8" customClass="POFTextField" customModule="OpenFlight" customModuleProvider="target">
                                                                 <rect key="frame" x="0.0" y="0.0" width="250" height="34"/>
@@ -136,24 +152,41 @@
                                                         </subviews>
                                                     </stackView>
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="f3T-eY-kRn">
-                                                        <rect key="frame" x="83" y="44" width="140.5" height="31"/>
+                                                        <rect key="frame" x="6.5" y="44" width="321" height="31"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Active Log" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mrz-ox-D1m">
-                                                                <rect key="frame" x="0.0" y="0.0" width="71.5" height="31"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="252" height="31"/>
                                                                 <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eBS-hZ-5JW">
-                                                                <rect key="frame" x="91.5" y="0.0" width="51" height="31"/>
+                                                                <rect key="frame" x="272" y="0.0" width="51" height="31"/>
                                                                 <connections>
                                                                     <action selector="switchLogOnOff:" destination="1UJ-SD-ecA" eventType="valueChanged" id="Lct-f1-bKp"/>
                                                                 </connections>
                                                             </switch>
                                                         </subviews>
                                                     </stackView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="v40-GJ-Rz7">
+                                                        <rect key="frame" x="6.5" y="85" width="321" height="31"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Forcer les logs &quot;niveau développeur&quot;" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="95V-PC-Tl2" userLabel="Level - Debug">
+                                                                <rect key="frame" x="0.0" y="0.0" width="252" height="31"/>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="17"/>
+                                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="GcD-AA-Rrl">
+                                                                <rect key="frame" x="272" y="0.0" width="51" height="31"/>
+                                                                <connections>
+                                                                    <action selector="switchLogDebugInfo:" destination="1UJ-SD-ecA" eventType="valueChanged" id="JDW-At-8ks"/>
+                                                                </connections>
+                                                            </switch>
+                                                        </subviews>
+                                                    </stackView>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GPA-T6-ekH">
-                                                        <rect key="frame" x="77.5" y="85" width="152" height="30"/>
+                                                        <rect key="frame" x="91" y="126" width="152" height="30"/>
                                                         <state key="normal" title="Enable Stream Record">
                                                             <color key="titleColor" name="highlight_color"/>
                                                         </state>
@@ -165,7 +198,7 @@
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="047-To-Apc" userLabel="videofull">
-                                                        <rect key="frame" x="93.5" y="125" width="120" height="30"/>
+                                                        <rect key="frame" x="107" y="166" width="120" height="30"/>
                                                         <state key="normal" title="Video Full Screen">
                                                             <color key="titleColor" name="highlight_color"/>
                                                         </state>
@@ -176,8 +209,8 @@
                                                             <segue destination="1w5-Qk-Zho" kind="show" id="SeJ-dT-aiM"/>
                                                         </connections>
                                                     </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vGk-Sk-GZ3" userLabel="exportFlightPlanFiles">
-                                                        <rect key="frame" x="77" y="165" width="153" height="30"/>
+                                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vGk-Sk-GZ3" userLabel="exportFlightPlanFiles">
+                                                        <rect key="frame" x="90.5" y="196" width="153" height="0.0"/>
                                                         <state key="normal" title="Export current FP files">
                                                             <color key="titleColor" name="highlight_color"/>
                                                         </state>
@@ -189,12 +222,15 @@
                                                         </connections>
                                                     </button>
                                                 </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="GcD-AA-Rrl" firstAttribute="trailing" secondItem="eBS-hZ-5JW" secondAttribute="trailing" id="mbh-nC-iwf"/>
+                                                </constraints>
                                             </stackView>
                                         </subviews>
                                         <constraints>
-                                            <constraint firstAttribute="bottom" secondItem="QtU-FA-YFk" secondAttribute="bottom" id="2bq-QL-v8w"/>
-                                            <constraint firstItem="QtU-FA-YFk" firstAttribute="top" secondItem="9He-g4-Ikd" secondAttribute="top" id="LBN-hj-VPL"/>
-                                            <constraint firstItem="QtU-FA-YFk" firstAttribute="width" secondItem="9He-g4-Ikd" secondAttribute="width" multiplier="0.4" id="Xjq-G0-Y8X"/>
+                                            <constraint firstItem="IAB-XN-dfm" firstAttribute="top" secondItem="9He-g4-Ikd" secondAttribute="top" id="5WL-iK-9fs"/>
+                                            <constraint firstItem="IAB-XN-dfm" firstAttribute="width" secondItem="PWK-JL-I2n" secondAttribute="width" multiplier="0.535232" id="CLu-qh-m8y"/>
+                                            <constraint firstAttribute="bottom" secondItem="IAB-XN-dfm" secondAttribute="bottom" id="s0h-d2-4bp"/>
                                         </constraints>
                                     </stackView>
                                 </subviews>
@@ -306,6 +342,8 @@
                         <outlet property="exportFlightPlanFilesButton" destination="vGk-Sk-GZ3" id="oDl-Bu-6Uv"/>
                         <outlet property="filesTableView" destination="QtU-FA-YFk" id="v67-kt-ziN"/>
                         <outlet property="informationsLabel" destination="ihn-4O-EJ6" id="N8A-mp-oZj"/>
+                        <outlet property="logLevelLabel" destination="95V-PC-Tl2" id="K4Y-E9-c50"/>
+                        <outlet property="logLevelSwitch" destination="GcD-AA-Rrl" id="xAz-WF-hPR"/>
                         <outlet property="sendDebugTagButton" destination="TcC-lw-z5W" id="qcR-er-hRG"/>
                         <outlet property="sendDebugTagTextField" destination="BNv-Hd-hA8" id="dfY-sW-2Gs"/>
                         <outlet property="switchLog" destination="eBS-hZ-5JW" id="4JA-iM-h7r"/>
@@ -314,6 +352,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="b22-Aw-FRZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-955" y="1324"/>
+        </scene>
+        <!--Metric Logs Hosting Controller-->
+        <scene sceneID="3Sc-31-1dD">
+            <objects>
+                <hostingController id="lQp-xH-e15" customClass="MetricLogsHostingController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="If9-zh-waU"/>
+                </hostingController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="RY2-VI-u6A" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1016" y="2284"/>
         </scene>
         <!--Parrot Debug StreamVC-->
         <scene sceneID="HAW-iP-svY">

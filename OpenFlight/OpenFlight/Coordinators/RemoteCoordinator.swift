@@ -67,7 +67,8 @@ public final class RemoteCoordinator: Coordinator {
 extension RemoteCoordinator {
     /// Starts drone list coordinator.
     func startDronesList() {
-        let pairingCoordinator = PairingCoordinator(delegate: self)
+        let pairingCoordinator = PairingCoordinator(services: services,
+                                                    delegate: self)
         pairingCoordinator.parentCoordinator = self
         pairingCoordinator.navigationController = navigationController
         childCoordinators.append(pairingCoordinator)

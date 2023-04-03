@@ -37,14 +37,18 @@ private extension ULogTag {
 }
 
 /// User location overlay.
-public final class TouchAndFlyGraphicsOverlay: CommonGraphicsOverlay {
+public final class TouchAndFlyGraphicsOverlay: AGSGraphicsOverlay {
     static let Key = "TouchAndFlyGraphicsOverlayKey"
 
     // MARK: - Private Properties
+    /// Combine cancellables
+    private var cancellables = Set<AnyCancellable>()
     /// Way point graphic
     public var wayPointGraphic: FlightPlanWayPointGraphic?
     /// Point of interest graphic
     private var poiGraphic: FlightPlanPoiPointGraphic?
+    /// Drone last position
+    private var droneLocation: OrientedLocation?
 
     /// Returns Touch and Fly's drone to waypoint line, if any.
     var touchAndFlyWayPointLineGraphic: TouchAndFlyDroneToPointLineGraphic? {
@@ -58,7 +62,6 @@ public final class TouchAndFlyGraphicsOverlay: CommonGraphicsOverlay {
 
     override public init() {
         super.init()
-        self.isActive.value = true
         viewModel.graphicTypePublisher.sink { [weak self] graphicType in
             guard let self = self else { return }
             switch graphicType {
@@ -71,10 +74,9 @@ public final class TouchAndFlyGraphicsOverlay: CommonGraphicsOverlay {
             }
         }.store(in: &cancellables)
 
-        viewModel.locationsTracker.droneLocationPublisher.sink { [weak self] location in
-            if let wayPointGraphic = self?.wayPointGraphic?.location {
-                self?.update(wayPointLocation: wayPointGraphic, droneLocation: location)
-            }
+        viewModel.droneLocationPublisher.sink { [weak self] location in
+            self?.droneLocation = location
+            self?.updateWayPointItinerary()
         }.store(in: &cancellables)
     }
 
@@ -86,29 +88,25 @@ public final class TouchAndFlyGraphicsOverlay: CommonGraphicsOverlay {
             clearGraphics()
             wayPointGraphic = FlightPlanWayPointGraphic(touchAndFlyLocation: location)
             if let wayPointGraphic = wayPointGraphic {
-                update(wayPointLocation: location, droneLocation: viewModel.locationsTracker.droneLocation)
+                updateWayPointItinerary()
                 graphics.add(wayPointGraphic)
             }
         } else {
             wayPointGraphic?.update(location: location)
-            update(wayPointLocation: location, droneLocation: viewModel.locationsTracker.droneLocation)
+            updateWayPointItinerary()
         }
     }
 
-    /// Update drone location
-    ///
-    /// - Parameters:
-    ///      - wayPointLocation: the location of the way point
-    ///      - droneLocation: the drone location
-    func update(wayPointLocation: Location3D, droneLocation: OrientedLocation) {
-        if let locationWayPoint = wayPointGraphic?.location, let droneLocation = droneLocation.coordinates {
-            let line = AGSPolyline(points: [droneLocation.agsPoint, locationWayPoint.agsPoint])
-            if let lineGraphic = touchAndFlyWayPointLineGraphic {
-                lineGraphic.update(with: line)
-            } else {
-                let lineGraphic = TouchAndFlyDroneToPointLineGraphic(polyline: line, isWayPoint: true)
-                graphics.add(lineGraphic)
-            }
+    /// Update drone Itinerary
+    func updateWayPointItinerary() {
+        guard let locationWayPoint = wayPointGraphic?.location,
+              let droneLocation = droneLocation?.coordinates else { return }
+        let line = AGSPolyline(points: [droneLocation.agsPoint, locationWayPoint.agsPoint])
+        if let lineGraphic = touchAndFlyWayPointLineGraphic {
+            lineGraphic.update(with: line)
+        } else {
+            let lineGraphic = TouchAndFlyDroneToPointLineGraphic(polyline: line, isWayPoint: true)
+            graphics.add(lineGraphic)
         }
     }
 

@@ -47,8 +47,9 @@ public class TouchAndFlyGraphicsOverlayViewModel {
     private var graphicType = CurrentValueSubject<GraphicType, Never>(.none)
 
     // MARK: - Public Properties
-    public let locationsTracker: LocationsTracker = Services.hub.locationsTracker
-    public var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> { locationsTracker.droneLocationPublisher }
+    public var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> {
+        Services.hub.locationsTracker.drone3DLocationPublisher(animated: true, absoluteAltitude: true)
+    }
     public var graphicTypePublisher: AnyPublisher<GraphicType, Never> { graphicType.eraseToAnyPublisher() }
 
     init() {

@@ -31,63 +31,43 @@ import Foundation
 import ArcGIS
 
 /// View controller for map display.
-open class AGSMapViewController: CommonMapViewController {
+open class AGSMapViewController: CommonMapViewController, MapAutoScrollDelegate {
     @IBOutlet public weak var mapView: AGSMapView!
     @IBOutlet weak var centerButton: UIButton!
 
     /// Key observer for map loading status.
     private var mapLoadStatusObservation: NSKeyValueObservation?
-    /// Current view point saved before a reset of the scene view.
-    private var currentViewPointSaved: AGSViewpoint?
-
-    /// Whether Centering is in progress.
-    open var centering = false
 
     override var geoView: AGSGeoView {
         return mapView
     }
 
-    override open func setBaseMap() {
-        guard currentMapType != SettingsMapDisplayType.current else { return }
-
-        currentMapType = SettingsMapDisplayType.current
-        if mapView.map == nil {
-            mapView.map = AGSMap(basemapStyle: SettingsMapDisplayType.current.agsBasemapStyle)
-            if let currentViewPointSaved = currentViewPointSaved {
-                mapView.setViewpoint(currentViewPointSaved)
-            } else {
-                centerMapWithoutAnyChanges()
-            }
-        } else {
-            mapView.map?.basemap =  SettingsMapDisplayType.current.agsBasemap
-        }
-
-        mapView.isAttributionTextVisible = false
-    }
+    private var viewPointThatShouldBeApplied: AGSViewpoint?
 
     open override func viewDidLoad() {
         super.viewDidLoad()
-        // Do not remove set Base map, it will remove the white bottom bar displayed by default by
-        // ArcGIS if there is no connection.
         setBaseMap()
-        setCameraHandler()
         mapView.interactionOptions.isMagnifierEnabled = false
         mapView.touchDelegate = self
         mapView.isHidden = true
+        mapView.insetsContentInsetFromSafeArea = false
+        mapView.isAttributionTextVisible = false
+        setCameraHandler()
+        isNavigatingObserver = mapView.observe(\AGSMapView.isNavigating, changeHandler: { [ weak self ] (mapView, _) in
+            // NOTE: this closure can be called from a background thread so always dispatch to main
+            DispatchQueue.main.async {
+                self?.userNavigationDidChange(state: mapView.isNavigating)
+            }
+        })
     }
 
-    /// Resets base map to reload it.
-    open override func resetBaseMap() {
-        let currentViewPoint = mapView.currentViewpoint(with: .centerAndScale)
-        currentViewPointSaved = currentViewPoint
-        mapView.map = nil
-        currentMapType = nil
-        setBaseMap()
-    }
-
-    override open func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        setBaseMap()
+    override open func setBaseMap() {
+        if mapView.map != nil, !mapViewModel.networkService.networkIsReachable { return }
+        let currentViewPointSaved = mapView.currentViewpoint(with: .centerAndScale)
+        mapView.map = AGSMap(basemapStyle: SettingsMapDisplayType.current.agsBasemapStyle)
+        if let currentViewPointSaved = currentViewPointSaved {
+            mapView.setViewpoint(currentViewPointSaved)
+        }
     }
 
     open override func viewDidAppear(_ animated: Bool) {
@@ -97,38 +77,29 @@ open class AGSMapViewController: CommonMapViewController {
                 guard let self = self else { return }
                 self.ignoreCameraAdjustments = true
                 if let center = viewPoint {
+                    self.viewPointThatShouldBeApplied = (center.targetGeometry as? AGSPoint) != nil ? center : nil
                     self.mapView.setViewpoint(center)
                     self.ignoreCameraAdjustments = false
                     self.mapView.isHidden = false
                     self.defaultCenteringDone()
                 } else {
-                    let agspoint = AGSPoint(clLocationCoordinate2D: CommonMapConstants.defaultLocation)
-                    self.mapView.setViewpointCenter(agspoint, scale: CommonMapConstants.cameraDistanceToCenterLocation) { [weak self] _ in
-                        guard let self = self else { return }
-                        self.ignoreCameraAdjustments = false
-                        self.mapView.isHidden = false
-                        self.defaultCenteringDone()
-                    }
+                    self.centerOnDefaultPosition()
+
                 }
                 self.applyDefaultCentering = false
             }
         }
-
     }
 
-    /// Adds home graphic overlay to map view.
-    ///
-    /// - Parameter zIndex: the z index of the home graphic to add
-    public func addHomeOverlay(at zIndex: Int) {
-        // TODO: Injection.
-        let homeLocationOverlay = HomeLocationGraphicsOverlay(rthService: Services.hub.drone.rthService,
-                                                              mapViewModel: mapViewModel)
-        mapView.graphicsOverlays.insert(homeLocationOverlay, at: zIndex)
-    }
-
-    /// Sets camera handler.
-    private func setCameraHandler() {
-        mapView.viewpointChangedHandler = { [weak self] in
+    // Center map on default position
+    private func centerOnDefaultPosition() {
+        let agspoint = AGSPoint(clLocationCoordinate2D: CommonMapConstants.defaultLocation)
+        self.viewPointThatShouldBeApplied = AGSViewpoint(center: agspoint, scale: CommonMapConstants.cameraDistanceToCenterLocation)
+        self.mapView.setViewpointCenter(agspoint, scale: CommonMapConstants.cameraDistanceToCenterLocation) { [weak self] _ in
+            guard let self = self else { return }
+            self.ignoreCameraAdjustments = false
+            self.mapView.isHidden = false
+            self.defaultCenteringDone()
         }
     }
 
@@ -137,31 +108,65 @@ open class AGSMapViewController: CommonMapViewController {
             guard let self = self else { return }
             self.ignoreCameraAdjustments = true
             if let center = viewPoint {
-                self.centering = true
                 let scale = self.mapView.mapScale
                 if let agspoint = center.targetGeometry as? AGSPoint {
-                    self.mapView.setViewpointCenter(agspoint, scale: scale) { [weak self] _ in
-                        self?.centering = false
-                    }
+                    self.mapView.setViewpointCenter(agspoint, scale: scale)
                 } else if let envelope = center.targetGeometry as? AGSEnvelope {
-                    self.mapView.setViewpointCenter(envelope.center, scale: scale) { [weak self] _ in
-                        self?.centering = false
-                    }
+                    self.mapView.setViewpointCenter(envelope.center, scale: scale)
                 }
             }
         }
     }
 
+    /// Sets camera handler.
+    func setCameraHandler() {
+        mapView.viewpointChangedHandler = { [weak self] in
+
+            guard let self = self, let viewPointThatShouldBeApplied = self.viewPointThatShouldBeApplied,
+                  !self.mapView.isNavigating else {
+                return
+            }
+            // Reapply mapScale if necessary. Sometimes the AGSMap refused the scale of the viewPoint.
+            if self.mapView.mapScale != viewPointThatShouldBeApplied.targetScale || self.hasBeenReset {
+                guard self.mapView.mapScale != viewPointThatShouldBeApplied.targetScale else {
+                    self.hasBeenReset = false
+                    return
+                }
+                self.hasBeenReset = true
+                self.mapView.setViewpoint(viewPointThatShouldBeApplied)
+            }
+        }
+    }
+
+    /// User navigating state on map
+    ///
+    /// - Parameters:
+    ///    - state: user navigating state
+    /// - Note: Called each time user is starting or stopping the navigation on map.
+    open func userNavigationDidChange(state: Bool) {
+        if !state {
+            if let viewPointThatShouldBeApplied = viewPointThatShouldBeApplied {
+                if mapView.mapScale != viewPointThatShouldBeApplied.targetScale {
+                    self.mapView.setViewpoint(viewPointThatShouldBeApplied)
+                }
+            }
+        } else {
+            self.viewPointThatShouldBeApplied = nil
+        }
+    }
+
     /// Centers map on view point and applies it without any changes.
-    public override func centerMapWithoutAnyChanges() {
+    public func centerMapWithoutAnyChanges() {
         getCenter { [weak self] viewPoint in
             guard let self = self else { return }
             self.ignoreCameraAdjustments = true
+            self.viewPointThatShouldBeApplied = nil
             if let center = viewPoint {
-                self.centering = true
+                self.viewPointThatShouldBeApplied = (center.targetGeometry as? AGSPoint) != nil ? center : nil
                 self.mapView.setViewpoint(center)
                 self.ignoreCameraAdjustments = false
-                self.centering = false
+            } else {
+                self.centerOnDefaultPosition()
             }
         }
     }
@@ -183,5 +188,33 @@ open class AGSMapViewController: CommonMapViewController {
                 self?.ignoreCameraAdjustments = false
             }
         }
+    }
+
+// MARK: - Auto scroll
+    public func geoViewForAutoScroll() -> AGSGeoView {
+        mapView
+    }
+
+    public func shouldAutoScroll() -> Bool {
+        true
+    }
+
+    public func shouldAutoScrollToCenter() -> Bool {
+        false
+    }
+
+    public func getCenter() -> CLLocationCoordinate2D? {
+        guard let mapCenterRaw = mapView.currentViewpoint(with: .centerAndScale)?.targetGeometry as? AGSPoint else {
+            return nil
+        }
+        return (AGSGeometryEngine.projectGeometry(mapCenterRaw, to: .wgs84()) as? AGSPoint)?.toCLLocationCoordinate2D()
+    }
+
+    public func setCenter(coordinates: CLLocationCoordinate2D) {
+        mapView.setViewpoint(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinates), scale: mapView.mapScale))
+    }
+
+    public func locationToScreen(_ location: AGSPoint) -> CGPoint {
+        mapView.location(toScreen: location)
     }
 }

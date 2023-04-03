@@ -29,6 +29,7 @@
 
 import Foundation
 import Combine
+import Pictor
 import SwiftyUserDefaults
 
 public class ProjectsListViewModel {
@@ -38,22 +39,21 @@ public class ProjectsListViewModel {
 
     let manager: ProjectManager
     private weak var projectManagerViewModel: ProjectManagerViewModel?
-    private let cloudSynchroWatcher: CloudSynchroWatcher?
+    private let synchroService: SynchroService?
     private weak var coordinator: ProjectManagerCoordinator?
     private var filteredProjectType: ProjectType = .classic
     private var cancellables = Set<AnyCancellable>()
 
     init(coordinator: ProjectManagerCoordinator?,
          manager: ProjectManager,
-         cloudSynchroWatcher: CloudSynchroWatcher?,
+         synchroService: SynchroService?,
          projectManagerViewModel: ProjectManagerViewModel) {
         self.coordinator = coordinator
         self.manager = manager
         self.projectManagerViewModel = projectManagerViewModel
-        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.synchroService = synchroService
 
         selectedProject = nil
-        refreshProjects()
         listenProjectTypeChange()
         listenProjectsPublisher()
         listenProjectsChange()
@@ -81,7 +81,9 @@ public class ProjectsListViewModel {
     }
 
     private func listenProjectsChange() {
+        // TODO: Change publisher to Passthrough to avoid calling dropFirst()
         projectManagerViewModel?.projectDidUpdate
+            .dropFirst()
             .sink { [weak self] projectUpdated in
                 guard let self = self else { return }
                 self.refreshProjects()
@@ -89,7 +91,9 @@ public class ProjectsListViewModel {
             }
             .store(in: &cancellables)
 
+        // TODO: Change publisher to Passthrough to avoid calling dropFirst()
         projectManagerViewModel?.projectAdded
+            .dropFirst()
             .sink { [weak self] projectAdded in
                 guard let self = self else { return }
                 self.refreshProjects()

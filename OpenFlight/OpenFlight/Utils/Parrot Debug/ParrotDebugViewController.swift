@@ -32,13 +32,19 @@ import GroundSdk
 import Combine
 import CoreGraphics
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "ParrotDebugViewController")
+}
+
 /// Parrot Debug screen to activate, edit & share logs.
 public class ParrotDebugViewController: UIViewController {
     // MARK: - Outlets
     @IBOutlet private weak var informationsLabel: UILabel!
     @IBOutlet private weak var activateLogsLabel: UILabel!
+    @IBOutlet private weak var logLevelLabel: UILabel!
     @IBOutlet private weak var filesTableView: UITableView!
     @IBOutlet private weak var switchLog: UISwitch!
+    @IBOutlet private weak var logLevelSwitch: UISwitch!
     @IBOutlet private weak var enableStreamRecord: UIButton!
     @IBOutlet private weak var sendDebugTagButton: UIButton!
     @IBOutlet private weak var sendDebugTagTextField: POFTextField!
@@ -88,6 +94,12 @@ public class ParrotDebugViewController: UIViewController {
         refreshControl.addTarget(self, action: #selector(refreshFileList(_:)), for: .valueChanged)
         sendDebugTagTextField.setPlaceholderTitle("Debug tag...")
 
+        Services.hub.currentDroneHolder.dronePublisher
+            .sink { [weak self] drone in
+                self?.drone = drone
+            }
+            .store(in: &cancellables)
+
         viewModel.shouldShowCustomMissionButton
             .removeDuplicates()
             .sink { [weak self] shouldShow in
@@ -97,15 +109,19 @@ public class ParrotDebugViewController: UIViewController {
             .store(in: &cancellables)
     }
 
-   public override func viewWillAppear(_ animated: Bool) {
+    public override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.setNavigationBarHidden(true, animated: animated)
 
-        switchLog.isOn = currentLogDirectory != nil
+        switchLog.isOn = ParrotDebugViewController.isLogActive()
+        logLevelSwitch.isOn = !AppUtils.isLogLevelInfo()
+        // disable access to the switch currently - TFF7-1028
+        logLevelSwitch.isEnabled = false
         loadFileList()
         displayInformations()
         updateStreamRecordDisplay()
         LogEvent.log(.screen(LogEvent.Screen.debugLogs))
-       exportFlightPlanFilesButton.isEnabled = Services.hub.flightPlan.edition.currentFlightPlanValue != nil
+        exportFlightPlanFilesButton.isEnabled = Services.hub.flightPlan.edition.currentFlightPlanValue != nil
+        exportFlightPlanFilesButton.isHidden = Bundle.main.isInHouseBuild
         super.viewWillAppear(animated)
     }
 
@@ -151,14 +167,20 @@ private extension ParrotDebugViewController {
 
     @IBAction func switchLogOnOff(_ sender: UISwitch) {
         if sender.isOn {
-            ParrotDebug.startLog()
-            Defaults.activatedLog = true
+            activateLog()
         } else {
-            ParrotDebug.stopLog()
-            Defaults.activatedLog = false
+            deactivateLog()
         }
         displayInformations()
         loadFileList()
+    }
+
+    @IBAction func switchLogDebugInfo(_ sender: UISwitch) {
+        if sender.isOn {
+            setLogDebug()
+        } else {
+            setLogInfo()
+        }
     }
 
     @IBAction func debugCheckCOn(_ sender: Any) {
@@ -177,8 +199,8 @@ private extension ParrotDebugViewController {
     @IBAction private func sendDebugTagTouchedUpInside(_ sender: AnyObject) {
         guard let tagValue = self.sendDebugTagTextField.text,
               let devToolBox = self.drone?.getPeripheral(Peripherals.devToolbox) else {
-                  return
-              }
+            return
+        }
 
         _ = self.sendDebugTagTextField.resignFirstResponder()
         self.sendDebugTagTextField.text = ""
@@ -321,8 +343,8 @@ extension ParrotDebugViewController: UITableViewDelegate, UITableViewDataSource 
             guard let self = self else { return }
             let sourceFrame = tableView.rectForRow(at: indexPath)
             self.share(url: self.fileListUrls[indexPath.row],
-                             sourceFrame: sourceFrame,
-                             coordinateSpace: tableView)
+                       sourceFrame: sourceFrame,
+                       coordinateSpace: tableView)
         }
         shareAction.backgroundColor = UIColor.darkGray
 
@@ -395,5 +417,59 @@ extension ParrotDebugViewController {
         self.share(url: url,
                    sourceFrame: sendDebugTagButton.frame,
                    coordinateSpace: sendDebugTagButton)
+    }
+}
+
+private extension ParrotDebugViewController {
+
+    static func isLogActive() -> Bool {
+        return ParrotDebug.currentLogDirectory?.lastPathComponent != nil
+    }
+
+    func activateLog() {
+        ParrotDebug.startLog()
+        switchLog.isOn = true
+        logLevelSwitch.isEnabled = true
+        logLevelSwitch.isEnabled = false  // TODO: remove this line once log level is dynamic -- it only exists to temporarily cancel out the previous line
+        // Remember the log is on
+        Defaults.activatedLog = true
+        logLevel()
+    }
+
+    func deactivateLog() {
+        switchLog.isOn = false
+        logLevelSwitch.isEnabled = false // When there are no logs, the debug switch is irrelevant
+        // Remember the log is off
+        Defaults.activatedLog = false
+        ParrotDebug.stopLog()
+        logLevel()
+    }
+
+    func setLogDebug() {
+
+        ULog.i(.tag, "ULOGLEVEL SET DEBUG (i)")
+        ULog.d(.tag, "ULOGLEVEL SET DEBUG (d)")
+        Defaults.debugLevel = "D"
+        AppUtils.setLogLevel()
+        ULog.d(.tag, "ULOGLEVEL SET DEBUG (d) DONE")
+        logLevel()
+    }
+
+    func setLogInfo() {
+
+        ULog.i(.tag, "ULOGLEVEL SET INFO (i)")
+        ULog.d(.tag, "ULOGLEVEL SET INFO (d)")
+        Defaults.debugLevel = "I"
+        AppUtils.setLogLevel()
+        ULog.d(.tag, "ULOGLEVEL SET INFO (d) DONE")
+        logLevel()
+    }
+
+    func logLevel() {
+        var log = "unknown"
+        if let value = getenv("ULOG_LEVEL"), let logUtf8 = String(utf8String: value) {
+            log = logUtf8
+        }
+        ULog.i(.tag, "ULOGLEVEL: \(log)")
     }
 }

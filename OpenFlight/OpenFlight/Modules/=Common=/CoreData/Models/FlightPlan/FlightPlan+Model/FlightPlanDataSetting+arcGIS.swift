@@ -260,6 +260,15 @@ extension FlightPlanDataSetting {
             + pois.compactMap { return $0.agsPoint })
     }
 
+    /// Returns a simple `AGSPolyline` with all points with altitude at 0.
+    var flatPolyline: AGSPolyline {
+        var listPoint = wayPoints.map { AGSPoint(x: $0.agsPoint.x, y: $0.agsPoint.y,
+                                                 z: 0.0, spatialReference: .wgs84()) }
+        listPoint.append(contentsOf: pois.map { AGSPoint(x: $0.agsPoint.x, y: $0.agsPoint.y,
+                                                        z: 0.0, spatialReference: .wgs84()) })
+        return AGSPolyline(points: listPoint)
+    }
+
     // MARK: - Private Properties
     /// Returns an array with waypoints' markers graphics.
     /// - Parameters:

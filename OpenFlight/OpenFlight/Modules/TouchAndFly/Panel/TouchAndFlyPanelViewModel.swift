@@ -197,10 +197,6 @@ class TouchAndFlyPanelViewModelImpl {
     }
 
     // Actions on the drone
-    func clear() {
-        service.clear()
-    }
-
     func play() {
         service.start()
     }
@@ -278,6 +274,8 @@ class TouchAndFlyPanelViewModelImpl {
                 infoStatusDrone.message = L10n.touchFlyTakeOffTheDrone
             case .droneTakingOff:
                 infoStatusDrone.message = L10n.touchFlyTakeOffInProgress
+            case .insufficientBattery:
+                infoStatusDrone.message = L10n.flightPlanAlertInsufficientBattery
             }
         }
     }
@@ -312,10 +310,10 @@ class TouchAndFlyPanelViewModelImpl {
         switch type {
         case .waypoint:
             guard let location = location ?? service.wayPoint else { return }
-            service.setWayPoint(location, altitude: altitude?.rounded())
+            service.setWayPoint(to: location, altitude: altitude?.rounded())
         case .poi:
             guard let location = location ?? service.poi else { return }
-            service.setPoi(location, altitude: altitude?.rounded())
+            service.setPoi(to: location, altitude: altitude?.rounded())
         }
     }
 
@@ -395,18 +393,11 @@ extension TouchAndFlyPanelViewModelImpl {
     }
 
     func setValueAltitude(value: Int) {
-        switch service.target.type {
-        case .none:
-            break
-        case .wayPoint:
-            service.set(altitude: Double(value))
-        case .poi:
-            service.set(altitude: Double(value))
-        }
+        service.set(altitude: Double(value))
     }
 
     func setValueSpeed(value: Int) {
-        switch service.target.type {
+        switch service.droneTarget.type {
         case .wayPoint:
             service.setWayPoint(speed: Double(value))
         default:

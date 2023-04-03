@@ -47,11 +47,9 @@ class FlightExecutionDetailsStatusCell: MainTableViewCell, NibReusable {
 
     @IBOutlet weak var freemiumDescription: UILabel!
 
-    @IBOutlet weak var actionButton: UIView!
-    @IBOutlet weak var actionButtonProgressView: UIView!
+    @IBOutlet weak var actionButton: RectangleProgressView!
     @IBOutlet weak var actionButtonIcon: UIImageView!
     @IBOutlet weak var actionButtonTitle: UILabel!
-    @IBOutlet weak var actionButtonProgressWidthConstraint: NSLayoutConstraint!
     @IBOutlet weak var actionButtonHeight: NSLayoutConstraint!
 
     private var cancellables = Set<AnyCancellable>()
@@ -90,9 +88,8 @@ class FlightExecutionDetailsStatusCell: MainTableViewCell, NibReusable {
         freemiumDescription.isHidden = true
 
         actionButton.applyCornerRadius(Style.largeCornerRadius)
-        actionButtonProgressView.isHidden = true
         actionButtonTitle.makeUp(with: .current, color: .defaultTextColor)
-        actionButtonProgressWidthConstraint.constant = 0
+        actionButton.progress = 0.0
         actionButton.isHidden = true
         actionButtonHeight.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass)
     }
@@ -278,7 +275,7 @@ extension FlightExecutionDetailsStatusCell {
     /// Hide the uploading indicator.
     func hideUploadingInfo() {
         uploadingStack.isHidden = true
-        actionButtonProgressView.backgroundColor = .clear
+        actionButton.progress = 0.0
     }
 
     /// Show the state when upload is paused.
@@ -322,11 +319,10 @@ extension FlightExecutionDetailsStatusCell {
     /// - Parameters:
     ///   - progress: The button progress indicator - between 0 and 1.
     func updateActionButtonProgress(to progress: Double, progressColor: UIColor?) {
-        actionButtonProgressView.isHidden = false
-        if let prgColor = progressColor {
-            actionButtonProgressView.backgroundColor = prgColor
+        if let progressColor = progressColor {
+            actionButton.progressColor = progressColor
         }
-        actionButtonProgressWidthConstraint.constant = actionButton.frame.width * CGFloat(progress)
+        actionButton.progress = progress
     }
 
     /// Show the action button.
@@ -368,7 +364,6 @@ extension FlightExecutionDetailsStatusCell {
     /// Hide the action button.
     func hideActionButton() {
         actionButton.isHidden = true
-        actionButtonProgressView.isHidden = true
         tapGestureSubscriber?.cancel()
     }
 }

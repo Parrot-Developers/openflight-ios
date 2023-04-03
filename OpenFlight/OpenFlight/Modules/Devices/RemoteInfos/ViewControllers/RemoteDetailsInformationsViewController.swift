@@ -111,7 +111,7 @@ private extension RemoteDetailsInformationsViewController {
             .removeDuplicates()
             .sink { [weak self] serialNumber in
                 guard let self = self else { return }
-                self.serialNumberView.model = DeviceInformationsModel(title: L10n.remoteDetailsSerialNumber, description: serialNumber)
+                self.serialNumberView.model = DeviceInformationsModel(title: L10n.commonProductReference, description: serialNumber)
             }
             .store(in: &cancellables)
 

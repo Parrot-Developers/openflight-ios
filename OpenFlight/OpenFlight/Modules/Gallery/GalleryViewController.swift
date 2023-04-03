@@ -342,7 +342,11 @@ private extension GalleryViewController {
     }
 
     func updateButtons(activeTypes types: GalleryActionType) {
-        types.contains(.delete) ? deleteButton.startLoader() : deleteButton.stopLoader()
+        if types.contains(.delete) {
+            deleteButton.startLoader()
+        } else {
+            deleteButton.stopLoader()
+        }
         let isSharing = types.contains(.share)
         DispatchQueue.main.async {
             isSharing ? self.mainActionButton.startLoader() : self.mainActionButton.stopLoader()

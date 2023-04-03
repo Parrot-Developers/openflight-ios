@@ -36,8 +36,10 @@ private enum FirmwareToUpdateStatus {
     case upTodate
 }
 
-/// The potential Firmware to update process operation.
-enum FirwmwareToUpdateOperation {
+/// The potential firmware to update process operation.
+///
+/// Used by the updating process to determine the sequence of steps needed for a specific update.
+public enum FirwmwareToUpdateOperation {
     case download
     case update
     case process
@@ -45,13 +47,16 @@ enum FirwmwareToUpdateOperation {
 }
 
 /// A struct to represent the Firmware to update.
-struct FirmwareToUpdateData {
+public struct FirmwareToUpdateData {
     // MARK: - Internal Properties
     let firmwareName: String = L10n.firmwareMissionUpdateFirmwareName
     let firmwareVersion: String
     let firmwareIdealVersion: String
     let firmwareVersionToInstall: String
     let updateState: UpdateState
+    /// Contains the sequence of steps for this update.
+    ///
+    /// Firmwares can be embedded or downloaded. When they are embedded, there is no download step.
     let allOperationsNeeded: [FirwmwareToUpdateOperation]
 
     // MARK: - Private Properties

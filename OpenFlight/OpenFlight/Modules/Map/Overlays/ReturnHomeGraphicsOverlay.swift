@@ -37,7 +37,7 @@ private extension ULogTag {
 }
 
 /// Return home overlay.
-public final class ReturnHomeGraphicsOverlay: CommonGraphicsOverlay {
+public final class ReturnHomeGraphicsOverlay: AGSGraphicsOverlay {
 
     static let Key = "ReturnHomeGraphicsOverlayKey"
 
@@ -62,6 +62,8 @@ public final class ReturnHomeGraphicsOverlay: CommonGraphicsOverlay {
     }
 
     // MARK: - Private Properties
+    /// Combine cancellables
+    private var cancellables = Set<AnyCancellable>()
     /// Graphic for the polyline of the drone trajectory.
     private var droneToPointLineGraphic: AGSGraphic?
     /// RTH altitude.
@@ -76,6 +78,8 @@ public final class ReturnHomeGraphicsOverlay: CommonGraphicsOverlay {
     private var initialLocation: CLLocationCoordinate2D?
     /// Current step of the RTH.
     private var currentStep: TrajectoryStep = .firstStep
+    /// Indicates if a RTH is currently active
+    private var isActive: Bool = false
 
     // MARK: - Public Properties
     public var viewModel = ReturnHomeGraphicsOverlayViewModel()
@@ -92,8 +96,10 @@ public final class ReturnHomeGraphicsOverlay: CommonGraphicsOverlay {
                           let droneLocation = self.viewModel.droneLocation.coordinates
                     else { return }
                     self.startRth(droneLocation: droneLocation, homeLocation: homeLocation, minAltitude: self.viewModel.minAltitude)
+                } else {
+                    self.clearGraphics()
                 }
-                self.isActive.value = isActive
+                self.isActive = isActive
             }
             .store(in: &cancellables)
 
@@ -101,7 +107,7 @@ public final class ReturnHomeGraphicsOverlay: CommonGraphicsOverlay {
             .combineLatest(viewModel.$homeLocation)
             .sink { [weak self] droneLocation, homeLocation in
                 guard let self = self, let homeLocation = homeLocation, let droneLocation = droneLocation.coordinates else { return }
-                if self.isActive.value {
+                if self.isActive {
                     self.update(homeLocation: homeLocation, droneLocation: droneLocation)
                 }
             }.store(in: &cancellables)
@@ -135,7 +141,7 @@ public final class ReturnHomeGraphicsOverlay: CommonGraphicsOverlay {
         // it will move horizontally at the same altitude to the home location.
         rthAltitude = max(rthAltitude, droneLocation.altitude)
         currentStep = .firstStep
-        ULog.d(.tag, "Starting RTH."
+        ULog.i(.tag, "Starting RTH."
                + " Initial location: (lat: \(droneLocation.coordinate.latitude), long: \(droneLocation.coordinate.longitude) alt:\(droneLocation.altitude)"
                + ", Home location: (lat: \(homeLocation.coordinate.latitude), long: \(homeLocation.coordinate.longitude), alt: \(homeLocation.altitude)"
                + ", Initial distance: \(initialDistance)"
@@ -183,13 +189,13 @@ private extension ReturnHomeGraphicsOverlay {
     ///    - droneLocation: location of the drone
     func processFirstStep(homeLocation: Location3D, droneLocation: Location3D) -> TrajectoryStep {
         if homeDistance < Constants.deltaDistance {
-            ULog.d(.tag,"first to third step. homeDistance=\(homeDistance)")
+            ULog.i(.tag, "first to third step. homeDistance=\(homeDistance)")
             return processThirdStep(homeLocation: homeLocation, droneLocation: droneLocation)
         }
         let distanceFromStart = initialLocation?.distance(from: droneLocation.coordinate) ?? 0.0
-        if distanceFromStart > Constants.deltaDistance || droneLocation.altitude > rthAltitude - Constants.deltaDistance {
-            ULog.d(.tag,"first to second step. distanceFromStart=\(distanceFromStart), droneAlt=\(droneLocation.altitude)")
-            // The drone has started to move horizontally, or is close to its RTH altitude
+        if distanceFromStart > Constants.deltaDistance && droneLocation.altitude > rthAltitude - Constants.deltaDistance {
+            ULog.i(.tag, "first to second step. distanceFromStart=\(distanceFromStart), droneAlt=\(droneLocation.altitude)")
+            // The drone has started to move horizontally and is close to its RTH altitude
             return processSecondStep(homeLocation: homeLocation, droneLocation: droneLocation)
         }
 
@@ -213,9 +219,9 @@ private extension ReturnHomeGraphicsOverlay {
     ///    - homeLocation: the home location (take off point or pilot)
     ///    - droneLocation: location of the drone
     func processSecondStep(homeLocation: Location3D, droneLocation: Location3D) -> TrajectoryStep {
-        if homeDistance < Constants.deltaDistance || droneLocation.altitude < rthAltitude - Constants.deltaDistance {
-            // The drone is over home or descending.
-            ULog.d(.tag,"second to third step. homeDistance=\(homeDistance), droneAlt=\(droneLocation.altitude)")
+        if homeDistance < Constants.deltaDistance && droneLocation.altitude < rthAltitude - Constants.deltaDistance {
+            // The drone is over home and descending.
+            ULog.i(.tag, "second to third step. homeDistance=\(homeDistance), droneAlt=\(droneLocation.altitude)")
             return processThirdStep(homeLocation: homeLocation, droneLocation: droneLocation)
         } else {
             // Still on second segment, draw second and third.
@@ -260,5 +266,11 @@ private extension ReturnHomeGraphicsOverlay {
             graphics.add(lineGraphics)
             droneToPointLineGraphic = lineGraphics
         }
+    }
+
+    /// Clear graphics
+    private func clearGraphics() {
+        graphics.removeAllObjects()
+        droneToPointLineGraphic = nil
     }
 }

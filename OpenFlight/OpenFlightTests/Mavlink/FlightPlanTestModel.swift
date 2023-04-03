@@ -28,8 +28,9 @@
 //    SUCH DAMAGE.
 
 import Foundation
-@testable import OpenFlight
 import CoreLocation
+@testable import OpenFlight
+@testable import Pictor
 
 struct FlightPlanTestModel: Codable {
     var uuid: String
@@ -37,25 +38,27 @@ struct FlightPlanTestModel: Codable {
     var dataSetting: FlightPlanDataSetting?
 
     func flightPlanModel() -> FlightPlanModel {
-        var fpm = FlightPlanModel(apcId: "", type: type, uuid: uuid,
-                                  version: "", customTitle: "", thumbnailUuid: nil,
-                                  projectUuid: "", dataStringType: "",
-                                  dataString: nil, pgyProjectId: nil,
-                                  state: .unknown, lastMissionItemExecuted: nil,
-                                  mediaCount: nil, uploadedMediaCount: nil,
-                                  lastUpdate: Date(), synchroStatus: nil,
-                                  fileSynchroStatus: 0, fileSynchroDate: nil,
-                                  latestSynchroStatusDate: nil, cloudId: nil,
-                                  parrotCloudUploadUrl: nil, isLocalDeleted: false,
-                                  latestCloudModificationDate: nil,
-                                  uploadAttemptCount: nil, lastUploadAttempt: nil,
-                                  thumbnail: nil, flightPlanFlights: nil,
-                                  latestLocalModificationDate: nil,
-                                  synchroError: nil)
+        var pictorfpm = PictorFlightPlanModel(uuid: uuid,
+                                              cloudId: 0,
+                                              name: "",
+                                              state: .editable,
+                                              flightPlanType: "",
+                                              formatVersion: "1",
+                                              lastUpdated: Date(),
+                                              fileType: "",
+                                              dataSetting: nil,
+                                              mediaCount: 0,
+                                              uploadedMediaCount: 0,
+                                              lastMissionItemExecuted: 0,
+                                              executionRank: nil,
+                                              hasReachedFirstWaypoint: nil,
+                                              projectUuid: nil,
+                                              projectPix4dUuid: nil,
+                                              thumbnail: nil)
+        var fpm = FlightPlanModel(pictorModel: pictorfpm)
         var dataSetting = self.dataSetting
         dataSetting?.mavlinkDataFile = nil
         fpm.dataSetting = dataSetting
         return fpm
     }
-
 }

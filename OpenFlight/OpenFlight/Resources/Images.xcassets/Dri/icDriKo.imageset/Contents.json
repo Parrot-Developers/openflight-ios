@@ -6,12 +6,12 @@
       "scale" : "1x"
     },
     {
-      "filename" : "icDriKo2x.png",
+      "filename" : "icDriKo@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icDriKo3x.png",
+      "filename" : "icDriKo@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

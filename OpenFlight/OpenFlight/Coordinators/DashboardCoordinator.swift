@@ -48,7 +48,7 @@ open class DashboardCoordinator: Coordinator {
     public func start() {
         let dashboardViewModel = DashboardViewModel(service: services.ui.variableAssetsService,
                                                     projectManager: services.flightPlan.projectManager,
-                                                    cloudSynchroWatcher: services.cloudSynchroWatcher,
+                                                    synchroService: services.synchroService,
                                                     projectManagerUiProvider: services.ui.projectManagerUiProvider,
                                                     dashboardUiProvider: services.ui.dashboardUiProvider,
                                                     flightService: services.flight.service,
@@ -115,7 +115,7 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
     func startUpdate(model: DeviceUpdateModel) {
         switch model {
         case .drone:
-            let updateCoordinator = DroneFirmwaresCoordinator()
+            let updateCoordinator = DroneFirmwaresCoordinator(services: services)
             updateCoordinator.parentCoordinator = self
             updateCoordinator.start()
             present(childCoordinator: updateCoordinator, overFullScreen: true)
@@ -168,7 +168,7 @@ extension DashboardCoordinator: DashboardCoordinatorNavigation {
                              completion: (() -> Void)? = nil) {
         let projectManagerCoordinator = ProjectManagerCoordinator(flightPlanServices: services.flightPlan,
                                                                   uiServices: services.ui,
-                                                                  cloudSynchroWatcher: services.cloudSynchroWatcher,
+                                                                  synchroService: services.synchroService,
                                                                   defaultSelectedProject: selectedProject)
         projectManagerCoordinator.parentCoordinator = self
         projectManagerCoordinator.start()

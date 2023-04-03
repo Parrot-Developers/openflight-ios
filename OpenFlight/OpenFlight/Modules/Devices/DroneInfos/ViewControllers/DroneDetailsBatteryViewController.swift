@@ -34,6 +34,8 @@ import GroundSdk
 class DroneDetailsBatteryViewController: UIViewController {
 
     // MARK: - Outlet
+    @IBOutlet private weak var popupLeadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var popupTrailingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var batteryView: UIView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var voltage1Label: UILabel!
@@ -116,6 +118,9 @@ extension DroneDetailsBatteryViewController: UIGestureRecognizerDelegate {
 private extension DroneDetailsBatteryViewController {
 
     func setupUI() {
+        popupLeadingConstraint.constant = Layout.popupHMargin(isRegularSizeClass)
+        popupTrailingConstraint.constant = popupLeadingConstraint.constant
+
         titleLabel.text = L10n.batteryInformation
         titleLabel.makeUp(with: .title, color: .defaultTextColor)
         cellsVoltageLabel.text = L10n.batteryCellsVoltage

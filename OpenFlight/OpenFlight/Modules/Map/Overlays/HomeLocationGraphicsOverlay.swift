@@ -36,10 +36,13 @@ private extension ULogTag {
 }
 
 /// A home location graphics overlay.
-public final class HomeLocationGraphicsOverlay: CommonGraphicsOverlay {
+public final class HomeLocationGraphicsOverlay: AGSGraphicsOverlay {
 
     static let Key = "HomeLocationGraphicsOverlayKey"
 
+    // MARK: - Private Properties
+    /// Combine cancellables
+    private var cancellables = Set<AnyCancellable>()
     /// The view model.
     private var viewModel: HomeLocationGraphicsOverlayViewModel!
     /// The home point graphic.

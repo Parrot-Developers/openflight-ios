@@ -201,6 +201,8 @@
                         <outlet property="alertInstructionLabel" destination="XWG-3C-jp5" id="3AP-JG-Y0G"/>
                         <outlet property="bgSlider" destination="bBx-5V-okk" id="b4j-8f-6Ts"/>
                         <outlet property="panelView" destination="dUi-9S-9it" id="kc4-ZQ-Q3e"/>
+                        <outlet property="popupLeadingConstraint" destination="cA3-dD-z0E" id="Rys-mm-HIU"/>
+                        <outlet property="popupTrailingConstraint" destination="UF5-1b-lPN" id="uaI-hl-USJ"/>
                         <outlet property="remoteShutdownProcessDoneImage" destination="LJw-r4-iTA" id="FPv-Vh-V6O"/>
                         <outlet property="sliderShutdownImage" destination="ThB-cJ-CrR" id="qfD-PP-xVY"/>
                         <outlet property="sliderStepLabel" destination="8Kw-rG-uaQ" id="BZ2-t3-DKH"/>

@@ -72,7 +72,6 @@ public class RightPanelContainerControls: NSObject {
         let isRegularSizeClass = stackView.isRegularSizeClass
         actionWidgetBottomConstraint.constant = Layout.buttonIntrinsicHeight(isRegularSizeClass) + 2 * Layout.mainPadding(isRegularSizeClass)
         widthConstraint.constant = panelWidth
-        trailingConstraint.constant = -panelWidth
         rightPanelContainerView.backgroundColor = ColorName.defaultBgcolor.color
     }
 

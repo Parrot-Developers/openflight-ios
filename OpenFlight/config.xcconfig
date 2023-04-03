@@ -1,5 +1,5 @@
 #include "Pods/Target Support Files/Pods-OpenFlightApp/Pods-OpenFlightApp.release.xcconfig"
 PRODUCT_BUNDLE_IDENTIFIER = com.parrot.drone.openpenflight
-IPHONEOS_DEPLOYMENT_TARGET = 14.0
-SWIFT_VERSION = 5.0
-APP_VERSION = 7.5.0-rc8
+IPHONEOS_DEPLOYMENT_TARGET = None
+SWIFT_VERSION = None
+APP_VERSION = 7.6.0-rc1

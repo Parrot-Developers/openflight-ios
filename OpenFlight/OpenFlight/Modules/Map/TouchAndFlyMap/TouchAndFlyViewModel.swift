@@ -33,7 +33,7 @@ import Combine
 import ArcGIS
 import GroundSdk
 
-/// ViewModel for `UserLocationGraphicsOverlay`
+/// ViewModel for `TouchAndFlyMapViewController`
 public class TouchAndFlyViewModel {
     // MARK: Private Properties
     /// Combine cancellables

@@ -159,16 +159,16 @@ private extension ImagingBarShutterSpeedViewModel {
     func listenCamera(drone: Drone) {
         cameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] camera in
             guard let camera = camera,
-                let exposureMode = camera.config[Camera2Params.exposureMode],
-                let shutterSpeed = camera.config[Camera2Params.shutterSpeed] else {
+                  let exposureMode = camera.config[Camera2Params.exposureMode],
+                  let shutterSpeedSupportedValues = camera.config[Camera2Params.shutterSpeed]?.currentSupportedValues
+            else {
                 return
             }
 
             let copy = state.value.copy()
             copy.supportedModes = exposureMode.manualShutterSpeedAvailable
-                ? shutterSpeed.currentSupportedValues.sorted()
-                : [Camera2ShutterSpeed]()
-            copy.mode = shutterSpeed.value
+            ? shutterSpeedSupportedValues.sorted()
+            : [Camera2ShutterSpeed]()
             copy.image = exposureMode.value == .manualIsoSensitivity ? Asset.BottomBar.Icons.iconAuto.image : nil
             copy.isAutomatic = exposureMode.value.automaticShutterSpeed
             state.set(copy)

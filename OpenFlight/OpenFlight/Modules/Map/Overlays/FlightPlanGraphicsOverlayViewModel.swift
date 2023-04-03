@@ -41,8 +41,8 @@ public class FlightPlanGraphicsOverlayViewModel {
     public var centerStatePublisher: AnyPublisher<MapCenterState, Never> { centerState.eraseToAnyPublisher() }
     public var centerState = CurrentValueSubject<MapCenterState, Never>(.none)
 
-    public var refreshCenterPublisher: AnyPublisher<Bool, Never> { refreshCenter.eraseToAnyPublisher() }
-    public var refreshCenter = CurrentValueSubject<Bool, Never>(false)
+    public var refreshViewPointPublisher: AnyPublisher<Bool, Never> { refreshViewPoint.eraseToAnyPublisher() }
+    public var refreshViewPoint = CurrentValueSubject<Bool, Never>(false)
 
     // MARK: Set up
     /// Init

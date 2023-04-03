@@ -184,7 +184,7 @@ private extension MissionProviderSelectorViewModel {
             if mission.provider.mission.defaultMode.missionActivationModel.getPriority() > .none {
                 // if the drone as an active mission with priority
                 // select this mission on the hud
-                ULog.d(.tag, "Mission to push priority > .none")
+                ULog.i(.tag, "Mission to push priority > .none")
                 selectMission(withProvider: mission.provider)
                 delegate?.showBottomBar()
                 Services.hub.ui.hudTopBarService.allowTopBarDisplay()
@@ -237,7 +237,7 @@ private extension MissionProviderSelectorViewModel {
                 // redirect to current mission activated
                 if let mission = missionManager.missions.first(where: { $0.value.state == .active}) {
                     if let missionItem = currentItems.first(where: { $0.provider.signature.missionUID == mission.value.uid }) {
-                        ULog.d(.tag, "Peripherals.missionManager: Mission uid: '\(mission.value.uid)'")
+                        ULog.i(.tag, "Peripherals.missionManager: Mission uid: '\(mission.value.uid)'")
                         selectMission(withProvider: missionItem.provider)
                     }
                 }

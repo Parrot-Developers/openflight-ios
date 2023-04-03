@@ -51,6 +51,9 @@ final class GridView: OverlayStreamView {
         static let lineWidth: CGFloat = 0.5
         static let strokeLineWidth: CGFloat = 1.5
         static let strokeAlpha: CGFloat = 0.25
+
+        static let crosshairLineLength: CGFloat = 8
+        static let crosshairStrokeLineLength: CGFloat = 8.5
     }
     private var lineColor = ColorName.white.color
     private var strokeColor = ColorName.black.color.withAlphaComponent(Constants.strokeAlpha)
@@ -60,6 +63,7 @@ final class GridView: OverlayStreamView {
     var gridDisplayType: SettingsGridDisplayType = .none {
         didSet {
             guard oldValue != gridDisplayType else { return }
+            contentMode = .redraw
             setNeedsDisplay()
         }
     }
@@ -67,11 +71,13 @@ final class GridView: OverlayStreamView {
     override func update(frame: CGRect) {
         super.update(frame: frame)
         contentZone = frame
+        contentMode = .redraw
         setNeedsDisplay()
     }
 
     override func draw(_ rect: CGRect) {
         drawGrid()
+        drawCrosshair()
     }
 }
 
@@ -109,6 +115,24 @@ private extension GridView {
         return path
     }
 
+    func getCrosshairPath(lineWidth: CGFloat, lineLength: CGFloat) -> UIBezierPath {
+        let path = UIBezierPath()
+        path.lineWidth = lineWidth
+        let center = contentZone.center
+
+        // Horizontal line
+        path.move(to: CGPoint(x: center.x - lineLength, y: center.y))
+        path.addLine(to: CGPoint(x: center.x + lineLength, y: center.y))
+
+        // Vertical line
+        path.move(to: CGPoint(x: center.x, y: center.y - lineLength))
+        path.addLine(to: CGPoint(x: center.x, y: center.y + lineLength))
+
+        path.close()
+
+        return path
+    }
+
     func drawGrid() {
         guard gridDisplayType != .none else { return }
 
@@ -119,6 +143,20 @@ private extension GridView {
 
         // Draw line
         let linePath = getGridPath(lineWidth: Constants.lineWidth)
+        lineColor.setStroke()
+        linePath.stroke()
+    }
+
+    func drawCrosshair() {
+        guard gridDisplayType == .s3x3 else { return }
+
+        // Draw stroke
+        let strokePath = getCrosshairPath(lineWidth: Constants.strokeLineWidth, lineLength: Constants.crosshairStrokeLineLength)
+        strokeColor.setStroke()
+        strokePath.stroke()
+
+        // Draw line
+        let linePath = getCrosshairPath(lineWidth: Constants.lineWidth, lineLength: Constants.crosshairLineLength)
         lineColor.setStroke()
         linePath.stroke()
     }

@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 import GroundSdk
 
 /// The controller that manages the updating of the firmware and the missions.
@@ -41,17 +42,13 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
     @IBOutlet private weak var continueView: UpdatingDoneFooter!
 
     // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
     private weak var coordinator: DroneFirmwaresCoordinator?
-    private var dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: .waiting)
-    private var droneStateViewModel = DroneStateViewModel()
+    private var viewModel: FirmwareAndMissionsUpdateViewModel!
     private var globalUpdateState = GlobalUpdateState.initial
     private var missionUpdateOngoing = false
     private var isUpdateCancelledAlertShown = false
-
-    private let missionsUpdaterManager = AirSdkMissionsUpdaterManager.shared
-
-    private let firmwareUpdaterManager = FirmwareUpdaterManager.shared
-    private var firmwareUpdateListener: FirmwareUpdaterListener?
 
     // MARK: - Private Enums
     enum Constants {
@@ -86,28 +83,27 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneFirmwaresCoordinator) -> FirmwareAndMissionsUpdateViewController {
+    static func instantiate(coordinator: DroneFirmwaresCoordinator, viewModel: FirmwareAndMissionsUpdateViewModel) -> FirmwareAndMissionsUpdateViewController {
         let viewController = StoryboardScene.FirmwareAndMissionsUpdate.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.viewModel = viewModel
         return viewController
     }
 
     // MARK: - Deinit
     deinit {
         NotificationCenter.default.removeObserver(self)
-        firmwareUpdaterManager.unregister(firmwareUpdateListener)
-        missionsUpdaterManager.unregisterGlobalListener()
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        ULog.d(.missionUpdateTag, "Start firmware and mission update - legacy: \(firmwareUpdaterManager.legacyUpdate)")
+        ULog.i(.missionUpdateTag, "Start firmware and mission update - legacy: \(viewModel.isLegacyUpdate())")
 
         initUI()
         startProcesses()
-        if firmwareUpdaterManager.legacyUpdate {
+        if viewModel.isLegacyUpdate() {
             listenToDroneReconnection()
         }
 
@@ -126,13 +122,13 @@ final class FirmwareAndMissionsUpdateViewController: UIViewController {
 extension FirmwareAndMissionsUpdateViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        return dataSource.elements.count
+        return viewModel.elements.count
     }
 
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(for: indexPath) as AirSdkMissionUpdatingTableViewCell
-        cell.setup(with: dataSource.elements[indexPath.row])
+        cell.setup(with: viewModel.elements[indexPath.row])
 
         return cell
     }
@@ -164,16 +160,40 @@ private extension FirmwareAndMissionsUpdateViewController {
 private extension FirmwareAndMissionsUpdateViewController {
     /// Starts the update processes.
     func startProcesses() {
-        listenToFirmwareUpdateManager()
-        firmwareUpdaterManager.startFirmwareProcesses(reboot: false)
+        listenFirmwareUpdates()
+        listenMissionUpdates()
+        viewModel.startFirmwareProcesses(reboot: false)
     }
 
-    /// Listens to the Firmware Update Manager.
-    func listenToFirmwareUpdateManager() {
-        firmwareUpdateListener = firmwareUpdaterManager
-            .register(firmwareToUpdateCallback: { [weak self] firmwareGlobalUpdatingState in
-                self?.handleFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
-            })
+    /// Listens to updates from the firmware service.
+    func listenFirmwareUpdates() {
+        viewModel.$elements
+            .combineLatest(viewModel.$currentTotalProgress)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _, _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
+
+        viewModel.$firmwareUpdatingState
+            .receive(on: RunLoop.main)
+            .sink { [weak self] firmwareUpdatingState in
+            self?.handleFirmwareProcesses(firmwareGlobalUpdatingState: firmwareUpdatingState)
+        }
+        .store(in: &cancellables)
+    }
+
+    /// Listens to missions updater.
+    func listenMissionUpdates() {
+        viewModel.$missionsUpdatingState
+            .combineLatest(viewModel.$currentTotalProgress, viewModel.$elements)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] state, currentTotalProgress, _ in
+                self?.updateMissionsProcesses(
+                    missionsGlobalUpdatingState: state,
+                    currentTotalProgress: currentTotalProgress)
+            }
+            .store(in: &cancellables)
     }
 
     /// Handles firmware update processes callback from the manager.
@@ -204,15 +224,15 @@ private extension FirmwareAndMissionsUpdateViewController {
         case .processing:
             if globalUpdateState == .uploadingFirmware {
                 globalUpdateState = .processingFirmware
-                reloadUI(duration: firmwareUpdaterManager.legacyUpdate ? nil : Constants.firmwareProcessingDuration)
+                reloadUI(duration: viewModel.isLegacyUpdate() ? nil : Constants.firmwareProcessingDuration)
                 cancelButton.isHidden = true
             }
         case .waitingForReboot:
             if globalUpdateState == .processingFirmware {
-                if firmwareUpdaterManager.legacyUpdate {
+                if viewModel.isLegacyUpdate() {
                     // We need to reboot now
                     globalUpdateState = .waitingForRebootAfterFirmwareUpdate
-                    missionsUpdaterManager.triggerManualReboot()
+                    viewModel.triggerManualReboot()
                     // After the reboot, a connection with the drone must be established to finish the processes.
                     reloadUI(duration: Constants.firmwareRebootDuration)
                 } else {
@@ -223,7 +243,7 @@ private extension FirmwareAndMissionsUpdateViewController {
                 }
             }
         case .success:
-            if firmwareUpdaterManager.legacyUpdate {
+            if viewModel.isLegacyUpdate() {
                 if globalUpdateState == .waitingForRebootAfterFirmwareUpdate {
                     // After the reboot and the new connection of the drone, this instruction should be triggered.
                     globalUpdateState = .uploadingMissions
@@ -236,8 +256,7 @@ private extension FirmwareAndMissionsUpdateViewController {
                 displayFinalUI()
             }
         case .error:
-            if globalUpdateState == .uploadingFirmware
-                && droneStateViewModel.state.value.connectionState != .connected {
+            if globalUpdateState == .uploadingFirmware && !viewModel.isDroneConnected {
                 showUpdateCancelledAlert()
             }
 
@@ -256,27 +275,20 @@ private extension FirmwareAndMissionsUpdateViewController {
 
     /// Starts missions update processes.
     func startMissionsProcesses() {
-        listenToMissionsUpdaterManager()
-        missionsUpdaterManager.startMissionsUpdateProcess(postpone: true)
-    }
-
-    /// Listens to missions updater.
-    func listenToMissionsUpdaterManager() {
-        missionsUpdaterManager
-            .registerGlobalListener(allMissionToUpdateCallback: { [weak self] (missionsGlobalUpdatingState) in
-                self?.handleMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
-            })
+        viewModel.startMissionsUpdateProcess(postpone: true)
     }
 
     /// Handles missions update processes callback from the manager.
     ///
     /// - Parameters:
     ///    - missionsGlobalUpdatingState: The gobal state of the processes.
-    func handleMissionsProcesses(missionsGlobalUpdatingState: AirSdkMissionsGlobalUpdatingState) {
+    ///    - currentTotalProgress: The global progress of the processes, betwen 0 and 1.
+    func updateMissionsProcesses(
+        missionsGlobalUpdatingState: AirSdkMissionsGlobalUpdatingState,
+        currentTotalProgress: Float) {
         guard globalUpdateState == .uploadingMissions else {
             return
         }
-
         switch missionsGlobalUpdatingState {
         case .ongoing:
             missionUpdateOngoing = true
@@ -290,14 +302,14 @@ private extension FirmwareAndMissionsUpdateViewController {
                 updateProgress()
             }
 
-            if droneStateViewModel.state.value.connectionState != .connected {
+            if !viewModel.isDroneConnected {
                 showUpdateCancelledAlert()
             }
         case .done:
-            if firmwareUpdaterManager.legacyUpdate {
-                if missionsUpdaterManager.missionsUpdateProcessNeedAReboot() {
+            if viewModel.isLegacyUpdate() {
+                if viewModel.missionsUpdateProcessNeedAReboot() {
                     globalUpdateState = .waitingForRebootAfterMissionsUpdate
-                    missionsUpdaterManager.triggerManualReboot()
+                    viewModel.triggerManualReboot()
                     reloadUI(finalRebootState: .ongoing, duration: Constants.missionRebootDuration)
                 } else {
                     globalUpdateState = .finished
@@ -306,28 +318,26 @@ private extension FirmwareAndMissionsUpdateViewController {
                 }
             } else {
                 globalUpdateState = .waitingForRebootAfterMissionsUpdate
-                missionsUpdaterManager.triggerManualReboot()
+                viewModel.triggerManualReboot()
                 reloadUI(finalRebootState: .ongoing, duration: Constants.firmwareRebootDuration)
             }
         }
     }
 
-    /// This is the last step of the processes.
+    /// Listens to drone while it is rebooting.
     func listenToDroneReconnection() {
-        droneStateViewModel.state.valueChanged = { [weak self] state in
-            // If drone reconnects after firmware update, nothing is done here because func finalizeFirmwareProcesses()
-            // is expected to be called.
-            guard let strongSelf = self,
-                  strongSelf.globalUpdateState == .waitingForRebootAfterMissionsUpdate,
-                  state.connectionState == .connected else {
-                return
+        viewModel.$isDroneConnected
+            .sink { [weak self] isConnected in
+                guard let self = self,
+                      self.globalUpdateState == .waitingForRebootAfterMissionsUpdate,
+                      isConnected else {
+                    return
+                }
+                self.globalUpdateState = .finished
+                self.reloadUI(finalRebootState: .succeeded)
+                self.displayFinalUI()
             }
-
-            ULog.d(.missionUpdateTag, "Firmware and Missions Update drone reconnected")
-            strongSelf.globalUpdateState = .finished
-            strongSelf.reloadUI(finalRebootState: .succeeded)
-            strongSelf.displayFinalUI()
-        }
+            .store(in: &cancellables)
     }
 
     /// Cancel operation in progress and leave screen.
@@ -343,8 +353,7 @@ private extension FirmwareAndMissionsUpdateViewController {
     /// Cancel operation in progress.
     func cancelProcesses() -> Bool {
         guard globalUpdateState.isCancellable else { return false }
-
-        let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
+        let cancelSucceeded = viewModel.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded
         return cancelSucceeded
     }
@@ -425,24 +434,24 @@ private extension FirmwareAndMissionsUpdateViewController {
     ///   - finalRebootState: the final reboot state of the process
     ///   - duration: the duration of the progress animation, or `nil` to disable animation
     func reloadUI(finalRebootState: FirmwareAndMissionsManualRebootingState = .waiting, duration: TimeInterval? = nil) {
-        dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: finalRebootState)
+        viewModel.manualRebootState = finalRebootState
         if let duration = duration {
-            progressView.setFakeProgress(progressEnd: dataSource.currentTotalProgress, duration: duration)
+            progressView.setFakeProgress(progressEnd: viewModel.currentTotalProgress, duration: duration)
         } else {
-            progressView.update(currentProgress: dataSource.currentTotalProgress)
+            progressView.update(currentProgress: viewModel.currentTotalProgress)
         }
         tableView.reloadData()
     }
 
     /// Updates the progress view.
     func updateProgress() {
-        dataSource = FirmwareAndMissionsUpdatingDataSource(manualRebootState: .waiting)
-        progressView.update(currentProgress: dataSource.currentTotalProgress)
+        viewModel.manualRebootState = .waiting
+        progressView.update(currentProgress: viewModel.currentTotalProgress)
     }
 
     /// Displays final UI.
     func displayFinalUI() {
-        if missionsUpdaterManager.missionsUpdateProcessHasError() {
+        if viewModel.missionsUpdateProcessHasError() {
             displayErrorUI()
         } else {
             displaySuccessUI()

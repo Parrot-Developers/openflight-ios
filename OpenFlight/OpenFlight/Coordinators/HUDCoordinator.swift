@@ -274,7 +274,8 @@ extension HUDCoordinator {
 
     /// Starts pairing coordinator.
     func startPairing() {
-        let pairingCoordinator = PairingCoordinator(delegate: self)
+        let pairingCoordinator = PairingCoordinator(services: services,
+                                                    delegate: self)
         pairingCoordinator.parentCoordinator = self
         pairingCoordinator.start()
         present(childCoordinator: pairingCoordinator)
@@ -331,7 +332,10 @@ extension HUDCoordinator {
 
     /// Displays cellular pin code modal.
     func displayCellularPinCode() {
-        let viewModel = CellularAccessCardPinViewModel(coordinator: self)
+        let viewModel = CellularAccessCardPinViewModel(coordinator: self,
+                                                       currentDroneHolder: services.currentDroneHolder,
+                                                       pinCodeService: services.drone.pinCodeService,
+                                                       cellularService: services.drone.cellularService)
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(viewModel: viewModel))
     }
 

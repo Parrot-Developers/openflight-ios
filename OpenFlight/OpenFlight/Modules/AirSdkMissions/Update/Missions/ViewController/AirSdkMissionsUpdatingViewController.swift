@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Combine
 import GroundSdk
 
 /// The controller that manages the updating of  the missions.
@@ -41,14 +42,14 @@ final class AirSdkMissionsUpdatingViewController: UIViewController {
     @IBOutlet private weak var continueView: UpdatingDoneFooter!
 
     // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
     private weak var coordinator: DroneFirmwaresCoordinator?
-    private var dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .waiting)
+    private var viewModel: AirSdkMissionsUpdatingViewModel!
     private var rebootState: RebootState = .none
     private var processIsFinished: Bool = false
     private var updateOngoing: Bool = false
     private var isUpdateCancelledAlertShown: Bool = false
-    private var droneStateViewModel = DroneStateViewModel()
-    private let missionsUpdaterManager = AirSdkMissionsUpdaterManager.shared
 
     // MARK: - Private Enums
     enum Constants {
@@ -64,17 +65,18 @@ final class AirSdkMissionsUpdatingViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneFirmwaresCoordinator) -> AirSdkMissionsUpdatingViewController {
-        let viewController = StoryboardScene.AirSdkMissionsUpdating.initialScene.instantiate()
-        viewController.coordinator = coordinator
-
-        return viewController
-    }
+    static func instantiate(
+        coordinator: DroneFirmwaresCoordinator,
+        viewModel: AirSdkMissionsUpdatingViewModel) -> AirSdkMissionsUpdatingViewController {
+            let viewController = StoryboardScene.AirSdkMissionsUpdating.initialScene.instantiate()
+            viewController.coordinator = coordinator
+            viewController.viewModel = viewModel
+            return viewController
+        }
 
     // MARK: - Deinit
     deinit {
         NotificationCenter.default.removeObserver(self)
-        missionsUpdaterManager.unregisterGlobalListener()
     }
 
     // MARK: - Override Funcs
@@ -82,7 +84,7 @@ final class AirSdkMissionsUpdatingViewController: UIViewController {
         super.viewDidLoad()
 
         initUI()
-        listenToMissionsUpdaterManager()
+        listenMissionUpdates()
         startProcesses()
         listenToDroneReconnection()
 
@@ -101,14 +103,13 @@ final class AirSdkMissionsUpdatingViewController: UIViewController {
 extension AirSdkMissionsUpdatingViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        return dataSource.elements.count
+        return viewModel.elements.count
     }
 
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(for: indexPath) as AirSdkMissionUpdatingTableViewCell
-        cell.setup(with: dataSource.elements[indexPath.row])
-
+        cell.setup(with: viewModel.elements[indexPath.row])
         return cell
     }
 }
@@ -139,45 +140,52 @@ private extension AirSdkMissionsUpdatingViewController {
 private extension AirSdkMissionsUpdatingViewController {
     /// Starts the update processes.
     func startProcesses() {
-        missionsUpdaterManager.startMissionsUpdateProcess(postpone: false)
+        viewModel.startMissionsUpdateProcess()
     }
 
     /// Listens to missions updater.
-    func listenToMissionsUpdaterManager() {
-        missionsUpdaterManager
-            .registerGlobalListener(allMissionToUpdateCallback: { [weak self] (missionsGlobalUpdatingState) in
-                self?.updateMissionsProcesses(missionsGlobalUpdatingState: missionsGlobalUpdatingState)
-            })
+    func listenMissionUpdates() {
+        viewModel.$globalUpdatingState
+            .combineLatest(viewModel.$currentTotalProgress, viewModel.elementsPublisher)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] state, currentTotalProgress, _ in
+                self?.updateMissionsProcesses(
+                    missionsGlobalUpdatingState: state,
+                    currentTotalProgress: currentTotalProgress)
+            }
+            .store(in: &cancellables)
     }
 
     /// Finalize Missions processes.
     ///
     /// - Parameters:
     ///    - missionsGlobalUpdatingState: The gobal state of the processes
-    func updateMissionsProcesses(missionsGlobalUpdatingState: AirSdkMissionsGlobalUpdatingState) {
+    ///    - currentTotalProgress: The current total progress between 0 and 1
+    func updateMissionsProcesses(
+        missionsGlobalUpdatingState: AirSdkMissionsGlobalUpdatingState,
+        currentTotalProgress: Float) {
         switch missionsGlobalUpdatingState {
         case .ongoing:
             updateOngoing = true
             return
         case .uploading:
-            dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .waiting)
-            progressView.update(currentProgress: dataSource.currentTotalProgress)
+            viewModel.manualRebootState = .waiting
+            progressView.update(currentProgress: currentTotalProgress)
             // Reload tableView only one time while uploading to avoid restarting little progress animation
             if updateOngoing {
                 updateOngoing = false
                 tableView.reloadData()
             }
-
-            if droneStateViewModel.state.value.connectionState != .connected {
+            if !viewModel.isDroneConnected {
                 showUpdateCancelledAlert()
             }
         case .done:
-            if !missionsUpdaterManager.missionsUpdateProcessNeedAReboot() && !processIsFinished {
-                dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .failed)
+            if !viewModel.isRebootNeeded && !processIsFinished {
+                viewModel.manualRebootState = .failed
                 tableView.reloadData()
-                ULog.d(.missionUpdateTag, "Missions Updates need no reboot")
+                ULog.i(.missionUpdateTag, "Missions Updates need no reboot")
                 displayFinalUI()
-            } else if missionsUpdaterManager.missionsUpdateProcessNeedAReboot() && rebootState == .none {
+            } else if viewModel.isRebootNeeded && rebootState == .none {
                 triggerManualReboot()
             }
         }
@@ -186,38 +194,35 @@ private extension AirSdkMissionsUpdatingViewController {
     /// Triggers manual reboot
     func triggerManualReboot() {
         cancelButton.isHidden = true
-        missionsUpdaterManager.triggerManualReboot()
-        dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .ongoing)
+        viewModel.triggerManualReboot()
+        viewModel.manualRebootState = .ongoing
         tableView.reloadData()
         progressView.setFakeProgress(duration: Constants.rebootDuration)
         rebootState = .requested
     }
 
-    /// This is the last step of the processes.
+    /// Listens to drone while it is rebooting.
     func listenToDroneReconnection() {
-        droneStateViewModel.state.valueChanged = { [weak self] state in
-            guard let strongSelf = self,
-                  !strongSelf.processIsFinished
-            else {
-                return
-            }
-
-            switch strongSelf.rebootState {
-            case .none:
-                break
-            case .requested:
-                if state.connectionState == .disconnected {
-                    strongSelf.rebootState = .ongoing
-                }
-            case .ongoing:
-                if state.connectionState == .connected {
-                    ULog.d(.missionUpdateTag, "Missions Update drone reconnected")
-                    strongSelf.dataSource = AirSdkMissionsUpdatingDataSource(manualRebootState: .succeeded)
-                    strongSelf.tableView.reloadData()
-                    strongSelf.displayFinalUI()
+        viewModel.$isDroneConnected
+            .sink { [weak self] isConnected in
+                guard let self = self, !self.processIsFinished else { return }
+                switch self.rebootState {
+                case .none:
+                    break
+                case .requested:
+                    if !isConnected {
+                        self.rebootState = .ongoing
+                    }
+                case .ongoing:
+                    if isConnected {
+                        ULog.i(.missionUpdateTag, "Missions Update drone reconnected")
+                        self.viewModel.manualRebootState = .succeeded
+                        self.tableView.reloadData()
+                        self.displayFinalUI()
+                    }
                 }
             }
-        }
+            .store(in: &cancellables)
     }
 
     /// Cancel operation in progress and leave screen.
@@ -233,8 +238,7 @@ private extension AirSdkMissionsUpdatingViewController {
     /// Cancel operation in progress.
     func cancelProcesses() -> Bool {
         guard rebootState == .none else { return false }
-
-        let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
+        let cancelSucceeded = viewModel.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded
         return cancelSucceeded
     }
@@ -311,9 +315,9 @@ private extension AirSdkMissionsUpdatingViewController {
 
     /// Displays final UI.
     func displayFinalUI() {
-        ULog.d(.missionUpdateTag, "Missions Updates Report screen")
+        ULog.i(.missionUpdateTag, "Missions Updates Report screen")
         processIsFinished = true
-        if missionsUpdaterManager.missionsUpdateProcessHasError() {
+        if viewModel.missionsUpdateProcessHasError() {
             displayErrorUI()
         } else {
             displaySuccessUI()
@@ -326,8 +330,6 @@ private extension AirSdkMissionsUpdatingViewController {
         continueView.setup(delegate: self, state: .success)
         progressView.setFakeSuccessOrErrorProgress()
         cancelButton.isHidden = true
-        // Unregister to prevent from issues when app goes in background.
-        missionsUpdaterManager.unregisterGlobalListener()
     }
 
     /// Displays error UI.

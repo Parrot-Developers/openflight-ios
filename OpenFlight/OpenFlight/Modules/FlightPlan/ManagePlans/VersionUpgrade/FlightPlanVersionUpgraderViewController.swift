@@ -40,7 +40,7 @@ class FlightPlanVersionUpgraderViewController: UIViewController {
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var progressView: FlightPlanVersionUpgraderProgressView!
     @IBOutlet private weak var descriptionLabel: UILabel!
-    @IBOutlet private weak var cancelButton: UIButton!
+    @IBOutlet private weak var mainStackView: MainContainerStackView!
 
     // MARK: - Private Properties
     private var viewModel: FlightPlanVersionUpgraderViewModel!
@@ -53,9 +53,6 @@ class FlightPlanVersionUpgraderViewController: UIViewController {
         return viewController
     }
 
-    var progress = 0
-    var timer: Timer?
-
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,8 +63,8 @@ class FlightPlanVersionUpgraderViewController: UIViewController {
 
     /// Initialize UI.
     func initUI() {
-        // Avoid the ability to cancel the process.
-        cancelButton.isHidden = true
+        // Configure the layout.
+        mainStackView.screenBorders = [.left, .right, .bottom]
         // Configure Title.
         titleLabel.text = L10n.flightPlanDatabaseUpgradeTitle
         // Configure description.
@@ -85,7 +82,6 @@ class FlightPlanVersionUpgraderViewController: UIViewController {
 
     func listenUpgradeState() {
         viewModel.$upgradeState
-            .receive(on: RunLoop.main)
             .sink { [weak self] in
                 guard let self = self else { return }
                 switch $0 {
@@ -102,12 +98,5 @@ class FlightPlanVersionUpgraderViewController: UIViewController {
                 }
             }
             .store(in: &cancellables)
-    }
-}
-
-// MARK: - Actions
-private extension FlightPlanVersionUpgraderViewController {
-    @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
-        dismiss(animated: true)
     }
 }

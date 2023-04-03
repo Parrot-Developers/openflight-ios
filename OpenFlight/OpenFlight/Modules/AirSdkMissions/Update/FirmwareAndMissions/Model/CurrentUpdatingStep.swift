@@ -36,7 +36,7 @@ import GroundSdk
 /// - a mission update
 /// - a firmware download/update/reboot
 /// - and for the missions reboot if necessary.
-enum CurrentUpdatingStep: Equatable {
+public enum CurrentUpdatingStep: Equatable {
     case waiting
     case loading
     case succeeded

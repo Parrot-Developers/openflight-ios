@@ -59,9 +59,12 @@ final class DroneCalibrationViewModel {
     @Published private(set) var gimbalCalibrationProcessState: GimbalCalibrationProcessState = .none
     /// frontStereoGimbalCalibrationState object to represent model.
     @Published private(set) var frontStereoGimbalCalibrationProcessState: GimbalCalibrationProcessState = .none
+    /// Firmware update state
+    @Published var updateState: UpdateState?
 
     private var cancellables = Set<AnyCancellable>()
     private var connectedDroneHolder = Services.hub.connectedDroneHolder
+    private let updateService = Services.hub.update
 
     // MARK: - Private Properties
 
@@ -74,12 +77,18 @@ final class DroneCalibrationViewModel {
     init() {
         connectedDroneHolder.dronePublisher
             .compactMap { $0 }
-            .sink { [unowned self] drone in
-                listenFlyingIndicators(drone: drone)
-                listenGimbal(drone)
-                listenFrontStereoGimbal(drone)
-                listenStereoVisionSensor(drone)
-                listenMagnetometer(drone)
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenFlyingIndicators(drone: drone)
+                self.listenGimbal(drone)
+                self.listenFrontStereoGimbal(drone)
+                self.listenStereoVisionSensor(drone)
+                self.listenMagnetometer(drone)
+            }
+            .store(in: &cancellables)
+        updateService.droneUpdatePublisher
+            .sink { [weak self] updateState in
+                self?.updateState = updateState
             }
             .store(in: &cancellables)
     }

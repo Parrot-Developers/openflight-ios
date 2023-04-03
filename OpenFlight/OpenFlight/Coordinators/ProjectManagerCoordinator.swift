@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import Pictor
 
 /// Coordinator for Project Manager.
 public final class ProjectManagerCoordinator: Coordinator {
@@ -37,7 +38,7 @@ public final class ProjectManagerCoordinator: Coordinator {
     public weak var parentCoordinator: Coordinator?
 
     private let flightPlanServices: FlightPlanServices
-    private let cloudSynchroWatcher: CloudSynchroWatcher?
+    private let synchroService: SynchroService?
     private let uiServices: UIServices
     private var defaultSelectedProject: ProjectModel?
 
@@ -49,11 +50,11 @@ public final class ProjectManagerCoordinator: Coordinator {
 
     init(flightPlanServices: FlightPlanServices,
          uiServices: UIServices,
-         cloudSynchroWatcher: CloudSynchroWatcher?,
+         synchroService: SynchroService?,
          defaultSelectedProject: ProjectModel? = nil) {
         self.flightPlanServices = flightPlanServices
         self.uiServices = uiServices
-        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.synchroService = synchroService
         self.defaultSelectedProject = defaultSelectedProject
     }
 
@@ -61,7 +62,7 @@ public final class ProjectManagerCoordinator: Coordinator {
     public func start() {
         let viewModel = ProjectManagerViewModel(coordinator: self,
                                                 manager: flightPlanServices.projectManager,
-                                                cloudSynchroWatcher: cloudSynchroWatcher,
+                                                synchroService: synchroService,
                                                 projectManagerUiProvider: uiServices.projectManagerUiProvider,
                                                 flightPlanStateMachine: flightPlanServices.stateMachine,
                                                 canSelectProjectType: !isOpenFromHud)

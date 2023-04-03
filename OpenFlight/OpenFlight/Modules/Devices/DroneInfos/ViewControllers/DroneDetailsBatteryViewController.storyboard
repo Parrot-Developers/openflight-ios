@@ -517,6 +517,8 @@
                         <outlet property="harwareVersionValueLabel" destination="0qm-w2-8M3" id="QaH-o1-sCE"/>
                         <outlet property="healthLabel" destination="A3y-gM-Dvm" id="8do-c6-hRb"/>
                         <outlet property="healthValueLabel" destination="2K0-L1-01l" id="bsS-d5-2iO"/>
+                        <outlet property="popupLeadingConstraint" destination="Uav-7b-1Zg" id="KK6-xl-vgR"/>
+                        <outlet property="popupTrailingConstraint" destination="tTw-E8-gdw" id="AYm-Ud-dR1"/>
                         <outlet property="serialNumberLabel" destination="u0Z-It-5V2" id="wZn-TY-TGV"/>
                         <outlet property="serialNumberValueLabel" destination="kG7-aE-iE5" id="mjF-Tk-86x"/>
                         <outlet property="softwareVersionLabel" destination="fhk-BG-MYy" id="TMz-17-ZcJ"/>

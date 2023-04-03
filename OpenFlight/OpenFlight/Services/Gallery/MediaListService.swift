@@ -184,6 +184,11 @@ extension MediaListServiceImpl: MediaListService {
     /// - Parameters:
     ///    - media: the gallery media containing the resources to delete
     ///    - indexes: the indexes of the resources to delete
+    ///
+    /// The drone media list is supposed to be updated by `mediaStoreService.itemsListPublisher`.
+    /// The `updateActiveMediaList` call in device media list case (`else` part) is required because of the way local medias are handled (there's no update event on delete in this case).
+    ///
+    /// - Remark: `mediaStoreService.deleteResourcesAt` will trigger a media store delete request, which should trigger a `mediaStoreService.itemsListPublisher` event once deletion is completed.
     public func deleteResources(of media: GalleryMedia, at indexes: [Int]) async throws {
         if storageSource.isDroneSource {
             guard let item = media.mainMediaItem else { return }

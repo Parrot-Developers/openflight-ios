@@ -6,12 +6,12 @@
       "scale" : "1x"
     },
     {
-      "filename" : "icDriDeactivated2x.png",
+      "filename" : "icDriDeactivated@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "icDriDeactivated3x.png",
+      "filename" : "icDriDeactivated@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

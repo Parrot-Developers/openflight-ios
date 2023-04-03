@@ -266,6 +266,7 @@ final class VideoPlayerViewModel {
     ///
     /// - Parameter streamView: the stream view to remove any stream from
     func detachStream(from streamView: StreamView) {
+        // Stop replay on stream detach in order to ensure stream is released.
         streamView.setStream(stream: nil)
     }
 

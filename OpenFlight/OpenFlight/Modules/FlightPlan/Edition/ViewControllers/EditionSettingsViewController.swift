@@ -63,7 +63,6 @@ final class EditionSettingsViewController: UIViewController {
     @IBOutlet private weak var topBarContainer: UIView!
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var deleteButton: ActionButton!
-    @IBOutlet private weak var undoButton: ActionButton!
     @IBOutlet private weak var buttonSpacerView: HSpacerView!
     @IBOutlet private weak var buttonsStackView: MainContainerStackView!
     @IBOutlet private weak var bottomGradientView: BottomGradientView!
@@ -141,8 +140,6 @@ private extension EditionSettingsViewController {
         deleteButton.setup(title: L10n.commonDelete, style: .destructive)
         setDeleteButtonVisibility(false)
 
-        undoButton.setup(image: Asset.Common.Icons.icUndo.image, style: .default2)
-
         buttonsStackView.screenBorders = [.bottom, .right]
 
         updateTopBarTitle()
@@ -159,40 +156,15 @@ private extension EditionSettingsViewController {
             .compactMap({ $0 })
             .sink { [unowned self] state in
                 switch state {
-                case let .updateUndo(categoryFilter):
-                    self.setUndoButtonVisibility(categoryFilter)
-                    self.updateUndoButton()
                 case let .selectedGraphic(selectedGraphic):
                     setDeleteButtonVisibility(selectedGraphic?.deletable == true)
                 case .reload:
                     updateTopBarTitle()
                     self.tableView.reloadData()
                 }
-                bottomGradientView.isHidden = deleteButton.isHidden && undoButton.isHidden
+                bottomGradientView.isHidden = deleteButton.isHidden
             }
             .store(in: &cancellables)
-    }
-
-    /// Show or hide undo button according to current setting category.
-    ///
-    /// - Parameters:
-    ///   - category: the current setting catogory displayed
-    func setUndoButtonVisibility(_ category: FlightPlanSettingCategory?) {
-        switch category {
-        case .common,
-             .image,
-             .rth:
-            undoButton.isHidden = true
-        case .custom(let name):
-            undoButton.isHidden = (name != L10n.flightPlanSegmentSettingsTitle)
-        default:
-            self.undoButton.isHidden = false
-        }
-    }
-
-    /// Updates undo button.
-    func updateUndoButton() {
-        undoButton.isEnabled = delegate.map({ $0.canUndo() }) ?? false
     }
 
     func setDeleteButtonVisibility(_ show: Bool) {
@@ -227,7 +199,7 @@ private extension EditionSettingsViewController {
 
         let projectTitle = viewModel.settingsCategoryFilter == .custom(L10n.flightPlanSegmentSettingsTitle)
             ? nil
-            : viewModel.savedFlightPlan?.customTitle
+        : viewModel.savedFlightPlan?.pictorModel.name
         topbar?.set(projectTitle: projectTitle)
     }
 }

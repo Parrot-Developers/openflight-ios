@@ -69,6 +69,7 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
         static let hideTiltMaxLabelTaskKey: String = "hideTiltMaxLabel"
         static let maxReachedNotificationDuration: TimeInterval = 1.0
         static let defaultAnimationDuration: TimeInterval = 0.2
+        static let tiltUpdateThreshold: Double = 0.2
     }
 
     // MARK: - Override Funcs
@@ -136,12 +137,12 @@ private extension CameraSlidersViewController {
     }
 
     func listenJoysticksButton() {
-        viewModel.$showJoysticksButton.sink { [unowned self] in
-            joysticksButtonContainer.isHidden = !$0
+        viewModel.$showJoysticksButton.sink { [weak self] in
+            self?.joysticksButtonContainer.isHidden = !$0
         }
         .store(in: &cancellables)
-        viewModel.$joysticksButtonImage.sink { [unowned self] in
-            joysticksButton.setImage($0, for: .normal)
+        viewModel.$joysticksButtonImage.sink { [weak self] in
+            self?.joysticksButton.setImage($0, for: .normal)
         }
         .store(in: &cancellables)
     }
@@ -149,89 +150,95 @@ private extension CameraSlidersViewController {
     func listenZoom() {
         // Button
         viewModel.zoomButtonEnabled
-            .sink { [unowned self] in zoomButton.isEnabled = $0 }
+            .sink { [weak self] in self?.zoomButton.isEnabled = $0 }
             .store(in: &cancellables)
         viewModel.zoomButtonHidden
-            .sink { [unowned self] in zoomButtonContainer.isHidden = $0 }
+            .sink { [weak self] in self?.zoomButtonContainer.isHidden = $0 }
             .store(in: &cancellables)
         viewModel.$zoomButtonTitle
-            .sink { [unowned self] in
-                zoomButton.setTitle($0, for: .normal)
+            .sink { [weak self] in
+                self?.zoomButton.setTitle($0, for: .normal)
             }
             .store(in: &cancellables)
         viewModel.$zoomButtonColor
-            .sink { [unowned self] in
-                zoomButton.setTitleColor($0, for: .normal)
+            .sink { [weak self] in
+                self?.zoomButton.setTitleColor($0, for: .normal)
             }
             .store(in: &cancellables)
         // Slider
         viewModel.$showZoomSlider
             .removeDuplicates()
-            .sink { [unowned self] in
+            .sink { [weak self] in
                 if $0 {
-                    showZoomSliderView()
+                    self?.showZoomSliderView()
                 } else {
-                    hideZoomSliderView()
+                    self?.hideZoomSliderView()
                 }
             }
             .store(in: &cancellables)
         // Overzooming warning
         viewModel.overzoomingEvent
-            .sink { [unowned self] _ in showOverzoomLabel() }
+            .sink { [weak self] _ in self?.showOverzoomLabel() }
             .store(in: &cancellables)
     }
 
     func listenTilt() {
         // Button
         viewModel.gimbalTiltButtonEnabled
-            .sink { [unowned self] in tiltButton.isEnabled = $0 }
+            .sink { [weak self] in self?.tiltButton.isEnabled = $0 }
             .store(in: &cancellables)
-        // Value
+        // Gimbal tilt value
         viewModel.gimbalTiltValue
-            .removeDuplicates()
-            .dropFirst(1)
-            .sink { [unowned self] in
-                tiltButton.value = $0
-                tiltButton.accessibilityValue = "\(Int($0))"
-                infoTiltLabel.text = "\(Int($0))°"
-                viewModel.showInfoTiltLabel()
+            // Remove values that are too close to prevent oscillations on display.
+            .removeDuplicates(by: { [weak self] _, current in
+                guard let self = self else { return  false }
+                return abs(self.tiltButton.value - current) < Constants.tiltUpdateThreshold
+            })
+            .sink { [weak self] in
+                guard let self = self else { return }
+                self.tiltButton.value = $0
+                self.tiltButton.accessibilityValue = "\(Int($0))"
+                self.infoTiltLabel.text = "\(Int($0))°"
+                self.viewModel.showInfoTiltLabel()
             }
             .store(in: &cancellables)
         // Label tilt
         viewModel.$showInfoTiltLabelFlag
             .removeDuplicates()
             .dropFirst(2)
-            .sink { [unowned self] in
+            .sink { [weak self] in
+                guard let self = self else { return }
                 if $0 {
-                    showInfoTiltLabel()
+                    self.showInfoTiltLabel()
                 } else {
-                    hideInfoTiltLabel()
+                    self.hideInfoTiltLabel()
                 }
             }
             .store(in: &cancellables)
         viewModel.gimbalTiltButtonHidden
-            .sink { [unowned self] in tiltButtonContainer.isHidden = $0 }
+            .sink { [weak self] in self?.tiltButtonContainer.isHidden = $0 }
             .store(in: &cancellables)
         // Slider
         viewModel.$showGimbalTiltSlider
             .removeDuplicates()
-            .sink { [unowned self] in
+            .sink { [weak self] in
+                guard let self = self else { return }
                 if $0 {
-                    showTiltSliderView()
+                    self.showTiltSliderView()
                 } else {
-                    hideTiltSliderView()
+                    self.hideTiltSliderView()
                 }
             }
             .store(in: &cancellables)
         // Over / under tilt
         viewModel.overtiltEvent
-            .sink { [unowned self] _ in
-                displayMaxTiltLabel(forOverTilt: true)
+            .sink { [weak self] _ in
+                self?.displayMaxTiltLabel(forOverTilt: true)
             }
             .store(in: &cancellables)
         viewModel.undertiltEvent
-            .sink { [unowned self] _ in
-                displayMaxTiltLabel(forOverTilt: false)
+            .sink { [weak self] _ in
+                self?.displayMaxTiltLabel(forOverTilt: false)
             }
             .store(in: &cancellables)
     }

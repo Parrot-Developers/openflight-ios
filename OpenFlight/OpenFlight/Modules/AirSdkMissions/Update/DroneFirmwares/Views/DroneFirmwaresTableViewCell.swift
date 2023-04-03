@@ -154,7 +154,7 @@ private extension DroneFirmwaresTableViewCell {
             versionLabel.text = firmware.firmwareVersion
             separatorView.isHidden = true
         case let .upToDateAirSdkMission(mission, isLastBuiltIn):
-            titleLabel.text = L10n.firmwareMissionUpdateMissionName(mission.missionName ?? "")
+            titleLabel.text = L10n.firmwareMissionUpdateMissionName(mission.missionName)
             versionLabel.text = mission.missionVersion
             if mission.isBuiltIn {
                 nodeType = isLastBuiltIn ? .lastLeaf : .leaf
@@ -164,10 +164,14 @@ private extension DroneFirmwaresTableViewCell {
                 separatorView.isHidden = false
             }
         case let .airSdkMission(mission, missionOnDrone, _):
-            titleLabel.text = L10n.firmwareMissionUpdateMissionName(mission.missionName)
+            titleLabel.text = L10n.firmwareMissionUpdateMissionName(mission.missionName ?? mission.internalName)
             versionLabel.text = missionOnDrone?.missionVersion ??
                 (droneIsConnected ? L10n.firmwareMissionUpdateMissionNotInstalled : Style.dash)
             separatorView.isHidden = false
+        case .batteryGaugeUpdate:
+            titleLabel.text = L10n.battery
+            versionLabel.text = ""
+            separatorView.isHidden = true
         }
 
         if self.nodeType != nodeType {

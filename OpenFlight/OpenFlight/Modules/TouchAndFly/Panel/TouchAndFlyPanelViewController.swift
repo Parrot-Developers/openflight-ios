@@ -199,9 +199,9 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
         bigMap.view.transform = CGAffineTransform(scaleX: scale, y: scale)
         addChild(bigMap)
         containerStream.addSubview(bigMap.view)
-        addView(bigMap.view, parent: containerStream,
-                offsetX: bigMap.view.bounds.width * (1 - scale),
-                offsetY: bigMap.view.bounds.height * (1 - scale) / 2)
+        let offsetX = (containerStream.frame.width / scale - bigMap.view.bounds.width * scale) / 2
+        let offsetY = (containerStream.frame.height / scale - bigMap.view.bounds.height * scale) / 2
+        addView(bigMap.view, parent: containerStream, offsetX: offsetX, offsetY: offsetY)
         bigMap.didMove(toParent: self)
         viewModel.splitControls?.commonMapViewController?.view.isUserInteractionEnabled = false
     }

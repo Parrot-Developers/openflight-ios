@@ -203,7 +203,7 @@ private extension BottomBarViewController {
 
         // Add views for a specific mission.
         // If RTH is enabled, add only mandatory views.
-        let isReturnHomeActive = landingStates.isReturHomeActiveValue == true
+        let isReturnHomeActive = landingStates.isReturnHomeActiveValue == true
         let views = missionMode?.bottomBarLeftStack?()
             .filter { isReturnHomeActive ? $0 is MandatoryBottomBarView : true } ?? []
 

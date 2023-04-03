@@ -106,6 +106,16 @@ class CriticalAlertServiceImpl {
 // MARK: Private functions
 private extension CriticalAlertServiceImpl {
 
+    /// Clears references and updates alert state.
+    func resetDroneRefs() {
+        isDroneConnected = false
+        takeoffChecklistRef = nil
+        flyingIndicatorsRef = nil
+        // Publish at reset in order to update active alert display
+        // (and therefore clear any remaining drone related alert if needed).
+        publish()
+    }
+
     /// Listens to connected drone.
     ///
     /// - Parameter connectedDroneHolder: drone holder
@@ -113,9 +123,7 @@ private extension CriticalAlertServiceImpl {
         connectedDroneHolder.dronePublisher
             .sink { [unowned self] in
                 guard let drone = $0 else {
-                    isDroneConnected = false
-                    takeoffChecklistRef = nil
-                    flyingIndicatorsRef = nil
+                    resetDroneRefs()
                     return
                 }
                 isDroneConnected = true
@@ -250,7 +258,7 @@ private extension CriticalAlertServiceImpl {
         alertSubject.value = takeoffAlert ?? otherAlerts.sorted().first
 
         if let alert = alertSubject.value {
-            ULog.d(.tag, "publish alert: \(alert)")
+            ULog.i(.tag, "publish alert: \(alert)")
         }
     }
 }

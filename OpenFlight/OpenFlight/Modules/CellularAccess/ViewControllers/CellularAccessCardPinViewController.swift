@@ -33,6 +33,8 @@ import Combine
 /// Modal presented to enter a pin number for cellular access.
 final class CellularAccessCardPinViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var popupLeadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var popupTrailingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var panelView: UIView!
     @IBOutlet private weak var collectionView: UICollectionView!
     @IBOutlet private weak var titleLabel: UILabel!
@@ -45,13 +47,11 @@ final class CellularAccessCardPinViewController: UIViewController {
 
     // MARK: - Private Properties
     private var viewModel: CellularAccessCardPinViewModel!
-    private var pinCode: String = ""
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     private enum Constants {
         static let sectionNumber: Int = 1
-        static let requiredPinNumber: Int = 4
         static let maxPinNumber: Int = 8
         static let cellsPerRowLandscape: Int = 5
         static let cellsPerRowPortrait: Int = 3
@@ -108,16 +108,12 @@ final class CellularAccessCardPinViewController: UIViewController {
 private extension CellularAccessCardPinViewController {
     @IBAction func okButtonTouchedUpInside(_ sender: Any) {
         LogEvent.log(.simpleButton(LogEvent.LogKeyCellularAccessCardPin.confirmPin))
-        viewModel.connect(pinCode: pinCode)
+        viewModel.connect()
     }
 
     @IBAction func cancelButtonTouchedUpInside(_ sender: Any) {
         LogEvent.log(.simpleButton(LogEvent.LogKeyCellularAccessCardPin.cancel))
-        guard !pinCode.isEmpty else { return }
-
-        pinCode.removeLast()
-        updateTextFieldContent()
-        updateOkButton(isEnabled: pinCode.count >= Constants.requiredPinNumber)
+        viewModel.removeLastDigit()
     }
 
     @IBAction func pinVisibilityButtonTouchedUpInside(_ sender: Any) {
@@ -148,6 +144,8 @@ private extension CellularAccessCardPinViewController {
 
     /// Inits the view.
     func initView() {
+        popupLeadingConstraint.constant = Layout.popupHMargin(isRegularSizeClass)
+        popupTrailingConstraint.constant = popupLeadingConstraint.constant
         panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
         pinTextField.isEnabled = false
         pinTextField.backgroundColor = .clear
@@ -156,36 +154,55 @@ private extension CellularAccessCardPinViewController {
                                      radius: Style.largeCornerRadius,
                                      borderWidth: Style.noBorderWidth)
         titleLabel.text = L10n.pinModalSimCardPin
-        updateOkButton(isEnabled: pinCode.count >= Constants.requiredPinNumber)
+        updateOkButton(isEnabled: false)
     }
 
     /// Binds the view model to the view.
     func setupViewModel() {
         viewModel.$cellularConnectionState
             .removeDuplicates()
-            .sink { [unowned self] connectionState in
+            .sink { [weak self] connectionState in
+                guard let self = self else { return }
                 if connectionState == CellularConnectionState.none {
-                    viewModel.dismissPinCodeView(animated: true)
+                    self.viewModel.dismissPinCodeView(animated: true)
                 } else if connectionState == .ready {
-                    viewModel.dismissPinCodeView(animated: true)
+                    self.viewModel.dismissPinCodeView(animated: true)
                 } else {
-                    descriptionLabel.textColor = connectionState.descriptionColor
-                    descriptionLabel.isHidden = connectionState.isDescriptionHidden
+                    self.descriptionLabel.textColor = connectionState.descriptionColor
+                    self.descriptionLabel.isHidden = connectionState.isDescriptionHidden
                 }
             }
             .store(in: &cancellables)
 
         viewModel.$descriptionTitle
             .removeDuplicates()
-            .sink { [unowned self] descriptionTitle in
-                descriptionLabel.text = descriptionTitle
+            .sink { [weak self] descriptionTitle in
+                guard let self = self else { return }
+                self.descriptionLabel.text = descriptionTitle
             }
             .store(in: &cancellables)
 
         viewModel.$shouldShowLoader
             .removeDuplicates()
-            .sink { [unowned self] shouldShowLoader in
-                updateLoaderView(shouldShow: shouldShowLoader == true)
+            .sink { [weak self] shouldShowLoader in
+                guard let self = self else { return }
+                self.updateLoaderView(shouldShow: shouldShowLoader == true)
+            }
+            .store(in: &cancellables)
+
+        viewModel.shouldEnableOkButton
+            .removeDuplicates()
+            .sink { [weak self] shouldShowOkButton in
+                guard let self = self else { return }
+                self.updateOkButton(isEnabled: shouldShowOkButton)
+            }
+            .store(in: &cancellables)
+
+        viewModel.$pinCode
+            .removeDuplicates()
+            .sink { [weak self] pinCode in
+                guard let self = self else { return }
+                self.pinTextField.text = pinCode
             }
             .store(in: &cancellables)
     }
@@ -200,19 +217,13 @@ private extension CellularAccessCardPinViewController {
         shouldShow ? loadingImageView.startRotate() : loadingImageView.stopRotate()
     }
 
-    /// Updates content of the pin field.
-    func updateTextFieldContent() {
-        pinTextField.text = pinCode
-    }
-
     /// Updates Ok button according to pin textfield state.
     ///
     /// - Parameters:
     ///     - isEnabled: tells if ok button need to be enabled
     func updateOkButton(isEnabled: Bool) {
-        let pinNumberIsCompleted: Bool = pinCode.count >= Constants.requiredPinNumber
-        let backgroundColor = pinNumberIsCompleted ? ColorName.highlightColor.color : ColorName.disabledHighlightColor.color
-        okButton.isEnabled = pinNumberIsCompleted
+        let backgroundColor = isEnabled ? ColorName.highlightColor.color : ColorName.disabledHighlightColor.color
+        okButton.isEnabled = isEnabled
         okButton.cornerRadiusedWith(backgroundColor: backgroundColor,
                                     radius: Style.largeCornerRadius)
         okButton.setTitleColor(.white, for: .normal)
@@ -269,8 +280,6 @@ extension CellularAccessCardPinViewController: PinNumberCollectionViewCellDelega
                   return
               }
 
-        pinCode += "\(number)"
-        updateTextFieldContent()
-        updateOkButton(isEnabled: pinCode.count >= Constants.requiredPinNumber)
+        viewModel.addDigitToPinCode(number: "\(number)")
     }
 }

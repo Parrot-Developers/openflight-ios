@@ -107,20 +107,9 @@ public class CurrentMissionManagerImpl {
         modeSubject = CurrentValueSubject(store.defaultMission.mission.defaultMode)
         hudLatestSelectionSubject = CurrentValueSubject((store.defaultMission, store.defaultMission.mission.defaultMode))
 
-        // ----
-        // TODO: Temporary log used to debug. Will be removed when feature validated.
         providerPublisher
-            .sink { ULog.d(.currentMissionManager, "Provider updated to '\($0.mission.name)'") }
+            .sink { ULog.i(.currentMissionManager, "Provider updated to '\($0.mission.name)'") }
             .store(in: &cancellables)
-
-        modePublisher
-            .sink { ULog.d(.currentMissionManager, "Mode updated to '\($0.name)'") }
-            .store(in: &cancellables)
-
-        hudLatestSelectionPublisher
-            .sink { ULog.d(.currentMissionManager, "Last HUD updated to '\($0.provider.mission.name)' / '\($0.mode.name)'") }
-            .store(in: &cancellables)
-        // ----
     }
 }
 
@@ -183,7 +172,7 @@ extension CurrentMissionManagerImpl: CurrentMissionManager {
     }
 
     public func restoreLatestHudSelection() {
-        ULog.d(.currentMissionManager, "Restore latest hud selection, mode: '\(hudLatestSelectionSubject.value.mode.name)'")
+        ULog.i(.currentMissionManager, "Restore latest hud selection, mode: '\(hudLatestSelectionSubject.value.mode.name)'")
         set(provider: hudLatestSelectionSubject.value.provider)
         set(mode: hudLatestSelectionSubject.value.mode)
     }

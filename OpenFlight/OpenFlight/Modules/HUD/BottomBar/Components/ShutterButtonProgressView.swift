@@ -137,6 +137,7 @@ private extension ShutterButtonProgressView {
         }
         animation.toValue = progressLayer.strokeEnd
         animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
+        animation.isRemovedOnCompletion = false
         progressLayer.add(animation, forKey: Constants.layerAnimationKey)
     }
 

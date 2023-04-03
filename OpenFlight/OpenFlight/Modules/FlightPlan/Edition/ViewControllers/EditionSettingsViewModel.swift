@@ -32,7 +32,6 @@ import Foundation
 class EditionSettingsViewModel {
 
     enum ViewState {
-        case updateUndo(FlightPlanSettingCategory?)
         case selectedGraphic(EditableAGSGraphic?)
         case reload
     }
@@ -101,7 +100,6 @@ class EditionSettingsViewModel {
     /// - Parameters:
     ///     - categoryFilter: allows to filter setting category
     func refreshContent(categoryFilter: FlightPlanSettingCategory?) {
-        viewState = .updateUndo(categoryFilter)
         settingsCategoryFilter = categoryFilter
         viewState = .reload
     }

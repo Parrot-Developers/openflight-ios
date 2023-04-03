@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import ArcGIS
+import Pictor
 
 public enum TrajectoryState {
     case none
@@ -46,16 +47,18 @@ public enum TrajectoryState {
     }
 }
 
+
 /// Point of a flight trajectory.
 public struct TrajectoryPoint: Equatable {
     /// Point coordinates.
-    public var point: AGSPoint
+    public var agsPoint: AGSPoint
+
     /// Whether point is the first flight point.
     public var isFirstPoint: Bool
 }
 
 /// Extension of FlightPlanState
-extension FlightPlanModel.FlightPlanState {
+extension FlightPlanState {
 
     public var trajectoryState: TrajectoryState {
         switch self {
@@ -68,3 +71,4 @@ extension FlightPlanModel.FlightPlanState {
         }
     }
 }
+

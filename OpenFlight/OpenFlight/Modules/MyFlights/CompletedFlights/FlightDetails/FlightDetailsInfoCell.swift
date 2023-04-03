@@ -116,7 +116,7 @@ extension FlightDetailsInfoCell {
 
         nameLabel.attributedText = nil
         nameLabel.text = provider.title
-        executionNameLabel.text = provider.flightPlan.customTitle
+        executionNameLabel.text = provider.flightPlan.pictorModel.name
         tagHeaderView.text = provider.executionTitle
         tagHeaderView.cornerRadiusedWith(backgroundColor: ColorName.highlightColor.color,
                                          radius: Style.smallCornerRadius)

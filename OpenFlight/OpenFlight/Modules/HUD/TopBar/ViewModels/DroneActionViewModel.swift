@@ -108,7 +108,6 @@ final class DroneActionViewModel: DroneStateViewModel<DroneActionState> {
     // MARK: - Init
     override init() {
         super.init()
-
         listenHandDetectedAlertPresented()
     }
 
@@ -160,8 +159,16 @@ extension DroneActionViewModel {
             ULog.i(.tag, "RTH pressed: cancel RTH")
             _ = drone?.cancelReturnHome()
         case .idle:
-            ULog.i(.tag, "RTH pressed: start RTH")
-            _ = drone?.performReturnHome()
+            let runState: FlightPlanRunningState = Services.hub.flightPlan.run.state
+            switch runState {
+            case .rth:
+                // if a RTH was already active (which is a flightplan-programmed RTH), cancel the return home
+                ULog.i(.tag, "RTH pressed: pause FP RTH")
+                _ = drone?.getPilotingItf(PilotingItfs.flightPlan)?.deactivate()
+            default:
+                ULog.i(.tag, "RTH pressed: RTH started manually by user")
+                _ = drone?.performReturnHome()
+            }
         default:
             ULog.w(.tag, "RTH pressed: do nothing")
         }

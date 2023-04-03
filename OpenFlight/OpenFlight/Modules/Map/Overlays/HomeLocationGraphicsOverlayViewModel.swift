@@ -89,10 +89,10 @@ private extension HomeLocationGraphicsOverlayViewModel {
     ///
     /// - Parameter rthService: the RTH service
     func listen(to rthService: RthService) {
-        rthService.homeLocationPublisher
+        rthService.homeDestinationPublisher
             .combineLatest(rthService.homeIndicatorStatePublisher)
-            .sink { [weak self] homeLocation, indicatorState in
-                self?.updateHomeState(homeLocation: homeLocation,
+            .sink { [weak self] homeDestination, indicatorState in
+                self?.updateHomeState(homeLocation: homeDestination?.location,
                                       indicatorState: indicatorState)
             }
             .store(in: &cancellables)

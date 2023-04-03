@@ -46,7 +46,7 @@ final class FlightPlanVersionUpgraderViewModel {
 
     @Published var upgradeState: UpgradeState = .idle
 
-    let databaseUpdateService: DatabaseUpdateService
+    private let databaseUpdateService: DatabaseUpdateService
 
     init(databaseUpdateService: DatabaseUpdateService) {
         self.databaseUpdateService = databaseUpdateService
@@ -60,23 +60,33 @@ final class FlightPlanVersionUpgraderViewModel {
         }
 
         // Start database update
-        databaseUpdateService.updateObsoleteFlightPlans(progress: { [weak self] totalCount, updatedCount in
+        databaseUpdateService.startUpdate { [weak self] totalCount, updatedCount in
             guard let self = self else { return }
-            // Do nothing if we already are at saving step.
-            if case .saving = self.upgradeState { return }
+
+            // Ends process if totalCount <= 0.
+            guard totalCount > 0 else {
+                self.updateState(.ended)
+                return
+            }
+
             // Calculate the progress in percent.
             let percentProgress = 100 * Double(updatedCount) / Double(totalCount)
             // When all flight plans have been updated, switch to saving state.
             if percentProgress >= 100 {
-                self.upgradeState = .saving
+                self.updateState(.updating(progress: 100))
+                self.updateState(.ended)
             } else {
                 // Update the progress state.
-                self.upgradeState = .updating(progress: percentProgress)
+                self.updateState(.updating(progress: percentProgress))
             }
-        }, completion: { [weak self] _ in
-            // Upgrade is finished
-            // TODO: Handle errors
-            self?.upgradeState = .ended
-        })
+        }
+    }
+}
+
+private extension FlightPlanVersionUpgraderViewModel {
+    func updateState(_ state: UpgradeState) {
+        DispatchQueue.main.async {
+            self.upgradeState = state
+        }
     }
 }

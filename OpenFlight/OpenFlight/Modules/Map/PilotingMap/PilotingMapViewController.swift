@@ -33,7 +33,7 @@ import CoreLocation
 import ArcGIS
 
 /// View controller for piloting map.
-open class PilotingMapViewController: AGSMapViewController {
+open class PilotingMapViewController: MapWithOverlaysViewController {
 
     // MARK: - Private Properties
     private var pilotingViewModel = PilotingViewModel()
@@ -44,24 +44,7 @@ open class PilotingMapViewController: AGSMapViewController {
     private var userLocationOverlay: UserLocationGraphicsOverlay?
     private var droneLocationOverlay: DroneLocationGraphicsOverlay?
     private var returnHomeOverlay: ReturnHomeGraphicsOverlay?
-    private var oldDroneLocation: Location3D?
-    private var canUpdateDroneLocation = true
 
-    private enum OverlayOrder: Int, Comparable {
-
-        case rthPath
-        case home
-        case user
-        case drone // must always be last in mapView. This is only for information.
-
-        static func < (lhs: PilotingMapViewController.OverlayOrder, rhs: PilotingMapViewController.OverlayOrder) -> Bool {
-            return lhs.rawValue < rhs.rawValue
-        }
-
-        /// Set containing all possible overlays.
-        public static let allCases: Set<OverlayOrder> = [
-            .rthPath, .home, .user, .drone]
-    }
     // MARK: - Setup
     /// Instantiates the view controller.
     ///
@@ -76,22 +59,13 @@ open class PilotingMapViewController: AGSMapViewController {
     // MARK: - Override Funcs
     open override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Add overlays according to their `OverlayOrder`, as `mapView.graphicsOverlays` is
-        // an empty array at load time (which means that inserting `.user` and then `.home`
-        // whould lead to an incorrect [.user, .home] array).
-        addReturnHomeOverlay()
-        addHomeOverlay(at: OverlayOrder.home.rawValue)
-        addUserOverlay()
-        addDroneOverlay()
-
-        droneLocationOverlay?.viewModel.droneLocationPublisher
-            .sink(receiveValue: { [weak self] location in
-            if let coordinates = location.coordinates {
-                self?.updateDroneLocationGraphic(location: coordinates)
-            }
-            self?.oldDroneLocation = location.coordinates
-        }).store(in: &cancellables)
+        // Add overlays in order from bottom to top:
+        // RTH, Home, User, Drone
+        returnHomeOverlay = addReturnHomeOverlay()
+        addHomeOverlay()
+        userLocationOverlay = addUserOverlay()
+        droneLocationOverlay = addDroneOverlay()
+        mapViewModel.enableAutoScroll(delegate: self)
 
         pilotingViewModel.centerStatePublisher.sink { [weak self] centerState in
             self?.splitControls?.updateCenterMapButtonStatus(state: centerState)
@@ -99,64 +73,14 @@ open class PilotingMapViewController: AGSMapViewController {
         }.store(in: &cancellables)
     }
 
-    /// Updates drone location graphic.
-    ///
-    /// - Parameters:
-    ///    - location: new drone location
-    ///    - heading: new drone heading
-    func updateDroneLocationGraphic(location: Location3D) {
-        // TODO: put all calculations in viewModel
-        guard canUpdateDroneLocation, let oldDroneLocation = oldDroneLocation,
-              isVisible(), isInside(point: oldDroneLocation.agsPoint), !centering else {
-            return
-        }
-        var scrollToTarget = true
-
-        // RTH
-        if Services.hub.drone.rthService.isActive,
-           let rthLocation = pilotingViewModel.locationsTracker.returnHomeLocation,
-           isInside(point: AGSPoint(clLocationCoordinate2D: rthLocation)) {
-            scrollToTarget = false
-        }
-
-        // When the drone is leaving the screen and we scroll just enough to keep it on the screen, sometimes it happens that in the next iteration
-        // the drone is seen as off screen in the oldDroneLocation and we stop autoscrolling.
-        // The variable scrollFurther is meant to move the drone from the border
-        // with a bigger offset.
-        var scrollFurther = false
-        if !isInside(point: location.agsPoint) {
-            scrollFurther = true
-            scrollToTarget = true
-        }
-
-        guard scrollToTarget else { return }
-        let offSetLongitude = (location.coordinate.longitude - oldDroneLocation.coordinate.longitude) * (scrollFurther ? 1.3 : 1.0)
-        let offSetLatitude = (location.coordinate.latitude - oldDroneLocation.coordinate.latitude) * (scrollFurther ? 1.3 : 1.0)
-
-        guard offSetLatitude != 0 || offSetLongitude != 0 else { return }
-
-        if !mapView.isNavigating {
-            canUpdateDroneLocation = false
-            if let centerMap = mapView.visibleArea?.extent.center.toCLLocationCoordinate2D() {
-                let newLocation = CLLocationCoordinate2D(latitude: centerMap.latitude + offSetLatitude,
-                                                         longitude: centerMap.longitude + offSetLongitude)
-
-                mapView.setViewpointCenter(AGSPoint(clLocationCoordinate2D: newLocation), scale: mapView.mapScale) { [weak self]_ in
-                    self?.canUpdateDroneLocation = true
-                }
-            } else {
-                canUpdateDroneLocation = true
-            }
-        }
-    }
-
     open override func getCenter(completion: @escaping(AGSViewpoint?) -> Void) {
         var viewPoint: AGSViewpoint?
-        if let value = droneLocationOverlay?.isActive.value, value,
-            let droneCoordinate = droneLocationOverlay?.viewModel.droneLocation.coordinates?.coordinate {
+
+        if droneLocationOverlay?.isDroneConnected == true,
+            let droneCoordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
             viewPoint = AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: droneCoordinate), scale: CommonMapConstants.cameraDistanceToCenterLocation)
         } else {
-            if let userCoordinate = userLocationOverlay?.viewModel.userLocation?.coordinates?.coordinate {
+            if let userCoordinate = userLocationOverlay?.userLocation?.coordinates?.coordinate {
                 viewPoint = AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: userCoordinate), scale: CommonMapConstants.cameraDistanceToCenterLocation)
             }
         }
@@ -165,50 +89,5 @@ open class PilotingMapViewController: AGSMapViewController {
 
     deinit {
         cancellables.removeAll()
-    }
-}
-
-extension PilotingMapViewController {
-    /// Add user overlay
-    private func addUserOverlay() {
-        userLocationOverlay = UserLocationGraphicsOverlay()
-        userLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        if let userLocationOverlay = userLocationOverlay {
-            mapView.graphicsOverlays.insert(userLocationOverlay, at: OverlayOrder.user.rawValue)
-        }
-    }
-
-    /// Add drone overlay
-    private func addDroneOverlay() {
-        droneLocationOverlay = DroneLocationGraphicsOverlay()
-        droneLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        droneLocationOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let droneLocationOverlay = self.droneLocationOverlay else { return }
-                if isActive {
-                    // Always insert drone location overlay last to be on top of overy overlay
-                    self.mapView.graphicsOverlays.insert(droneLocationOverlay, at: self.mapView.graphicsOverlays.count)
-                } else {
-                    self.mapView.graphicsOverlays.remove(droneLocationOverlay)
-                }
-        }.store(in: &cancellables)
-    }
-
-    /// Add return home overlay
-    private func addReturnHomeOverlay() {
-        returnHomeOverlay = ReturnHomeGraphicsOverlay()
-        returnHomeOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        returnHomeOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let returnHomeOverlay = self.returnHomeOverlay else { return }
-                if isActive {
-                    self.mapView.graphicsOverlays.insert(returnHomeOverlay, at: OverlayOrder.rthPath.rawValue)
-                } else {
-                    self.mapView.graphicsOverlays.remove(returnHomeOverlay)
-                }
-        }.store(in: &cancellables)
     }
 }

@@ -31,28 +31,75 @@ import ArcGIS
 import GroundSdk
 import CoreLocation
 import Combine
-
+import Pictor
 
 private extension ULogTag {
     static let tag = ULogTag(name: "TrajectoryGraphicsOverlay")
 }
 
-public class TrajectoryGraphicsOverlay: CommonGraphicsOverlay {
+public class TrajectoryGraphicsOverlay: AGSGraphicsOverlay {
 
     // MARK: - Private Enums
     private enum Constants {
-        static let lineWidth: CGFloat = 2.0
-        static let lineMediumWidth: CGFloat = 6.0
-        static let lineColor: UIColor = ColorName.white.color
         static let overlayKey = "TrajectoryGraphicsOverlayKey"
     }
-    
+
+    // MARK: - Public Enums
+    public enum TrajectoryType {
+        case trajectory
+        case draped
+
+        var lineWidth: CGFloat {
+            switch self {
+            case .trajectory:
+                return 2.0
+            case .draped:
+                return 0.2
+            }
+        }
+
+        var lineMediumWidth: CGFloat {
+            switch self {
+            case .trajectory:
+                return 6.0
+            case .draped:
+                return 0.2
+            }
+        }
+
+        var lineColor: UIColor {
+            switch self {
+            case .trajectory:
+                return ColorName.white.color
+            case .draped:
+                return ColorName.green.color
+            }
+        }
+
+        var surfacePlacement: AGSSurfacePlacement {
+            switch self {
+            case .trajectory:
+                return .absolute
+            case .draped:
+                return .drapedFlat
+            }
+        }
+    }
+
     // MARK: - Public properties
+    public var trajectoryType:TrajectoryType
+
     public var flightsPoints = CurrentValueSubject<[[TrajectoryPoint]]?, Never>(nil)
     public var flightsPointsPublisher: AnyPublisher<[[TrajectoryPoint]]?, Never> { flightsPoints.eraseToAnyPublisher()
     }
     public var hasAmslAltitude = false
     public var adjustViewPoint = false
+
+    // MARK: - Init
+    public init(type: TrajectoryType) {
+        self.trajectoryType = type
+        super.init()
+    }
 
     // MARK: - Internal Funcs
     /// Displays flights trajectories and adjusts map viewpoint to show them.
@@ -66,28 +113,31 @@ public class TrajectoryGraphicsOverlay: CommonGraphicsOverlay {
                                           hasAmslAltitude: Bool,
                                           trajectoryState: TrajectoryState = .none,
                                           adjustViewPoint: Bool) {
+        graphics.removeAllObjects()
         guard let firstPoint = flightsPoints.first?.first else { return }
-        sceneProperties?.surfacePlacement = .absolute
+        sceneProperties?.surfacePlacement = trajectoryType.surfacePlacement
         // add polyline for each flight
         flightsPoints.forEach { flightPoints in
-            let agsPoints = flightPoints.map { $0.point }
+            let agsPoints = flightPoints.map { $0.agsPoint }
             let polyline = AGSPolyline(points: agsPoints)
-            let width = (trajectoryState == .completed || trajectoryState == .interrupted) ? Constants.lineMediumWidth : Constants.lineWidth
-            let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: trajectoryState.color, width: width)
+
+            let width = (trajectoryState == .completed || trajectoryState == .interrupted) ? trajectoryType.lineMediumWidth : trajectoryType.lineWidth
+            let lineColor = trajectoryType == .trajectory ? trajectoryState.color : trajectoryType.lineColor
+
+            let polylineSymbol = AGSSimpleLineSymbol(style: .solid, color: lineColor , width: width)
             let polylineGraphic = AGSGraphic(geometry: polyline, symbol: polylineSymbol, attributes: nil)
             graphics.add(polylineGraphic)
         }
 
         // starting point marker
-        if firstPoint.isFirstPoint {
+        if firstPoint.isFirstPoint && trajectoryType == .draped {
             let homePicture = AGSPictureMarkerSymbol(image: Asset.MyFlights.mapRth.image)
-            let homePoint = AGSGraphic(geometry: firstPoint.point, symbol: homePicture, attributes: nil)
+            let homePoint = AGSGraphic(geometry: firstPoint.agsPoint, symbol: homePicture, attributes: nil)
             graphics.add(homePoint)
         }
 
         self.adjustViewPoint = adjustViewPoint
         self.hasAmslAltitude = hasAmslAltitude
         self.flightsPoints.value = flightsPoints
-        isActive.value = self.flightsPoints.value != nil
     }
 }

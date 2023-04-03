@@ -88,8 +88,6 @@ final class BuildingHeightMenuViewController: UIViewController {
             .compactMap({ $0 })
             .sink { [unowned self] state in
                 switch state {
-                case .updateUndo:
-                    break
                 case .selectedGraphic:
                     break
                 case .reload:
@@ -136,7 +134,7 @@ private extension BuildingHeightMenuViewController {
 
         // Keeps the topBar shadow above the tableView
         stackView.bringSubviewToFront(topBarContainer)
-        topbar?.set(projectTitle: viewModel.savedFlightPlan?.customTitle)
+        topbar?.set(projectTitle: viewModel.savedFlightPlan?.pictorModel.name)
         topbar?.set(title: L10n.flightPlanSettingBuildingHeightTitle)
         topbar?.set(backbuttonVisibility: false)
     }

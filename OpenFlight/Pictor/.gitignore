@@ -1,0 +1,12 @@
+# xcode
+**/xcuserdata
+
+# backup files
+*~
+*.swp
+
+# Mac junk
+.DS_Store
+
+#compiled python
+*.pyc

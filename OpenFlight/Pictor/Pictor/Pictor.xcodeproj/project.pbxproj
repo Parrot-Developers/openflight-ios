@@ -1,0 +1,1107 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4B01B534296C27E800B0C9A9 /* AcademyErrorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B01B533296C27E800B0C9A9 /* AcademyErrorService.swift */; };
+		4B12F84D298AAA0700762277 /* PictorConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B12F84C298AAA0700762277 /* PictorConfiguration.swift */; };
+		4B2795272934C79900C9059B /* Int+String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2795262934C79900C9059B /* Int+String.swift */; };
+		4B27953229350AFC00C9059B /* PictorUserModel+Anonymous.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B27953129350AFC00C9059B /* PictorUserModel+Anonymous.swift */; };
+		4B33C857299BDF92002174AC /* PictorDatabaseMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B33C856299BDF92002174AC /* PictorDatabaseMigrationService.swift */; };
+		4B33C85A299BE805002174AC /* CoreDataOldService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B33C859299BE805002174AC /* CoreDataOldService.swift */; };
+		4B33C85C299BEFB6002174AC /* PictorDatabaseMigrationServiceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B33C85B299BEFB6002174AC /* PictorDatabaseMigrationServiceImpl.swift */; };
+		4B3BA034292516B9006A81EF /* PictorEngineSessionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3BA033292516B9006A81EF /* PictorEngineSessionModel.swift */; };
+		4B3BA03829251C9D006A81EF /* PictorSessionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3BA03729251C9D006A81EF /* PictorSessionModel.swift */; };
+		4B3BA03B29251D85006A81EF /* PictorEngineSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3BA03A29251D85006A81EF /* PictorEngineSessionRepository.swift */; };
+		4B3BA03E292528E0006A81EF /* PictorContext+Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3BA03D292528E0006A81EF /* PictorContext+Session.swift */; };
+		4B3D7AD3291C08CA009456F8 /* PictorEngineRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3D7AD0291C08C9009456F8 /* PictorEngineRepository.swift */; };
+		4B3D7AD5291C08CA009456F8 /* PictorEngineUserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3D7AD1291C08C9009456F8 /* PictorEngineUserRepository.swift */; };
+		4B3D7ADA291C091A009456F8 /* PictorUserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3D7AD9291C091A009456F8 /* PictorUserRepository.swift */; };
+		4B3D7ADF291C09D1009456F8 /* PictorContext+Engine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3D7ADC291C09A0009456F8 /* PictorContext+Engine.swift */; };
+		4B4DEA4D292630B600326C99 /* SessionCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4DEA4B292630B600326C99 /* SessionCD+CoreDataClass.swift */; };
+		4B4DEA4F292630B600326C99 /* SessionCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4DEA4C292630B600326C99 /* SessionCD+CoreDataProperties.swift */; };
+		4B58ABDE290FC21500176B67 /* Pictor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B58ABDD290FC21500176B67 /* Pictor.swift */; };
+		4B58ABF02910199100176B67 /* PictorContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B58ABEF2910199100176B67 /* PictorContext.swift */; };
+		4B58ABF229101B7900176B67 /* PictorUserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B58ABF129101B7900176B67 /* PictorUserModel.swift */; };
+		4B5E5A57290ADB2400694EE2 /* PictorBaseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B5E5A56290ADB2400694EE2 /* PictorBaseModel.swift */; };
+		4B64596629223D510008E527 /* UserCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B64596429223D510008E527 /* UserCD+CoreDataClass.swift */; };
+		4B64596829223D510008E527 /* UserCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B64596529223D510008E527 /* UserCD+CoreDataProperties.swift */; };
+		4B69F19B29803EE20031158B /* config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 4B69F19A29803EE20031158B /* config.xcconfig */; };
+		4B69F423290AD65300F585AD /* Pictor.docc in Sources */ = {isa = PBXBuildFile; fileRef = 4B69F422290AD65300F585AD /* Pictor.docc */; };
+		4B69F42F290AD65300F585AD /* Pictor.h in Headers */ = {isa = PBXBuildFile; fileRef = 4B69F421290AD65300F585AD /* Pictor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4B7F8F94292E507F007C5960 /* NSNumber+Bool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7F8F93292E507F007C5960 /* NSNumber+Bool.swift */; };
+		4B7F8F97292E5119007C5960 /* NSNumber+Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7F8F96292E5119007C5960 /* NSNumber+Int.swift */; };
+		4B81195B294775B0008B2387 /* AcademyApiDroneServiceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B81195A294775B0008B2387 /* AcademyApiDroneServiceImpl.swift */; };
+		4B835D71291BF4F00020EE1C /* PictorContext+User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B835D70291BF4F00020EE1C /* PictorContext+User.swift */; };
+		4B8D938E299CD6F1005925A0 /* FlightPlanOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D9386299CD6F0005925A0 /* FlightPlanOldCD.swift */; };
+		4B8D938F299CD6F1005925A0 /* DroneOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D9387299CD6F0005925A0 /* DroneOldCD.swift */; };
+		4B8D9390299CD6F1005925A0 /* ProjectPix4dOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D9388299CD6F1005925A0 /* ProjectPix4dOldCD.swift */; };
+		4B8D9391299CD6F1005925A0 /* FlightOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D9389299CD6F1005925A0 /* FlightOldCD.swift */; };
+		4B8D9392299CD6F1005925A0 /* GutmaLinkOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D938A299CD6F1005925A0 /* GutmaLinkOldCD.swift */; };
+		4B8D9393299CD6F1005925A0 /* ThumbnailOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D938B299CD6F1005925A0 /* ThumbnailOldCD.swift */; };
+		4B8D9394299CD6F1005925A0 /* UserOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D938C299CD6F1005925A0 /* UserOldCD.swift */; };
+		4B8D9395299CD6F1005925A0 /* ProjectOldCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8D938D299CD6F1005925A0 /* ProjectOldCD.swift */; };
+		4B9193492940CF4D009BAFB1 /* PictorUserServiceImpl+Anonymous.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9193482940CF4D009BAFB1 /* PictorUserServiceImpl+Anonymous.swift */; };
+		4B9207062927A6E80010480E /* PictorProjectRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207052927A6E80010480E /* PictorProjectRepository.swift */; };
+		4B9207082927A6FD0010480E /* PictorFlightPlanRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207072927A6FD0010480E /* PictorFlightPlanRepository.swift */; };
+		4B92070B2927A70D0010480E /* PictorFlightRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92070A2927A70D0010480E /* PictorFlightRepository.swift */; };
+		4B92070E2927A7290010480E /* PictorProjectPix4dRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92070D2927A7290010480E /* PictorProjectPix4dRepository.swift */; };
+		4B9207122927A74C0010480E /* PictorGutmaLinkRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207112927A74C0010480E /* PictorGutmaLinkRepository.swift */; };
+		4B9207152927A7650010480E /* PictorThumbnailRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207142927A7650010480E /* PictorThumbnailRepository.swift */; };
+		4B9207252927A8CE0010480E /* ThumbnailCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207172927A8CE0010480E /* ThumbnailCD+CoreDataClass.swift */; };
+		4B9207272927A8CE0010480E /* ThumbnailCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207182927A8CE0010480E /* ThumbnailCD+CoreDataProperties.swift */; };
+		4B9207292927A8CE0010480E /* ProjectPix4dCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207192927A8CE0010480E /* ProjectPix4dCD+CoreDataClass.swift */; };
+		4B92072B2927A8CE0010480E /* ProjectPix4dCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92071A2927A8CE0010480E /* ProjectPix4dCD+CoreDataProperties.swift */; };
+		4B92072D2927A8CE0010480E /* FlightCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92071B2927A8CE0010480E /* FlightCD+CoreDataClass.swift */; };
+		4B92072F2927A8CE0010480E /* FlightCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92071C2927A8CE0010480E /* FlightCD+CoreDataProperties.swift */; };
+		4B9207312927A8CE0010480E /* ProjectCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92071D2927A8CE0010480E /* ProjectCD+CoreDataClass.swift */; };
+		4B9207332927A8CE0010480E /* ProjectCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92071E2927A8CE0010480E /* ProjectCD+CoreDataProperties.swift */; };
+		4B9207352927A8CE0010480E /* FlightPlanCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92071F2927A8CE0010480E /* FlightPlanCD+CoreDataClass.swift */; };
+		4B9207372927A8CE0010480E /* FlightPlanCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207202927A8CE0010480E /* FlightPlanCD+CoreDataProperties.swift */; };
+		4B9207392927A8CE0010480E /* DroneCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207212927A8CE0010480E /* DroneCD+CoreDataClass.swift */; };
+		4B92073B2927A8CE0010480E /* DroneCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207222927A8CE0010480E /* DroneCD+CoreDataProperties.swift */; };
+		4B92073D2927A8CE0010480E /* GutmaLinkCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207232927A8CE0010480E /* GutmaLinkCD+CoreDataClass.swift */; };
+		4B92073F2927A8CE0010480E /* GutmaLinkCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207242927A8CE0010480E /* GutmaLinkCD+CoreDataProperties.swift */; };
+		4B9207422927AAB70010480E /* PictorFlightModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207412927AAB70010480E /* PictorFlightModel.swift */; };
+		4B9207452927AAC40010480E /* PictorProjectModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207442927AAC40010480E /* PictorProjectModel.swift */; };
+		4B9207482927AAD30010480E /* PictorProjectPix4dModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207472927AAD30010480E /* PictorProjectPix4dModel.swift */; };
+		4B92074B2927AAEA0010480E /* PictorGutmaLinkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92074A2927AAEA0010480E /* PictorGutmaLinkModel.swift */; };
+		4B92074E2927AAF20010480E /* PictorDroneModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92074D2927AAF20010480E /* PictorDroneModel.swift */; };
+		4B9207512927AAFC0010480E /* PictorThumbnailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207502927AAFC0010480E /* PictorThumbnailModel.swift */; };
+		4B9207542927C6700010480E /* PictorEngineDroneModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207532927C6700010480E /* PictorEngineDroneModel.swift */; };
+		4B9207572927C67D0010480E /* PictorEngineProjectModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207562927C67D0010480E /* PictorEngineProjectModel.swift */; };
+		4B92075A2927C68E0010480E /* PictorEngineProjectPix4dModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207592927C68E0010480E /* PictorEngineProjectPix4dModel.swift */; };
+		4B92075D2927C69F0010480E /* PictorEngineFlightModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92075C2927C69F0010480E /* PictorEngineFlightModel.swift */; };
+		4B9207602927C6A80010480E /* PictorEngineFlightPlanModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92075F2927C6A80010480E /* PictorEngineFlightPlanModel.swift */; };
+		4B9207632927C6B80010480E /* PictorEngineGutmaLinkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207622927C6B80010480E /* PictorEngineGutmaLinkModel.swift */; };
+		4B9207662927C6C90010480E /* PictorEngineThumbnailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207652927C6C90010480E /* PictorEngineThumbnailModel.swift */; };
+		4B9207692927C7A50010480E /* PictorEngineDroneRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207682927C7A50010480E /* PictorEngineDroneRepository.swift */; };
+		4B92076C2927C7B70010480E /* PictorEngineProjectRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92076B2927C7B70010480E /* PictorEngineProjectRepository.swift */; };
+		4B92076F2927C7C30010480E /* PictorEngineProjectPix4dRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92076E2927C7C30010480E /* PictorEngineProjectPix4dRepository.swift */; };
+		4B9207722927C7CD0010480E /* PictorEngineFlightRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207712927C7CD0010480E /* PictorEngineFlightRepository.swift */; };
+		4B9207752927C7D80010480E /* PictorEngineFlightPlanRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207742927C7D80010480E /* PictorEngineFlightPlanRepository.swift */; };
+		4B9207782927C7EC0010480E /* PictorEngineGutmaLinkRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9207772927C7EC0010480E /* PictorEngineGutmaLinkRepository.swift */; };
+		4B92077B2927C8070010480E /* PictorEngineThumbnailRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92077A2927C8060010480E /* PictorEngineThumbnailRepository.swift */; };
+		4B92077E292B92D40010480E /* PictorContext+SessionCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92077D292B92D40010480E /* PictorContext+SessionCD.swift */; };
+		4B920780292B99A50010480E /* PictorContext+Drone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92077F292B99A50010480E /* PictorContext+Drone.swift */; };
+		4B920783292B99B30010480E /* PictorContext+Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B920782292B99B30010480E /* PictorContext+Project.swift */; };
+		4B920786292B99C30010480E /* PictorContext+ProjectPix4d.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B920785292B99C30010480E /* PictorContext+ProjectPix4d.swift */; };
+		4B920789292B99CD0010480E /* PictorContext+Flight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B920788292B99CD0010480E /* PictorContext+Flight.swift */; };
+		4B92078C292B99D50010480E /* PictorContext+FlightPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92078B292B99D50010480E /* PictorContext+FlightPlan.swift */; };
+		4B92078F292B99DE0010480E /* PictorContext+GutmaLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92078E292B99DD0010480E /* PictorContext+GutmaLink.swift */; };
+		4B920792292B99E40010480E /* PictorContext+Thumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B920791292B99E40010480E /* PictorContext+Thumbnail.swift */; };
+		4B920795292CEAA40010480E /* PictorDroneRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B920794292CEAA40010480E /* PictorDroneRepository.swift */; };
+		4B920871292E8E4B0010480E /* AcademyRequestQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92080C292D17E40010480E /* AcademyRequestQueue.swift */; };
+		4B99A5642923B7AD00847F6B /* PictorUserServiceImpl+Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B99A5632923B7AD00847F6B /* PictorUserServiceImpl+Account.swift */; };
+		4B9D025629801BB6004010B1 /* PictorUserServiceAppleAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9D020429801BB6004010B1 /* PictorUserServiceAppleAccount.swift */; };
+		4B9D025729801BB6004010B1 /* PictorUserServiceGoogleAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9D020529801BB6004010B1 /* PictorUserServiceGoogleAccount.swift */; };
+		4BCB079B2987FA51009CED16 /* PictorFlightPlanDataSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BCB079A2987FA51009CED16 /* PictorFlightPlanDataSetting.swift */; };
+		4BD0CE57291D2E01004256C6 /* PictorEngineManagedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD0CE56291D2E01004256C6 /* PictorEngineManagedObject.swift */; };
+		4BD0CE5B291D6021004256C6 /* PictorModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4BD0CE59291D6021004256C6 /* PictorModel.xcdatamodeld */; };
+		4BD3556E293FA50600A3AFCB /* AcademySessionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92080D292D17E40010480E /* AcademySessionProvider.swift */; };
+		4BD3556F293FA50600A3AFCB /* AcademyService+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B4D5C2D2934C17F00F9E0D4 /* AcademyService+Extensions.swift */; };
+		4BD35570293FA50600A3AFCB /* AcademyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B92080A292D17E40010480E /* AcademyService.swift */; };
+		4BD3557B293FBD2600A3AFCB /* AcademyApiDroneService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B920837292E551A0010480E /* AcademyApiDroneService.swift */; };
+		4BD3557C293FBDA200A3AFCB /* AcademyDroneResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B920805292D17E40010480E /* AcademyDroneResponse.swift */; };
+		4BDB5C432966CC0400F72B17 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDB5C3C2966C84300F72B17 /* NetworkService.swift */; };
+		4BDCCCF629AD0B6C0068C47D /* PictorDatabaseMigrationServiceImpl+OldAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDCCCF529AD0B6C0068C47D /* PictorDatabaseMigrationServiceImpl+OldAccess.swift */; };
+		4BDCCCF829AD0BB30068C47D /* PictorDatabaseMigrationServiceImpl+PictorAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDCCCF729AD0BB30068C47D /* PictorDatabaseMigrationServiceImpl+PictorAccess.swift */; };
+		4BDCCCFB29AD16370068C47D /* PictorModelConversionForOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDCCCFA29AD16370068C47D /* PictorModelConversionForOld.swift */; };
+		4BE740D8298A7B9900786470 /* PictorLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BE740D7298A7B9900786470 /* PictorLogger.swift */; };
+		4BE9DC7729AE302F006366F3 /* OldModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BE9DC7629AE302F006366F3 /* OldModel.swift */; };
+		4BEA157429437EA900B7A2D1 /* PictorUserServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDB5DD82923935800247D25 /* PictorUserServiceError.swift */; };
+		4BEA157529437EAE00B7A2D1 /* PictorUserServiceAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDB5DDA2923942E00247D25 /* PictorUserServiceAccount.swift */; };
+		4BEE3E7C291BBD97001C8CAA /* PictorRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEE3E6B291BBD97001C8CAA /* PictorRepository.swift */; };
+		4BEE3E81291BBD97001C8CAA /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEE3E72291BBD97001C8CAA /* CoreDataService.swift */; };
+		4BEE3E85291BBD97001C8CAA /* PictorEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEE3E77291BBD97001C8CAA /* PictorEngine.swift */; };
+		4BEE3E86291BBD97001C8CAA /* PictorEngineUserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEE3E79291BBD97001C8CAA /* PictorEngineUserModel.swift */; };
+		4BEE3E87291BBD97001C8CAA /* PictorEngineBaseModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEE3E7A291BBD97001C8CAA /* PictorEngineBaseModel.swift */; };
+		4BEE406B292FD9BC0042733D /* PictorUserServiceConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEE406A292FD9BC0042733D /* PictorUserServiceConfiguration.swift */; };
+		4BEE406E292FDA290042733D /* PictorUserServiceImpl+Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEE406D292FDA290042733D /* PictorUserServiceImpl+Configuration.swift */; };
+		4BEF11942987B4E6005341B7 /* PictorSessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEF11932987B4E6005341B7 /* PictorSessionRepository.swift */; };
+		4BF2200A291D298A00E2B44B /* PictorUserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF22009291D298A00E2B44B /* PictorUserService.swift */; };
+		4BF2200D291D2BE400E2B44B /* PictorUserServiceImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF2200C291D2BE400E2B44B /* PictorUserServiceImpl.swift */; };
+		4BF2200F291D3E3200E2B44B /* PictorFlightPlanModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF2200E291D3E3200E2B44B /* PictorFlightPlanModel.swift */; };
+		4BF32BF529704F7F0080393F /* PictorGutma.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF32BF429704F7F0080393F /* PictorGutma.swift */; };
+		4BF32BF8297051F20080393F /* PictorGutma+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF32BF7297051F10080393F /* PictorGutma+Utils.swift */; };
+		4BF35B4B297E8EC3003DCA8C /* SynchroService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BBFC863293A5DEA00B45027 /* SynchroService.swift */; };
+		4BF52BB529408FB2003DF7B7 /* AuthenticationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B19A0ED29267B54007B632D /* AuthenticationUtils.swift */; };
+		4BF52BB629408FD9003DF7B7 /* Data+Md5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BFEAC7029269E0B00B8E144 /* Data+Md5.swift */; };
+		4BF52BB9294095F7003DF7B7 /* APCApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF52BB8294095F7003DF7B7 /* APCApiManager.swift */; };
+		4BF52BBB294098BA003DF7B7 /* ParserUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BF608E5292680EB004399E6 /* ParserUtils.swift */; };
+		4BF6377A29641FDB0099F183 /* NSEntityDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B75BC09296337B0008B8189 /* NSEntityDescription.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		4B01B533296C27E800B0C9A9 /* AcademyErrorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyErrorService.swift; sourceTree = "<group>"; };
+		4B12F84C298AAA0700762277 /* PictorConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorConfiguration.swift; sourceTree = "<group>"; };
+		4B19A0ED29267B54007B632D /* AuthenticationUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationUtils.swift; sourceTree = "<group>"; };
+		4B2795262934C79900C9059B /* Int+String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+String.swift"; sourceTree = "<group>"; };
+		4B27953129350AFC00C9059B /* PictorUserModel+Anonymous.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorUserModel+Anonymous.swift"; sourceTree = "<group>"; };
+		4B33C856299BDF92002174AC /* PictorDatabaseMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorDatabaseMigrationService.swift; sourceTree = "<group>"; };
+		4B33C859299BE805002174AC /* CoreDataOldService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CoreDataOldService.swift; path = Pictor/Internal/PictorEngine/OldCoreData/CoreDataOldService.swift; sourceTree = SOURCE_ROOT; };
+		4B33C85B299BEFB6002174AC /* PictorDatabaseMigrationServiceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorDatabaseMigrationServiceImpl.swift; sourceTree = "<group>"; };
+		4B3BA033292516B9006A81EF /* PictorEngineSessionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorEngineSessionModel.swift; sourceTree = "<group>"; };
+		4B3BA03729251C9D006A81EF /* PictorSessionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorSessionModel.swift; sourceTree = "<group>"; };
+		4B3BA03A29251D85006A81EF /* PictorEngineSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorEngineSessionRepository.swift; sourceTree = "<group>"; };
+		4B3BA03D292528E0006A81EF /* PictorContext+Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorContext+Session.swift"; sourceTree = "<group>"; };
+		4B3D7AD0291C08C9009456F8 /* PictorEngineRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorEngineRepository.swift; sourceTree = "<group>"; };
+		4B3D7AD1291C08C9009456F8 /* PictorEngineUserRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorEngineUserRepository.swift; sourceTree = "<group>"; };
+		4B3D7AD9291C091A009456F8 /* PictorUserRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorUserRepository.swift; sourceTree = "<group>"; };
+		4B3D7ADC291C09A0009456F8 /* PictorContext+Engine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "PictorContext+Engine.swift"; path = "Pictor/Internal/PictorEngine/PictorContext+Engine.swift"; sourceTree = SOURCE_ROOT; };
+		4B4D5C2D2934C17F00F9E0D4 /* AcademyService+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AcademyService+Extensions.swift"; sourceTree = "<group>"; };
+		4B4DEA4B292630B600326C99 /* SessionCD+CoreDataClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "SessionCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/SessionCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B4DEA4C292630B600326C99 /* SessionCD+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "SessionCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/SessionCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B58ABDD290FC21500176B67 /* Pictor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pictor.swift; sourceTree = "<group>"; };
+		4B58ABEF2910199100176B67 /* PictorContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorContext.swift; sourceTree = "<group>"; };
+		4B58ABF129101B7900176B67 /* PictorUserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorUserModel.swift; sourceTree = "<group>"; };
+		4B5E5A56290ADB2400694EE2 /* PictorBaseModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorBaseModel.swift; sourceTree = "<group>"; };
+		4B64596429223D510008E527 /* UserCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataClass.swift"; path = "Pictor/Internal/PictorEngine/CoreData/Model/UserCD+CoreDataClass.swift"; sourceTree = SOURCE_ROOT; };
+		4B64596529223D510008E527 /* UserCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UserCD+CoreDataProperties.swift"; path = "Pictor/Internal/PictorEngine/CoreData/Model/UserCD+CoreDataProperties.swift"; sourceTree = SOURCE_ROOT; };
+		4B69F19A29803EE20031158B /* config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = config.xcconfig; path = ../config.xcconfig; sourceTree = "<group>"; };
+		4B69F41E290AD65300F585AD /* Pictor.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pictor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B69F421290AD65300F585AD /* Pictor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Pictor.h; sourceTree = "<group>"; };
+		4B69F422290AD65300F585AD /* Pictor.docc */ = {isa = PBXFileReference; lastKnownFileType = folder.documentationcatalog; path = Pictor.docc; sourceTree = "<group>"; };
+		4B75BC09296337B0008B8189 /* NSEntityDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSEntityDescription.swift; sourceTree = "<group>"; };
+		4B7F8F93292E507F007C5960 /* NSNumber+Bool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+Bool.swift"; sourceTree = "<group>"; };
+		4B7F8F96292E5119007C5960 /* NSNumber+Int.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+Int.swift"; sourceTree = "<group>"; };
+		4B81195A294775B0008B2387 /* AcademyApiDroneServiceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyApiDroneServiceImpl.swift; sourceTree = "<group>"; };
+		4B835D70291BF4F00020EE1C /* PictorContext+User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorContext+User.swift"; sourceTree = "<group>"; };
+		4B8D9386299CD6F0005925A0 /* FlightPlanOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FlightPlanOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/FlightPlanOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B8D9387299CD6F0005925A0 /* DroneOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DroneOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/DroneOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B8D9388299CD6F1005925A0 /* ProjectPix4dOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProjectPix4dOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/ProjectPix4dOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B8D9389299CD6F1005925A0 /* FlightOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FlightOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/FlightOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B8D938A299CD6F1005925A0 /* GutmaLinkOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GutmaLinkOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/GutmaLinkOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B8D938B299CD6F1005925A0 /* ThumbnailOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ThumbnailOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/ThumbnailOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B8D938C299CD6F1005925A0 /* UserOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UserOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/UserOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B8D938D299CD6F1005925A0 /* ProjectOldCD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProjectOldCD.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/ProjectOldCD.swift; sourceTree = SOURCE_ROOT; };
+		4B9193482940CF4D009BAFB1 /* PictorUserServiceImpl+Anonymous.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorUserServiceImpl+Anonymous.swift"; sourceTree = "<group>"; };
+		4B9207052927A6E80010480E /* PictorProjectRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorProjectRepository.swift; path = ../../../Pictor/Pictor/Repository/PictorProjectRepository.swift; sourceTree = "<group>"; };
+		4B9207072927A6FD0010480E /* PictorFlightPlanRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorFlightPlanRepository.swift; path = ../../../Pictor/Pictor/Repository/PictorFlightPlanRepository.swift; sourceTree = "<group>"; };
+		4B92070A2927A70D0010480E /* PictorFlightRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorFlightRepository.swift; path = ../../../Pictor/Pictor/Repository/PictorFlightRepository.swift; sourceTree = "<group>"; };
+		4B92070D2927A7290010480E /* PictorProjectPix4dRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorProjectPix4dRepository.swift; path = ../../../Pictor/Pictor/Repository/PictorProjectPix4dRepository.swift; sourceTree = "<group>"; };
+		4B9207112927A74C0010480E /* PictorGutmaLinkRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorGutmaLinkRepository.swift; path = ../../../Pictor/Pictor/Repository/PictorGutmaLinkRepository.swift; sourceTree = "<group>"; };
+		4B9207142927A7650010480E /* PictorThumbnailRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorThumbnailRepository.swift; path = ../../../Pictor/Pictor/Repository/PictorThumbnailRepository.swift; sourceTree = "<group>"; };
+		4B9207172927A8CE0010480E /* ThumbnailCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ThumbnailCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/ThumbnailCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B9207182927A8CE0010480E /* ThumbnailCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ThumbnailCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/ThumbnailCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B9207192927A8CE0010480E /* ProjectPix4dCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ProjectPix4dCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/ProjectPix4dCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B92071A2927A8CE0010480E /* ProjectPix4dCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ProjectPix4dCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/ProjectPix4dCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B92071B2927A8CE0010480E /* FlightCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlightCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/FlightCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B92071C2927A8CE0010480E /* FlightCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlightCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/FlightCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B92071D2927A8CE0010480E /* ProjectCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ProjectCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/ProjectCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B92071E2927A8CE0010480E /* ProjectCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ProjectCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/ProjectCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B92071F2927A8CE0010480E /* FlightPlanCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlightPlanCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/FlightPlanCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B9207202927A8CE0010480E /* FlightPlanCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FlightPlanCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/FlightPlanCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B9207212927A8CE0010480E /* DroneCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "DroneCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/DroneCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B9207222927A8CE0010480E /* DroneCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "DroneCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/DroneCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B9207232927A8CE0010480E /* GutmaLinkCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "GutmaLinkCD+CoreDataClass.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/GutmaLinkCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4B9207242927A8CE0010480E /* GutmaLinkCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "GutmaLinkCD+CoreDataProperties.swift"; path = "../../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/Model/GutmaLinkCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4B9207412927AAB70010480E /* PictorFlightModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorFlightModel.swift; sourceTree = "<group>"; };
+		4B9207442927AAC40010480E /* PictorProjectModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorProjectModel.swift; sourceTree = "<group>"; };
+		4B9207472927AAD30010480E /* PictorProjectPix4dModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorProjectPix4dModel.swift; sourceTree = "<group>"; };
+		4B92074A2927AAEA0010480E /* PictorGutmaLinkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorGutmaLinkModel.swift; sourceTree = "<group>"; };
+		4B92074D2927AAF20010480E /* PictorDroneModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorDroneModel.swift; sourceTree = "<group>"; };
+		4B9207502927AAFC0010480E /* PictorThumbnailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorThumbnailModel.swift; sourceTree = "<group>"; };
+		4B9207532927C6700010480E /* PictorEngineDroneModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineDroneModel.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Model/PictorEngineDroneModel.swift; sourceTree = "<group>"; };
+		4B9207562927C67D0010480E /* PictorEngineProjectModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineProjectModel.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Model/PictorEngineProjectModel.swift; sourceTree = "<group>"; };
+		4B9207592927C68E0010480E /* PictorEngineProjectPix4dModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineProjectPix4dModel.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Model/PictorEngineProjectPix4dModel.swift; sourceTree = "<group>"; };
+		4B92075C2927C69F0010480E /* PictorEngineFlightModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineFlightModel.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Model/PictorEngineFlightModel.swift; sourceTree = "<group>"; };
+		4B92075F2927C6A80010480E /* PictorEngineFlightPlanModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineFlightPlanModel.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Model/PictorEngineFlightPlanModel.swift; sourceTree = "<group>"; };
+		4B9207622927C6B80010480E /* PictorEngineGutmaLinkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineGutmaLinkModel.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Model/PictorEngineGutmaLinkModel.swift; sourceTree = "<group>"; };
+		4B9207652927C6C90010480E /* PictorEngineThumbnailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineThumbnailModel.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Model/PictorEngineThumbnailModel.swift; sourceTree = "<group>"; };
+		4B9207682927C7A50010480E /* PictorEngineDroneRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineDroneRepository.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Repository/PictorEngineDroneRepository.swift; sourceTree = "<group>"; };
+		4B92076B2927C7B70010480E /* PictorEngineProjectRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineProjectRepository.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Repository/PictorEngineProjectRepository.swift; sourceTree = "<group>"; };
+		4B92076E2927C7C30010480E /* PictorEngineProjectPix4dRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineProjectPix4dRepository.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Repository/PictorEngineProjectPix4dRepository.swift; sourceTree = "<group>"; };
+		4B9207712927C7CD0010480E /* PictorEngineFlightRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineFlightRepository.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Repository/PictorEngineFlightRepository.swift; sourceTree = "<group>"; };
+		4B9207742927C7D80010480E /* PictorEngineFlightPlanRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineFlightPlanRepository.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Repository/PictorEngineFlightPlanRepository.swift; sourceTree = "<group>"; };
+		4B9207772927C7EC0010480E /* PictorEngineGutmaLinkRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineGutmaLinkRepository.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Repository/PictorEngineGutmaLinkRepository.swift; sourceTree = "<group>"; };
+		4B92077A2927C8060010480E /* PictorEngineThumbnailRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorEngineThumbnailRepository.swift; path = ../../../../../Pictor/Pictor/Internal/PictorEngine/Repository/PictorEngineThumbnailRepository.swift; sourceTree = "<group>"; };
+		4B92077D292B92D40010480E /* PictorContext+SessionCD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+SessionCD.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+SessionCD.swift"; sourceTree = "<group>"; };
+		4B92077F292B99A50010480E /* PictorContext+Drone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+Drone.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+Drone.swift"; sourceTree = "<group>"; };
+		4B920782292B99B30010480E /* PictorContext+Project.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+Project.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+Project.swift"; sourceTree = "<group>"; };
+		4B920785292B99C30010480E /* PictorContext+ProjectPix4d.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+ProjectPix4d.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+ProjectPix4d.swift"; sourceTree = "<group>"; };
+		4B920788292B99CD0010480E /* PictorContext+Flight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+Flight.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+Flight.swift"; sourceTree = "<group>"; };
+		4B92078B292B99D50010480E /* PictorContext+FlightPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+FlightPlan.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+FlightPlan.swift"; sourceTree = "<group>"; };
+		4B92078E292B99DD0010480E /* PictorContext+GutmaLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+GutmaLink.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+GutmaLink.swift"; sourceTree = "<group>"; };
+		4B920791292B99E40010480E /* PictorContext+Thumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "PictorContext+Thumbnail.swift"; path = "../../../../Pictor/Pictor/Internal/Pictor/PictorContext+Thumbnail.swift"; sourceTree = "<group>"; };
+		4B920794292CEAA40010480E /* PictorDroneRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorDroneRepository.swift; path = ../../../Pictor/Pictor/Repository/PictorDroneRepository.swift; sourceTree = "<group>"; };
+		4B920805292D17E40010480E /* AcademyDroneResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcademyDroneResponse.swift; sourceTree = "<group>"; };
+		4B92080A292D17E40010480E /* AcademyService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcademyService.swift; sourceTree = "<group>"; };
+		4B92080C292D17E40010480E /* AcademyRequestQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcademyRequestQueue.swift; sourceTree = "<group>"; };
+		4B92080D292D17E40010480E /* AcademySessionProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcademySessionProvider.swift; sourceTree = "<group>"; };
+		4B920837292E551A0010480E /* AcademyApiDroneService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyApiDroneService.swift; sourceTree = "<group>"; };
+		4B99A5632923B7AD00847F6B /* PictorUserServiceImpl+Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorUserServiceImpl+Account.swift"; sourceTree = "<group>"; };
+		4B9D020429801BB6004010B1 /* PictorUserServiceAppleAccount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorUserServiceAppleAccount.swift; sourceTree = "<group>"; };
+		4B9D020529801BB6004010B1 /* PictorUserServiceGoogleAccount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorUserServiceGoogleAccount.swift; sourceTree = "<group>"; };
+		4BBFC863293A5DEA00B45027 /* SynchroService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SynchroService.swift; sourceTree = "<group>"; };
+		4BCB079A2987FA51009CED16 /* PictorFlightPlanDataSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorFlightPlanDataSetting.swift; path = ../../../Pictor/Pictor/Model/PictorFlightPlanDataSetting.swift; sourceTree = "<group>"; };
+		4BD0CE56291D2E01004256C6 /* PictorEngineManagedObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PictorEngineManagedObject.swift; path = Pictor/Internal/PictorEngine/CoreData/Model/PictorEngineManagedObject.swift; sourceTree = SOURCE_ROOT; };
+		4BD0CE5A291D6021004256C6 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
+		4BDB5C3C2966C84300F72B17 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		4BDB5DD82923935800247D25 /* PictorUserServiceError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorUserServiceError.swift; sourceTree = "<group>"; };
+		4BDB5DDA2923942E00247D25 /* PictorUserServiceAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorUserServiceAccount.swift; sourceTree = "<group>"; };
+		4BDCCCF529AD0B6C0068C47D /* PictorDatabaseMigrationServiceImpl+OldAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorDatabaseMigrationServiceImpl+OldAccess.swift"; sourceTree = "<group>"; };
+		4BDCCCF729AD0BB30068C47D /* PictorDatabaseMigrationServiceImpl+PictorAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorDatabaseMigrationServiceImpl+PictorAccess.swift"; sourceTree = "<group>"; };
+		4BDCCCFA29AD16370068C47D /* PictorModelConversionForOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PictorModelConversionForOld.swift; path = Pictor/Internal/PictorEngine/OldCoreData/PictorModel/PictorModelConversionForOld.swift; sourceTree = SOURCE_ROOT; };
+		4BE740D7298A7B9900786470 /* PictorLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorLogger.swift; sourceTree = "<group>"; };
+		4BE9DC7629AE302F006366F3 /* OldModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OldModel.swift; path = Pictor/Internal/PictorEngine/OldCoreData/OldModel/OldModel.swift; sourceTree = SOURCE_ROOT; };
+		4BEE3E6B291BBD97001C8CAA /* PictorRepository.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorRepository.swift; sourceTree = "<group>"; };
+		4BEE3E72291BBD97001C8CAA /* CoreDataService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
+		4BEE3E77291BBD97001C8CAA /* PictorEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorEngine.swift; sourceTree = "<group>"; };
+		4BEE3E79291BBD97001C8CAA /* PictorEngineUserModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorEngineUserModel.swift; sourceTree = "<group>"; };
+		4BEE3E7A291BBD97001C8CAA /* PictorEngineBaseModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorEngineBaseModel.swift; sourceTree = "<group>"; };
+		4BEE406A292FD9BC0042733D /* PictorUserServiceConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorUserServiceConfiguration.swift; sourceTree = "<group>"; };
+		4BEE406D292FDA290042733D /* PictorUserServiceImpl+Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorUserServiceImpl+Configuration.swift"; sourceTree = "<group>"; };
+		4BEF11932987B4E6005341B7 /* PictorSessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorSessionRepository.swift; sourceTree = "<group>"; };
+		4BF22009291D298A00E2B44B /* PictorUserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorUserService.swift; sourceTree = "<group>"; };
+		4BF2200C291D2BE400E2B44B /* PictorUserServiceImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorUserServiceImpl.swift; sourceTree = "<group>"; };
+		4BF2200E291D3E3200E2B44B /* PictorFlightPlanModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictorFlightPlanModel.swift; sourceTree = "<group>"; };
+		4BF32BF429704F7F0080393F /* PictorGutma.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorGutma.swift; sourceTree = "<group>"; };
+		4BF32BF7297051F10080393F /* PictorGutma+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PictorGutma+Utils.swift"; sourceTree = "<group>"; };
+		4BF52BB8294095F7003DF7B7 /* APCApiManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APCApiManager.swift; sourceTree = "<group>"; };
+		4BF608E5292680EB004399E6 /* ParserUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParserUtils.swift; sourceTree = "<group>"; };
+		4BFEAC7029269E0B00B8E144 /* Data+Md5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Md5.swift"; sourceTree = "<group>"; };
+		7016A24B29911AC700092B4C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Pictor/Info.plist; sourceTree = "<group>"; };
+		7E5BC7FA29A388500001633A /* Model-v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Model-v2.xcdatamodel"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4B69F41B290AD65300F585AD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4B01B52C296C184300B0C9A9 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				4B27953129350AFC00C9059B /* PictorUserModel+Anonymous.swift */,
+				4BF32BF7297051F10080393F /* PictorGutma+Utils.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
+		4B33C845299BD764002174AC /* OldModel */ = {
+			isa = PBXGroup;
+			children = (
+				4BE9DC7629AE302F006366F3 /* OldModel.swift */,
+				4B8D938C299CD6F1005925A0 /* UserOldCD.swift */,
+				4B8D9387299CD6F0005925A0 /* DroneOldCD.swift */,
+				4B8D9389299CD6F1005925A0 /* FlightOldCD.swift */,
+				4B8D938D299CD6F1005925A0 /* ProjectOldCD.swift */,
+				4B8D9388299CD6F1005925A0 /* ProjectPix4dOldCD.swift */,
+				4B8D9386299CD6F0005925A0 /* FlightPlanOldCD.swift */,
+				4B8D938A299CD6F1005925A0 /* GutmaLinkOldCD.swift */,
+				4B8D938B299CD6F1005925A0 /* ThumbnailOldCD.swift */,
+			);
+			path = OldModel;
+			sourceTree = "<group>";
+		};
+		4B33C858299BE47F002174AC /* OldCoreData */ = {
+			isa = PBXGroup;
+			children = (
+				4B33C859299BE805002174AC /* CoreDataOldService.swift */,
+				4BDCCCF929AD160E0068C47D /* PictorModel */,
+				4B33C845299BD764002174AC /* OldModel */,
+			);
+			path = OldCoreData;
+			sourceTree = "<group>";
+		};
+		4B3A917D298D50260094501D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4B3D7ACF291C08C9009456F8 /* Repository */ = {
+			isa = PBXGroup;
+			children = (
+				4B3D7AD0291C08C9009456F8 /* PictorEngineRepository.swift */,
+				4B3BA03A29251D85006A81EF /* PictorEngineSessionRepository.swift */,
+				4B3D7AD1291C08C9009456F8 /* PictorEngineUserRepository.swift */,
+				4B9207682927C7A50010480E /* PictorEngineDroneRepository.swift */,
+				4B92076B2927C7B70010480E /* PictorEngineProjectRepository.swift */,
+				4B92076E2927C7C30010480E /* PictorEngineProjectPix4dRepository.swift */,
+				4B9207712927C7CD0010480E /* PictorEngineFlightRepository.swift */,
+				4B9207742927C7D80010480E /* PictorEngineFlightPlanRepository.swift */,
+				4B9207772927C7EC0010480E /* PictorEngineGutmaLinkRepository.swift */,
+				4B92077A2927C8060010480E /* PictorEngineThumbnailRepository.swift */,
+			);
+			name = Repository;
+			path = Pictor/Internal/PictorEngine/Repository;
+			sourceTree = SOURCE_ROOT;
+		};
+		4B58ABE1290FC86800176B67 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				4BF32BF429704F7F0080393F /* PictorGutma.swift */,
+				4BCB079A2987FA51009CED16 /* PictorFlightPlanDataSetting.swift */,
+				4BB8D7162984281600F82294 /* PictorBaseModel */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		4B58ABE2290FCCC800176B67 /* Repository */ = {
+			isa = PBXGroup;
+			children = (
+				4BEE3E6B291BBD97001C8CAA /* PictorRepository.swift */,
+				4BEF11932987B4E6005341B7 /* PictorSessionRepository.swift */,
+				4B3D7AD9291C091A009456F8 /* PictorUserRepository.swift */,
+				4B920794292CEAA40010480E /* PictorDroneRepository.swift */,
+				4B9207052927A6E80010480E /* PictorProjectRepository.swift */,
+				4B92070D2927A7290010480E /* PictorProjectPix4dRepository.swift */,
+				4B92070A2927A70D0010480E /* PictorFlightRepository.swift */,
+				4B9207072927A6FD0010480E /* PictorFlightPlanRepository.swift */,
+				4B9207112927A74C0010480E /* PictorGutmaLinkRepository.swift */,
+				4B9207142927A7650010480E /* PictorThumbnailRepository.swift */,
+			);
+			path = Repository;
+			sourceTree = "<group>";
+		};
+		4B69F414290AD65300F585AD = {
+			isa = PBXGroup;
+			children = (
+				7016A24B29911AC700092B4C /* Info.plist */,
+				4B69F19A29803EE20031158B /* config.xcconfig */,
+				4B69F420290AD65300F585AD /* Pictor */,
+				4B69F41F290AD65300F585AD /* Products */,
+				4B3A917D298D50260094501D /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		4B69F41F290AD65300F585AD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4B69F41E290AD65300F585AD /* Pictor.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4B69F420290AD65300F585AD /* Pictor */ = {
+			isa = PBXGroup;
+			children = (
+				4B58ABDD290FC21500176B67 /* Pictor.swift */,
+				4B12F84C298AAA0700762277 /* PictorConfiguration.swift */,
+				4B58ABEF2910199100176B67 /* PictorContext.swift */,
+				4B01B52C296C184300B0C9A9 /* Extension */,
+				4B58ABE1290FC86800176B67 /* Model */,
+				4B58ABE2290FCCC800176B67 /* Repository */,
+				4BF22008291D296800E2B44B /* Service */,
+				4BEE3E10291BBD29001C8CAA /* Internal */,
+				4B69F421290AD65300F585AD /* Pictor.h */,
+				4B69F422290AD65300F585AD /* Pictor.docc */,
+			);
+			path = Pictor;
+			sourceTree = "<group>";
+		};
+		4B75BC072963379B008B8189 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				4B75BC09296337B0008B8189 /* NSEntityDescription.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
+		4B7F8F92292E5056007C5960 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				4B7F8F93292E507F007C5960 /* NSNumber+Bool.swift */,
+				4B7F8F96292E5119007C5960 /* NSNumber+Int.swift */,
+				4B2795262934C79900C9059B /* Int+String.swift */,
+				4BFEAC7029269E0B00B8E144 /* Data+Md5.swift */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
+		4B81195D294776A3008B2387 /* User */ = {
+			isa = PBXGroup;
+			children = (
+				4BDB5DD82923935800247D25 /* PictorUserServiceError.swift */,
+				4BEE406A292FD9BC0042733D /* PictorUserServiceConfiguration.swift */,
+				4BDB5DDA2923942E00247D25 /* PictorUserServiceAccount.swift */,
+				4B9D020429801BB6004010B1 /* PictorUserServiceAppleAccount.swift */,
+				4B9D020529801BB6004010B1 /* PictorUserServiceGoogleAccount.swift */,
+				4BF22009291D298A00E2B44B /* PictorUserService.swift */,
+			);
+			path = User;
+			sourceTree = "<group>";
+		};
+		4B81195E294776B2008B2387 /* User */ = {
+			isa = PBXGroup;
+			children = (
+				4BF2200C291D2BE400E2B44B /* PictorUserServiceImpl.swift */,
+				4B99A5632923B7AD00847F6B /* PictorUserServiceImpl+Account.swift */,
+				4B9193482940CF4D009BAFB1 /* PictorUserServiceImpl+Anonymous.swift */,
+				4BEE406D292FDA290042733D /* PictorUserServiceImpl+Configuration.swift */,
+			);
+			path = User;
+			sourceTree = "<group>";
+		};
+		4B81195F294776BD008B2387 /* Academy */ = {
+			isa = PBXGroup;
+			children = (
+				4B81195A294775B0008B2387 /* AcademyApiDroneServiceImpl.swift */,
+			);
+			path = Academy;
+			sourceTree = "<group>";
+		};
+		4B811960294776D3008B2387 /* Academy */ = {
+			isa = PBXGroup;
+			children = (
+				4BEA7821298135600049ABD0 /* Drone */,
+				4B01B533296C27E800B0C9A9 /* AcademyErrorService.swift */,
+			);
+			path = Academy;
+			sourceTree = "<group>";
+		};
+		4B835D6F291BF4AA0020EE1C /* Pictor */ = {
+			isa = PBXGroup;
+			children = (
+				4B92077D292B92D40010480E /* PictorContext+SessionCD.swift */,
+				4B3BA03D292528E0006A81EF /* PictorContext+Session.swift */,
+				4B835D70291BF4F00020EE1C /* PictorContext+User.swift */,
+				4B92077F292B99A50010480E /* PictorContext+Drone.swift */,
+				4B920782292B99B30010480E /* PictorContext+Project.swift */,
+				4B920785292B99C30010480E /* PictorContext+ProjectPix4d.swift */,
+				4B920788292B99CD0010480E /* PictorContext+Flight.swift */,
+				4B92078B292B99D50010480E /* PictorContext+FlightPlan.swift */,
+				4B92078E292B99DD0010480E /* PictorContext+GutmaLink.swift */,
+				4B920791292B99E40010480E /* PictorContext+Thumbnail.swift */,
+				4BF2200B291D2BAE00E2B44B /* Service */,
+			);
+			path = Pictor;
+			sourceTree = "<group>";
+		};
+		4BB8D7162984281600F82294 /* PictorBaseModel */ = {
+			isa = PBXGroup;
+			children = (
+				4B5E5A56290ADB2400694EE2 /* PictorBaseModel.swift */,
+				4B3BA03729251C9D006A81EF /* PictorSessionModel.swift */,
+				4B58ABF129101B7900176B67 /* PictorUserModel.swift */,
+				4B92074D2927AAF20010480E /* PictorDroneModel.swift */,
+				4B9207442927AAC40010480E /* PictorProjectModel.swift */,
+				4B9207472927AAD30010480E /* PictorProjectPix4dModel.swift */,
+				4B9207412927AAB70010480E /* PictorFlightModel.swift */,
+				4BF2200E291D3E3200E2B44B /* PictorFlightPlanModel.swift */,
+				4B92074A2927AAEA0010480E /* PictorGutmaLinkModel.swift */,
+				4B9207502927AAFC0010480E /* PictorThumbnailModel.swift */,
+			);
+			path = PictorBaseModel;
+			sourceTree = "<group>";
+		};
+		4BD3556C293FA4DC00A3AFCB /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				4BDB5C3C2966C84300F72B17 /* NetworkService.swift */,
+				4BDCCCF429AD0B310068C47D /* DatabaseMigrationService */,
+				4BF52BB72940956A003DF7B7 /* APC */,
+				4BD3556D293FA4F200A3AFCB /* AcademyAPI */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		4BD3556D293FA4F200A3AFCB /* AcademyAPI */ = {
+			isa = PBXGroup;
+			children = (
+				4B92080C292D17E40010480E /* AcademyRequestQueue.swift */,
+				4B92080D292D17E40010480E /* AcademySessionProvider.swift */,
+				4B92080A292D17E40010480E /* AcademyService.swift */,
+				4B4D5C2D2934C17F00F9E0D4 /* AcademyService+Extensions.swift */,
+			);
+			path = AcademyAPI;
+			sourceTree = "<group>";
+		};
+		4BDCCCF429AD0B310068C47D /* DatabaseMigrationService */ = {
+			isa = PBXGroup;
+			children = (
+				4B33C85B299BEFB6002174AC /* PictorDatabaseMigrationServiceImpl.swift */,
+				4BDCCCF529AD0B6C0068C47D /* PictorDatabaseMigrationServiceImpl+OldAccess.swift */,
+				4BDCCCF729AD0BB30068C47D /* PictorDatabaseMigrationServiceImpl+PictorAccess.swift */,
+			);
+			path = DatabaseMigrationService;
+			sourceTree = "<group>";
+		};
+		4BDCCCF929AD160E0068C47D /* PictorModel */ = {
+			isa = PBXGroup;
+			children = (
+				4BDCCCFA29AD16370068C47D /* PictorModelConversionForOld.swift */,
+			);
+			path = PictorModel;
+			sourceTree = "<group>";
+		};
+		4BEA7821298135600049ABD0 /* Drone */ = {
+			isa = PBXGroup;
+			children = (
+				4B920837292E551A0010480E /* AcademyApiDroneService.swift */,
+				4B920805292D17E40010480E /* AcademyDroneResponse.swift */,
+			);
+			path = Drone;
+			sourceTree = "<group>";
+		};
+		4BEE3E10291BBD29001C8CAA /* Internal */ = {
+			isa = PBXGroup;
+			children = (
+				4BE740D7298A7B9900786470 /* PictorLogger.swift */,
+				4B7F8F92292E5056007C5960 /* Extension */,
+				4BF52BB429408F7A003DF7B7 /* Utils */,
+				4B835D6F291BF4AA0020EE1C /* Pictor */,
+				4BD3556C293FA4DC00A3AFCB /* Service */,
+				4BEE3E68291BBD97001C8CAA /* PictorEngine */,
+			);
+			path = Internal;
+			sourceTree = "<group>";
+		};
+		4BEE3E68291BBD97001C8CAA /* PictorEngine */ = {
+			isa = PBXGroup;
+			children = (
+				4BEE3E77291BBD97001C8CAA /* PictorEngine.swift */,
+				4B3D7ADC291C09A0009456F8 /* PictorContext+Engine.swift */,
+				4BEE3E78291BBD97001C8CAA /* Model */,
+				4B3D7ACF291C08C9009456F8 /* Repository */,
+				4BEE3E6F291BBD97001C8CAA /* CoreData */,
+				4B33C858299BE47F002174AC /* OldCoreData */,
+			);
+			name = PictorEngine;
+			path = ../../../pictor/Pictor/Internal/PictorEngine;
+			sourceTree = "<group>";
+		};
+		4BEE3E6F291BBD97001C8CAA /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				4BD0CE59291D6021004256C6 /* PictorModel.xcdatamodeld */,
+				4BEE3E72291BBD97001C8CAA /* CoreDataService.swift */,
+				4B75BC072963379B008B8189 /* Extension */,
+				4BEE3E73291BBD97001C8CAA /* Model */,
+			);
+			path = CoreData;
+			sourceTree = "<group>";
+		};
+		4BEE3E73291BBD97001C8CAA /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				4BD0CE56291D2E01004256C6 /* PictorEngineManagedObject.swift */,
+				4B4DEA4B292630B600326C99 /* SessionCD+CoreDataClass.swift */,
+				4B4DEA4C292630B600326C99 /* SessionCD+CoreDataProperties.swift */,
+				4B64596429223D510008E527 /* UserCD+CoreDataClass.swift */,
+				4B64596529223D510008E527 /* UserCD+CoreDataProperties.swift */,
+				4B9207212927A8CE0010480E /* DroneCD+CoreDataClass.swift */,
+				4B9207222927A8CE0010480E /* DroneCD+CoreDataProperties.swift */,
+				4B92071D2927A8CE0010480E /* ProjectCD+CoreDataClass.swift */,
+				4B92071E2927A8CE0010480E /* ProjectCD+CoreDataProperties.swift */,
+				4B9207192927A8CE0010480E /* ProjectPix4dCD+CoreDataClass.swift */,
+				4B92071A2927A8CE0010480E /* ProjectPix4dCD+CoreDataProperties.swift */,
+				4B92071B2927A8CE0010480E /* FlightCD+CoreDataClass.swift */,
+				4B92071C2927A8CE0010480E /* FlightCD+CoreDataProperties.swift */,
+				4B92071F2927A8CE0010480E /* FlightPlanCD+CoreDataClass.swift */,
+				4B9207202927A8CE0010480E /* FlightPlanCD+CoreDataProperties.swift */,
+				4B9207232927A8CE0010480E /* GutmaLinkCD+CoreDataClass.swift */,
+				4B9207242927A8CE0010480E /* GutmaLinkCD+CoreDataProperties.swift */,
+				4B9207172927A8CE0010480E /* ThumbnailCD+CoreDataClass.swift */,
+				4B9207182927A8CE0010480E /* ThumbnailCD+CoreDataProperties.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		4BEE3E78291BBD97001C8CAA /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				4BEE3E7A291BBD97001C8CAA /* PictorEngineBaseModel.swift */,
+				4B3BA033292516B9006A81EF /* PictorEngineSessionModel.swift */,
+				4BEE3E79291BBD97001C8CAA /* PictorEngineUserModel.swift */,
+				4B9207532927C6700010480E /* PictorEngineDroneModel.swift */,
+				4B9207562927C67D0010480E /* PictorEngineProjectModel.swift */,
+				4B9207592927C68E0010480E /* PictorEngineProjectPix4dModel.swift */,
+				4B92075C2927C69F0010480E /* PictorEngineFlightModel.swift */,
+				4B92075F2927C6A80010480E /* PictorEngineFlightPlanModel.swift */,
+				4B9207622927C6B80010480E /* PictorEngineGutmaLinkModel.swift */,
+				4B9207652927C6C90010480E /* PictorEngineThumbnailModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		4BF22008291D296800E2B44B /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				4BBFC863293A5DEA00B45027 /* SynchroService.swift */,
+				4B33C856299BDF92002174AC /* PictorDatabaseMigrationService.swift */,
+				4B811960294776D3008B2387 /* Academy */,
+				4B81195D294776A3008B2387 /* User */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		4BF2200B291D2BAE00E2B44B /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				4B81195F294776BD008B2387 /* Academy */,
+				4B81195E294776B2008B2387 /* User */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		4BF52BB429408F7A003DF7B7 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				4B19A0ED29267B54007B632D /* AuthenticationUtils.swift */,
+				4BF608E5292680EB004399E6 /* ParserUtils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		4BF52BB72940956A003DF7B7 /* APC */ = {
+			isa = PBXGroup;
+			children = (
+				4BF52BB8294095F7003DF7B7 /* APCApiManager.swift */,
+			);
+			path = APC;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		4B69F419290AD65300F585AD /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B69F42F290AD65300F585AD /* Pictor.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		4B69F41D290AD65300F585AD /* Pictor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B69F432290AD65300F585AD /* Build configuration list for PBXNativeTarget "Pictor" */;
+			buildPhases = (
+				4B69F419290AD65300F585AD /* Headers */,
+				4B69F41A290AD65300F585AD /* Sources */,
+				4B69F41B290AD65300F585AD /* Frameworks */,
+				4B69F41C290AD65300F585AD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Pictor;
+			productName = Pictor;
+			productReference = 4B69F41E290AD65300F585AD /* Pictor.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4B69F415290AD65300F585AD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1400;
+				LastUpgradeCheck = 1400;
+				TargetAttributes = {
+					4B69F41D290AD65300F585AD = {
+						CreatedOnToolsVersion = 14.0.1;
+					};
+				};
+			};
+			buildConfigurationList = 4B69F418290AD65300F585AD /* Build configuration list for PBXProject "Pictor" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4B69F414290AD65300F585AD;
+			productRefGroup = 4B69F41F290AD65300F585AD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4B69F41D290AD65300F585AD /* Pictor */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4B69F41C290AD65300F585AD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B69F19B29803EE20031158B /* config.xcconfig in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4B69F41A290AD65300F585AD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B9207292927A8CE0010480E /* ProjectPix4dCD+CoreDataClass.swift in Sources */,
+				4BD3557B293FBD2600A3AFCB /* AcademyApiDroneService.swift in Sources */,
+				4BD3557C293FBDA200A3AFCB /* AcademyDroneResponse.swift in Sources */,
+				4B27953229350AFC00C9059B /* PictorUserModel+Anonymous.swift in Sources */,
+				4B9207062927A6E80010480E /* PictorProjectRepository.swift in Sources */,
+				4B8D9393299CD6F1005925A0 /* ThumbnailOldCD.swift in Sources */,
+				4B92075A2927C68E0010480E /* PictorEngineProjectPix4dModel.swift in Sources */,
+				4B7F8F97292E5119007C5960 /* NSNumber+Int.swift in Sources */,
+				4B920792292B99E40010480E /* PictorContext+Thumbnail.swift in Sources */,
+				4B9207272927A8CE0010480E /* ThumbnailCD+CoreDataProperties.swift in Sources */,
+				4B920871292E8E4B0010480E /* AcademyRequestQueue.swift in Sources */,
+				4BF32BF529704F7F0080393F /* PictorGutma.swift in Sources */,
+				4BEE3E87291BBD97001C8CAA /* PictorEngineBaseModel.swift in Sources */,
+				4BE9DC7729AE302F006366F3 /* OldModel.swift in Sources */,
+				4B3BA03829251C9D006A81EF /* PictorSessionModel.swift in Sources */,
+				4B9207452927AAC40010480E /* PictorProjectModel.swift in Sources */,
+				4B92070E2927A7290010480E /* PictorProjectPix4dRepository.swift in Sources */,
+				4B3BA03E292528E0006A81EF /* PictorContext+Session.swift in Sources */,
+				4BF52BBB294098BA003DF7B7 /* ParserUtils.swift in Sources */,
+				4BD0CE5B291D6021004256C6 /* PictorModel.xcdatamodeld in Sources */,
+				4BD0CE57291D2E01004256C6 /* PictorEngineManagedObject.swift in Sources */,
+				4B9207752927C7D80010480E /* PictorEngineFlightPlanRepository.swift in Sources */,
+				4BEE3E81291BBD97001C8CAA /* CoreDataService.swift in Sources */,
+				4B92076C2927C7B70010480E /* PictorEngineProjectRepository.swift in Sources */,
+				4BD3556F293FA50600A3AFCB /* AcademyService+Extensions.swift in Sources */,
+				4B920795292CEAA40010480E /* PictorDroneRepository.swift in Sources */,
+				4BF52BB9294095F7003DF7B7 /* APCApiManager.swift in Sources */,
+				4B92076F2927C7C30010480E /* PictorEngineProjectPix4dRepository.swift in Sources */,
+				4B9207312927A8CE0010480E /* ProjectCD+CoreDataClass.swift in Sources */,
+				4B92073F2927A8CE0010480E /* GutmaLinkCD+CoreDataProperties.swift in Sources */,
+				4BCB079B2987FA51009CED16 /* PictorFlightPlanDataSetting.swift in Sources */,
+				4B3BA03B29251D85006A81EF /* PictorEngineSessionRepository.swift in Sources */,
+				4BEE3E86291BBD97001C8CAA /* PictorEngineUserModel.swift in Sources */,
+				4B9193492940CF4D009BAFB1 /* PictorUserServiceImpl+Anonymous.swift in Sources */,
+				4B920789292B99CD0010480E /* PictorContext+Flight.swift in Sources */,
+				4BEA157429437EA900B7A2D1 /* PictorUserServiceError.swift in Sources */,
+				4BEE3E85291BBD97001C8CAA /* PictorEngine.swift in Sources */,
+				4B9207632927C6B80010480E /* PictorEngineGutmaLinkModel.swift in Sources */,
+				4BEE406B292FD9BC0042733D /* PictorUserServiceConfiguration.swift in Sources */,
+				4B58ABF02910199100176B67 /* PictorContext.swift in Sources */,
+				4B3BA034292516B9006A81EF /* PictorEngineSessionModel.swift in Sources */,
+				4BE740D8298A7B9900786470 /* PictorLogger.swift in Sources */,
+				4B9207572927C67D0010480E /* PictorEngineProjectModel.swift in Sources */,
+				4BEE406E292FDA290042733D /* PictorUserServiceImpl+Configuration.swift in Sources */,
+				4B92074E2927AAF20010480E /* PictorDroneModel.swift in Sources */,
+				4B8D9391299CD6F1005925A0 /* FlightOldCD.swift in Sources */,
+				4B58ABDE290FC21500176B67 /* Pictor.swift in Sources */,
+				4B9207602927C6A80010480E /* PictorEngineFlightPlanModel.swift in Sources */,
+				4B920783292B99B30010480E /* PictorContext+Project.swift in Sources */,
+				4B92070B2927A70D0010480E /* PictorFlightRepository.swift in Sources */,
+				4B5E5A57290ADB2400694EE2 /* PictorBaseModel.swift in Sources */,
+				4B58ABF229101B7900176B67 /* PictorUserModel.swift in Sources */,
+				4BEF11942987B4E6005341B7 /* PictorSessionRepository.swift in Sources */,
+				4B99A5642923B7AD00847F6B /* PictorUserServiceImpl+Account.swift in Sources */,
+				4BF52BB529408FB2003DF7B7 /* AuthenticationUtils.swift in Sources */,
+				4B835D71291BF4F00020EE1C /* PictorContext+User.swift in Sources */,
+				4BF2200F291D3E3200E2B44B /* PictorFlightPlanModel.swift in Sources */,
+				4BEA157529437EAE00B7A2D1 /* PictorUserServiceAccount.swift in Sources */,
+				4B8D938E299CD6F1005925A0 /* FlightPlanOldCD.swift in Sources */,
+				4B92073B2927A8CE0010480E /* DroneCD+CoreDataProperties.swift in Sources */,
+				4BDB5C432966CC0400F72B17 /* NetworkService.swift in Sources */,
+				4BF52BB629408FD9003DF7B7 /* Data+Md5.swift in Sources */,
+				4B9207422927AAB70010480E /* PictorFlightModel.swift in Sources */,
+				4B33C857299BDF92002174AC /* PictorDatabaseMigrationService.swift in Sources */,
+				4B9207252927A8CE0010480E /* ThumbnailCD+CoreDataClass.swift in Sources */,
+				4BEE3E7C291BBD97001C8CAA /* PictorRepository.swift in Sources */,
+				4B3D7AD5291C08CA009456F8 /* PictorEngineUserRepository.swift in Sources */,
+				4B9207122927A74C0010480E /* PictorGutmaLinkRepository.swift in Sources */,
+				4B8D9390299CD6F1005925A0 /* ProjectPix4dOldCD.swift in Sources */,
+				4B69F423290AD65300F585AD /* Pictor.docc in Sources */,
+				4B3D7AD3291C08CA009456F8 /* PictorEngineRepository.swift in Sources */,
+				4B8D9394299CD6F1005925A0 /* UserOldCD.swift in Sources */,
+				4B12F84D298AAA0700762277 /* PictorConfiguration.swift in Sources */,
+				4BD3556E293FA50600A3AFCB /* AcademySessionProvider.swift in Sources */,
+				4B92072B2927A8CE0010480E /* ProjectPix4dCD+CoreDataProperties.swift in Sources */,
+				4BF2200A291D298A00E2B44B /* PictorUserService.swift in Sources */,
+				4B9207332927A8CE0010480E /* ProjectCD+CoreDataProperties.swift in Sources */,
+				4BDCCCFB29AD16370068C47D /* PictorModelConversionForOld.swift in Sources */,
+				4BF6377A29641FDB0099F183 /* NSEntityDescription.swift in Sources */,
+				4B01B534296C27E800B0C9A9 /* AcademyErrorService.swift in Sources */,
+				4B4DEA4D292630B600326C99 /* SessionCD+CoreDataClass.swift in Sources */,
+				4B92075D2927C69F0010480E /* PictorEngineFlightModel.swift in Sources */,
+				4B8D9392299CD6F1005925A0 /* GutmaLinkOldCD.swift in Sources */,
+				4B92078F292B99DE0010480E /* PictorContext+GutmaLink.swift in Sources */,
+				4B33C85C299BEFB6002174AC /* PictorDatabaseMigrationServiceImpl.swift in Sources */,
+				4B9207542927C6700010480E /* PictorEngineDroneModel.swift in Sources */,
+				4B9207152927A7650010480E /* PictorThumbnailRepository.swift in Sources */,
+				4B9207662927C6C90010480E /* PictorEngineThumbnailModel.swift in Sources */,
+				4BDCCCF829AD0BB30068C47D /* PictorDatabaseMigrationServiceImpl+PictorAccess.swift in Sources */,
+				4B4DEA4F292630B600326C99 /* SessionCD+CoreDataProperties.swift in Sources */,
+				4B2795272934C79900C9059B /* Int+String.swift in Sources */,
+				4B9207372927A8CE0010480E /* FlightPlanCD+CoreDataProperties.swift in Sources */,
+				4B9207482927AAD30010480E /* PictorProjectPix4dModel.swift in Sources */,
+				4B92077E292B92D40010480E /* PictorContext+SessionCD.swift in Sources */,
+				4B92074B2927AAEA0010480E /* PictorGutmaLinkModel.swift in Sources */,
+				4B92073D2927A8CE0010480E /* GutmaLinkCD+CoreDataClass.swift in Sources */,
+				4B9207692927C7A50010480E /* PictorEngineDroneRepository.swift in Sources */,
+				4BF2200D291D2BE400E2B44B /* PictorUserServiceImpl.swift in Sources */,
+				4B7F8F94292E507F007C5960 /* NSNumber+Bool.swift in Sources */,
+				4B9207512927AAFC0010480E /* PictorThumbnailModel.swift in Sources */,
+				4BF32BF8297051F20080393F /* PictorGutma+Utils.swift in Sources */,
+				4B9D025729801BB6004010B1 /* PictorUserServiceGoogleAccount.swift in Sources */,
+				4B920786292B99C30010480E /* PictorContext+ProjectPix4d.swift in Sources */,
+				4BD35570293FA50600A3AFCB /* AcademyService.swift in Sources */,
+				4B92072D2927A8CE0010480E /* FlightCD+CoreDataClass.swift in Sources */,
+				4B9207082927A6FD0010480E /* PictorFlightPlanRepository.swift in Sources */,
+				4B9207392927A8CE0010480E /* DroneCD+CoreDataClass.swift in Sources */,
+				4B9D025629801BB6004010B1 /* PictorUserServiceAppleAccount.swift in Sources */,
+				4B920780292B99A50010480E /* PictorContext+Drone.swift in Sources */,
+				4BDCCCF629AD0B6C0068C47D /* PictorDatabaseMigrationServiceImpl+OldAccess.swift in Sources */,
+				4B9207352927A8CE0010480E /* FlightPlanCD+CoreDataClass.swift in Sources */,
+				4B8D9395299CD6F1005925A0 /* ProjectOldCD.swift in Sources */,
+				4B92072F2927A8CE0010480E /* FlightCD+CoreDataProperties.swift in Sources */,
+				4B92077B2927C8070010480E /* PictorEngineThumbnailRepository.swift in Sources */,
+				4B8D938F299CD6F1005925A0 /* DroneOldCD.swift in Sources */,
+				4B64596829223D510008E527 /* UserCD+CoreDataProperties.swift in Sources */,
+				4B3D7ADF291C09D1009456F8 /* PictorContext+Engine.swift in Sources */,
+				4B81195B294775B0008B2387 /* AcademyApiDroneServiceImpl.swift in Sources */,
+				4B3D7ADA291C091A009456F8 /* PictorUserRepository.swift in Sources */,
+				4BF35B4B297E8EC3003DCA8C /* SynchroService.swift in Sources */,
+				4B9207782927C7EC0010480E /* PictorEngineGutmaLinkRepository.swift in Sources */,
+				4B33C85A299BE805002174AC /* CoreDataOldService.swift in Sources */,
+				4B9207722927C7CD0010480E /* PictorEngineFlightRepository.swift in Sources */,
+				4B64596629223D510008E527 /* UserCD+CoreDataClass.swift in Sources */,
+				4B92078C292B99D50010480E /* PictorContext+FlightPlan.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4B69F430290AD65300F585AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		4B69F431290AD65300F585AD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		4B69F433290AD65300F585AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4B69F19A29803EE20031158B /* config.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXCLUDED_ARCHS = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Pictor/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.parrot.pictor;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4B69F434290AD65300F585AD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4B69F19A29803EE20031158B /* config.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXCLUDED_ARCHS = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Pictor/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
+				PRODUCT_BUNDLE_IDENTIFIER = com.parrot.pictor;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4B69F418290AD65300F585AD /* Build configuration list for PBXProject "Pictor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B69F430290AD65300F585AD /* Debug */,
+				4B69F431290AD65300F585AD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4B69F432290AD65300F585AD /* Build configuration list for PBXNativeTarget "Pictor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4B69F433290AD65300F585AD /* Debug */,
+				4B69F434290AD65300F585AD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		4BD0CE59291D6021004256C6 /* PictorModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				7E5BC7FA29A388500001633A /* Model-v2.xcdatamodel */,
+				4BD0CE5A291D6021004256C6 /* Model.xcdatamodel */,
+			);
+			currentVersion = 7E5BC7FA29A388500001633A /* Model-v2.xcdatamodel */;
+			name = PictorModel.xcdatamodeld;
+			path = ../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/PictorModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 4B69F415290AD65300F585AD /* Project object */;
+}

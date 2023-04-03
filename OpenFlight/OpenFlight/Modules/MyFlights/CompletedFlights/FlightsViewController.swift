@@ -72,13 +72,19 @@ final class FlightsViewController: UIViewController {
         emptyFlightsTitleLabel.text = L10n.dashboardMyFlightsEmptyListTitle
         emptyFlightsDecriptionLabel.text = L10n.dashboardMyFlightsEmptyListDesc
 
-        viewModel.flightsPublisher
+        viewModel.flightUuidsPublisher
+            .combineLatest(viewModel.selectedFlightIdPublisher)
             .receive(on: RunLoop.main)
-            .sink { [weak self] in
+            .sink { [weak self] flightUuids, _ in
                 guard let self = self else { return }
-                self.emptyLabelStack.isHidden = !$0.isEmpty
+                self.emptyLabelStack.isHidden = !flightUuids.isEmpty
                 self.tableView.reloadData()
-                self.viewModel.getThumbnails(forIndexPaths: self.visibleIndexPaths)
+            }
+            .store(in: &cancellables)
+
+        viewModel.needReloadDataPublisher
+            .sink { [weak self] in
+                self?.tableView.reloadData()
             }
             .store(in: &cancellables)
     }
@@ -120,23 +126,26 @@ final class FlightsViewController: UIViewController {
 // MARK: - UITableView DataSource
 extension FlightsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.flights.count
+        return viewModel.flightUuids.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(for: indexPath) as FlightTableViewCell
+        let uuid = viewModel.flightUuids[indexPath.row]
+        guard let cellViewModel = viewModel.cellViewModel(for: uuid) else { return cell }
         var showDate: Bool = true
-        let item = viewModel.flights[indexPath.row]
-        if indexPath.row > 0,
-            let startDate = item.startTime,
-            let previousItemDate = viewModel.flights[indexPath.row - 1].startTime {
-            showDate = !previousItemDate.isInSameMonth(date: startDate)
+        if indexPath.row > 0 {
+            let previousUuid = viewModel.flightUuids[indexPath.row - 1]
+            let previousCellViewModel = viewModel.cellViewModel(for: uuid)
+            if let startDate = cellViewModel.startTime,
+               let previousItemDate = previousCellViewModel?.startTime {
+                showDate = !previousItemDate.isInSameMonth(date: startDate)
+            }
         }
-        let cellViewModel = viewModel.cellViewModel(flight: viewModel.flights[indexPath.row])
         cell.configureCell(viewModel: cellViewModel, showDate: showDate)
         cell.layoutIfNeeded()
 
-        if indexPath.row == viewModel.flights.count - 1 {
+        if indexPath.row == viewModel.flightUuids.count - 1 {
             viewModel.getMoreFlights()
         }
 

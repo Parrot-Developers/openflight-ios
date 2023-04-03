@@ -168,7 +168,7 @@ extension GalleryMediaViewController: UICollectionViewDataSource {
         let media = dataSource[indexPath.section].medias[indexPath.row]
         cell.setup(media: media,
                    delegate: self,
-                   selected: viewModel.isSelected(uid: media.uid),
+                   selected: viewModel.isSelected(uid: media.droneMediaIdentifier),
                    actionState: viewModel.actionState(of: media),
                    isDownloadAvailable: !viewModel.isActionActive(.select))
 

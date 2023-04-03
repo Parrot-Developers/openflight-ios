@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21513" systemVersion="22A400" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="DroneCD" representedClassName=".DroneCD" syncable="YES">
+        <attribute name="cloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="commonName" optional="YES" attributeType="String"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="modelId" optional="YES" attributeType="String"/>
+        <attribute name="paired4G" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="serialNumber" optional="YES" attributeType="String"/>
+        <attribute name="synchroError" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroIsDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="synchroLatestStatusDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroLatestUpdatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="FlightCD" representedClassName=".FlightCD" syncable="YES">
+        <attribute name="batteryConsumption" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="cloudCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="cloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="cloudModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="distance" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="duration" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="firmware" optional="YES" attributeType="String"/>
+        <attribute name="formatVersion" optional="YES" attributeType="String"/>
+        <attribute name="gutmaFile" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="modelId" optional="YES" attributeType="String"/>
+        <attribute name="parseError" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="photoCount" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="runDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="serial" optional="YES" attributeType="String"/>
+        <attribute name="startLatitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="startLongitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="synchroError" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroIsDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="synchroLatestStatusDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroLatestUpdatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="thumbnailUuid" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+        <attribute name="videoCount" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="FlightPlanCD" representedClassName=".FlightPlanCD" syncable="YES">
+        <attribute name="cloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="cloudModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="dataSetting" optional="YES" attributeType="Binary"/>
+        <attribute name="executionRank" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="fileType" optional="YES" attributeType="String"/>
+        <attribute name="flightPlanType" optional="YES" attributeType="String"/>
+        <attribute name="formatVersion" optional="YES" attributeType="String"/>
+        <attribute name="hasReachedFirstWaypoint" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
+        <attribute name="lastMissionItemExecuted" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastUpdated" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="mediaCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="projectPix4dUuid" optional="YES" attributeType="String"/>
+        <attribute name="projectUuid" optional="YES" attributeType="String"/>
+        <attribute name="state" optional="YES" attributeType="String"/>
+        <attribute name="synchroError" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroIsDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="synchroLatestStatusDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroLatestUpdatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="thumbnailUuid" optional="YES" attributeType="String"/>
+        <attribute name="uploadedMediaCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="GutmaLinkCD" representedClassName=".GutmaLinkCD" syncable="YES">
+        <attribute name="cloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="executionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="flightPlanUuid" optional="YES" attributeType="String"/>
+        <attribute name="flightUuid" optional="YES" attributeType="String"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroError" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroIsDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="synchroLatestStatusDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroLatestUpdatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="ProjectCD" representedClassName=".ProjectCD" syncable="YES">
+        <attribute name="cloudCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="cloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="cloudModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="hasEditableFlightPlan" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="lastOpened" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastUpdated" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="latestExecutedFlightPlanDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="latestExecutionIndex" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="latestUpdatedEditableFlightPlanDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroError" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroIsDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="synchroLatestStatusDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroLatestUpdatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="ProjectPix4dCD" representedClassName=".ProjectPix4dCD" syncable="YES">
+        <attribute name="cloudId" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="processingCalled" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="projectDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroError" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroIsDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="synchroLatestStatusDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroLatestUpdatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="SessionCD" representedClassName=".SessionCD" syncable="YES">
+        <attribute name="incShouldLaunch" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestBgDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestFlightPlanCloudDeletionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestFlightPlanDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestGutmaCloudDeletionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestGutmaDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestProjectCloudDeletionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestProjectDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestSuccessfulDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="msLatestTriedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="permanentRemainingPix4dProjects" attributeType="Integer 16" defaultValueString="3" usesScalarValueType="YES"/>
+        <attribute name="pix4dAccessToken" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" customClassName=".String"/>
+        <attribute name="pix4dEmail" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" customClassName=".String"/>
+        <attribute name="pix4dFreemiumProjectsCountLastSyncDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="pix4dPremiumAccountScopes" optional="YES" attributeType="String"/>
+        <attribute name="pix4dPremiumAccountTokenType" optional="YES" attributeType="String"/>
+        <attribute name="pix4dPremiumProjectsCountLastSyncDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="pix4dPremiumTokenExpirationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="pix4dRefreshToken" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" customClassName=".String"/>
+        <attribute name="scLatestSuccessfulDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="scLatestTriedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="scSkip" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="temporaryRemainingPix4dProjects" attributeType="Integer 16" defaultValueString="3" usesScalarValueType="YES"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="ThumbnailCD" representedClassName=".ThumbnailCD" syncable="YES">
+        <attribute name="imageData" attributeType="Binary"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="userUuid" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="UserCD" representedClassName=".UserCD" syncable="YES">
+        <attribute name="academyId" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" customClassName=".String"/>
+        <attribute name="apcId" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" defaultValueString="" customClassName=".String"/>
+        <attribute name="apcToken" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" defaultValueString="" customClassName=".String"/>
+        <attribute name="avatarImageData" optional="YES" attributeType="Binary"/>
+        <attribute name="company" optional="YES" attributeType="String"/>
+        <attribute name="confirmed" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="country" optional="YES" attributeType="String"/>
+        <attribute name="email" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformer" defaultValueString="" customClassName=".String"/>
+        <attribute name="firstName" attributeType="String" defaultValueString=""/>
+        <attribute name="gender" optional="YES" attributeType="String"/>
+        <attribute name="industry" optional="YES" attributeType="String"/>
+        <attribute name="isAgreementChanged" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isCaligoffEnabled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isPrivateMode" optional="YES" attributeType="Integer 64" usesScalarValueType="YES"/>
+        <attribute name="language" optional="YES" attributeType="String"/>
+        <attribute name="lastName" optional="YES" attributeType="String"/>
+        <attribute name="localCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="localModificationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="nbFreemiumProjects" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="phone" optional="YES" attributeType="String"/>
+        <attribute name="pilotNumber" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="registrationNumber" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="sessionId" optional="YES" attributeType="String"/>
+        <attribute name="store" optional="YES" attributeType="String"/>
+        <attribute name="subIndustry" optional="YES" attributeType="String"/>
+        <attribute name="synchroError" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="synchroIsDeleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="synchroLatestStatusDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroLatestUpdatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="synchroStatus" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="uuid" attributeType="String"/>
+        <attribute name="vatNumber" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
+    </entity>
+</model>

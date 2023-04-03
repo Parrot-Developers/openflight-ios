@@ -31,11 +31,12 @@ import Foundation
 import Combine
 import CoreLocation
 import ArcGIS
+import Pictor
 
-// swiftlint:disable file_length reduce_boolean type_body_length
+// swiftlint:disable file_length type_body_length
 
 /// View controller for flightplan map.
-open class FlightPlanSceneViewController: AGSSceneViewController {
+open class FlightPlanSceneViewController: SceneWithOverlaysViewController {
 
     // MARK: - Private Properties
     private var flightPlanViewModel = FlightPlanViewModel()
@@ -44,15 +45,11 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
     private var editionCancellables = Set<AnyCancellable>()
     private var userLocationOverlay: UserLocationGraphicsOverlay?
     private var returnHomeOverlay: ReturnHomeGraphicsOverlay?
-    private var oldDroneLocation: Location3D?
-    private var canUpdateDroneLocation = true
-    private var droneLocation3D: Location3D?
     /// Elevation at the point of take off.
     var droneElevationTakeOff: Double?
 
     public var bamService: BannerAlertManagerService?
     public var missionsStore: MissionsStore?
-    public var rthService: RthService?
     public var memoryPressureMonitor: MemoryPressureMonitorService?
 
     // MARK: - Public Properties
@@ -94,37 +91,27 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
         didSet {
             let differentFlightPlan = oldValue?.uuid != flightPlan?.uuid
             let settingsChanged = flightPlanEditionService?.settingsChanged ?? []
-            let reloadCamera = oldValue?.projectUuid != flightPlan?.projectUuid
+            let reloadCamera = oldValue?.pictorModel.projectUuid != flightPlan?.pictorModel.projectUuid
             let firstOpen = oldValue == nil
             didUpdateFlightPlan(flightPlan,
                                 differentFlightPlan: differentFlightPlan,
                                 firstOpen: firstOpen,
                                 settingsChanged: settingsChanged,
                                 reloadCamera: reloadCamera)
+            guard let flightPlan = flightPlan else { return }
+            let isEmpty = flightPlanOverlay?.flightPlanGraphics.isEmpty ?? true
+            if flightPlan.dataSetting?.polyline != oldValue?.dataSetting?.polyline || differentFlightPlan ||
+                isEmpty {
+                flightPlanOverlay?.displayFlightPlan(flightPlan, shouldReloadCamera: reloadCamera)
+            }
         }
     }
+
     weak var mapDelegate: MapViewEditionControllerDelegate?
     /// Mission provider.
     private let missionProviderViewModel = MissionProviderViewModel()
 
     private var sceneLoadStatusObservation: NSKeyValueObservation?
-
-    private enum OverlayOrder: Int, Comparable {
-
-        case rthPath
-        case home
-        case user
-        case flightPlan
-        case drone // must always be last in mapView. This is only for information.
-
-        static func < (lhs: OverlayOrder, rhs: OverlayOrder) -> Bool {
-            return lhs.rawValue < rhs.rawValue
-        }
-
-        /// Set containing all possible overlays.
-        public static let allCases: Set<OverlayOrder> = [
-            .rthPath, .home, .user, .flightPlan, .drone]
-    }
 
     // MARK: - Setup
     /// Instantiates the view controller.
@@ -134,7 +121,6 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
     ///    - missionsStore: the mission store service
     ///    - flightPlanEditionService: the flight plan edition service
     ///    - flightPlanRunManager: the flight plan run manager service
-    ///    - rthService: the rth service
     ///    - memoryPressureMonitor: the memory pressure monitor service
     ///
     /// - Returns: the piloting map view controller
@@ -142,20 +128,23 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
                                    missionsStore: MissionsStore,
                                    flightPlanEditionService: FlightPlanEditionService,
                                    flightPlanRunManager: FlightPlanRunManager,
-                                   rthService: RthService,
                                    memoryPressureMonitor: MemoryPressureMonitorService) -> FlightPlanSceneViewController {
         let viewController = StoryboardScene.FlightPlanScene.initialScene.instantiate()
         viewController.bamService = bamService
         viewController.missionsStore = missionsStore
         viewController.flightPlanEditionService = flightPlanEditionService
         viewController.flightPlanRunManager = flightPlanRunManager
-        viewController.rthService = rthService
         viewController.memoryPressureMonitor = memoryPressureMonitor
         return viewController
     }
 
     open func editionChanged() {
        updateOverlays()
+        if isInEdition {
+            mapViewModel.disableAutoScroll()
+        } else {
+            mapViewModel.enableAutoScroll(delegate: self)
+        }
     }
 
     open override func updateOverlays() {
@@ -176,62 +165,34 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
         userLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
     }
 
-    public override func updateCameraIfNeeded() {
-        super.updateCameraIfNeeded()
-
-        let camera = sceneView.currentViewpointCamera()
-        droneLocationOverlay?.update(cameraHeading: camera.heading)
-    }
-
     // MARK: - Override Funcs
     open override func viewDidLoad() {
         super.viewDidLoad()
         settingsDelegate = self
 
-        // Add overlays according to their `OverlayOrder`, as `mapView.graphicsOverlays` is
-        // an empty array at load time (which means that inserting `.user` and then `.home`
-        // whould lead to an incorrect [.user, .home] array).
-        addReturnHomeOverlay()
-        addHomeOverlay(at: OverlayOrder.home.rawValue)
-        addUserOverlay()
+        // Add overlays in order from bottom to top:
+        // RTH, Home, User, FlightPlan, Drone
+        returnHomeOverlay = addReturnHomeOverlay()
+        addHomeOverlay()
+        userLocationOverlay = addUserOverlay()
         addFlightPlanOverlay()
-        addDroneOverlay()
+        droneLocationOverlay = addDroneOverlay()
 
         setupMissionProviderViewModel()
-
-        droneLocationOverlay?.viewModel.droneLocationPublisher
-            .sink(receiveValue: { [weak self] location in
-            if let coordinates = location.coordinates {
-                self?.droneLocation3D = location.coordinates
-                self?.updateDroneLocationGraphic(location: coordinates)
-            }
-        }).store(in: &cancellables)
+        mapViewModel.enableAutoScroll(delegate: self)
 
         flightPlanViewModel.centerStatePublisher.sink { [weak self] centerState in
             self?.splitControls?.updateCenterMapButtonStatus(state: centerState)
 
         }.store(in: &cancellables)
 
-        sceneLoadStatusObservation = sceneView.scene?.observe(\.loadStatus, options: .initial) { [weak self] (_, _) in
-            DispatchQueue.main.async {
-                if self?.sceneView.scene?.loadStatus == .loaded {
-                    self?.getDroneElevation()
-                }
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
+            guard let self = self, self.droneElevationTakeOff == nil else {
+                timer.invalidate()
+                return
             }
+            self.getDroneElevation()
         }
-    }
-
-    /// Remove pitch from camera
-    open func removePitch() {
-        let camera = sceneView.currentViewpointCamera()
-
-        let newCamera = AGSCamera(latitude: camera.location.y,
-                                  longitude: camera.location.x,
-                                  altitude: camera.location.z,
-                                  heading: camera.heading,
-                                  pitch: 0,
-                                  roll: camera.roll)
-        sceneView.setViewpointCamera(newCamera)
     }
 
     public override func getDefaultZoom() -> Double? {
@@ -256,7 +217,7 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
     ///     4/ User is connected
     ///
     /// - Returns: the current view point
-    public func getCurrentViewPoint(completion: @escaping(AGSViewpoint?) -> Void) {
+    open func getCurrentViewPoint(completion: @escaping(AGSViewpoint?) -> Void) {
         var droneIsNotFlying = true
         if let drone = flightPlanViewModel.connectedDroneHolder.drone, drone.isFlying {
             droneIsNotFlying = false
@@ -266,47 +227,120 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
            let dataSetting = currentFlightPlan.dataSetting, !mapViewModel.isMiniMap.value,
             droneIsNotFlying {
             if let amsl = currentFlightPlan.isAMSL, amsl {
-                // Altitude off set needs to be set to nil if surface placement is drapedFlat, else 0.0
-                let altitudeOffset: Double? = flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat ? nil : 0.0
-                let envelope = dataSetting.polyline.envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor,
-                                                            altitudeOffset: altitudeOffset)
-                completion(AGSViewpoint(targetExtent: envelope))
+                getFlightPlanAMSLViewPoint(dataSetting: dataSetting) { viewPoint in
+                    completion(viewPoint)
+                }
             } else {
-                // get elevation for project not in AMSL
+                // Get elevation for project not in ATO
                 if let coordinate = dataSetting.coordinate {
-                    let point = AGSPoint(clLocationCoordinate2D: coordinate)
-                    elevationRequest = nil
-                    if flightPlanOverlay?.sceneProperties?.surfacePlacement == .drapedFlat {
-                        // Altitude off set needs to be set to nil if surface placement is drapedFlat
-                        let envelope = dataSetting.polyline.envelopeWithMargin(
-                            ArcGISStyle.projectEnvelopeMarginFactor,
-                            altitudeOffset: nil)
-                        completion(AGSViewpoint(targetExtent: envelope))
-                    } else {
-                        elevationRequest = sceneView.scene?.baseSurface?.elevation(for: point) { altitude, _  in
-
-                            let envelope = dataSetting.polyline.envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor,
-                                                                                   altitudeOffset: altitude)
-                            completion(AGSViewpoint(targetExtent: envelope))
-                        }
+                    getFlightPlanATOViewPoint(coordinate: coordinate, dataSetting: dataSetting) { viewPoint in
+                        completion(viewPoint)
                     }
                 } else {
                     completion(nil)
                 }
             }
         } else {
-            if droneLocationOverlay?.isActive.value == true,
-                let coordinate = droneLocationOverlay?.viewModel.droneLocation.coordinates?.coordinate {
-                completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate),
-                                        scale: CommonMapConstants.cameraDistanceToCenterLocation))
+            if droneLocationOverlay?.isDroneConnected == true, droneLocationOverlay?.droneLocation?.coordinates != nil {
+                getDroneViewPoint { viewPoint in
+                    completion(viewPoint)
+                }
             } else {
-                if let coordinate = userLocationOverlay?.viewModel.userLocation?.coordinates?.coordinate {
-                    completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate),
-                                            scale: CommonMapConstants.cameraDistanceToCenterLocation))
+                getUserViewPoint { viewPoint in
+                    completion(viewPoint)
                 }
             }
         }
+    }
 
+    /// Get drone view point
+    ///
+    /// - Note: Calculation are based on altitude in ATO of the drone.
+    ///
+    /// - Returns: the view point
+    private func getDroneViewPoint(completion: @escaping(AGSViewpoint?) -> Void) {
+        if let coordinates =  droneLocationOverlay?.droneLocation?.coordinates {
+            if sceneView.scene?.baseSurface?.isEnabled == true {
+                let point = AGSPoint(clLocationCoordinate2D: coordinates.coordinate)
+                elevationRequest = sceneView.scene?.baseSurface?.elevation(for: point) { altitude, _  in
+                    completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinates.coordinate),
+                                            scale: altitude + coordinates.altitude + SceneConstants.defaultDistanceToCamera))
+                }
+            } else {
+                completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinates.coordinate),
+                                        scale: coordinates.altitude + SceneConstants.defaultDistanceToCamera))
+            }
+        }
+    }
+
+    /// Get user view point
+    ///
+    /// - Returns: the view point
+    private func getUserViewPoint(completion: @escaping(AGSViewpoint?) -> Void) {
+        if let coordinate = userLocationOverlay?.userLocation?.coordinates?.coordinate {
+            if sceneView.scene?.baseSurface?.isEnabled == true {
+                let point = AGSPoint(clLocationCoordinate2D: coordinate)
+                elevationRequest = sceneView.scene?.baseSurface?.elevation(for: point) { [weak self] altitude, _  in
+                    guard let self = self else { return }
+                    if let coordinate = self.userLocationOverlay?.userLocation?.coordinates?.coordinate {
+                        completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate),
+                                                scale: altitude + SceneConstants.defaultDistanceToCamera))
+                    }
+                }
+            } else {
+                completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate),
+                                        scale: SceneConstants.defaultDistanceToCamera))
+            }
+        } else {
+            // Put default location in case user refused to shared his position.
+            let point = AGSPoint(clLocationCoordinate2D: CommonMapConstants.defaultLocation)
+            if sceneView.scene?.baseSurface?.isEnabled == true {
+                elevationRequest = sceneView.scene?.baseSurface?.elevation(for: point) { altitude, _  in
+                    completion(AGSViewpoint(center: point, scale: altitude + SceneConstants.defaultDistanceToCamera))
+                }
+            } else {
+                completion(AGSViewpoint(center: point, scale: SceneConstants.defaultDistanceToCamera))
+            }
+        }
+    }
+
+    /// Get flight plan in AMSL view point
+    ///
+    /// - Returns: the view point
+    private func getFlightPlanAMSLViewPoint(dataSetting: FlightPlanDataSetting,
+                                            completion: @escaping(AGSViewpoint?) -> Void) {
+        if sceneView.scene?.baseSurface?.isEnabled == false {
+            let envelope = dataSetting.flatPolyline
+                .envelopeWithMargin(altitudeOffset: 0.0)
+            completion(AGSViewpoint(targetExtent: envelope))
+        } else {
+            let envelope = dataSetting.polyline
+                .envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor, altitudeOffset: nil)
+
+            completion(AGSViewpoint(targetExtent: envelope))
+        }
+    }
+
+    /// Get flight plan in ATO view point
+    ///
+    /// - Returns: the view point
+    private func getFlightPlanATOViewPoint(coordinate: CLLocationCoordinate2D,
+                                           dataSetting: FlightPlanDataSetting,
+                                           completion: @escaping(AGSViewpoint?) -> Void) {
+        let point = AGSPoint(clLocationCoordinate2D: coordinate)
+        elevationRequest = nil
+        if sceneView.scene?.baseSurface?.isEnabled == false {
+            let envelope = dataSetting.flatPolyline
+                .envelopeWithMargin(altitudeOffset: 0.0)
+            completion(AGSViewpoint(targetExtent: envelope))
+        } else {
+            elevationRequest = sceneView.scene?.baseSurface?.elevation(for: point) { altitude, _  in
+                let envelope = dataSetting.polyline
+                    .envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor,
+                                        altitudeOffset: altitude)
+                completion(AGSViewpoint(targetExtent: envelope))
+            }
+        }
     }
 
     open override func identify(screenPoint: CGPoint, _ completion: @escaping (AGSIdentifyGraphicsOverlayResult?) -> Void) {
@@ -422,47 +456,6 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
     }
 
     // MARK: - Private Funcs
-    /// Add the user location overlay
-    private func addUserOverlay() {
-        userLocationOverlay = UserLocationGraphicsOverlay()
-        userLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        if let userLocationOverlay = userLocationOverlay {
-            sceneView.graphicsOverlays.insert(userLocationOverlay, at: OverlayOrder.user.rawValue)
-        }
-    }
-
-    /// Add the drone location overlay
-    private func addDroneOverlay() {
-        droneLocationOverlay = DroneLocationGraphicsOverlay(isScene: true)
-        droneLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-        droneLocationOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let droneLocationOverlay = self.droneLocationOverlay else { return }
-                if isActive {
-                    self.sceneView.graphicsOverlays.insert(droneLocationOverlay, at: OverlayOrder.drone.rawValue)
-                } else {
-                    self.sceneView.graphicsOverlays.remove(droneLocationOverlay)
-                }
-        }.store(in: &cancellables)
-    }
-
-    /// Add the return home location overlay
-    private func addReturnHomeOverlay() {
-        returnHomeOverlay = ReturnHomeGraphicsOverlay()
-        returnHomeOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        returnHomeOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let returnHomeOverlay = self.returnHomeOverlay else { return }
-                if isActive {
-                    self.sceneView.graphicsOverlays.insert(returnHomeOverlay, at: OverlayOrder.rthPath.rawValue)
-                } else {
-                    self.sceneView.graphicsOverlays.remove(returnHomeOverlay)
-                }
-        }.store(in: &cancellables)
-    }
-
     /// Add the flight plan location overlay
     private func addFlightPlanOverlay() {
         flightPlanOverlay = FlightPlanGraphicsOverlay(bamService: bamService,
@@ -470,135 +463,35 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
                                                       flightPlanEditionService: flightPlanEditionService,
                                                       flightPlanRunManager: flightPlanRunManager,
                                                       memoryPressureMonitor: memoryPressureMonitor)
-        flightPlanOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        flightPlanOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let flightPlanOverlay = self.flightPlanOverlay else { return }
-                if isActive {
-                    self.sceneView.graphicsOverlays.insert(flightPlanOverlay, at: OverlayOrder.flightPlan.rawValue)
-                } else {
-                    self.sceneView.graphicsOverlays.remove(flightPlanOverlay)
+        if let flightPlanOverlay = flightPlanOverlay {
+            flightPlanOverlay.sceneProperties?.surfacePlacement = .drapedFlat
+            sceneView.graphicsOverlays.add(flightPlanOverlay)
+            flightPlanOverlay.setupMissionProviderViewModel()
+            flightPlanOverlay.flightPlanViewModel.refreshViewPointPublisher.sink(receiveValue: { [weak self] refresh in
+                guard let self = self else { return }
+                if refresh {
+                    self.mapViewModel.refreshViewPoint.value = true
                 }
-        }.store(in: &cancellables)
-
-        flightPlanOverlay?.setupMissionProviderViewModel()
-        flightPlanOverlay?.flightPlanViewModel.refreshCenterPublisher.sink(receiveValue: { [weak self] refresh in
-            guard let self = self else { return }
-            if refresh {
-                self.flightPlanOverlay?.flightPlanViewModel.refreshCenter.value = false
-                self.getCurrentViewPoint { viewPoint in
-                    if let viewPoint = viewPoint {
-                        self.sceneView.setViewpoint(viewPoint)
-                    }
-                }
-            }
-        }).store(in: &cancellables)
+            }).store(in: &cancellables)
+        }
     }
 
     /// Get drone elevation
     private func getDroneElevation() {
-        guard let droneLocation3D = droneLocation3D, sceneView.scene?.baseSurface?.isEnabled == true else { return }
-        guard let baseSurface = self.sceneView.scene?.baseSurface, !baseSurface.elevationSources.isEmpty else { return }
+        guard let droneLocation = droneLocationOverlay?.droneLocation?.coordinates?.agsPoint,
+              sceneView.scene?.baseSurface?.isEnabled == true,
+              sceneView.scene?.loadStatus == .loaded,
+              let baseSurface = sceneView.scene?.baseSurface,
+              !baseSurface.elevationSources.isEmpty,
+              droneElevationRequest == nil else { return }
 
-        let point = AGSPoint(x: droneLocation3D.agsPoint.x, y: droneLocation3D.agsPoint.y, spatialReference: .wgs84())
-        droneElevationRequest = nil
-        droneElevationRequest = sceneView.scene?.baseSurface?.elevation(for: point, completion: { [weak self] value, error in
+        droneElevationRequest = sceneView.scene?.baseSurface?.elevation(for: droneLocation, completion: { [weak self] value, error in
             self?.droneElevationRequest = nil
             if error == nil {
                 self?.droneElevationTakeOff = value
                 self?.droneLocationOverlay?.elevationTakeOff = value
             }
         })
-    }
-
-    /// Updates drone location graphic.
-    ///
-    /// - Parameters:
-    ///    - location: new drone location
-    ///    - heading: new drone heading
-    private func updateDroneLocationGraphic(location: Location3D) {
-        // TODO: put all calculations in viewModel
-        if !sceneView.isNavigating, canUpdateDroneLocation {
-            if let coordinate = calculateOffset(location: location) {
-                let camera = sceneView.currentViewpointCamera()
-                let newLocation = CLLocationCoordinate2D(
-                    latitude: camera.location.toCLLocationCoordinate2D().latitude + coordinate.latitude,
-                    longitude: camera.location.toCLLocationCoordinate2D().longitude + coordinate.longitude)
-
-                let newCamera = AGSCamera(latitude: newLocation.latitude,
-                                          longitude: newLocation.longitude,
-                                          altitude: camera.location.z,
-                                          heading: camera.heading,
-                                          pitch: camera.pitch,
-                                          roll: camera.roll)
-                canUpdateDroneLocation = false
-                sceneView.setViewpointCamera(newCamera, duration: Style.mediumAnimationDuration) { [weak self] _ in
-                    guard let self = self else { return }
-                    self.canUpdateDroneLocation = true
-                }
-            }
-            if isInside(point: location.agsPoint) {
-                oldDroneLocation = location
-            }
-        }
-    }
-
-    /// Calculates the autoscroll offset
-    ///
-    /// - Parameter location: new drone location
-    /// - Returns: the coordinate offset
-    private func calculateOffset(location: Location3D) -> CLLocationCoordinate2D? {
-        // Do not autoscroll if drone is not flying, and if in edition.
-        guard !isInEdition, let drone = flightPlanViewModel.connectedDroneHolder.drone, drone.isFlying else { return nil }
-        // Check if it is possible to autoscroll.
-        guard canUpdateDroneLocation, let oldDroneLocation = oldDroneLocation,
-              isVisible(), isInside(point: oldDroneLocation.agsPoint), !centering else {
-            return nil
-        }
-        // Just to be sure
-        if droneElevationTakeOff == nil && droneElevationRequest == nil {
-            getDroneElevation()
-        }
-
-        var scrollToTarget = true
-
-        // FP + PGY
-        if let playingFlightPlan = flightPlanRunManager?.playingFlightPlan {
-            let altitude = playingFlightPlan.isAMSL == true ? nil : droneElevationTakeOff
-            if let point = nextExecutedWayPointGraphic(), !playingFlightPlan.hasReachedLastWayPoint {
-                if self.isInside(point: point, referenceToAmsl: altitude ?? 0.0) {
-                    scrollToTarget = false
-                }
-            } else if let rthLocation = flightPlanViewModel.locationsTracker.returnHomeLocation,
-                      self.isInside(point: AGSPoint(clLocationCoordinate2D: rthLocation), referenceToAmsl: altitude ?? 0.0) {
-                scrollToTarget = false
-            }
-        }
-
-        // RTH
-        if Services.hub.drone.rthService.isActive,
-           let rthLocation = flightPlanViewModel.locationsTracker.returnHomeLocation,
-           isInside(point: AGSPoint(clLocationCoordinate2D: rthLocation)) {
-            scrollToTarget = false
-        }
-
-        // When the drone is leaving the screen and we scroll just enough to keep it on the screen, sometimes it happens that in the next iteration
-        // the drone is seen as off screen in the oldDroneLocation and we stop autoscrolling.
-        // The variable scrollFurther is meant to move the drone from the border
-        // with a bigger offset.
-        var scrollFurther = false
-        if !isInside(point: location.agsPoint) {
-            scrollFurther = true
-            scrollToTarget = true
-        }
-
-        guard scrollToTarget else { return nil }
-
-        let offSetLongitude = (location.coordinate.longitude - oldDroneLocation.coordinate.longitude) * (scrollFurther ? 1.3 : 1.0)
-        let offSetLatitude = (location.coordinate.latitude - oldDroneLocation.coordinate.latitude) * (scrollFurther ? 1.3 : 1.0)
-        guard offSetLongitude != 0 || offSetLatitude != 0 else { return nil }
-        return CLLocationCoordinate2D(latitude: offSetLatitude, longitude: offSetLongitude)
     }
 
     /// Next executed waypoint graphic
@@ -656,14 +549,6 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
         }
     }
 
-    /// Updates camera zoom level and camera position
-    ///
-    /// - Parameters:
-    ///     - cameraZoomLevel: new camera zoom level
-    ///     - position: new position of camera
-    open override func update(cameraZoomLevel: Int, position: AGSPoint) {
-        droneLocationOverlay?.update(cameraZoomLevel: cameraZoomLevel, position: position)
-    }
     // MARK: - Editions Funcs
     /// Returns flight plan edition screen with a selected edition mode.
     ///
@@ -725,13 +610,6 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
                     self?.flightPlan = flightplan
                 })
                 .store(in: &editionCancellables)
-            // Update the map when an FP just setted up in the editor.
-            flightPlanEditionService?.flightPlanSettedUpPublisher
-                .sink { [weak self] in
-                    self?.update(with: $0)
-
-                }
-                .store(in: &editionCancellables)
         } else {
             // Remove potential old Flight Plan first.
             flightPlanEditionService?.resetFlightPlan()
@@ -749,14 +627,6 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
         updateOverlays()
     }
 
-    /// Updates map with a flight plan.
-    /// - Parameters:
-    ///    - flightPlan: the updated flight plan
-    open func update(with flightPlan: FlightPlanModel) {
-        self.flightPlan = flightPlan
-        flightPlanOverlay?.displayFlightPlan(flightPlan, shouldReloadCamera: true)
-    }
-
     /// Returns an executions list view controller with map's back button publisher.
     ///
     /// - Parameters:
@@ -772,7 +642,7 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
                                 projectManager: ProjectManager,
                                 projectModel: ProjectModel,
                                 flightService: FlightService,
-                                flightPlanRepo: FlightPlanRepository,
+                                flightPlanRepository: PictorFlightPlanRepository,
                                 topBarService: HudTopBarService) -> ExecutionsListViewController {
         let backButtonPublisher = backButton.tapGesturePublisher
             .map { _ in () }
@@ -783,7 +653,7 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
             projectManager: projectManager,
             projectModel: projectModel,
             flightService: flightService,
-            flightPlanRepo: flightPlanRepo,
+            flightPlanRepository: flightPlanRepository,
             topBarService: topBarService,
             backButtonPublisher: backButtonPublisher)
         return viewController
@@ -831,6 +701,31 @@ open class FlightPlanSceneViewController: AGSSceneViewController {
         } else {
             flightDelegate?.didTapGraphicalItem(graphic)
         }
+    }
+
+    open override func shouldAutoScroll() -> Bool {
+        guard super.shouldAutoScroll() else { return false }
+
+        // FP + PGY
+        if let playingFlightPlan = flightPlanRunManager?.playingFlightPlan,
+           let point = nextExecutedWayPointGraphic(),
+           !playingFlightPlan.hasReachedLastWayPoint,
+           playingFlightPlan.hasReachedFirstWayPoint {
+            let altitude = playingFlightPlan.isAMSL == true ? nil : droneElevationTakeOff
+            if mapViewModel.isInside(point: point, safely: true, referenceToAmsl: altitude ?? 0.0) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    public override func shouldAutoScrollToCenter() -> Bool {
+        if let playingFlightPlan = flightPlanRunManager?.playingFlightPlan,
+           !playingFlightPlan.hasReachedFirstWayPoint {
+            return true
+        }
+        return false
     }
 }
 
@@ -947,7 +842,7 @@ extension FlightPlanSceneViewController: EditionSettingsDelegate {
         let selectedIndex = flightPlanOverlay?.selectedGraphicIndex(for: selectedGraphic?.itemType ?? .none)
         flightPlanEditionService?.undo()
         action?()
-        if let flightPlan = flightPlan {
+        if let flightPlan = flightPlanEditionService?.currentFlightPlanValue {
             displayFlightPlan(flightPlan, shouldReloadCamera: false)
             if let selectedGraphic = selectedGraphic {
                 restoreSelectedItem(selectedGraphic, at: selectedIndex)

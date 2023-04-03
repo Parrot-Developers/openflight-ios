@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Y6W-OH-hqX">
+    <device id="retina6_12" orientation="landscape" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Rajdhani-Bold.ttf">
+            <string>Rajdhani-Bold</string>
+        </array>
+        <array key="Rajdhani-SemiBold.ttf">
+            <string>Rajdhani-Semibold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Battery Update Checklist View Controller-->
+        <scene sceneID="s0d-6b-0kx">
+            <objects>
+                <viewController storyboardIdentifier="BatteryUpdateChecklistViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Y6W-OH-hqX" customClass="BatteryUpdateChecklistViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="FJ6-9b-7tq">
+                        <rect key="frame" x="0.0" y="0.0" width="852" height="393"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ouy-AL-4v8" customClass="MainContainerStackView" customModule="OpenFlight" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="852" height="393"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uKf-gE-lmZ" userLabel="Top Bar" customClass="DeviceNavigationView" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="852" height="58.333333333333336"/>
+                                        <subviews>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Uif-mZ-dDb" customClass="InsetHitAreaButton" customModule="OpenFlight" customModuleProvider="target">
+                                                <rect key="frame" x="8" y="15.666666666666664" width="41" height="27"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="15"/>
+                                                <state key="normal" title="Cancel">
+                                                    <color key="titleColor" name="default_text_color"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="onCancelButtonTouchUpInside" destination="Y6W-OH-hqX" eventType="touchUpInside" id="rCi-4w-OMC"/>
+                                                </connections>
+                                            </button>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BHs-Qd-an2">
+                                                <rect key="frame" x="405" y="19.666666666666668" width="42" height="19.000000000000004"/>
+                                                <fontDescription key="fontDescription" name="Rajdhani-Semibold" family="Rajdhani" pointSize="19"/>
+                                                <color key="textColor" name="default_text_color"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="Uif-mZ-dDb" firstAttribute="leading" secondItem="uKf-gE-lmZ" secondAttribute="leadingMargin" id="F6D-vn-xD4"/>
+                                            <constraint firstItem="BHs-Qd-an2" firstAttribute="centerY" secondItem="uKf-gE-lmZ" secondAttribute="centerY" id="JSP-ua-KUr"/>
+                                            <constraint firstItem="BHs-Qd-an2" firstAttribute="centerX" secondItem="uKf-gE-lmZ" secondAttribute="centerX" id="nfw-qV-cNI"/>
+                                            <constraint firstItem="Uif-mZ-dDb" firstAttribute="centerY" secondItem="uKf-gE-lmZ" secondAttribute="centerY" id="pnx-R4-Num"/>
+                                        </constraints>
+                                    </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="lOM-VI-Ym6">
+                                        <rect key="frame" x="0.0" y="68.333333333333343" width="852" height="284.66666666666663"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="hVH-Nc-Ced">
+                                                <rect key="frame" x="0.0" y="46.666666666666671" width="852" height="191.66666666666663"/>
+                                                <subviews>
+                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="illuBatteryUpdate" translatesAutoresizingMaskIntoConstraints="NO" id="hn0-RB-K9h">
+                                                        <rect key="frame" x="0.0" y="0.0" width="250" height="191.66666666666666"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" constant="250" id="7H7-w1-4S7"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="VqQ-bH-Qf2">
+                                                        <rect key="frame" x="270" y="0.0" width="582" height="191.66666666666666"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4WT-PC-INu">
+                                                                <rect key="frame" x="0.0" y="0.0" width="582" height="34"/>
+                                                                <string key="text">instruction text
+instruction text</string>
+                                                                <fontDescription key="fontDescription" name="Rajdhani-Bold" family="Rajdhani" pointSize="17"/>
+                                                                <nil key="textColor"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="1vO-4M-C1b">
+                                                                <rect key="frame" x="0.0" y="39" width="582" height="152.66666666666666"/>
+                                                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                            </tableView>
+                                                        </subviews>
+                                                    </stackView>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JOu-m7-2Ru" customClass="ActionButton" customModule="OpenFlight" customModuleProvider="target">
+                                        <rect key="frame" x="301" y="363" width="250" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="250" id="kDu-MO-Htt"/>
+                                        </constraints>
+                                        <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
+                                        <state key="normal" title="Continue"/>
+                                        <connections>
+                                            <action selector="onContinueButtonTouchUpInside" destination="Y6W-OH-hqX" eventType="touchUpInside" id="pH1-Gp-3uQ"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="uKf-gE-lmZ" firstAttribute="leading" secondItem="ouy-AL-4v8" secondAttribute="leading" id="CMd-uL-SCf"/>
+                                    <constraint firstAttribute="trailing" secondItem="uKf-gE-lmZ" secondAttribute="trailing" id="acK-E6-naD"/>
+                                </constraints>
+                            </stackView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="VRG-1K-anj"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="ouy-AL-4v8" firstAttribute="trailing" secondItem="VRG-1K-anj" secondAttribute="trailing" id="Dan-eP-WIS"/>
+                            <constraint firstAttribute="top" secondItem="ouy-AL-4v8" secondAttribute="top" id="POq-1z-nPj"/>
+                            <constraint firstItem="ouy-AL-4v8" firstAttribute="leading" secondItem="VRG-1K-anj" secondAttribute="leading" id="Qca-r7-Thu"/>
+                            <constraint firstItem="ouy-AL-4v8" firstAttribute="bottom" secondItem="FJ6-9b-7tq" secondAttribute="bottom" id="fNN-3V-s0S"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="cancelButton" destination="Uif-mZ-dDb" id="8gD-pC-qzJ"/>
+                        <outlet property="continueButton" destination="JOu-m7-2Ru" id="w5H-zA-2kd"/>
+                        <outlet property="instructionLabel" destination="4WT-PC-INu" id="wXj-NM-fxW"/>
+                        <outlet property="tableView" destination="1vO-4M-C1b" id="QoO-jQ-1k6"/>
+                        <outlet property="titleLabel" destination="BHs-Qd-an2" id="AI8-0c-VPs"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="137.32394366197184" y="3.8167938931297707"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="illuBatteryUpdate" width="206.33332824707031" height="190"/>
+        <namedColor name="default_text_color">
+            <color red="0.15294117647058825" green="0.12549019607843137" blue="0.10980392156862745" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

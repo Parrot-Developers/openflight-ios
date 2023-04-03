@@ -55,6 +55,7 @@ final class HUDLandingView: UIView, NibOwnerLoadable {
     func updateView(image: UIImage?) {
         rthImageView.isHidden = !viewModel.isLandingOrRth
         rthImageView.image = image
+        rthImageView.alpha = 1.0
 
         UIView.animate(withDuration: Style.longAnimationDuration,
                        delay: 0.0,
@@ -69,15 +70,21 @@ final class HUDLandingView: UIView, NibOwnerLoadable {
     }
 
     func commonInitHUDRTHAnimationView() {
+        viewModel.forceImageUpdateSubject
+            .sink { [weak self] in self?.updateView(image: $0) }
+            .store(in: &cancellables)
+
         viewModel.isLanding
             .removeDuplicates()
             .combineLatest(viewModel.isReturnHomeActive.removeDuplicates(),
                            viewModel.image.removeDuplicates())
-            .sink { [unowned self] (isLanding, isReturnHomeActive, image) in
+            .sink { [weak self] (isLanding, isReturnHomeActive, image) in
+                guard let self = self else { return }
+
                 if isLanding || isReturnHomeActive {
-                    updateView(image: image)
+                    self.updateView(image: image)
                 } else {
-                    hideAllView()
+                    self.hideAllView()
                 }
             }
             .store(in: &cancellables)

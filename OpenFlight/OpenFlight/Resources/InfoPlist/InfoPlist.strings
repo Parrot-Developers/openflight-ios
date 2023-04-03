@@ -1,6 +1,0 @@
-NSLocationWhenInUseUsageDescription = "FreeFlight 7 nécessite l'accès à votre position GPS pour vous localiser.";
-NSLocationAlwaysAndWhenInUseUsageDescription = "FreeFlight 7 nécessite l'accès à votre position GPS pour vous localiser.";
-NSLocationAlwaysUsageDescription = "FreeFlight 7 nécessite l'accès à votre position GPS pour vous localiser.";
-NSPhotoLibraryAddUsageDescription = "FreeFlight 7 nécessite l'accès à votre galerie photo pour enregistrer les médias.";
-NSPhotoLibraryUsageDescription = "FreeFlight 7 nécessite l'accès à votre galerie photo pour enregistrer les médias.";
-NSCameraUsageDescription = "FreeFlight 7 nécessite l'accès à votre appareil photo pour le mode FPV.";

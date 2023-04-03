@@ -51,7 +51,7 @@ protocol TouchStreamViewDelegate: AnyObject {
 }
 
 /// Touch stream view used to display waypoint / poi / user graphics in stream.
-public class TouchStreamView: UIView {
+public class TouchStreamView: OverlayStreamView {
 
     private enum Constants {
         static let outsideCircle = 42.0
@@ -184,23 +184,9 @@ public class TouchStreamView: UIView {
         }
         return CGPoint(x: point.x / width, y: point.y / height)
     }
-
-    /// Update touch stream view frame.
-    public func update(frame: CGRect) {
-        self.frame = frame
-    }
 }
 
 extension TouchStreamView: TouchStreamStateMachineView {
-    /// Converts a normalized point into steam view coordinates.
-    ///
-    /// - Parameters:
-    ///    - point: the point to convert
-    /// - Returns: the converted point
-    func pointInStreamView(point: CGPoint) -> CGPoint {
-        return CGPoint(x: frame.width * point.x, y: frame.height * point.y)
-    }
-
     /// Clear all.
     func clear() {
         clearWayPoint()

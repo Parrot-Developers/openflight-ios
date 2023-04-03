@@ -48,6 +48,7 @@ public class LoaderButton: ActionButton {
 
     /// Start displaying the loader in the button.
     public func startLoader() {
+        removeLoader()
         addLoader()
         loaderImage?.startRotate()
     }

@@ -134,7 +134,7 @@ public final class MissionsStoreImpl: MissionsStore {
         var missionProvider: MissionProvider?
         var missionMode: MissionMode?
         for provider in allMissions {
-            if provider.mission.defaultMode.flightPlanProvider?.hasFlightPlanType(flightPlan.type) ?? false {
+            if provider.mission.defaultMode.flightPlanProvider?.hasFlightPlanType(flightPlan.pictorModel.flightPlanType) ?? false {
                 missionProvider = provider
                 missionMode = provider.mission.defaultMode
             }

@@ -39,7 +39,6 @@ public class ParrotDebug {
     private static let debugTag = ULogTag(name: "ParrotDebug")
     private static let maxSizeLogMb = 2 * 1024 // 2 GB
     private static var activeLogBinRecorder: RotatingLogRecorder?
-    private static var activeLogTxtRecorder: RotatingLogRecorder?
     private static let streamDbgPath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         as NSString).appendingPathComponent("stream")
 }
@@ -48,6 +47,7 @@ public class ParrotDebug {
 public extension ParrotDebug {
 
     private static func cleanOldLogs() {
+        // TODO: Add metric logs cleaning
         try? FileManager.reduceDirectorySize(url: logsURL, fileExt: nil, totalMaxSizeMb: maxSizeLogMb, includingSubfolders: true)
     }
 
@@ -90,9 +90,7 @@ public extension ParrotDebug {
             }
         }
         let logBinConfig = LogBinRecorderConfig(currentLogDirectory)
-        let logTxtConfig = LogTxtRecorderConfig(currentLogDirectory)
         activeLogBinRecorder = ULog.redirectToLogBin(config: logBinConfig)
-        activeLogTxtRecorder = ULog.redirectToLogTxt(config: logTxtConfig)
         setStreamDbgEnv()
     }
 
@@ -100,7 +98,6 @@ public extension ParrotDebug {
     static func stopLog() {
         currentLogDirectory = nil
         activeLogBinRecorder = nil
-        activeLogTxtRecorder = nil
     }
 
     /// Creates a stream debug path.

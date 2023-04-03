@@ -64,9 +64,9 @@ extension AirSdkMissionToUpdateStatus {
     /// Returns the next `AirSdkMissionToUpdateStatus` for a given progress, a cancelable task, and  a given mission state.
     ///
     /// - Parameters:
-    ///     - newMissionState: The state given by `AirSdkMissionsUpdaterWrapper`
-    ///     - newProgress: The progress given by `AirSdkMissionsUpdaterWrapper`
-    ///     - cancelableTask: a CancelableCore object given by `AirSdkMissionsUpdaterWrapper`.
+    ///     - newMissionState: The state given by the `missionUpdater` peripheral
+    ///     - newProgress: The progress given by the `missionUpdater` peripheral
+    ///     - cancelableTask: a CancelableCore object given by the `missionUpdater` peripheral
     /// - Returns: The new `AirSdkMissionToUpdateStatus`.
     func nextStatus(for newMissionState: MissionUpdaterUploadState?,
                     newProgress: Int,

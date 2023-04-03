@@ -31,7 +31,7 @@ import Foundation
 import GroundSdk
 
 /// Indication of compatibility of a drone firmware with the mission.
-enum FirmwareCompatibility {
+public enum FirmwareCompatibility {
     case compatible
     case tooOld
     case tooRecent
@@ -39,29 +39,15 @@ enum FirmwareCompatibility {
 
 // MARK: - Internal Structs
 /// A struct to represent a AirSdk mission to update.
-struct AirSdkMissionToUpdateData: Equatable, Decodable {
+public struct AirSdkMissionToUpdateData: Equatable, Decodable {
     // MARK: - Internal Properties
-    let airsdkMissionsManager = Services.hub.drone.airsdkMissionsManager
     let missionVersion: String
     let internalName: String
     let missionUID: String
     let missionFilePath: String
     let minTargetVersion: String
     let maxTargetVersion: String
-    var missionName: String {
-        return airsdkMissionsManager.getMissionToLoadAtStart()
-            .first(where: { $0.missionUID == missionUID })?
-            .name ?? internalName
-    }
-
-    /// The mission file path as it is transcripted by GroundSDK `MissionUpdater`.
-    var missionFilePathAsInGroundSDKMissionUpdater: String? {
-        guard let filePathURL = AirSdkMissionsToUploadFinder.url(ofMissionFileName: missionFilePath) else {
-            return missionFilePath
-        }
-
-        return filePathURL.absoluteString
-    }
+    var missionName: String?
 
     // MARK: - Private Enums
     private enum CodingKeys: String, CodingKey {
@@ -74,12 +60,10 @@ struct AirSdkMissionToUpdateData: Equatable, Decodable {
     }
 
     // MARK: - Equatable
-    static func == (lhs: AirSdkMissionToUpdateData,
-                    rhs: AirSdkMissionToUpdateData) -> Bool {
+    public static func == (lhs: AirSdkMissionToUpdateData, rhs: AirSdkMissionToUpdateData) -> Bool {
         return lhs.missionUID == rhs.missionUID
             && lhs.missionFilePath == rhs.missionFilePath
             && lhs.missionVersion == rhs.missionVersion
-            && lhs.missionName == rhs.missionName
     }
 
     // MARK: - Internal Funcs
@@ -122,30 +106,15 @@ struct AirSdkMissionToUpdateData: Equatable, Decodable {
 }
 
 /// A struct to represent a AirSdk mission.
-struct AirSdkMissionBasicInformation: Equatable {
+public struct AirSdkMissionBasicInformation: Equatable {
     let missionUID: String
+    let missionName: String
     let missionVersion: String
-    let airsdkMissionsManager = Services.hub.drone.airsdkMissionsManager
-
-    var missionName: String? {
-        let missionName = airsdkMissionsManager.getMissionToLoadAtStart()
-            .first(where: { $0.missionUID == missionUID })?
-            .name
-        return missionName ?? airsdkMissionsManager.getMissionName(uid: missionUID)
-    }
-
-    var isBuiltIn: Bool {
-        return airsdkMissionsManager.getMissionToLoadAtStart()
-            .first(where: { $0.missionUID == missionUID })?
-            .isBuiltIn == true
-    }
-
-    var isCompatible: Bool {
-        return airsdkMissionsManager.unavailabilityReason(for: missionUID) != .broken
-    }
+    let isBuiltIn: Bool
+    let isCompatible: Bool
 
     // MARK: - Equatable
-    static func == (lhs: AirSdkMissionBasicInformation,
+    public static func == (lhs: AirSdkMissionBasicInformation,
                     rhs: AirSdkMissionBasicInformation) -> Bool {
         return lhs.missionUID == rhs.missionUID
             && lhs.missionVersion == rhs.missionVersion

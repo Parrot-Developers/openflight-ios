@@ -29,6 +29,7 @@
 
 import Foundation
 import Combine
+import Pictor
 import SwiftyUserDefaults
 
 public class ProjectManagerViewModel {
@@ -43,7 +44,7 @@ public class ProjectManagerViewModel {
     }
 
     let manager: ProjectManager
-    let cloudSynchroWatcher: CloudSynchroWatcher?
+    let synchroService: SynchroService?
     /// Whether project type selection is enabled in manager.
     let canSelectProjectType: Bool
 
@@ -60,12 +61,12 @@ public class ProjectManagerViewModel {
 
     init(coordinator: ProjectManagerCoordinator?,
          manager: ProjectManager,
-         cloudSynchroWatcher: CloudSynchroWatcher?,
+         synchroService: SynchroService?,
          projectManagerUiProvider: ProjectManagerUiProvider,
          flightPlanStateMachine: FlightPlanStateMachine?,
          canSelectProjectType: Bool) {
         self.manager = manager
-        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.synchroService = synchroService
         self.coordinator = coordinator
         self.projectManagerUiProvider = projectManagerUiProvider
         self.flightPlanStateMachine = flightPlanStateMachine
@@ -77,7 +78,7 @@ public class ProjectManagerViewModel {
 
     // MARK: - Private funcs
     private func listenDataSynchronization() {
-        cloudSynchroWatcher?.synchroStatusPublisher
+        synchroService?.statusPublisher
             .sink { [unowned self] status in
                 isSynchronizingSubject.value = status.isSyncing
             }
@@ -88,7 +89,7 @@ public class ProjectManagerViewModel {
         flightPlanStateMachine?.statePublisher
             .sink { [unowned self] state in
                 if case .flying(let flightPlan) = state {
-                    idFlyingProject = flightPlan.projectUuid
+                    idFlyingProject = flightPlan.pictorModel.projectUuid
                 } else {
                     idFlyingProject = nil
                 }
@@ -130,7 +131,6 @@ extension ProjectManagerViewModel {
         // show directly the HUD without loading anything.
         // This prevents to stop a running flight plan.
         guard manager.currentProject?.uuid != project.uuid else {
-            SceneSingleton.shared.forceCentering = true
             coordinator?.showCurrentProject()
 
             return

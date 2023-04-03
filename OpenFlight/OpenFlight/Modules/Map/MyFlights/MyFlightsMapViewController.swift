@@ -31,6 +31,7 @@ import Foundation
 import ArcGIS
 import GroundSdk
 import Combine
+import Pictor
 
 private extension ULogTag {
     static let tag = ULogTag(name: "MyFlightsMapViewController")
@@ -41,7 +42,7 @@ open class MyFlightsMapViewController: AGSSceneViewController {
 
     /// Combine cancellables.
     private var cancellables = Set<AnyCancellable>()
-    public var myFlightsOverlay: TrajectoryGraphicsOverlay?
+    public var myFlightsOverlays: [TrajectoryGraphicsOverlay] = []
     private var flightPlanOverlay: FlightPlanGraphicsOverlay?
     public var flightPlanEditionService: FlightPlanEditionService?
     private var bamService: BannerAlertManagerService?
@@ -54,11 +55,6 @@ open class MyFlightsMapViewController: AGSSceneViewController {
     private var viewModel = MyFlightsViewModel()
     private var flightsPoints: [[TrajectoryPoint]]?
     public var flightPlan: FlightPlanModel?
-    private var elevationLoaded: Bool = false {
-        didSet {
-            updateAltitudeOffSet()
-        }
-    }
     private var altitudeOffSet: Double = 0.0
 
     /// Request for elevation of 'my flight' first point.
@@ -75,6 +71,15 @@ open class MyFlightsMapViewController: AGSSceneViewController {
         willSet {
             if flightPlanAltitudeRequest?.isCanceled() == false {
                 flightPlanAltitudeRequest?.cancel()
+            }
+        }
+    }
+
+    /// Currrent elevation request if any, `nil` otherwise.
+    private var elevationRequest: AGSCancelable? {
+        willSet {
+            if elevationRequest?.isCanceled() == false {
+                elevationRequest?.cancel()
             }
         }
     }
@@ -96,38 +101,82 @@ open class MyFlightsMapViewController: AGSSceneViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
         setBaseSurface(enabled: true)
+        addMyFlightsOverlays()
+        addFlightPlanOverlay()
     }
 
-    open override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        listenElevation()
+    public override func getCenter(completion: @escaping(AGSViewpoint?) -> Void) {
+        getCurrentViewPoint { viewPoint in
+            completion(viewPoint)
+        }
     }
 
-    private func getCurrentViewPoint() -> AGSViewpoint? {
+    /// Get Current view point to center map.
+    ///
+    /// - Returns: the current view point
+    private func getCurrentViewPoint(completion: @escaping(AGSViewpoint?) -> Void) {
         if let flightPlan = flightPlan, let dataSetting = flightPlan.dataSetting,
            !flightPlan.isEmpty {
+            if let amsl = flightPlan.isAMSL, amsl {
+                getFlightPlanAMSLViewPoint(dataSetting: dataSetting) { viewPoint in
+                    completion(viewPoint)
+                }
+            } else {
+                if let coordinate = dataSetting.coordinate {
+                    getFlightPlanATOViewPoint(coordinate: coordinate, dataSetting: dataSetting) { viewPoint in
+                        completion(viewPoint)
+                    }
+                } else {
+                    completion(nil)
+                }
+            }
+        } else if let flightPoints = myFlightsOverlays.first?.flightsPoints.value {
+            completion(getViewPoint(for: flightPoints))
+        } else {
+            completion(nil)
+        }
+    }
+
+    /// Get flight plan in AMSL view point
+    ///
+    /// - Returns: the view point
+    private func getFlightPlanAMSLViewPoint(dataSetting: FlightPlanDataSetting,
+                                            completion: @escaping(AGSViewpoint?) -> Void) {
+        if sceneView.scene?.baseSurface?.isEnabled == false {
+            let envelope = dataSetting.flatPolyline
+                .envelopeWithMargin(altitudeOffset: 0.0)
+            completion(AGSViewpoint(targetExtent: envelope))
+        } else {
             let envelope = dataSetting.polyline
-                .envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor,
-                                    altitudeOffset: flightPlan.isAMSL == true ? 0 : altitudeOffSet)
-            return AGSViewpoint(targetExtent: envelope)
-        } else if let flightPoints = myFlightsOverlay?.flightsPoints.value {
-            return getViewPoint(for: flightPoints)
+                .envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor, altitudeOffset: nil)
 
-        }
-        return nil
-    }
-
-    public func listenElevation() {
-        elevationLoadedCancellable = elevationSource.$elevationLoaded
-            .prepend(true)
-            .filter { $0 }
-            .sink { [weak self] loadStatus in
-            guard loadStatus, let self = self else { return }
-            self.elevationLoaded = loadStatus
+            completion(AGSViewpoint(targetExtent: envelope))
         }
     }
 
-    func updateAltitudeOffSet() {
+    /// Get flight plan in ATO view point
+    ///
+    /// - Returns: the view point
+    private func getFlightPlanATOViewPoint(coordinate: CLLocationCoordinate2D,
+                                           dataSetting: FlightPlanDataSetting,
+                                           completion: @escaping(AGSViewpoint?) -> Void) {
+        let point = AGSPoint(clLocationCoordinate2D: coordinate)
+        if sceneView.scene?.baseSurface?.isEnabled == false {
+            let envelope = dataSetting.flatPolyline
+                .envelopeWithMargin(altitudeOffset: 0.0)
+            completion(AGSViewpoint(targetExtent: envelope))
+        } else {
+            elevationRequest = nil
+            elevationRequest = sceneView.scene?.baseSurface?.elevation(for: point) { altitude, _  in
+                let envelope = dataSetting.polyline
+                    .envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor,
+                                        altitudeOffset: altitude)
+                completion(AGSViewpoint(targetExtent: envelope))
+            }
+        }
+    }
+
+    override func updateAltitudeOffSet() {
         guard elevationLoaded else { return }
         flightPlanAltitudeRequest?.cancel()
         flightPlanAltitudeRequest = nil
@@ -135,12 +184,12 @@ open class MyFlightsMapViewController: AGSSceneViewController {
             flightPlanAltitudeRequest = sceneView.scene?.baseSurface?
                 .elevation(for: AGSPoint(clLocationCoordinate2D: coordinate)) { [weak self] elevation, _ in
                 self?.altitudeOffSet = elevation
-                self?.setViewPoint()
+                self?.mapViewModel.refreshViewPoint.value = true
             }
         }
 
         guard let flightsPoints = flightsPoints,
-              let firstPoint = flightsPoints.first?.first?.point else {
+              let firstPoint = flightsPoints.first?.first?.agsPoint else {
             return
         }
 
@@ -157,17 +206,10 @@ open class MyFlightsMapViewController: AGSSceneViewController {
             let altitudeOffSet = elevation - firstPoint.z
             if !self.hasAmslAltitude
                 || altitudeOffSet > 0 {
-                ULog.d(.tag, "Apply altitude offset to flight overlay: \(altitudeOffSet)")
-                self.myFlightsOverlay?.sceneProperties?.altitudeOffset = altitudeOffSet
+                ULog.i(.tag, "Apply altitude offset to flight overlay: \(altitudeOffSet)")
+                self.myFlightsOverlays.first?.sceneProperties?.altitudeOffset = altitudeOffSet
             }
-            self.setViewPoint()
-        }
-    }
-
-    /// Set view point
-    private func setViewPoint() {
-        if let viewPoint = getCurrentViewPoint() {
-            sceneView.setViewpoint(viewPoint)
+            self.mapViewModel.refreshViewPoint.value = true
         }
     }
 
@@ -183,11 +225,12 @@ open class MyFlightsMapViewController: AGSSceneViewController {
                                           trajectoryState: TrajectoryState = .none) {
         self.flightsPoints = flightsPoints
         self.hasAmslAltitude = hasAmslAltitude
-        addMyFlightsOverlay()
-        myFlightsOverlay?.displayFlightTrajectories(flightsPoints: flightsPoints,
-                                                    hasAmslAltitude: hasAmslAltitude,
-                                                    trajectoryState: trajectoryState,
-                                                    adjustViewPoint: true)
+        for myFlightsOverlay in myFlightsOverlays {
+            myFlightsOverlay.displayFlightTrajectories(flightsPoints: flightsPoints,
+                                                       hasAmslAltitude: hasAmslAltitude,
+                                                       trajectoryState: trajectoryState,
+                                                       adjustViewPoint: true)
+        }
     }
 
     /// Called to display a flight plan.
@@ -198,29 +241,20 @@ open class MyFlightsMapViewController: AGSSceneViewController {
     func displayFlightPlan(_ flightPlan: FlightPlanModel,
                            shouldReloadCamera: Bool = false) {
         self.flightPlan = flightPlan
-        addFlightPlanOverlay()
         flightPlanOverlay?.displayFlightPlan(flightPlan, shouldReloadCamera: shouldReloadCamera, mapMode: .myFlights)
         flightPlanOverlay?.sceneProperties?.surfacePlacement = flightPlan.isAMSL == true ? .absolute : .relative
         updateAltitudeOffSet()
     }
 
-    // Add the trajectory overlay
-    func addMyFlightsOverlay() {
-        if let myFlightsOverlay = myFlightsOverlay {
-            self.sceneView.graphicsOverlays.remove(myFlightsOverlay)
-            self.myFlightsOverlay = nil
-        }
-        myFlightsOverlay = TrajectoryGraphicsOverlay()
-        myFlightsOverlay?.sceneProperties?.surfacePlacement = .absolute
-        myFlightsOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let myFlightsOverlay = self.myFlightsOverlay else { return }
-                if isActive {
-                    self.sceneView.graphicsOverlays.insert(myFlightsOverlay, at: 0)
-                } else {
-                    self.sceneView.graphicsOverlays.remove(myFlightsOverlay)
-                }
-        }.store(in: &cancellables)
+    /// Add the trajectory overlay
+    private func addMyFlightsOverlays() {
+        let flightsOverlay = TrajectoryGraphicsOverlay(type: .trajectory)
+        sceneView.graphicsOverlays.add(flightsOverlay)
+        myFlightsOverlays.append(flightsOverlay)
+
+        let drapedFlightsOverlay = TrajectoryGraphicsOverlay(type: .draped)
+        sceneView.graphicsOverlays.add(drapedFlightsOverlay)
+        myFlightsOverlays.append(drapedFlightsOverlay)
     }
 
     /// Add the flight plan overlay
@@ -234,17 +268,10 @@ open class MyFlightsMapViewController: AGSSceneViewController {
                                                       flightPlanEditionService: flightPlanEditionService,
                                                       flightPlanRunManager: flightPlanRunManager,
                                                       memoryPressureMonitor: memoryPressureMonitor)
-
-        flightPlanOverlay?.sceneProperties?.surfacePlacement = flightPlan?.isAMSL == true ? .absolute : .relative
-        flightPlanOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-            guard let self = self, let flightPlanOverlay = self.flightPlanOverlay else { return }
-            if isActive {
-                self.sceneView.graphicsOverlays.insert(flightPlanOverlay, at: 1)
-            } else {
-                self.sceneView.graphicsOverlays.remove(flightPlanOverlay)
-            }
-        }.store(in: &cancellables)
+        if let flightPlanOverlay = flightPlanOverlay {
+            flightPlanOverlay.sceneProperties?.surfacePlacement = flightPlan?.isAMSL == true ? .absolute : .relative
+            sceneView.graphicsOverlays.add(flightPlanOverlay)
+        }
     }
 
     /// Updates current view point.
@@ -271,10 +298,10 @@ open class MyFlightsMapViewController: AGSSceneViewController {
     ///    - for: trajectories points to display
     ///    - altitudeOffset: altitude offset to apply to trajectory points to compute zoom level
     func getViewPoint(for flightsPoints: [[TrajectoryPoint]], altitudeOffset: Double? = nil) -> AGSViewpoint {
-        ULog.d(.tag, "Get view point for flight, altitudeOffset \(altitudeOffset?.description ?? "nil")")
-        let allPoints = flightsPoints.reduce([]) { $0 + $1.map {$0.point} }
+        ULog.i(.tag, "Get view point for flight, altitudeOffset \(altitudeOffset?.description ?? "nil")")
+        let allPoints = flightsPoints.reduce([]) { $0 + $1.map {$0.agsPoint} }
         let polyline = AGSPolyline(points: allPoints)
-        let bufferedExtent = polyline.envelopeWithMargin(altitudeOffset: altitudeOffset)
+        let bufferedExtent = polyline.envelopeWithMargin(ArcGISStyle.projectEnvelopeMarginFactor, altitudeOffset: altitudeOffset)
         let viewPoint = AGSViewpoint(targetExtent: bufferedExtent)
         return viewPoint
     }

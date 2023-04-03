@@ -38,5 +38,4 @@ final class ParrotDebugViewModel: ParrotDebugProvider {
 
     private var shouldShowCustomMissionButtonSubject = CurrentValueSubject<Bool, Never>(false)
     var shouldShowCustomMissionButton: AnyPublisher<Bool, Never> { shouldShowCustomMissionButtonSubject.eraseToAnyPublisher() }
-
 }

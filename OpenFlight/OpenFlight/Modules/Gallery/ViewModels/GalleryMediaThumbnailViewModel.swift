@@ -72,7 +72,7 @@ final class GalleryMediaThumbnailViewModel: DroneWatcherViewModel<DeviceConnecti
         guard let media = media else { return }
         if media.source != .mobileDevice,
            let mediaStore = mediaStore,
-           let mediaResources = media.mediaResources,
+           let mediaResources = media.previewableResources,
            index < mediaResources.count {
             thumbnailReference = mediaStore.newThumbnailDownloader(resource: mediaResources[index]) { image in
                 completion(image)

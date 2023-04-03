@@ -32,9 +32,9 @@ import Foundation
 /// Defines ArcGIS constants.
 public enum ArcGISStyle {
     /// Defines envelope margin, as dimension factor.
-    static let envelopeMarginFactor: Double = 1.2
+    public static let envelopeMarginFactor: Double = 1.0
     /// Envelope margin factor for Flight Plan and Photogrammetry projects.
-    static let projectEnvelopeMarginFactor: Double = 1.5
+    public static let projectEnvelopeMarginFactor: Double = 1.5
     /// Minimal envelope width, in degrees.
     static let minEnvelopeWidth: Double = 0.0002
     /// Minimal envelope height, in degrees.

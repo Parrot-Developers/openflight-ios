@@ -31,9 +31,10 @@ import Foundation
 import Combine
 import CoreLocation
 import ArcGIS
+import Pictor
 
 /// View controller for flightplan map.
-open class FlightPlanMapViewController: AGSMapViewController {
+open class FlightPlanMapViewController: MapWithOverlaysViewController {
 
     // MARK: - Private Properties
     private var flightPlanViewModel = FlightPlanViewModel()
@@ -46,12 +47,9 @@ open class FlightPlanMapViewController: AGSMapViewController {
     private var droneLocationOverlay: DroneLocationGraphicsOverlay?
     private var returnHomeOverlay: ReturnHomeGraphicsOverlay?
     private var flightPlanOverlay: FlightPlanGraphicsOverlay?
-    private var oldDroneLocation: Location3D?
-    private var canUpdateDroneLocation = true
 
     private var bamService: BannerAlertManagerService?
     private var missionsStore: MissionsStore?
-    private var rthService: RthService?
     private var memoryPressureMonitor: MemoryPressureMonitorService?
 
     // MARK: - Internal Properties
@@ -61,27 +59,14 @@ open class FlightPlanMapViewController: AGSMapViewController {
     public var flightPlanRunManager: FlightPlanRunManager?
     public weak var flightDelegate: FlightEditionDelegate?
     // Is flight plan in edition
-    public var isInEdition = false
+    public var isInEdition = false {
+        didSet {
+             editionChanged()
+        }
+    }
     weak var mapDelegate: MapViewEditionControllerDelegate?
     /// Mission provider.
     private let missionProviderViewModel = MissionProviderViewModel()
-
-    private enum OverlayOrder: Int, Comparable {
-
-        case rthPath
-        case home
-        case user
-        case flightPlan
-        case drone // must always be last in mapView. This is only for information.
-
-        static func < (lhs: FlightPlanMapViewController.OverlayOrder, rhs: FlightPlanMapViewController.OverlayOrder) -> Bool {
-            return lhs.rawValue < rhs.rawValue
-        }
-
-        /// Set containing all possible overlays.
-        public static let allCases: Set<OverlayOrder> = [
-            .rthPath, .home, .user, .flightPlan, .drone]
-    }
 
     // MARK: - Setup
     /// Instantiates the view controller.
@@ -91,7 +76,6 @@ open class FlightPlanMapViewController: AGSMapViewController {
     ///    - missionsStore: the mission store service
     ///    - flightPlanEditionService: the flight plan edition service
     ///    - flightPlanRunManager: the flight plan run manager service
-    ///    - rthService: the rth service
     ///    - memoryPressureMonitor: the memory pressure monitor service
     ///
     /// - Returns: the piloting map view controller
@@ -99,14 +83,12 @@ open class FlightPlanMapViewController: AGSMapViewController {
                                    missionsStore: MissionsStore,
                                    flightPlanEditionService: FlightPlanEditionService,
                                    flightPlanRunManager: FlightPlanRunManager,
-                                   rthService: RthService,
                                    memoryPressureMonitor: MemoryPressureMonitorService) -> FlightPlanMapViewController {
         let viewController = StoryboardScene.FlightPlanMap.initialScene.instantiate()
         viewController.bamService = bamService
         viewController.missionsStore = missionsStore
         viewController.flightPlanEditionService = flightPlanEditionService
         viewController.flightPlanRunManager = flightPlanRunManager
-        viewController.rthService = rthService
         viewController.memoryPressureMonitor = memoryPressureMonitor
         return viewController
     }
@@ -115,32 +97,41 @@ open class FlightPlanMapViewController: AGSMapViewController {
     open override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Add overlays according to their `OverlayOrder`, as `mapView.graphicsOverlays` is
-        // an empty array at load time (which means that inserting `.user` and then `.home`
-        // whould lead to an incorrect [.user, .home] array).
-        addReturnHomeOverlay()
-        addHomeOverlay(at: OverlayOrder.home.rawValue)
-        addUserOverlay()
+        // Add overlays in order from bottom to top:
+        // FlightPlan, RTH, Home, User, Drone
         addFlightPlanOverlay()
-        addDroneOverlay()
+        returnHomeOverlay = addReturnHomeOverlay()
+        addHomeOverlay()
+        userLocationOverlay = addUserOverlay()
+        droneLocationOverlay = addDroneOverlay()
 
         setupMissionProviderViewModel()
-
-        droneLocationOverlay?.viewModel.droneLocationPublisher
-            .sink(receiveValue: { [weak self] location in
-            if let coordinates = location.coordinates {
-                self?.updateDroneLocationGraphic(location: coordinates)
-            }
-        }).store(in: &cancellables)
+        mapViewModel.enableAutoScroll(delegate: self)
 
         flightPlanViewModel.centerStatePublisher.sink { [weak self] centerState in
             self?.splitControls?.updateCenterMapButtonStatus(state: centerState)
 
         }.store(in: &cancellables)
+
+        mapViewModel.refreshViewPointPublisher.sink(receiveValue: { [weak self] refresh in
+            guard let self = self else { return }
+            if refresh {
+                self.mapViewModel.refreshViewPoint.value = false
+                self.centerMapWithoutAnyChanges()
+            }
+        }).store(in: &cancellables)
     }
 
     public override func getCenter(completion: @escaping(AGSViewpoint?) -> Void) {
-         completion(getCurrentViewPoint())
+        completion(getCurrentViewPoint())
+    }
+
+    open func editionChanged() {
+        if isInEdition {
+            mapViewModel.disableAutoScroll()
+        } else {
+            mapViewModel.enableAutoScroll(delegate: self)
+        }
     }
 
     override func identify(screenPoint: CGPoint, _ completion: @escaping (AGSIdentifyGraphicsOverlayResult?) -> Void) {
@@ -159,6 +150,10 @@ open class FlightPlanMapViewController: AGSMapViewController {
     // MARK: - Gestures Funcs
     override func handleCustomMapTap(mapPoint: AGSPoint, screenPoint: CGPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?) {
         guard isInEdition, let result = identifyResult else { return }
+        guard mapPoint.isValid else {
+            resetDraggedGraphics()
+            return
+        }
         // Select the graphic tap by user and store it.
         if let selection = result.selectedFlightPlanObject {
             flightPlanOverlay?.lastManuallySelectedGraphic = selection
@@ -176,6 +171,10 @@ open class FlightPlanMapViewController: AGSMapViewController {
     }
 
     override func handleCustomMapLongPress(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?) {
+        guard mapPoint.isValid else {
+            resetDraggedGraphics()
+            return
+        }
         guard isInEdition, let result = identifyResult else { return }
         if result.selectedFlightPlanObject == nil {
             flightPlanOverlay?.addPoiPoint(atLocation: mapPoint)
@@ -184,6 +183,11 @@ open class FlightPlanMapViewController: AGSMapViewController {
 
     override func handleCustomMapTouchDown(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?, completion: @escaping (Bool) -> Void) {
         guard isInEdition, let overlay = flightPlanOverlay, let result = identifyResult else {
+            completion(false)
+            return
+        }
+        guard mapPoint.isValid else {
+            resetDraggedGraphics()
             completion(false)
             return
         }
@@ -213,7 +217,10 @@ open class FlightPlanMapViewController: AGSMapViewController {
 
     override func handleCustomMapDrag(mapPoint: AGSPoint) {
         guard isInEdition else { return }
-
+        guard mapPoint.isValid else {
+            resetDraggedGraphics()
+            return
+        }
         // Drag should be ignored if it occurs before a certain duration (to avoid conflict with tap gesture).
         guard let dragTimeStamp = flightPlanOverlay?.startDragTimeStamp,
             ProcessInfo.processInfo.systemUptime > dragTimeStamp + Style.tapGestureDuration else {
@@ -225,6 +232,10 @@ open class FlightPlanMapViewController: AGSMapViewController {
 
     override func handleCustomMapTouchUp(screenPoint: CGPoint, mapPoint: AGSPoint) {
         guard isInEdition else { return }
+        guard mapPoint.isValid else {
+            resetDraggedGraphics()
+            return
+        }
 
         // If touch up occurs before a certain duration, gesture is treated as a tap.
         guard let dragTimeStamp = flightPlanOverlay?.startDragTimeStamp,
@@ -357,7 +368,7 @@ open class FlightPlanMapViewController: AGSMapViewController {
                                 projectManager: ProjectManager,
                                 projectModel: ProjectModel,
                                 flightService: FlightService,
-                                flightPlanRepo: FlightPlanRepository,
+                                flightPlanRepository: PictorFlightPlanRepository,
                                 topBarService: HudTopBarService) -> ExecutionsListViewController {
         let backButtonPublisher = backButton.tapGesturePublisher
             .map { _ in () }
@@ -368,10 +379,37 @@ open class FlightPlanMapViewController: AGSMapViewController {
             projectManager: projectManager,
             projectModel: projectModel,
             flightService: flightService,
-            flightPlanRepo: flightPlanRepo,
+            flightPlanRepository: flightPlanRepository,
             topBarService: topBarService,
             backButtonPublisher: backButtonPublisher)
         return viewController
+    }
+
+    open override func shouldAutoScroll() -> Bool {
+        guard super.shouldAutoScroll() else { return false }
+
+        // FP + PGY
+        if let playingFlightPlan = flightPlanRunManager?.playingFlightPlan {
+            if !playingFlightPlan.hasReachedLastWayPoint,
+               let point = nextExecutedWayPointGraphic() {
+                if playingFlightPlan.hasReachedFirstWayPoint,
+                   mapViewModel.isInside(point: point, safely: true) {
+                    return false
+                }
+            } else if let location = flightPlanViewModel.locationsTracker.returnHomeLocation,
+                      mapViewModel.isInside(point: AGSPoint(clLocationCoordinate2D: location), safely: true) {
+                return false
+            }
+        }
+        return true
+    }
+
+    public override func shouldAutoScrollToCenter() -> Bool {
+        if let playingFlightPlan = flightPlanRunManager?.playingFlightPlan,
+           !playingFlightPlan.hasReachedFirstWayPoint {
+            return true
+        }
+        return false
     }
 }
 
@@ -400,203 +438,15 @@ extension FlightPlanMapViewController {
                                                        altitudeOffset: 0)
             return AGSViewpoint(targetExtent: envelope)
         } else {
-            if let value = droneLocationOverlay?.isActive.value, value, let coordinate = droneLocationOverlay?.viewModel.droneLocation.coordinates?.coordinate {
+            if droneLocationOverlay?.isDroneConnected == true, let coordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
                     return AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate), scale: CommonMapConstants.cameraDistanceToCenterLocation)
             } else {
-                if let coordinate = userLocationOverlay?.viewModel.userLocation?.coordinates?.coordinate {
+                if let coordinate = userLocationOverlay?.userLocation?.coordinates?.coordinate {
                     return AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate), scale: CommonMapConstants.cameraDistanceToCenterLocation)
                 }
             }
         }
         return nil
-    }
-
-    /// Add the user location overlay
-    private func addUserOverlay() {
-        userLocationOverlay = UserLocationGraphicsOverlay()
-        userLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-        if let userLocationOverlay = userLocationOverlay {
-            self.mapView.graphicsOverlays.insert(userLocationOverlay, at: OverlayOrder.user.rawValue)
-            self.checkOrderAndInsertOverlay()
-        }
-    }
-
-    /// Add the drone location overlay
-    private func addDroneOverlay() {
-        droneLocationOverlay = DroneLocationGraphicsOverlay()
-        droneLocationOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        droneLocationOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let droneLocationOverlay = self.droneLocationOverlay else { return }
-                if isActive {
-                    self.mapView.graphicsOverlays.insert(droneLocationOverlay, at: OverlayOrder.drone.rawValue)
-                    self.checkOrderAndInsertOverlay()
-                } else {
-                    self.mapView.graphicsOverlays.remove(droneLocationOverlay)
-                }
-        }.store(in: &cancellables)
-    }
-
-    /// Add the return home location overlay
-    private func addReturnHomeOverlay() {
-        returnHomeOverlay = ReturnHomeGraphicsOverlay()
-        returnHomeOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        returnHomeOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let returnHomeOverlay = self.returnHomeOverlay else { return }
-                if isActive {
-                    self.mapView.graphicsOverlays.insert(returnHomeOverlay, at: OverlayOrder.rthPath.rawValue)
-                    self.checkOrderAndInsertOverlay()
-                } else {
-                    self.mapView.graphicsOverlays.remove(returnHomeOverlay)
-                }
-        }.store(in: &cancellables)
-    }
-
-    /// Add the flight plan location overlay
-    private func addFlightPlanOverlay() {
-        flightPlanOverlay = FlightPlanGraphicsOverlay(bamService: bamService,
-                                                      missionsStore: missionsStore,
-                                                      flightPlanEditionService: flightPlanEditionService,
-                                                      flightPlanRunManager: flightPlanRunManager,
-                                                      memoryPressureMonitor: memoryPressureMonitor)
-        flightPlanOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
-
-        flightPlanOverlay?.isActivePublisher
-            .sink { [weak self] isActive in
-                guard let self = self, let flightPlanOverlay = self.flightPlanOverlay else { return }
-                if isActive {
-                    self.mapView.graphicsOverlays.insert(flightPlanOverlay, at: OverlayOrder.flightPlan.rawValue)
-                    self.checkOrderAndInsertOverlay()
-                } else {
-                    self.mapView.graphicsOverlays.remove(flightPlanOverlay)
-                }
-        }.store(in: &cancellables)
-
-        flightPlanOverlay?.setupMissionProviderViewModel()
-        flightPlanOverlay?.flightPlanViewModel.refreshCenterPublisher.sink(receiveValue: { [weak self] refresh in
-            guard let self = self else { return }
-            if refresh {
-                self.flightPlanOverlay?.flightPlanViewModel.refreshCenter.value = false
-                if let viewPoint = self.getCurrentViewPoint() {
-                    self.mapView.setViewpoint(viewPoint)
-                }
-            }
-        }).store(in: &cancellables)
-    }
-
-    /// Check overlays order and insert them if necessary
-    private func checkOrderAndInsertOverlay() {
-        OverlayOrder.allCases.sorted().forEach { overlay in
-            switch overlay {
-            case .rthPath:
-                if let returnHomeOverlay = returnHomeOverlay, returnHomeOverlay.isActive.value,
-                   self.mapView.graphicsOverlays.index(of: returnHomeOverlay) != OverlayOrder.rthPath.rawValue {
-                    self.mapView.graphicsOverlays.remove(returnHomeOverlay)
-                    self.mapView.graphicsOverlays.add(returnHomeOverlay)
-                }
-            case .user:
-                if let userLocationOverlay = userLocationOverlay,
-                   self.mapView.graphicsOverlays.index(of: userLocationOverlay) != OverlayOrder.user.rawValue {
-                    self.mapView.graphicsOverlays.remove(userLocationOverlay)
-                    self.mapView.graphicsOverlays.add(userLocationOverlay)
-                }
-            case .drone:
-                if let droneLocationOverlay = droneLocationOverlay, droneLocationOverlay.isActive.value,
-                   self.mapView.graphicsOverlays.index(of: droneLocationOverlay) != OverlayOrder.drone.rawValue {
-                    self.mapView.graphicsOverlays.remove(droneLocationOverlay)
-                    self.mapView.graphicsOverlays.add(droneLocationOverlay)
-                }
-            case .flightPlan:
-                if let flightPlanOverlay = flightPlanOverlay, flightPlanOverlay.isActive.value,
-                   self.mapView.graphicsOverlays.index(of: flightPlanOverlay) != OverlayOrder.flightPlan.rawValue {
-                    self.mapView.graphicsOverlays.remove(flightPlanOverlay)
-                    self.mapView.graphicsOverlays.add(flightPlanOverlay)
-                }
-            default: break
-            }
-        }
-    }
-
-    /// Updates drone location graphic.
-    ///
-    /// - Parameters:
-    ///    - location: new drone location
-    ///    - heading: new drone heading
-    private func updateDroneLocationGraphic(location: Location3D) {
-        // TODO: put all calculations in viewModel
-        if !mapView.isNavigating, canUpdateDroneLocation {
-            if let coordinate = calculateOffset(location: location) {
-                if let centerMap = mapView.visibleArea?.extent.center.toCLLocationCoordinate2D() {
-                    let newLocation = CLLocationCoordinate2D(
-                        latitude: centerMap.latitude + coordinate.latitude,
-                        longitude: centerMap.longitude + coordinate.longitude)
-
-                    canUpdateDroneLocation = false
-                    mapView.setViewpointCenter(AGSPoint(clLocationCoordinate2D: newLocation), scale: mapView.mapScale) { [weak self]_ in
-                        guard let self = self else { return }
-                        self.canUpdateDroneLocation = true
-                    }
-                }
-            }
-            if isInside(point: location.agsPoint) {
-                oldDroneLocation = location
-            }
-        }
-    }
-
-    /// Calculates the autoscroll offset
-    ///
-    /// - Parameter location: new drone location
-    /// - Returns: the coordinate offset
-    private func calculateOffset(location: Location3D) -> CLLocationCoordinate2D? {
-        // Do not autoscroll if drone is not flying, and if in edition.
-        // Check if it is possible to autoscroll.
-        guard !isInEdition, let drone = flightPlanViewModel.connectedDroneHolder.drone, drone.isFlying else { return nil }
-
-        guard canUpdateDroneLocation, let oldDroneLocation = oldDroneLocation,
-              isVisible(), isInside(point: oldDroneLocation.agsPoint), !centering else {
-            return nil
-        }
-        var scrollToTarget = true
-
-        // FP + PGY
-        if let playingFlightPlan = flightPlanRunManager?.playingFlightPlan {
-            if let point = nextExecutedWayPointGraphic(), !playingFlightPlan.hasReachedLastWayPoint {
-                if self.isInside(point: point) {
-                    scrollToTarget = false
-                }
-            } else if let location = flightPlanViewModel.locationsTracker.returnHomeLocation,
-                self.isInside(point: AGSPoint(clLocationCoordinate2D: location)) {
-                scrollToTarget = false
-            }
-        }
-        // RTH
-        if Services.hub.drone.rthService.isActive,
-           let rthLocation = flightPlanViewModel.locationsTracker.returnHomeLocation,
-           isInside(point: AGSPoint(clLocationCoordinate2D: rthLocation)) {
-            scrollToTarget = false
-        }
-
-        // When the drone is leaving the screen and we scroll just enough to keep it on the screen, sometimes it happens that in the next iteration
-        // the drone is seen as off screen in the oldDroneLocation and we stop autoscrolling.
-        // The variable scrollFurther is meant to move the drone from the border
-        // with a bigger offset.
-        var scrollFurther = false
-        if !isInside(point: location.agsPoint) {
-            scrollFurther = true
-            scrollToTarget = true
-        }
-
-        guard scrollToTarget else { return nil }
-
-        let offSetLongitude = (location.coordinate.longitude - oldDroneLocation.coordinate.longitude) * (scrollFurther ? 1.3 : 1.0)
-        let offSetLatitude = (location.coordinate.latitude - oldDroneLocation.coordinate.latitude) * (scrollFurther ? 1.3 : 1.0)
-
-        guard offSetLatitude != 0 || offSetLongitude != 0 else { return nil }
-        return CLLocationCoordinate2D(latitude: offSetLatitude, longitude: offSetLongitude)
     }
 
     /// Next executed waypoint graphic
@@ -701,7 +551,7 @@ extension FlightPlanMapViewController: MapViewEditionControllerDelegate {
         let selectedGraphic = flightPlanOverlay?.currentSelection
         let selectedIndex = flightPlanOverlay?.selectedGraphicIndex(for: selectedGraphic?.itemType ?? .none)
         flightPlanEditionService?.undo()
-        if let flightPlan = flightPlanOverlay?.flightPlan {
+        if let flightPlan = flightPlanEditionService?.currentFlightPlanValue {
             displayFlightPlan(flightPlan, shouldReloadCamera: false)
             if let selectedGraphic = selectedGraphic {
                 if let wpIndex = selectedIndex,
@@ -725,4 +575,25 @@ extension FlightPlanMapViewController: MapViewEditionControllerDelegate {
     public func updateModeSettings(tag: Int) {}
     public func updateSettingsValue(for key: String?, value: Int) {}
     public func didFinishCornerEditionMode() {}
+}
+
+// MARK: Specific overlays
+private extension FlightPlanMapViewController {
+    /// Add the flight plan location overlay
+    private func addFlightPlanOverlay() {
+        flightPlanOverlay = FlightPlanGraphicsOverlay(bamService: bamService,
+                                                      missionsStore: missionsStore,
+                                                      flightPlanEditionService: flightPlanEditionService,
+                                                      flightPlanRunManager: flightPlanRunManager,
+                                                      memoryPressureMonitor: memoryPressureMonitor)
+        flightPlanOverlay?.sceneProperties?.surfacePlacement = .drapedFlat
+        mapView.graphicsOverlays.add(flightPlanOverlay)
+        flightPlanOverlay?.setupMissionProviderViewModel()
+        flightPlanOverlay?.flightPlanViewModel.refreshViewPointPublisher.sink(receiveValue: { [weak self] refresh in
+            guard let self = self else { return }
+            if refresh {
+                self.mapViewModel.refreshViewPoint.value = true
+            }
+        }).store(in: &cancellables)
+    }
 }

@@ -69,6 +69,10 @@ enum CellularConnectionState: Equatable {
 final class CellularAccessCardPinViewModel {
 
     // MARK: - Internal Properties
+    private enum Constants {
+        static let requiredPinNumber: Int = 4
+    }
+
     /// Data source provided to the view controller.
     var dataSource: [Int] = [1, 2, 3, 4, 5,
                              6, 7, 8, 9, 0]
@@ -81,27 +85,57 @@ final class CellularAccessCardPinViewModel {
     @Published private(set) var shouldShowLoader: Bool = false
     /// Connection state of the device.
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+    /// Tells if we can enable the ok button.
+    @Published private var enableOkButton: Bool = false
+    /// The pinCode
+    @Published private(set) var pinCode: String = ""
+
+    var shouldEnableOkButton: AnyPublisher<Bool, Never> {
+        $enableOkButton
+            .removeDuplicates()
+            .combineLatest($pinCode.removeDuplicates())
+            .map { (shouldEnable, pincode) in
+                return shouldEnable && pincode.count >= Constants.requiredPinNumber
+            }
+            .eraseToAnyPublisher()
+    }
 
     // MARK: - Private Properties
     private var cellularRef: Ref<Cellular>?
     private var cancellables = Set<AnyCancellable>()
     private var detailsCellularIsSource: Bool
 
-    // TODO - Wrong injection
-    private let currentDroneHolder = Services.hub.currentDroneHolder
-    private unowned let pinCodeService = Services.hub.drone.pinCodeService
+    private let currentDroneHolder: CurrentDroneHolder
+    private let pinCodeService: PinCodeService
+    private let cellularService: CellularService
 
     private weak var coordinator: Coordinator?
 
     // MARK: - Init
 
-    init(coordinator: Coordinator, detailsCellularIsSource: Bool = false) {
+    init(coordinator: Coordinator,
+         detailsCellularIsSource: Bool = false,
+         currentDroneHolder: CurrentDroneHolder,
+         pinCodeService: PinCodeService,
+         cellularService: CellularService) {
         self.coordinator = coordinator
         self.detailsCellularIsSource = detailsCellularIsSource
+        self.currentDroneHolder = currentDroneHolder
+        self.pinCodeService = pinCodeService
+        self.cellularService = cellularService
 
         currentDroneHolder.dronePublisher
-            .sink { [unowned self] drone in
-                listenCellular(drone: drone)
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenCellular(drone: drone)
+            }
+            .store(in: &cancellables)
+
+        cellularService.cellularStatusPublisher
+            .removeDuplicates()
+            .sink { [weak self] status in
+                guard let self = self else { return }
+                self.enableOkButton = status == .simBlocked ? false : true
             }
             .store(in: &cancellables)
     }
@@ -111,7 +145,7 @@ final class CellularAccessCardPinViewModel {
     ///
     /// - Parameters:
     ///     - pinCode: code pin for cellular access
-    func connect(pinCode: String) {
+    func connect() {
         guard let cellular = currentDroneHolder.drone.getPeripheral(Peripherals.cellular) else { return }
 
         updateLoaderState(shouldShow: true)
@@ -133,6 +167,15 @@ final class CellularAccessCardPinViewModel {
                 }
             }
         }
+    }
+
+    func addDigitToPinCode(number: String) {
+        pinCode += number
+    }
+
+    func removeLastDigit() {
+        guard !pinCode.isEmpty else { return }
+        pinCode.removeLast()
     }
 }
 

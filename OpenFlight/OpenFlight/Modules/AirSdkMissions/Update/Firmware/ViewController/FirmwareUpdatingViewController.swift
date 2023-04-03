@@ -29,6 +29,7 @@
 
 import UIKit
 import GroundSdk
+import Combine
 
 /// The controller that manages the downloading and the updating of the firmware.
 final class FirmwareUpdatingViewController: UIViewController {
@@ -41,16 +42,14 @@ final class FirmwareUpdatingViewController: UIViewController {
     @IBOutlet private weak var continueView: UpdatingDoneFooter!
 
     // MARK: - Private Properties
+    /// Combine cancellables.
+    private var cancellables = Set<AnyCancellable>()
     private weak var coordinator: DroneFirmwaresCoordinator?
-
-    private let firmwareUpdaterManager = FirmwareUpdaterManager.shared
-    private var firmwareUpdateListener: FirmwareUpdaterListener?
-    private var dataSource = FirmwareUpdatingDataSource()
-    private var globalUpdateState = FirmwareGlobalUpdatingState.notInitialized
+    private var viewModel: FirmwareUpdatingViewModel!
+    private var previousGlobalUpdateState = FirmwareGlobalUpdatingState.notInitialized
     private var updateOngoing: Bool = false
     private var isProcessCancelable: Bool = true
     private var isUpdateCancelledAlertShown: Bool = false
-    private var droneStateViewModel = DroneStateViewModel()
 
     // MARK: - Private Enums
     enum Constants {
@@ -60,17 +59,16 @@ final class FirmwareUpdatingViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneFirmwaresCoordinator) -> FirmwareUpdatingViewController {
+    static func instantiate(coordinator: DroneFirmwaresCoordinator, viewModel: FirmwareUpdatingViewModel) -> FirmwareUpdatingViewController {
         let viewController = StoryboardScene.FirmwareUpdatingViewController.initialScene.instantiate()
         viewController.coordinator = coordinator
-
+        viewController.viewModel = viewModel
         return viewController
     }
 
     // MARK: - Deinit
     deinit {
         NotificationCenter.default.removeObserver(self)
-        firmwareUpdaterManager.unregister(firmwareUpdateListener)
     }
 
     // MARK: - Override Funcs
@@ -78,7 +76,7 @@ final class FirmwareUpdatingViewController: UIViewController {
         super.viewDidLoad()
 
         initUI()
-        listenToFirmwareUpdateManager()
+        listenUpdates()
         startProcesses()
 
         NotificationCenter.default.addObserver(self,
@@ -96,13 +94,13 @@ final class FirmwareUpdatingViewController: UIViewController {
 extension FirmwareUpdatingViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        return dataSource.elements.count
+        return viewModel.elements.count
     }
 
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(for: indexPath) as AirSdkMissionUpdatingTableViewCell
-        cell.setup(with: dataSource.elements[indexPath.row])
+        cell.setup(with: viewModel.elements[indexPath.row])
 
         return cell
     }
@@ -132,17 +130,27 @@ private extension FirmwareUpdatingViewController {
 
 // MARK: - Private Funcs
 private extension FirmwareUpdatingViewController {
-    /// Listens to the Firmware Update Manager.
-    func listenToFirmwareUpdateManager() {
-        firmwareUpdateListener = firmwareUpdaterManager
-            .register(firmwareToUpdateCallback: { [weak self] ( firmwareGlobalUpdatingState) in
-                self?.handleFirmwareProcesses(firmwareGlobalUpdatingState: firmwareGlobalUpdatingState)
-            })
+    /// Listens to updates from the firmware service.
+    func listenUpdates() {
+        viewModel.elementsPublisher
+            .combineLatest(viewModel.currentTotalProgressPublisher)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _, _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
+
+        viewModel.$globalUpdatingState
+            .receive(on: RunLoop.main)
+            .sink { [weak self] globalUpdatingState in
+            self?.handleFirmwareProcesses(firmwareGlobalUpdatingState: globalUpdatingState)
+        }
+        .store(in: &cancellables)
     }
 
     /// Starts the download and update firmware processes.
     func startProcesses() {
-        firmwareUpdaterManager.startFirmwareProcesses(reboot: true)
+        viewModel.startFirmwareProcesses(reboot: true)
     }
 
     /// Handles firmware update processes callback from the manager.
@@ -150,8 +158,6 @@ private extension FirmwareUpdatingViewController {
     /// - Parameters:
     ///    - firmwareGlobalUpdatingState: The gobal state of the processes.
     func handleFirmwareProcesses(firmwareGlobalUpdatingState: FirmwareGlobalUpdatingState) {
-        let progress = dataSource.currentTotalProgress
-
         switch firmwareGlobalUpdatingState {
         case .notInitialized:
             break
@@ -160,7 +166,6 @@ private extension FirmwareUpdatingViewController {
         case .downloading,
              .uploading:
             // Reload tableView only one time to avoid restarting little progress animation
-            dataSource = FirmwareUpdatingDataSource()
             if updateOngoing {
                 updateOngoing = false
                 reloadUI()
@@ -168,7 +173,6 @@ private extension FirmwareUpdatingViewController {
                 updateProgress()
             }
         case .processing:
-            dataSource = FirmwareUpdatingDataSource()
             if isProcessCancelable {
                 isProcessCancelable = false
                 cancelButton.isHidden = true
@@ -178,28 +182,22 @@ private extension FirmwareUpdatingViewController {
             }
         case .waitingForReboot:
             // After the reboot, a connection with the drone must be established to finish the processes
-            dataSource = FirmwareUpdatingDataSource(withProgress: progress)
             reloadUI()
             waitForReboot()
         case .success:
             // After the reboot and the new connection of the drone, this instruction may be triggered.
-            dataSource = FirmwareUpdatingDataSource()
-            reloadUI()
             displaySuccessUI()
         case .error:
             // This instruction may be triggered during the process or after the new connection of the drone following
             // a reboot.
-            dataSource = FirmwareUpdatingDataSource(withProgress: progress)
             reloadUI()
             displayErrorUI()
 
-            if globalUpdateState == .uploading
-                && droneStateViewModel.state.value.connectionState != .connected {
+            if previousGlobalUpdateState == .uploading && !viewModel.isDroneConnected {
                 showUpdateCancelledAlert()
             }
         }
-
-        globalUpdateState = firmwareGlobalUpdatingState
+        previousGlobalUpdateState = firmwareGlobalUpdatingState
     }
 
     /// Waits for reboot of the drone
@@ -221,8 +219,7 @@ private extension FirmwareUpdatingViewController {
     /// Cancel operation in progress.
     func cancelProcesses() -> Bool {
         guard isProcessCancelable else { return false }
-
-        let cancelSucceeded = FirmwareAndMissionsInteractor.shared.cancelAllUpdates(removeData: false)
+        let cancelSucceeded = viewModel.cancelAllUpdates(removeData: false)
         self.cancelButton.isHidden = cancelSucceeded
         return cancelSucceeded
     }
@@ -298,13 +295,13 @@ private extension FirmwareUpdatingViewController {
 
     /// Reloads the whole UI.
     func reloadUI() {
-        progressView.update(currentProgress: dataSource.currentTotalProgress)
+        progressView.update(currentProgress: viewModel.currentTotalProgress)
         tableView.reloadData()
     }
 
     /// Updates the progress view.
     func updateProgress() {
-        progressView.update(currentProgress: dataSource.currentTotalProgress)
+        progressView.update(currentProgress: viewModel.currentTotalProgress)
     }
 
     /// Displays success UI.
@@ -313,16 +310,13 @@ private extension FirmwareUpdatingViewController {
         reportView.setup(with: .success)
         progressView.setFakeSuccessOrErrorProgress()
         cancelButton.isHidden = true
-        // Unregister to prevent from issues when app goes in background.
-        firmwareUpdaterManager.unregister(firmwareUpdateListener)
-        firmwareUpdateListener = nil
     }
 
     /// Displays error UI.
     func displayErrorUI() {
         continueView.setup(delegate: self, state: .error)
         reportView.setup(with: .error)
-        progressView.update(currentProgress: dataSource.currentTotalProgress)
+        progressView.update(currentProgress: viewModel.currentTotalProgress)
         cancelButton.isHidden = true
     }
 

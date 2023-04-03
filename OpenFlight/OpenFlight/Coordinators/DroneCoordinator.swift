@@ -52,8 +52,15 @@ open class DroneCoordinator: Coordinator {
                                                             cellularService: services.drone.cellularService,
                                                             cellularSessionService: services.drone.cellularSessionService,
                                                             locationsTracker: services.locationsTracker)
+        let firmwareUpdateButtonViewModel = FirmwareUpdateButtonViewModel(
+            firmwareUpdateService: services.drone.firmwareUpdateService,
+            airSdkMissionsManager: services.drone.airsdkMissionsManager,
+            currentDroneHolder: services.currentDroneHolder,
+            updateService: services.update,
+            batteryGaugeUpdaterService: services.drone.batteryGaugeUpdaterService)
         let buttonsViewController = DroneDetailsButtonsViewController.instantiate(coordinator: self,
-                                                                                  viewModel: buttonsViewModel)
+                                                                                  viewModel: buttonsViewModel,
+                                                                                  firmwareUpdateButtonViewModel: firmwareUpdateButtonViewModel)
         let deviceViewController = DroneDetailsDeviceViewController.instantiate(coordinator: self)
         let informationViewModel = DroneDetailsInformationsViewModel(currentDroneHolder: services.currentDroneHolder,
                                                                      connectedDroneHolder: services.connectedDroneHolder)
@@ -101,7 +108,10 @@ open class DroneCoordinator: Coordinator {
 extension DroneCoordinator {
     /// Starts map (last known position).
     func startMap(delegate: DroneDetailsMapViewProtocol) {
-        let droneDetailsMapViewController = DroneDetailsMapViewController.instantiate(coordinator: self, delegate: delegate)
+        let droneDetailsMapViewModel = DroneDetailsMapViewModel(locationTracker: services.locationsTracker)
+
+        let droneDetailsMapViewController = DroneDetailsMapViewController.instantiate(coordinator: self, delegate: delegate,
+                                                                                      droneDetailsMapViewModel: droneDetailsMapViewModel)
         presentModal(viewController: droneDetailsMapViewController)
     }
 
@@ -126,7 +136,11 @@ extension DroneCoordinator {
 
     /// Displays cellular pin code modal.
     func displayCellularPinCode() {
-        let viewModel = CellularAccessCardPinViewModel(coordinator: self, detailsCellularIsSource: true)
+        let viewModel = CellularAccessCardPinViewModel(coordinator: self,
+                                                       detailsCellularIsSource: true,
+                                                       currentDroneHolder: services.currentDroneHolder,
+                                                       pinCodeService: services.drone.pinCodeService,
+                                                       cellularService: services.drone.cellularService)
         presentModal(viewController: CellularAccessCardPinViewController.instantiate(viewModel: viewModel))
     }
 
@@ -149,7 +163,7 @@ extension DroneCoordinator {
 
     /// Starts the Firmware and AirSdk Missions updates process.
     func startFirmwareAndAirSdkMissionsUpdate() {
-        let coordinator = DroneFirmwaresCoordinator()
+        let coordinator = DroneFirmwaresCoordinator(services: services)
         coordinator.parentCoordinator = self
         coordinator.start()
         present(childCoordinator: coordinator,

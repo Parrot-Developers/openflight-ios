@@ -37,88 +37,67 @@ private extension ULogTag {
 }
 
 /// Drone location overlay.
-public final class DroneLocationGraphicsOverlay: CommonGraphicsOverlay {
+public final class DroneLocationGraphicsOverlay: AGSGraphicsOverlay {
 
     static let Key = "DroneLocationGraphicsOverlayKey"
 
     // MARK: - Private Properties
+    /// Combine cancellables
+    private var cancellables = Set<AnyCancellable>()
     // Drone graphic
-    private var droneGraphic: FlightPlanLocationGraphic?
-
+    private let droneGraphic: DroneLocationGraphic
     // MARK: - Public Properties
-    public var viewModel = DroneLocationGraphicsOverlayViewModel(
-        connectedDroneHolder: Services.hub.connectedDroneHolder,
-        locationsTracker: Services.hub.locationsTracker)
+    public let viewModel: DroneLocationGraphicsOverlayViewModel
 
     /// Elevation at take off point, must be provided by 3D maps using the overlay.
     public var elevationTakeOff: Double = 0
+    public var droneLocation: OrientedLocation?
+
+    public var isDroneConnected: Bool = false
 
     // MARK: - Override Funcs
     /// Init
-    override public init() {
+    /// - parameters:
+    ///   - isScene : true if the overlay is created for a 3D scene, false for a 2D map
+    ///   - showWhenDisconnected : true if the drone icon should be visible when the drone is disconnected
+    init(isScene: Bool = false, showWhenDisconnected: Bool = false) {
+        viewModel = DroneLocationGraphicsOverlayViewModel(
+            isScene: isScene,
+            showWhenDisconnected: showWhenDisconnected,
+            connectedDroneHolder: Services.hub.connectedDroneHolder,
+            locationsTracker: Services.hub.locationsTracker)
+        droneGraphic = DroneLocationGraphic(is3d: isScene)
         super.init()
-        viewModel.droneLocationPublisher
+
+        if let location = viewModel.droneLocation, let point = location.coordinates?.agsPoint {
+            droneGraphic.update(geometry: point, heading: location.heading)
+        }
+
+        let renderer = AGSSimpleRenderer()
+        renderer.sceneProperties?.headingExpression = "[HEADING]"
+        renderer.sceneProperties?.pitchExpression = "[PITCH]"
+        self.renderer = renderer
+        graphics.add(droneGraphic)
+
+        viewModel.isDroneConnectedPublisher
+            .sink { [weak self] isDroneConnected in
+                self?.isDroneConnected = isDroneConnected
+            }
+            .store(in: &cancellables)
+
+        viewModel.$droneLocation
             .sink { [weak self] droneLocation in
-                self?.update(location: droneLocation)
+                guard let self = self, let droneLocation = droneLocation else { return }
+                self.update(location: droneLocation)
             }
             .store(in: &cancellables)
 
-        viewModel.droneConnectionStatePublisher
-            .sink { [weak self] droneConnected in
+        viewModel.droneIconPublisher
+            .sink { [weak self] droneSymbol in
                 guard let self = self else { return }
-                self.isActive.value = droneConnected
+                self.droneGraphic.update(symbol: droneSymbol)
             }
             .store(in: &cancellables)
-
-        viewModel.droneIconPublisher.removeDuplicates()
-            .sink { [weak self] droneIcon in
-                self?.droneGraphic?.update(image: droneIcon)
-            }
-            .store(in: &cancellables)
-
-        viewModel.droneIcon3DPublisher.removeDuplicates()
-            .sink { [weak self] droneIcon3D in
-                self?.droneGraphic?.update(image3D: droneIcon3D)
-            }
-            .store(in: &cancellables)
-    }
-
-    init(isScene: Bool) {
-        super.init()
-        viewModel.isScene.value = isScene
-        viewModel.droneLocationPublisher
-            .sink { [weak self] droneLocation in
-                self?.update(location: droneLocation)
-            }
-            .store(in: &cancellables)
-
-        viewModel.droneConnectionStatePublisher
-            .sink { [weak self] droneConnected in
-                guard let self = self else { return }
-                self.isActive.value = droneConnected
-            }
-            .store(in: &cancellables)
-
-        viewModel.droneIconPublisher.removeDuplicates()
-            .sink { [weak self] droneIcon in
-                self?.droneGraphic?.update(image: droneIcon)
-            }
-            .store(in: &cancellables)
-
-        viewModel.droneIcon3DPublisher.removeDuplicates()
-            .sink { [weak self] droneIcon3D in
-                self?.droneGraphic?.update(image3D: droneIcon3D)
-            }
-            .store(in: &cancellables)
-    }
-
-    /// Updates camera zoom level and camera position
-    ///
-    /// - Parameters:
-    ///     - cameraZoomLevel: new camera zoom level
-    ///     - position: new position of camera
-    func update(cameraZoomLevel: Int, position: AGSPoint) {
-        droneGraphic?.update(cameraZoomLevel: cameraZoomLevel, position: position)
     }
 
     // MARK: - Private Funcs
@@ -127,55 +106,14 @@ public final class DroneLocationGraphicsOverlay: CommonGraphicsOverlay {
     /// - Parameters
     ///     - location : the new location
     private func update(location: OrientedLocation) {
-        guard let coordinates = location.coordinates else {return}
-        let adjustedLocation = Location3D(coordinate: coordinates.coordinate, altitude: max(coordinates.altitude, elevationTakeOff))
-        var geometry = adjustedLocation.agsPoint
-
-        if let droneGraphic = droneGraphic {
-            if sceneProperties?.surfacePlacement == .drapedFlat {
-                geometry = AGSPoint(x: adjustedLocation.agsPoint.x, y: adjustedLocation.agsPoint.y, z: 0, spatialReference: .wgs84())
-            }
-            droneGraphic.update(geometry: geometry)
-            droneGraphic.update(angle: Float(location.heading))
-            droneGraphic.setReduced(viewModel.isMiniMap.value)
-            setOrientationOfDroneGraphic()
-        } else {
-            // create graphic for drone location, if it does not exist
-            let attributes = ["type": "droneLocation"]
-            droneGraphic = FlightPlanLocationGraphic(
-                geometry: geometry, heading: Float(location.heading),
-                attributes: attributes,
-                image: viewModel.isScene.value ? nil : viewModel.droneIconSubject.value,
-                image3D: viewModel.isScene.value ? viewModel.droneIconSubject3D.value : nil,
-                display3D: viewModel.isScene.value)
-            droneGraphic?.setReduced(viewModel.isMiniMap.value)
-            setOrientationOfDroneGraphic()
-            if let droneGraphic = droneGraphic {
-                graphics.add(droneGraphic)
-            }
+        guard let coordinates = location.coordinates else { return }
+        droneLocation = location
+        var geometry = coordinates.agsPoint
+        if sceneProperties?.surfacePlacement != .drapedFlat {
+            geometry = AGSPoint(x: geometry.x, y: geometry.y, z: max(coordinates.altitude, elevationTakeOff), spatialReference: .wgs84())
+            droneLocation?.coordinates?.altitude = geometry.z
         }
-    }
 
-    /// Set orientation of drone graphic depending on type of map / scene and if it is flat
-    private func setOrientationOfDroneGraphic() {
-        droneGraphic?.locationSymbol?.angleAlignment = viewModel.isScene.value ? .screen : .map
-        if let sceneProperties = sceneProperties {
-            if viewModel.isScene.value {
-                droneGraphic?.update(applyCameraHeading: sceneProperties.surfacePlacement != .drapedFlat)
-            } else {
-                droneGraphic?.update(applyCameraHeading: sceneProperties.surfacePlacement == .drapedFlat)
-            }
-        }
-    }
-
-    func update(cameraHeading: Double) {
-        droneGraphic?.update(cameraHeading: cameraHeading)
-    }
-
-    // MARK: - Public Funcs
-    /// Clears the overlay
-    public func clearGraphics() {
-        graphics.removeAllObjects()
-        self.droneGraphic = nil
+        droneGraphic.update(geometry: geometry, heading: location.heading)
     }
 }

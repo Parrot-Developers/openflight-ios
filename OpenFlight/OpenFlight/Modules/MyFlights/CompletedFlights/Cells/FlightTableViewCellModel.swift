@@ -32,35 +32,53 @@ import Combine
 import CoreLocation
 import MapKit
 
+/// A cell model describing a flights list table view row.
 open class FlightTableViewCellModel {
 
-    private let service: FlightService
+    /// The flight name (placeholder if name is unavailable).
+    private(set) var title: String
+    /// The start time of the flight.
+    private(set) var startTime: Date?
+    /// The flight date formatted string.
+    private(set) var formattedDate: String?
+    /// The flight duration formatted string.
+    private(set) var formattedDuration: String?
+    /// The number of photos captured during flight.
+    private(set) var photoCount: Int16
+    /// The number of videos captured during flight.
+    private(set) var videoCount: Int16
+    /// The flight thumbnail.
+    private(set) var thumbnail: UIImage
+    /// Whether cell is selected.
+    private(set) var isSelected: Bool = false
 
-    @Published private(set) public var name: String?
-    @Published private(set) var thumbnail: UIImage?
-    @Published private(set) var isSelected: Bool = false
-
-    open private(set) var flight: FlightModel
-    private(set) var flightsViewModel: FlightsViewModel?
-
-    private var cancellables = Set<AnyCancellable>()
-
-    init(service: FlightService,
-         flight: FlightModel,
-         flightsViewModel: FlightsViewModel?) {
-        self.service = service
-        self.flight = flight
-        self.flightsViewModel = flightsViewModel
-        if let title = flight.title, !title.isEmpty {
-            name = title
-        } else {
-            name = L10n.dashboardMyFlightUnknownLocation
-        }
-        self.thumbnail = flight.thumbnail?.thumbnailImage
-        flightsViewModel?.$selectedFlight
-            .sink { [weak self] in
-                self?.isSelected = $0?.uuid == flight.uuid
-            }
-            .store(in: &cancellables)
+    // MARK: - Init
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - title: the flight title
+    ///    - startTime: the start time of the flight
+    ///    - formattedDate: the flight date formatted string
+    ///    - formattedDuration: the flight duration formatted string
+    ///    - photoCount: the number of photos captured during flight
+    ///    - videoCount: the number of videos captured during flight
+    ///    - thumbnail: the flight thumbnail
+    ///    - isSelected: whether the cell is selected
+    init(title: String,
+         startTime: Date? = nil,
+         formattedDate: String? = nil,
+         formattedDuration: String? = nil,
+         photoCount: Int16,
+         videoCount: Int16,
+         thumbnail: UIImage,
+         isSelected: Bool) {
+        self.title = title
+        self.startTime = startTime
+        self.formattedDate = formattedDate
+        self.formattedDuration = formattedDuration
+        self.photoCount = photoCount
+        self.videoCount = videoCount
+        self.thumbnail = thumbnail
+        self.isSelected = isSelected
     }
 }

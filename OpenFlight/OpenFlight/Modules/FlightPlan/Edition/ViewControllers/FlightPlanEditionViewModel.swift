@@ -216,9 +216,9 @@ public class FlightPlanEditionViewModel {
         self.navigationStack = navigationStack
         self.panelCoordinator = panelCoordinator
         edition.currentFlightPlanPublisher
-            .compactMap({ $0 })
             .sink(receiveValue: { [unowned self] flightPlan in
-                self.globalSettingsProvider?.updateType(key: flightPlan.type)
+                guard let flightPlan = flightPlan else { return }
+                self.globalSettingsProvider?.updateType(key: flightPlan.pictorModel.flightPlanType)
                 self.flightPlanEditionMenuViewModel?.updateModel(flightPlan)
                 guard editionSettingsViewModel?.settingsCategoryFilter != .custom(L10n.flightPlanSegmentSettingsTitle) else {
                     closeSettings()
@@ -298,7 +298,7 @@ extension FlightPlanEditionViewModel {
                                                    selectedGraphic: selectedGraphic)
 
         // do not propagate settings updates in the undo stack for other types of FPs.
-        guard currentFlightPlanModel()?.type == ClassicFlightPlanType.standard.key else {
+        guard currentFlightPlanModel()?.pictorModel.flightPlanType == ClassicFlightPlanType.standard.key else {
             return
         }
         if selectedGraphic != nil {
@@ -319,7 +319,7 @@ extension FlightPlanEditionViewModel {
                                                    selectedGraphic: selectedGraphic)
 
         // do not propagate settings updates in the undo stack for other types of FPs.
-        guard currentFlightPlanModel()?.type == ClassicFlightPlanType.standard.key else {
+        guard currentFlightPlanModel()?.pictorModel.flightPlanType == ClassicFlightPlanType.standard.key else {
             return
         }
         if selectedGraphic != nil {

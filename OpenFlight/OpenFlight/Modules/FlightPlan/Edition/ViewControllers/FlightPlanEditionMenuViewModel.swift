@@ -91,7 +91,7 @@ private struct ProjectNameCellProvider: ProjectNameMenuTableViewCellProvider, Pr
 
     func title(ofFlightPlan flightPlan: FlightPlanModel?) -> String {
         guard let flightPlan = flightPlan else { return "" }
-        return flightPlan.customTitle
+        return flightPlan.pictorModel.name
     }
 
     func update(title: String, ofFlightPlan flightPlan: FlightPlanModel?) {
@@ -101,7 +101,7 @@ private struct ProjectNameCellProvider: ProjectNameMenuTableViewCellProvider, Pr
         else { return }
         let newTitle: String
         // Check if the title has been modified.
-        if flightPlan.customTitle != title {
+        if flightPlan.pictorModel.name != title {
             // Generate an unique title.
             // If the new title is already used by another project,
             // use the same rule than for a project creation (adding ' ({index})' suffix).

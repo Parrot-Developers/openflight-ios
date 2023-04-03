@@ -31,6 +31,10 @@ import Combine
 import GroundSdk
 import SwiftyUserDefaults
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "CameraWidgetViewModel")
+}
+
 /// State for `CameraWidgetViewModel`.
 
 class CameraWidgetState: BarButtonState, EquatableState, Copying {
@@ -199,9 +203,9 @@ final class CameraWidgetViewModel: BarButtonViewModel<CameraWidgetState> {
                 }
             })
             .filter { $0 == .lockOnRegion }
-            .sink { [unowned self] _ in
+            .sink { [weak self] _ in
                 // open imaging bar
-                select()
+                self?.select()
             }
             .store(in: &cancellables)
     }
@@ -232,22 +236,23 @@ final class CameraWidgetViewModel: BarButtonViewModel<CameraWidgetState> {
 private extension CameraWidgetViewModel {
     /// Starts watcher for camera.
     func listenCamera(drone: Drone) {
-        mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [unowned self] _ in
-            updateState(drone: drone)
+        mainCameraRef = drone.getPeripheral(Peripherals.mainCamera2) { [weak self] _ in
+            self?.updateState(drone: drone)
         }
     }
 
     /// Starts watcher for exposure values (ShutterSpeed).
     func listenExposureValues(drone: Drone) {
         exposureValuesRef = drone.getPeripheral(Peripherals.mainCamera2)?
-            .getComponent(Camera2Components.exposureIndicator) { [unowned self] exposureIndicator in
+            .getComponent(Camera2Components.exposureIndicator) { [weak self] exposureIndicator in
+                ULog.d(.tag, "listenExposureValues iso:\(exposureIndicator?.isoSensitivity.rawValue)")
                 if let rawShutterSpeedValue = exposureIndicator?.shutterSpeed.rawValue {
                     Defaults.lastShutterSpeedValue = rawShutterSpeedValue
                 }
                 if let rawCameraIsoValue = exposureIndicator?.isoSensitivity.rawValue {
                     Defaults.lastCameraIsoValue = rawCameraIsoValue
                 }
-                updateState(drone: drone)
+                self?.updateState(drone: drone)
             }
     }
 

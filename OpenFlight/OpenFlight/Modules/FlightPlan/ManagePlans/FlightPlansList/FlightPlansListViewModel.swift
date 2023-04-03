@@ -29,6 +29,7 @@
 
 import Foundation
 import Combine
+import Pictor
 
 /// Describes FlightPlansList ViewController display mode.
 enum FlightPlansListDisplayMode {
@@ -190,15 +191,14 @@ final class FlightPlansListViewModel {
     init(manager: ProjectManager,
          flightPlanTypeStore: FlightPlanTypeStore,
          navigationStack: NavigationStackService,
-         cloudSynchroWatcher: CloudSynchroWatcher?,
+         synchroService: SynchroService?,
          selectedHeaderUuid: String?) {
         self.manager = manager
         self.flightPlanTypeStore = flightPlanTypeStore
         self.navigationStack = navigationStack
         self.selectedHeaderUuid = selectedHeaderUuid
 
-        cloudSynchroWatcher?.synchroStatusPublisher
-            .receive(on: RunLoop.main)
+        synchroService?.statusPublisher
             .sink(receiveValue: { [weak self] status in
                 if !status.isSyncing {
                     self?.initViewModel()
@@ -215,7 +215,8 @@ final class FlightPlansListViewModel {
     // MARK: - Private funcs
     private func loadAllProjects() -> [ProjectModel] {
         if displayMode == .compact {
-            return manager.loadProjects(type: Services.hub.currentMissionManager.mode.flightPlanProvider?.projectType)
+            return manager.loadProjects(type: Services.hub.currentMissionManager.mode.flightPlanProvider?.projectType,
+                                        limit: manager.numberOfProjectsPerPage)
         } else {
             return manager.loadExecutedProjects(offset: 0, limit: manager.numberOfProjectsPerPage, withType: nil)
         }
@@ -231,7 +232,7 @@ final class FlightPlansListViewModel {
 
     /// Construct array of `FlightPlanListHeaderCellProvider` from given array of `ProjectModel`
     // TODO: Filter header for projects should not be based on a any flight plan's type
-    private func buildHeader(_ projects: [ProjectModel]) {
+    private func buildHeader() {
         var headerCellProviders = [FlightPlanListHeaderCellProvider]()
         let classicCount = manager.getExecutedProjectsCount(withType: .classic)
         let pgyCount = manager.getExecutedProjectsCount(withType: .pgy)
@@ -272,7 +273,8 @@ final class FlightPlansListViewModel {
 extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
 
     func flightPlanExecutions(ofProject project: ProjectModel) -> [FlightPlanModel] {
-        manager.getExecutedFlightPlans(ofProject: project)
+        // Get the list of executed FPs excluding the one currently ongoing.
+        manager.executedFlightPlans(for: project)
     }
 
     func selectProject(_ project: ProjectModel) {
@@ -324,14 +326,12 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
     }
 
     func initViewModel() {
-        let projects = loadAllProjects()
         switch displayMode {
         case .dashboard:
-            filteredProjects.value = projects
-            buildHeader(projects)
+            buildHeader()
             updateFilteredProjects()
         case .compact:
-            filteredProjects.value = projects
+            filteredProjects.value = loadAllProjects()
         }
     }
 

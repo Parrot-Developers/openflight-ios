@@ -44,6 +44,7 @@ public final class HUDCameraStreamingViewController: UIViewController {
     @IBOutlet private weak var gridView: GridView!
     @IBOutlet public weak var touchView: TouchStreamView!
     @IBOutlet private weak var streamView: StreamView!
+    @IBOutlet private weak var homeView: HomeStreamView!
 
     // MARK: - Internal Properties
     weak var delegate: HUDCameraStreamingViewControllerDelegate?
@@ -261,6 +262,7 @@ private extension HUDCameraStreamingViewController {
         streamView.setStream(stream: cameraLive)
         if cameraLive == nil {
             Services.hub.touchAndFly.frameUpdate(mediaInfoHandle: nil, metadataHandle: nil)
+            homeView.viewModel.frameUpdate(mediaInfoHandle: nil, metadataHandle: nil)
         }
     }
 
@@ -285,6 +287,7 @@ private extension HUDCameraStreamingViewController {
         proposalAndTrackingView?.updateFrame(frame)
         gridView.update(frame: frame)
         touchView.update(frame: frame)
+        homeView.update(frame: frame)
         contentZone = frame
     }
 
@@ -306,6 +309,7 @@ private extension HUDCameraStreamingViewController {
         touchView.viewModel = nil
         streamView.setStream(stream: nil)
         Services.hub.touchAndFly.frameUpdate(mediaInfoHandle: nil, metadataHandle: nil)
+        homeView.viewModel.frameUpdate(mediaInfoHandle: nil, metadataHandle: nil)
     }
 }
 
@@ -338,5 +342,6 @@ extension HUDCameraStreamingViewController: Overlayer {
     public func overlay(overlayContext: OverlayContext) {
         Services.hub.touchAndFly.frameUpdate(mediaInfoHandle: overlayContext.mediaInfoHandle,
                                              metadataHandle: overlayContext.frameMetadataHandle)
+        homeView.viewModel.frameUpdate(mediaInfoHandle: overlayContext.mediaInfoHandle, metadataHandle: overlayContext.frameMetadataHandle)
     }
 }

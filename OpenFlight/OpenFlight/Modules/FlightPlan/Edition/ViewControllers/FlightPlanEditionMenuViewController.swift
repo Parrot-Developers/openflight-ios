@@ -228,7 +228,7 @@ private extension FlightPlanEditionMenuViewController {
         doneButton.setup(title: L10n.commonDone, style: .validate)
 
         buttonsStackView.screenBorders = [.bottom, .right]
-        topbar?.set(projectTitle: flightPlan?.customTitle)
+        topbar?.set(projectTitle: flightPlan?.pictorModel.name)
         if !dataSource.isEmpty {
             let type = dataSource[0]
             topbar?.set(title: type.title)

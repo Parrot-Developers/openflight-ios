@@ -29,6 +29,7 @@
 
 import Foundation
 import GroundSdk
+import Pictor
 
 struct FlightPlanTestModel: Codable {
     var uuid: String
@@ -36,25 +37,26 @@ struct FlightPlanTestModel: Codable {
     var dataSetting: FlightPlanDataSetting?
 
     func flightPlanModel() -> FlightPlanModel {
-        var fpm = FlightPlanModel(apcId: "", type: type, uuid: uuid,
-                                  version: "", customTitle: "", thumbnailUuid: nil,
-                                  projectUuid: "", dataStringType: "",
-                                  dataString: nil, pgyProjectId: nil,
-                                  state: .unknown, lastMissionItemExecuted: nil,
-                                  mediaCount: nil, uploadedMediaCount: nil,
-                                  lastUpdate: Date(), synchroStatus: nil,
-                                  fileSynchroStatus: 0, fileSynchroDate: nil,
-                                  latestSynchroStatusDate: nil, cloudId: nil,
-                                  parrotCloudUploadUrl: nil, isLocalDeleted: false,
-                                  latestCloudModificationDate: nil,
-                                  uploadAttemptCount: nil, lastUploadAttempt: nil,
-                                  thumbnail: nil, flightPlanFlights: nil,
-                                  latestLocalModificationDate: nil,
-                                  synchroError: nil)
+        var pictorFPModel = PictorFlightPlanModel(name: "",
+                                                  state: .unknown,
+                                                  flightPlanType: "",
+                                                  formatVersion: "",
+                                                  lastUpdated: Date(),
+                                                  fileType: "",
+                                                  dataSetting: nil,
+                                                  mediaCount: 0,
+                                                  uploadedMediaCount: 0,
+                                                  lastMissionItemExecuted: 0,
+                                                  executionRank: nil,
+                                                  hasReachedFirstWaypoint: nil,
+                                                  projectUuid: nil,
+                                                  projectPix4dUuid: nil,
+                                                  thumbnail: nil)
         var dataSetting = self.dataSetting
         dataSetting?.mavlinkDataFile = nil
-        fpm.dataSetting = dataSetting
-        return fpm
+        pictorFPModel.dataSetting = dataSetting?.asData
+
+        return pictorFPModel.flightPlanModel
     }
 }
 
@@ -85,9 +87,9 @@ class FlightPlanExporter {
     /// Exports all flight plans currently in the repository.
     /// Stores them as files in the document directory of the app
     static func exportRepository() {
-    let flightPlans = Services.hub.repos.flightPlan.getAllFlightPlans()
-    for flightPlan in flightPlans {
-        FlightPlanExporter.export(flightPlan: flightPlan)
+        let flightPlans = Services.hub.repos.flightPlan.getAll()
+        for flightPlan in flightPlans {
+            FlightPlanExporter.export(flightPlan: flightPlan.flightPlanModel)
         }
     }
 
@@ -103,7 +105,7 @@ class FlightPlanExporter {
         }
         let fpExport = FlightPlanTestModel(
             uuid: flightPlan.uuid,
-            type: flightPlan.type,
+            type: flightPlan.pictorModel.flightPlanType,
             dataSetting: flightPlan.dataSetting)
         do {
             let data = try JSONEncoder().encode(fpExport)
@@ -122,7 +124,7 @@ class FlightPlanExporter {
         let filesManager = Services.hub.flightPlan.filesManager
         let path = filesManager.defaultUrl(flightPlan: flightPlan).path
         let commands: [MavlinkStandard.MavlinkCommand]
-        let type = typeStore.typeForKey(flightPlan.type)
+        let type = typeStore.typeForKey(flightPlan.pictorModel.flightPlanType)
         let canGenerateMavlink = type?.canGenerateMavlink ?? false
         guard canGenerateMavlink else {
             return nil

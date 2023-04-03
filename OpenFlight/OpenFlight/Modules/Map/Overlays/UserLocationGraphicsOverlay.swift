@@ -37,20 +37,22 @@ private extension ULogTag {
 }
 
 /// User location overlay.
-public final class UserLocationGraphicsOverlay: CommonGraphicsOverlay {
+public final class UserLocationGraphicsOverlay: AGSGraphicsOverlay {
 
     static let Key = "UserLocationGraphicsOverlayKey"
 
     // MARK: - Private Properties
+    /// Combine cancellables
+    private var cancellables = Set<AnyCancellable>()
     private var userGraphic: FlightPlanUserLocationGraphic?
 
     // MARK: - Public Properties
     public var viewModel = UserLocationGraphicsOverlayViewModel()
+    public var userLocation: OrientedLocation?
 
     // MARK: - Override Funcs
     override public init() {
         super.init()
-        isActive.value = true
         viewModel.userLocationPublisher
             .sink { [weak self] userLocation in
                 self?.update(location: userLocation)
@@ -70,6 +72,7 @@ public final class UserLocationGraphicsOverlay: CommonGraphicsOverlay {
     /// - Parameter location : the new location
     private func update(location: OrientedLocation) {
         guard let location2D = location.coordinates?.coordinate else { return }
+        userLocation = location
         let geometry = AGSPoint(clLocationCoordinate2D: location2D)
 
         if let userGraphic = userGraphic {

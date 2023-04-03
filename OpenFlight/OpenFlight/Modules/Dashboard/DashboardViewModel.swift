@@ -28,6 +28,7 @@
 //    SUCH DAMAGE.
 
 import Foundation
+import Pictor
 
 /// View Model used to display handle behavior of DashBoardViewController
 final class DashboardViewModel {
@@ -48,7 +49,7 @@ final class DashboardViewModel {
 
     private let service: VariableAssetsService
     private let projectManager: ProjectManager
-    private let cloudSynchroWatcher: CloudSynchroWatcher?
+    private let synchroService: SynchroService?
     private let projectManagerUiProvider: ProjectManagerUiProvider!
     private let flightService: FlightService
     /// The media services.
@@ -65,20 +66,20 @@ final class DashboardViewModel {
     /// - Parameters:
     ///    - service: the variable assets service
     ///    - projectManager: the project manager
-    ///    - cloudSynchroWatcher: the cloud synchro watcher
+    ///    - synchroService: the cloud synchro service
     ///    - dashboardUiProvider: the dashboard UI provider
     ///    - flightService: the flight service
     ///    - mediaServices: the media services
     init(service: VariableAssetsService,
          projectManager: ProjectManager,
-         cloudSynchroWatcher: CloudSynchroWatcher?,
+         synchroService: SynchroService?,
          projectManagerUiProvider: ProjectManagerUiProvider,
          dashboardUiProvider: DashboardUiProvider,
          flightService: FlightService,
          mediaServices: MediaServices) {
         self.service = service
         self.projectManager = projectManager
-        self.cloudSynchroWatcher = cloudSynchroWatcher
+        self.synchroService = synchroService
         self.projectManagerUiProvider = projectManagerUiProvider
         self.dashboardUiProvider = dashboardUiProvider
         self.flightService = flightService
@@ -93,9 +94,9 @@ final class DashboardViewModel {
         droneInfosViewModel = DroneInfosViewModel()
         userDeviceViewModel = UserDeviceViewModel(userLocationManager: UserLocationManager())
         myFlightsCellModel = DashboardMyFlightsCellModel(service: flightService,
-                                                         cloudSynchroWatcher: cloudSynchroWatcher)
+                                                         synchroService: synchroService)
         dashboardProjectManagerCellModel = DashboardProjectManagerCellModel(manager: projectManager,
-                                                                            cloudSynchroWatcher: cloudSynchroWatcher,
+                                                                            synchroService: synchroService,
                                                                             projectManagerUiProvider: projectManagerUiProvider)
     }
 }

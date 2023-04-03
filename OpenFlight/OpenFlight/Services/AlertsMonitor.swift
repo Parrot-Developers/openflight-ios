@@ -307,10 +307,10 @@ private extension AlertsMonitor {
     /// - Parameter drone: drone to monitor
     func listenReturnHome(drone: Drone) {
         returnHomeRef = drone.getPilotingItf(PilotingItfs.returnHome) { [weak self] returnHome in
-            guard let self = self else { return }
-            self.isHomeNotReachable = returnHome?.homeReachability == .notReachable
-            self.isRthActive = returnHome?.state == .active
-            self.rthUnavailabilityReasons = returnHome?.unavailabilityReasons
+            guard let self = self, let returnHome = returnHome else { return }
+            self.isHomeNotReachable = returnHome.homeReachability == .notReachable
+            self.isRthActive = returnHome.state == .active && !returnHome.suspended
+            self.rthUnavailabilityReasons = returnHome.unavailabilityReasons
         }
     }
 

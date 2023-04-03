@@ -69,7 +69,7 @@ extension FirmwareMissionsUpdatingCase {
     var missionUpdatingLabelText: String {
         switch self {
         case let .mission(_, mission):
-            return L10n.firmwareMissionUpdateUpdatingMission(mission.missionName, mission.missionVersion)
+            return L10n.firmwareMissionUpdateUpdatingMission(mission.missionName ?? mission.internalName, mission.missionVersion)
         case let .downloadingFirmware(_, firmware):
             return L10n.firmwareMissionUpdateDownloadingFirmware(firmware.firmwareIdealVersion)
         case let .updatingFirmware(_, firmware):

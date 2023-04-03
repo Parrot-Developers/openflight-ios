@@ -28,19 +28,26 @@
 //    SUCH DAMAGE.
 
 import UIKit
+import GroundSdk
+import Combine
+
+private extension ULogTag {
+    static let tag = ULogTag(name: "FirmwareUpdateService")
+}
 
 /// The view controller that displays the firmware and the AirSdk missions to be updated.
 final class DroneFirmwaresViewController: UIViewController {
     // MARK: - Outlets
+    @IBOutlet private weak var popupLeadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var popupTrailingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var tableView: UITableView!
     @IBOutlet private weak var titleLabel: UILabel!
     @IBOutlet private weak var contentView: UIView!
 
     // MARK: - Private Properties
     private weak var coordinator: DroneFirmwaresCoordinator?
-    private var dataSource = DroneFirmwaresDataSource()
-    private var dataSourceListener: FirmwareAndMissionsListener?
-    private var interactor = FirmwareAndMissionsInteractor.shared
+    private var viewModel: DroneFirmwaresViewModel!
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
     enum Constants {
@@ -49,15 +56,13 @@ final class DroneFirmwaresViewController: UIViewController {
     }
 
     // MARK: - Setup
-    static func instantiate(coordinator: DroneFirmwaresCoordinator) -> DroneFirmwaresViewController {
+    static func instantiate(
+        coordinator: DroneFirmwaresCoordinator,
+        viewModel: DroneFirmwaresViewModel) -> DroneFirmwaresViewController {
         let viewController = StoryboardScene.DroneFirmwares.initialScene.instantiate()
         viewController.coordinator = coordinator
+        viewController.viewModel = viewModel
         return viewController
-    }
-
-    // MARK: - Deinit
-    deinit {
-        interactor.unregister(dataSourceListener)
     }
 
     // MARK: - Override Funcs
@@ -66,12 +71,11 @@ final class DroneFirmwaresViewController: UIViewController {
 
         initUI()
         setupTableView()
-        listenDataSource()
+        observeViewModel()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        interactor.manuallyBrowse()
 
         UIView.animate(withDuration: Style.shortAnimationDuration,
                        delay: Style.shortAnimationDuration,
@@ -89,17 +93,17 @@ final class DroneFirmwaresViewController: UIViewController {
 extension DroneFirmwaresViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView,
                    numberOfRowsInSection section: Int) -> Int {
-        return dataSource.elements.count
+        return viewModel.elements.count
     }
 
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let element = dataSource.elements[indexPath.row]
+        let element = viewModel.elements[indexPath.row]
         let cell = tableView.dequeueReusableCell(for: indexPath) as DroneFirmwaresTableViewCell
         cell.setup(with: element,
                    delegate: self,
-                   numberOfFiles: dataSource.elements.count - 1,
-                   droneIsConnected: dataSource.isDroneConnected)
+                   numberOfFiles: viewModel.elements.count - 1,
+                   droneIsConnected: viewModel.isDroneConnected)
 
         return cell
     }
@@ -119,19 +123,26 @@ extension DroneFirmwaresViewController: DroneFirmwaresTableViewCellDelegate {
     /// - Parameters:
     ///    - updateChoice: The current update choice
     func startUpdate(for updateChoice: FirmwareAndMissionUpdateChoice) {
-        let currentRequirement = interactor.prepareUpdates(updateChoice: updateChoice)
-        switch currentRequirement {
-        case .readyForUpdate:
+        switch updateChoice {
+        case .batteryGaugeUpdate:
+            // For the battery gauge update, the requirements are handled in the checklist view.
             redirectToUpdatingViewController(updateChoice: updateChoice)
-        case .droneIsFlying,
-             .droneIsNotConnected,
-             .noInternetConnection,
-             .notEnoughBattery,
-             .notEnoughSpace,
-             .ongoingUpdate:
-            presentRequirementAlert(for: currentRequirement,
-                                    updateChoice: updateChoice)
+        default:
+            let currentRequirement = viewModel.prepareUpdates(updateChoice: updateChoice)
+            switch currentRequirement {
+            case .readyForUpdate:
+                redirectToUpdatingViewController(updateChoice: updateChoice)
+            case .droneIsFlying,
+                    .droneIsNotConnected,
+                    .noInternetConnection,
+                    .notEnoughBattery,
+                    .notEnoughSpace,
+                    .ongoingUpdate:
+                presentRequirementAlert(for: currentRequirement,
+                                        updateChoice: updateChoice)
+            }
         }
+
     }
 }
 
@@ -147,7 +158,7 @@ private extension DroneFirmwaresViewController {
 
     func closeView() {
         view.backgroundColor = .clear
-        _ = interactor.cancelAllUpdates(removeData: true)
+        _ = viewModel.cancelAllUpdates(removeData: true)
         coordinator?.quitUpdateProcesses()
     }
 }
@@ -156,6 +167,8 @@ private extension DroneFirmwaresViewController {
 private extension DroneFirmwaresViewController {
     /// Inits the UI.
     func initUI() {
+        popupLeadingConstraint.constant = Layout.popupHMargin(isRegularSizeClass)
+        popupTrailingConstraint.constant = popupLeadingConstraint.constant
         titleLabel.text = L10n.firmwareMissionUpdateFirmwareVersionPlural
         contentView.customCornered(corners: [.topLeft, .topRight], radius: Constants.cornerRadius)
     }
@@ -170,13 +183,14 @@ private extension DroneFirmwaresViewController {
         tableView.reloadData()
     }
 
-    /// Listens to the data source.
-    func listenDataSource() {
-        dataSourceListener = interactor
-            .register(firmwareAndMissionsClosure: { [weak self] (dataSource, _) in
-                self?.dataSource = dataSource
+    /// Observes firmwares update view model.
+    func observeViewModel() {
+        viewModel.elementsPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
                 self?.tableView.reloadData()
-            })
+            }
+            .store(in: &cancellables)
     }
 
     /// Redirects to the pertinent updating view controller.
@@ -184,6 +198,7 @@ private extension DroneFirmwaresViewController {
     /// - Parameters:
     ///    - updateChoice: The current update choice
     func redirectToUpdatingViewController(updateChoice: FirmwareAndMissionUpdateChoice) {
+
         switch updateChoice {
         case .upToDateAirSdkMission:
             break
@@ -192,7 +207,7 @@ private extension DroneFirmwaresViewController {
             case .compatible:
                 coordinator?.goToUpdatingViewController(functionalUpdateChoice: .airSdkMissions)
             case .tooOld:
-                if dataSource.firmwareUpdateNeeded {
+                if viewModel.isFirmwareUpdateNeeded {
                     presentCompatibilityAlert()
                 }
             case .tooRecent:
@@ -215,6 +230,8 @@ private extension DroneFirmwaresViewController {
             } else {
                 coordinator?.goToUpdatingViewController(functionalUpdateChoice: .firmwareAndAirSdkMissions)
             }
+        case .batteryGaugeUpdate:
+            coordinator?.goToUpdatingViewController(functionalUpdateChoice: .batteryGauge)
         }
     }
 }
@@ -297,8 +314,8 @@ private extension DroneFirmwaresViewController {
             title: L10n.firmwareMissionUpdateInstallAll,
             actionHandler: { [weak self] in
                 // The first update choice is always firmware and missions update
-                if self?.dataSource.elements.isEmpty == false,
-                   let updateChoice = self?.dataSource.elements[0] {
+                if self?.viewModel.elements.isEmpty == false,
+                   let updateChoice = self?.viewModel.elements[0] {
                     self?.startUpdate(for: updateChoice)
                 }
             })

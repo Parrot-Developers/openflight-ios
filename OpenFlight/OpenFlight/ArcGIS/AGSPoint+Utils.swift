@@ -31,6 +31,15 @@ import ArcGIS
 
 /// Utility extension for `AGSPoint`.
 public extension AGSPoint {
+
+    /// Returns true if the coordinate is valid.
+    /// Coordinate 0, 0 is assumed invalid here.
+    var isValid: Bool {
+        let coordinate = self.toCLLocationCoordinate2D()
+        return CLLocationCoordinate2DIsValid(coordinate)
+        && (coordinate.latitude != 0.0 || coordinate.longitude != 0.0)
+    }
+
     /// Creates a new point with given altitude.
     ///
     /// - Parameters:

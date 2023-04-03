@@ -29,8 +29,6 @@
 
 /// This protocol purpose is to harmonize the AirSdk missions set up in AppDelegate
 public protocol AirSdkMissionsSetupProtocol {
-    /// Set up `FirmwareAndMissionsInteractor` in this function.
-    func setupFirmwareAndMissionsInteractor()
     /// Add AirSdk missions in the HUD Panel in this function.
     func addMissionsToHUDPanel()
 }

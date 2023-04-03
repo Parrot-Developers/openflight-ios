@@ -51,13 +51,13 @@ public class ReturnHomeGraphicsOverlayViewModel {
     @Published private(set) var homeLocation: Location3D?
     // MARK: Public Properties
     public var droneLocationPublisher: AnyPublisher<OrientedLocation, Never> {
-        locationsTracker.droneLocationPublisher.eraseToAnyPublisher()
+        locationsTracker.drone3DLocationPublisher(animated: true, absoluteAltitude: false).eraseToAnyPublisher()
     }
     public var droneLocation: OrientedLocation {
-        locationsTracker.droneLocation
+        locationsTracker.drone3DLocation(absoluteAltitude: false)
     }
     public var droneAbsoluteLocation: OrientedLocation {
-        locationsTracker.droneAbsoluteLocation
+        locationsTracker.drone3DLocation(absoluteAltitude: true)
     }
     public var minAltitude: Double {
         rthService.minAltitude
@@ -72,9 +72,9 @@ public class ReturnHomeGraphicsOverlayViewModel {
     ///
     /// Sets the target location according to `rthService` information.
     func listenLocations() {
-        rthService.homeLocationPublisher
-            .sink { [weak self] homeLocation in
-                self?.homeLocation = homeLocation
+        rthService.homeDestinationPublisher
+            .sink { [weak self] homeDestination in
+                self?.homeLocation = homeDestination?.location
             }
             .store(in: &cancellables)
     }

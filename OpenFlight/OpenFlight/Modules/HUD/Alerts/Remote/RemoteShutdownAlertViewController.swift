@@ -33,6 +33,8 @@ import Combine
 /// Displays remote shutdown alert on the HUD.
 final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProvider {
     // MARK: - Outlets
+    @IBOutlet private weak var popupLeadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var popupTrailingConstraint: NSLayoutConstraint!
     @IBOutlet private weak var panelView: UIView!
     @IBOutlet private weak var bgSlider: UIView!
     @IBOutlet private weak var sliderStepView: UIView!
@@ -47,6 +49,9 @@ final class RemoteShutdownAlertViewController: UIViewController, DelayedTaskProv
 
     // MARK: - Private Properties
     private let viewModel = RemoteShutdownAlertViewModel()
+    private var sliderStepViewCenterXDefaultPosition: CGFloat {
+        return (self.sliderStepView.bounds.width / 2.0) + self.sliderStepViewDefaultConstraint.constant
+    }
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Private Enums
@@ -97,6 +102,8 @@ private extension RemoteShutdownAlertViewController {
 private extension RemoteShutdownAlertViewController {
     /// Inits panel view.
     func initView() {
+        popupLeadingConstraint.constant = Layout.popupHMargin(isRegularSizeClass)
+        popupTrailingConstraint.constant = popupLeadingConstraint.constant
         alertInstructionLabel.text = L10n.remoteAlertShutdownInstruction
         sliderStepLabel.text = String(Constants.timer)
         panelView.customCornered(corners: [.topLeft, .topRight], radius: Style.largeCornerRadius)
@@ -117,7 +124,6 @@ private extension RemoteShutdownAlertViewController {
                                          delay: Double(Constants.timer),
                                          key: Constants.dismissRemoteShutdownAlertTaskKey)
                     } else {
-                        sliderStepView.layer.removeAllAnimations()
                         updateView(shouldHide: false)
                         dismissRemoteAlertShutdown()
                     }
@@ -168,8 +174,7 @@ private extension RemoteShutdownAlertViewController {
     /// - Parameters:
     ///     - shouldHide: Determines if we should hide or not shutdown slider view
     func updateView(shouldHide: Bool) {
-        self.sliderStepView.center.x = (self.sliderStepView.bounds.width / 2.0)
-            + self.sliderStepViewDefaultConstraint.constant
+        self.sliderStepView.center.x = sliderStepViewCenterXDefaultPosition
         self.alertInstructionLabel.text  = shouldHide
             ? L10n.remoteAlertShutdownSuccess
             : L10n.remoteAlertShutdownInstruction
@@ -180,8 +185,10 @@ private extension RemoteShutdownAlertViewController {
         self.sliderStepLabel.text = String(Constants.timer)
     }
 
-    /// Dismiss remote shutdown alert after 2 seconds.
+    /// Dismiss remote shutdown by removing its ongoing animation and resetting to original slider position.
     func dismissRemoteAlertShutdown() {
+        sliderStepView.layer.removeAllAnimations()
+        self.sliderStepView.center.x = sliderStepViewCenterXDefaultPosition
         dismiss(animated: true)
     }
 }

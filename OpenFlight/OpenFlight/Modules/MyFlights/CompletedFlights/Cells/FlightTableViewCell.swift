@@ -53,8 +53,6 @@ final class FlightTableViewCell: MainTableViewCell, NibReusable {
     @IBOutlet private weak var videoStackView: UIStackView!
     @IBOutlet private weak var videoLabel: UILabel!
 
-    private var cancellables = Set<AnyCancellable>()
-
     private enum Constants {
         static let selectedBackgroundAlpha: CGFloat = 0.2
     }
@@ -65,9 +63,8 @@ final class FlightTableViewCell: MainTableViewCell, NibReusable {
     /// - Parameters:
     ///    - viewModel: Cell view model
     ///    - showDate: Show flight date
-    func configureCell(viewModel: FlightTableViewCellModel, showDate: Bool) {
-        cancellables = []
-
+    func configureCell(viewModel: FlightTableViewCellModel,
+                       showDate: Bool) {
         // Add left screen borders for devices with notch
         screenBorders = [.left]
 
@@ -81,54 +78,29 @@ final class FlightTableViewCell: MainTableViewCell, NibReusable {
         dateView.isHidden = !(UIApplication.isLandscape || showDate)
         dateView.alpha = showDate ? 1.0 : 0.0
         cellStackView.axis =  UIApplication.isLandscape ? .horizontal : .vertical
+
         // Setup content.
         if showDate {
-            let date = viewModel.flight.startTime
+            let date = viewModel.startTime
             monthLabel.text = date?.month.capitalized
             yearLabel.text = date?.year
         }
-        dateLabel.text = viewModel.flight.shortFormattedDate
-        durationLabel.text = viewModel.flight.shortFormattedDuration
 
-        photoLabel.text = viewModel.flight.photoCount.description
-        photoStackView.isHidden = viewModel.flight.photoCount == 0
+        locationLabel.text = viewModel.title
+        dateLabel.text = viewModel.formattedDate
+        durationLabel.text = viewModel.formattedDuration
+        photoLabel.text = viewModel.photoCount.description
+        photoStackView.isHidden = viewModel.photoCount == 0
+        videoLabel.text = viewModel.videoCount.description
+        videoStackView.isHidden = viewModel.videoCount == 0
+        mapImage.image = viewModel.thumbnail
 
-        videoLabel.text = viewModel.flight.videoCount.description
-        videoStackView.isHidden = viewModel.flight.videoCount == 0
-
-        viewModel.$name
-            .sink { [weak self] in
-                self?.locationLabel.text = $0
-            }
-            .store(in: &cancellables)
-        viewModel.$thumbnail
-            .sink { [weak self] in
-                self?.updateMapImage(viewModel: viewModel, thumbnail: $0)
-            }
-            .store(in: &cancellables)
-        viewModel.$isSelected
-            .sink { [weak self] selected in
-                let bgColor: UIColor
-                if selected {
-                    bgColor = ColorName.highlightColor.color.withAlphaComponent(Constants.selectedBackgroundAlpha)
-                } else {
-                    bgColor = ColorName.white.color
-                }
-                self?.bgView.backgroundColor = bgColor
-            }
-            .store(in: &cancellables)
-    }
-}
-
-// MARK: - Private Funcs
-private extension FlightTableViewCell {
-
-    func updateMapImage(viewModel: FlightTableViewCellModel, thumbnail: UIImage?) {
-        if viewModel.flight.isLocationValid,
-           let thumb = thumbnail {
-            self.mapImage.image = thumb
+        let bgColor: UIColor
+        if viewModel.isSelected {
+            bgColor = ColorName.highlightColor.color.withAlphaComponent(Constants.selectedBackgroundAlpha)
         } else {
-            self.mapImage.image = Asset.MyFlights.mapPlaceHolder.image
+            bgColor = ColorName.white.color
         }
+        bgView.backgroundColor = bgColor
     }
 }

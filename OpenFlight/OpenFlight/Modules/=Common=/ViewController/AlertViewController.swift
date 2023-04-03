@@ -110,6 +110,9 @@ public final class AlertViewController: UIViewController {
         }
     }
 
+    @IBOutlet private weak var popupLeadingConstraint: NSLayoutConstraint!
+    @IBOutlet private weak var popupTrailingConstraint: NSLayoutConstraint!
+
     @IBOutlet private weak var bgContentBottomConstraint: NSLayoutConstraint! {
         didSet {
             bgContentBottomConstraint.constant -= Constants.cornerRadius
@@ -283,7 +286,9 @@ private extension AlertViewController {
 private extension AlertViewController {
     /// Sets up the alert view.
     func setupView() {
-        self.view.backgroundColor = .clear
+        view.backgroundColor = .clear
+        popupLeadingConstraint.constant = Layout.popupHMargin(isRegularSizeClass)
+        popupTrailingConstraint.constant = popupLeadingConstraint.constant
         alertTitle.text = title
         alertTitle.font = FontStyle.title.font(isRegularSizeClass)
         alertMessage.text = message

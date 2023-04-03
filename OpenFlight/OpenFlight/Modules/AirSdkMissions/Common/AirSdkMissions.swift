@@ -74,7 +74,7 @@ public struct DefaultMissionSignature: AirSdkMissionSignature {
     public let name: String = ""
 
     /// The mission UID.
-    public let missionUID: String = "default"
+    public let missionUID: String = "com.parrot.missions.default"
 
     /// The mission service unique id command.
     public var serviceUidCommand: UInt = 0

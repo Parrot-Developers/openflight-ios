@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="17701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17703"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -15,7 +15,6 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="CameraShutterButton" customModule="OpenFlight" customModuleProvider="target">
             <connections>
                 <outlet property="centerLabel" destination="ASG-WP-EEw" id="FTs-EP-aNb"/>
-                <outlet property="circleProgressView" destination="4O9-Zw-9dh" id="sBw-zo-i4v"/>
                 <outlet property="infoImageView" destination="CTd-VF-JfY" id="zT1-VE-RgN"/>
                 <outlet property="innerView" destination="6fZ-vH-23k" id="Ub5-sg-wjj"/>
                 <outlet property="recordingTimeLabel" destination="uuo-lp-XeN" id="P2m-9W-mNk"/>
@@ -87,23 +86,15 @@
                         <constraint firstItem="CTd-VF-JfY" firstAttribute="centerX" secondItem="6fZ-vH-23k" secondAttribute="centerX" id="z6o-op-BhW"/>
                     </constraints>
                 </view>
-                <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4O9-Zw-9dh" customClass="CircleProgressView" customModule="OpenFlight" customModuleProvider="target">
-                    <rect key="frame" x="-2" y="-2" width="104" height="104"/>
-                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                </view>
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
             <constraints>
                 <constraint firstItem="6fZ-vH-23k" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="3" id="04R-dM-hMF"/>
                 <constraint firstItem="rid-iO-TDB" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="-1" id="0nf-gB-jMp"/>
                 <constraint firstAttribute="trailing" secondItem="6fZ-vH-23k" secondAttribute="trailing" constant="3" id="9gL-5l-W8i"/>
-                <constraint firstAttribute="bottom" secondItem="4O9-Zw-9dh" secondAttribute="bottom" constant="-2" id="R8q-hg-YdI"/>
                 <constraint firstAttribute="bottom" secondItem="6fZ-vH-23k" secondAttribute="bottom" constant="3" id="SS3-mt-EnI"/>
                 <constraint firstItem="6fZ-vH-23k" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="3" id="SY7-Pc-pnS"/>
-                <constraint firstItem="4O9-Zw-9dh" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="-2" id="TRh-tW-fko"/>
                 <constraint firstAttribute="bottom" secondItem="rid-iO-TDB" secondAttribute="bottom" constant="-1" id="arq-I5-sDT"/>
-                <constraint firstAttribute="trailing" secondItem="4O9-Zw-9dh" secondAttribute="trailing" constant="-2" id="n09-4P-YG1"/>
-                <constraint firstItem="4O9-Zw-9dh" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="-2" id="sgP-cU-r74"/>
                 <constraint firstItem="rid-iO-TDB" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="-1" id="wa3-tE-3X0"/>
                 <constraint firstAttribute="trailing" secondItem="rid-iO-TDB" secondAttribute="trailing" constant="-1" id="yhb-eT-DrK"/>
             </constraints>

@@ -107,18 +107,16 @@ final class DroneDetailsButtonsViewModel {
             }
             .store(in: &cancellables)
 
-        locationsTracker.droneLocationPublisher
+        locationsTracker.drone2DLocationPublisher(animated: false)
             .removeDuplicates()
             .sink { [weak self] location in
                 guard let self = self else { return }
-                if let coordinate = location.validCoordinates {
-                    // Only latitude and longitude are used for the generation of the thumbnail.
-                    let location = CLLocation(latitude: coordinate.coordinate.latitude,
-                                              longitude: coordinate.coordinate.longitude)
-                    if self.lastKnownPosition?.coordinate != location.coordinate {
-                        self.lastKnownPosition = location
-                        self.generateThumbnail(self.lastKnownPosition)
-                    }
+                // Only latitude and longitude are used for the generation of the thumbnail.
+                let location = CLLocation(latitude: location.latitude,
+                                          longitude: location.longitude)
+                if self.lastKnownPosition?.coordinate != location.coordinate {
+                    self.lastKnownPosition = location
+                    self.generateThumbnail(self.lastKnownPosition)
                 }
             }
             .store(in: &cancellables)

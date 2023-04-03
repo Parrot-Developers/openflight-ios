@@ -31,6 +31,7 @@ import Foundation
 import CoreLocation
 import Combine
 import GroundSdk
+import Pictor
 
 protocol FlightExecutionDetailsSettingsCellProvider {
     var settings: [FlightPlanExecutionViewModel.ExecutionSetting] { get }
@@ -59,8 +60,9 @@ open class FlightPlanExecutionViewModel {
     private let mavlinkCommands: [MavlinkStandard.MavlinkCommand]?
     private weak var coordinator: FlightPlanExecutionDetailsCoordinator?
     private let flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider
-    private weak var flightRepository: FlightRepository?
-    private weak var flightPlanRepository: FlightPlanRepository?
+    private let flightRepository: PictorFlightRepository
+    private let flightPlanRepository: PictorFlightPlanRepository
+    private let gutmaLinkRepository: PictorGutmaLinkRepository
     private let flightPlanUiStateProvider: FlightPlanUiStateProvider
     private let flightService: FlightService
     private let navigationStack: NavigationStackService
@@ -68,8 +70,9 @@ open class FlightPlanExecutionViewModel {
     private let startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher
 
     init(flightPlan: FlightPlanModel,
-         flightRepository: FlightRepository,
-         flightPlanRepository: FlightPlanRepository,
+         flightRepository: PictorFlightRepository,
+         flightPlanRepository: PictorFlightPlanRepository,
+         gutmaLinkRepository: PictorGutmaLinkRepository,
          coordinator: FlightPlanExecutionDetailsCoordinator,
          flightPlanExecutionDetailsSettingsProvider: FlightPlanExecutionDetailsSettingsProvider,
          flightPlanUiStateProvider: FlightPlanUiStateProvider,
@@ -77,11 +80,16 @@ open class FlightPlanExecutionViewModel {
          navigationStack: NavigationStackService,
          flightPlanManager: FlightPlanManager,
          startAvailabilityWatcher: FlightPlanStartAvailabilityWatcher) {
-        self.flightPlan = flightPlanRepository.getFlightPlan(withUuid: flightPlan.uuid) ?? flightPlan
+        if let pictorFlightPlan = flightPlanRepository.get(byUuid: flightPlan.uuid) {
+            self.flightPlan = pictorFlightPlan.flightPlanModel
+        } else {
+            self.flightPlan = flightPlan
+        }
         self.coordinator = coordinator
         self.flightPlanExecutionDetailsSettingsProvider = flightPlanExecutionDetailsSettingsProvider
         self.flightRepository = flightRepository
         self.flightPlanRepository = flightPlanRepository
+        self.gutmaLinkRepository = gutmaLinkRepository
         self.flightPlanUiStateProvider = flightPlanUiStateProvider
         self.flightService = flightService
         self.navigationStack = navigationStack
@@ -97,9 +105,10 @@ open class FlightPlanExecutionViewModel {
 
     /// Ask confirmation to delete flight.
     func askForDeletion() {
-        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: { [unowned self] in
-            Services.hub.flightPlan.manager.delete(flightPlan: flightPlan)
-            coordinator?.dismissDetails()
+        coordinator?.showDeleteFlightPopupConfirmation(didTapDelete: { [weak self] in
+            guard let self = self else { return }
+            Services.hub.flightPlan.manager.delete(flightPlan: self.flightPlan)
+            self.coordinator?.dismissDetails()
         })
      }
 
@@ -111,8 +120,7 @@ open class FlightPlanExecutionViewModel {
     }
 
     var executionInfoProvider: FlightPlanExecutionInfoCellProvider {
-        let flightUuids = flightPlan.flightPlanFlights?.map({ $0.flightUuid }) ?? []
-        let flights = flightRepository?.getFlights(withUuids: flightUuids) ?? []
+        let flights = gutmaLinkRepository.getRelatedFlights(byFlightPlanUuid: flightPlan.uuid)
         let project = Services.hub.flightPlan.projectManager.project(for: flightPlan)
 
         let title = project?.title ?? Style.dash
@@ -143,7 +151,17 @@ open class FlightPlanExecutionViewModel {
     }
 
     var statusCellModel: FlightExecutionDetailsStatusCellModel {
-        let flightPlan = flightPlanRepository?.getFlightPlan(withUuid: self.flightPlan.uuid) ?? flightPlan
+        var flightPlan = flightPlan
+        if let pictorFlightPlan = flightPlanRepository.get(uuids: [self.flightPlan.uuid],
+                                                           excludedUuids: nil,
+                                                           projectUuids: nil,
+                                                           projectPix4dUuids: nil,
+                                                           states: nil,
+                                                           types: nil,
+                                                           excludedTypes: nil,
+                                                           hasReachedFirstWaypoint: nil).first {
+            flightPlan = pictorFlightPlan.flightPlanModel
+        }
         return FlightExecutionDetailsStatusCellModel(flightPlan: flightPlan,
                                                      flightPlanUiStateProvider: flightPlanUiStateProvider,
                                                      coordinator: coordinator)
@@ -158,24 +176,22 @@ open class FlightPlanExecutionViewModel {
 
     /// Flights trajectories points.
     public var flightsPoints: [[TrajectoryPoint]] {
-        guard let flightRepository = flightRepository,
-              let flightPlanAndFlightLinks = flightPlan.flightPlanFlights,
-              let mavlinkCommands = mavlinkCommands
-        else { return [] }
-
-        let flightUuids = flightPlanAndFlightLinks.map({ $0.flightUuid })
-
-        return flightRepository.getFlights(withUuids: flightUuids)
-            .compactMap { flightService.gutma(flight: $0) }
-            .map { gutma in
-                gutma.flightPlanPoints(flightPlan, mavlinkCommands: mavlinkCommands)
-            }
+        let flights = gutmaLinkRepository.getRelatedFlights(byFlightPlanUuid: flightPlan.uuid)
+        guard let mavlinkCommands = mavlinkCommands,
+              !flights.isEmpty else {
+            return []
+        }
+        return flights
+                .compactMap { flightService.gutma(flight: $0) }
+                .map { gutma in
+                    gutma.flightPlanPoints(flightPlan.pictorModel, mavlinkCommands: mavlinkCommands)
+                }
     }
 
     /// Whether trajectory points altitudes are in AMSL.
     public var hasAmslAltitude: Bool {
-        if let flightPlanFlight = flightPlan.flightPlanFlights?.first,
-           let flight = flightRepository?.getFlight(withUuid: flightPlanFlight.flightUuid),
+        let flights = gutmaLinkRepository.getRelatedFlights(byFlightPlanUuid: flightPlan.uuid)
+        if let flight = flights.first,
            let gutma = flightService.gutma(flight: flight) {
             return gutma.hasAmslAltitude
         } else {
@@ -204,11 +220,12 @@ struct FlightPlanExecutionInfoCellProviderImpl: FlightPlanExecutionInfoCellProvi
                                   photoCount: 0,
                                   videoCount: 0)) { sum, flight in
             let gutma = flightService.gutma(flight: flight)
-            let duration = gutma?.flightPlanDuration(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
-            let battery = gutma?.flightPlanBatteryConsumption(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
-            let distance = gutma?.flightPlanDistance(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
-            let photoCount = gutma?.flightPlanPhotoCount(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
-            let videoCount = gutma?.flightPlanVideoCount(flightPlan, mavlinkCommands: mavlinkCommands) ?? 0
+            let duration = gutma?.flightPlanDuration(flightPlan.pictorModel, mavlinkCommands: mavlinkCommands) ?? 0
+            let battery = gutma?.flightPlanBatteryConsumption(flightPlan.pictorModel, mavlinkCommands: mavlinkCommands) ?? 0
+            let distance = gutma?.flightPlanDistance(flightPlan.pictorModel, mavlinkCommands: mavlinkCommands) ?? 0
+            let photoCount = gutma?.flightPlanPhotoCount(flightPlan.pictorModel, mavlinkCommands: mavlinkCommands) ?? 0
+            let videoCount = gutma?.flightPlanVideoCount(flightPlan.pictorModel, mavlinkCommands: mavlinkCommands) ?? 0
+
             return (duration: sum.duration + duration,
                     battery: sum.battery + battery,
                     distance: sum.distance + distance,

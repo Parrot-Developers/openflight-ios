@@ -30,6 +30,8 @@
 import GroundSdk
 import Combine
 
+// swiftlint:disable file_length
+
 private extension ULogTag {
     static let tag = ULogTag(name: "FlightPlanPanelViewModel")
 }
@@ -75,6 +77,7 @@ final class FlightPlanPanelViewModel {
     private var currentMissionManager: CurrentMissionManager
     private var flightService: FlightService
     private let rthSettingsMonitor: RthSettingsMonitor
+    private let rthService: RthService
     private var stateMachine: FlightPlanStateMachine?
     private(set) var runManager: FlightPlanRunManager
 
@@ -88,6 +91,7 @@ final class FlightPlanPanelViewModel {
          currentMissionManager: CurrentMissionManager,
          flightService: FlightService,
          coordinator: FlightPlanPanelCoordinator,
+         rthService: RthService,
          rthSettingsMonitor: RthSettingsMonitor,
          splitControls: SplitControls) {
         self.projectManager = projectManager
@@ -95,6 +99,7 @@ final class FlightPlanPanelViewModel {
         self.currentMissionManager = currentMissionManager
         self.flightService = flightService
         self.rthSettingsMonitor = rthSettingsMonitor
+        self.rthService = rthService
         self.coordinator = coordinator
         self.splitControls = splitControls
         listenMissionMode()
@@ -328,7 +333,7 @@ private extension FlightPlanPanelViewModel {
                 break
             }
         case .flying:
-            self.titleExecution = runManager.playingFlightPlan?.customTitle
+            self.titleExecution = runManager.playingFlightPlan?.pictorModel.name
             switch state.run {
             case let .playing(_, _, rth) where rth:
                 if viewState == .rth { return }
@@ -369,7 +374,7 @@ private extension FlightPlanPanelViewModel {
                 // Check if a FP unavailability must be shown instead of the progress view.
                 let unavailabilityReasons = pilotingIterfaceUnavailabilityReasons(for: state.run)
                 if !unavailabilityReasons.isEmpty {
-                    progressModel = FlightPlanPanelProgressModel(mainText: unavailabilityReasons.errorText ?? L10n.error,
+                    progressModel = FlightPlanPanelProgressModel(mainText: unavailabilityReasons.text(isRthActive: rthService.isActive),
                                                                  mainColor: ColorName.errorColor.color,
                                                                  hasError: true)
                 } else {
@@ -413,7 +418,7 @@ private extension FlightPlanPanelViewModel {
             // Check the FP running state in case of FP paused by a Drone's event.
             let unavailabilityReasons = pilotingIterfaceUnavailabilityReasons(for: runState)
             if !unavailabilityReasons.isEmpty {
-                return FlightPlanPanelProgressModel(mainText: unavailabilityReasons.errorText ?? L10n.error,
+                return FlightPlanPanelProgressModel(mainText: unavailabilityReasons.text(isRthActive: rthService.isActive),
                                                     mainColor: ColorName.errorColor.color,
                                                     hasError: true)
             }
@@ -434,7 +439,7 @@ private extension FlightPlanPanelViewModel {
                                                         mainColor: ColorName.errorColor.color,
                                                         hasError: true)
                 case let .pilotingItfUnavailable(reasons):
-                    return FlightPlanPanelProgressModel(mainText: reasons.errorText ?? L10n.error,
+                    return FlightPlanPanelProgressModel(mainText: reasons.text(isRthActive: rthService.isActive),
                                                         mainColor: ColorName.errorColor.color,
                                                         hasError: true)
                 }
@@ -725,9 +730,23 @@ extension FlightPlanPanelViewModel {
         var canEnterEdition: Bool {
             switch self {
             case .creation: return true
-            case .edition(_, let editionMode) where editionMode != .disabled : return true
+            case .edition(_, let editionMode) where editionMode != .disabled: return true
             default: return false
             }
         }
+    }
+}
+
+// MARK: - FlightPlanUnavailabilityReason
+private extension Set where Element == FlightPlanUnavailabilityReason {
+    /// Returns the text to display above launcher buttons in case of start unavailability.
+    ///
+    /// - Parameter isRthActive: whether an RTH is ongoing
+    /// - Returns: the unavailability reason text
+    func text(isRthActive: Bool) -> String {
+        // In case of an insufficient battery reason, the text is not displayed while an RTH is ongoing.
+        if errorText == FlightPlanUnavailabilityReason.insufficientBattery.errorText
+            && isRthActive { return "" }
+        return errorText ?? L10n.error
     }
 }

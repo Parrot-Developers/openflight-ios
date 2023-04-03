@@ -29,6 +29,7 @@
 
 import UIKit
 import Combine
+import Pictor
 
 /// Flight details ViewController.
 final class FlightDetailsViewController: UIViewController, FileShare {
@@ -181,7 +182,7 @@ private extension FlightDetailsViewController {
                                                                 missionsStore: Services.hub.missionsStore,
                                                                 flightPlanEditionService: Services.hub.flightPlan.edition,
                                                                 flightPlanRunManager: Services.hub.flightPlan.run,
-                                                                memoryPressureMonitor: Services.hub.memoryPressureMonitor)
+                                                                memoryPressureMonitor: Services.hub.systemServices.memoryPressureMonitor)
         controller.view.backgroundColor = .clear
         mapController = controller
         add(mapViewController: controller, to: mapContainerView)
@@ -216,7 +217,7 @@ private extension FlightDetailsViewController {
                 mapViewController.displayFlightPlan(viewModel.flightPlan, shouldReloadCamera: true)
                 mapViewController.displayFlightTrajectories(flightsPoints: viewModel.flightsPoints,
                                                             hasAmslAltitude: viewModel.hasAmslAltitude,
-                                                            trajectoryState: viewModel.flightPlan.state.trajectoryState)
+                                                            trajectoryState: viewModel.flightPlan.pictorModel.state.trajectoryState)
             }
         case .none:
             break
@@ -393,7 +394,7 @@ extension FlightDetailsViewController: FlightDetailsActionCellDelegate {
         case (.details(let viewModel), .share):
             shareFile(data: viewModel.shareFileData,
                       name: viewModel.shareFileName,
-                      fileExtension: GutmaConstants.extensionName,
+                      fileExtension: PictorGutmaConstants.extensionName,
                       srcView: srcView)
         case (.details(let viewModel), .delete):
             viewModel.askForDeletion()

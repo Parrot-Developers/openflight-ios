@@ -100,7 +100,7 @@ class ProjectManagerViewController: UIViewController {
         if let destination = segue.destination as? ProjectsListViewController {
             destination.setupViewModel(ProjectsListViewModel(coordinator: coordinator,
                                                              manager: viewModel.manager,
-                                                             cloudSynchroWatcher: viewModel.cloudSynchroWatcher,
+                                                             synchroService: viewModel.synchroService,
                                                              projectManagerViewModel: viewModel))
             projectsListViewController = destination
         }

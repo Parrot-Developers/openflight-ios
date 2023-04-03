@@ -187,6 +187,8 @@
                         <outlet property="cancelButton" destination="XpA-IC-AVo" id="3bt-cW-UDy"/>
                         <outlet property="closeButton" destination="aqZ-ZV-H7Z" id="Pb8-6t-CAK"/>
                         <outlet property="contentStackViewBottomConstraint" destination="M2H-DU-p98" id="kyJ-We-x9N"/>
+                        <outlet property="popupLeadingConstraint" destination="pvq-Uz-Nyq" id="Rle-S7-s3H"/>
+                        <outlet property="popupTrailingConstraint" destination="521-KJ-8hM" id="xwe-1U-Qsl"/>
                         <outlet property="secondaryActionButton" destination="3Fq-Vi-Bl1" id="fX4-ph-pHX"/>
                         <outlet property="validateButton" destination="Cgn-cf-gWb" id="Ywg-yq-tEy"/>
                     </connections>

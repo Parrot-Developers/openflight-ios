@@ -69,6 +69,10 @@ final class DroneInfosViewModel {
     @Published private(set) var copterMotorsErrors: Set<CopterMotor>?
     /// Current connection state
     @Published private(set) var connectionState: DeviceState.ConnectionState = .disconnected
+    /// `true` if calibration is required.
+    var isCalibrationRequired: Bool?
+    /// `true` if calibration is recommended.
+    var isCalibrationRecommended: Bool?
 
     /// Tells if a sim is inserted or not
     private(set) var simInserted: Bool = false
@@ -89,43 +93,43 @@ final class DroneInfosViewModel {
     private var gimbalRef: Ref<Gimbal>?
     private var frontStereoGimbalRef: Ref<FrontStereoGimbal>?
 
-    /// Returns true if drone currently required a calibration.
-    private(set) var requiredCalibrationSubject = CurrentValueSubject<Bool, Never>(false)
-
-    /// Returns true if a drone calibration is recommended.
-    private(set) var recommendedCalibrationSubject = CurrentValueSubject<Bool, Never>(false)
-
     init() {
         // TODO inject
         Services.hub.currentDroneHolder.dronePublisher
-            .sink { [unowned self] drone in
-                listenModel(drone: drone)
-                listenName(drone: drone)
-                listenGimbal(drone: drone)
-                listenFrontStereoGimbal(drone: drone)
-                listenMagnetometer(drone: drone)
-                listenStereoVisionSensor(drone: drone)
-                listenMotors(drone: drone)
-                listenConnectionState(drone: drone)
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenModel(drone: drone)
+                self.listenName(drone: drone)
+                self.listenGimbal(drone: drone)
+                self.listenFrontStereoGimbal(drone: drone)
+                self.listenMagnetometer(drone: drone)
+                self.listenStereoVisionSensor(drone: drone)
+                self.listenMotors(drone: drone)
+                self.listenConnectionState(drone: drone)
             }
             .store(in: &cancellables)
 
         Services.hub.connectedDroneHolder.dronePublisher
-            .sink { [unowned self] drone in
-                listenBatteryInfo(drone: drone)
-                listenGps(drone: drone)
-                listenNetworkControl(drone: drone)
-                listenAlarms(drone: drone)
-                listenDriStatus(drone: drone)
-                listenCellular(drone: drone)
+            .sink { [weak self] drone in
+                guard let self = self else { return }
+                self.listenBatteryInfo(drone: drone)
+                self.listenGps(drone: drone)
+                self.listenNetworkControl(drone: drone)
+                self.listenAlarms(drone: drone)
+                self.listenDriStatus(drone: drone)
+                self.listenCellular(drone: drone)
             }
             .store(in: &cancellables)
 
         $gimbalStatus
             .combineLatest($magnetometerStatus, $stereoVisionStatus)
-            .sink { [unowned self] in
-                requiredCalibrationSubject.value = $0 == .needed || $1 == MagnetometerCalibrationState.required || $2 == .needed
-                recommendedCalibrationSubject.value = $1 == MagnetometerCalibrationState.recommended
+            .sink { [weak self] gimbal, magnetometer, stereoVision in
+                guard let self = self else { return }
+                self.isCalibrationRequired = gimbal == .needed
+                || magnetometer == MagnetometerCalibrationState.required
+                || stereoVision == .needed
+
+                self.isCalibrationRecommended = magnetometer == MagnetometerCalibrationState.recommended
             }
             .store(in: &cancellables)
     }

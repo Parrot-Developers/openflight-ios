@@ -237,7 +237,9 @@ private extension HUDAlertPanelReturnHomeViewModel {
 
         switch returnHome?.state {
         case .active:
-            copy.state = .started
+            if returnHome?.suspended == false {
+                copy.state = .started
+            }
         case .idle:
             // Delay reported by drone may decrease faster than every second.
             // => Need to check if threshold has been reached or passed.

@@ -47,7 +47,6 @@ final class CameraShutterButton: UIControl, NibOwnerLoadable {
     @IBOutlet private weak var stopView: UIView!
     @IBOutlet private weak var centerLabel: UILabel!
     @IBOutlet private weak var shutterButtonProgressView: ShutterButtonProgressView!
-    @IBOutlet private weak var circleProgressView: CircleProgressView!
 
     // MARK: - Internal Properties
     var model: CameraShutterButtonState? {
@@ -109,8 +108,6 @@ private extension CameraShutterButton {
         shutterButtonProgressView.clipsToBounds = true
         clipsToBounds = true
         shutterButtonProgressView.applyCornerRadius(Style.largeCornerRadius)
-        circleProgressView.strokeColor = .white
-        circleProgressView.borderWidth = Style.largeBorderWidth
         recordingTimeLabel.font = FontStyle.current.font(isRegularSizeClass, monospacedDigits: true)
         remainingRecordTimeLabel.font = FontStyle.caps.font(isRegularSizeClass, monospacedDigits: true)
         centerLabel.makeUp(with: .large, and: .black)
@@ -152,8 +149,6 @@ private extension CameraShutterButton {
         switch model.recordingTimeState.functionState {
         case .started:
             applyRecordingStartedStyle()
-            circleProgressView.isHidden = true
-            circleProgressView.resetProgress()
         case .stopping(reason: .errorInternal, savedMediaId: nil):
             applyRecordingUnavailableStyle(image: Asset.BottomBar.ShutterButtonIcons.Error.icError.image)
         case .stopped:
@@ -223,7 +218,6 @@ private extension CameraShutterButton {
             applyPhotoCaptureUnavailableStyle()
         default:
             shutterButtonProgressView.isHidden = true
-            circleProgressView.isHidden = true
             applyPhotoCaptureStyle(labelText: model.cameraCaptureSubMode?.shutterText)
         }
     }

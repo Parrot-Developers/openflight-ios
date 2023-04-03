@@ -127,7 +127,9 @@ final class FlightPlanPanelViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         cameraStreamingContainerView.addGestureRecognizer(tap)
         // Plug RTH widget STOP to FP stop action.
-        rthWidget.customStopAction = stopAction
+        rthWidget.customStopAction = { [weak self] in
+            self?.stopAction()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -254,9 +256,9 @@ extension FlightPlanPanelViewController {
         bigMap.view.transform = CGAffineTransform(scaleX: scale, y: scale)
         addChild(bigMap)
         cameraStreamingContainerView.addSubview(bigMap.view)
-        addView(bigMap.view, parent: cameraStreamingContainerView,
-                offsetX: bigMap.view.bounds.width * (1 - scale),
-                offsetY: bigMap.view.bounds.height * (1 - scale) / 2)
+        let offsetX = (cameraStreamingContainerView.frame.width / scale - bigMap.view.bounds.width * scale) / 2
+        let offsetY = (cameraStreamingContainerView.frame.height / scale - bigMap.view.bounds.height * scale) / 2
+        addView(bigMap.view, parent: cameraStreamingContainerView, offsetX: offsetX, offsetY: offsetY)
         bigMap.didMove(toParent: self)
         flightPlanPanelViewModel.splitControls?.commonMapViewController?.view.isUserInteractionEnabled = false
     }

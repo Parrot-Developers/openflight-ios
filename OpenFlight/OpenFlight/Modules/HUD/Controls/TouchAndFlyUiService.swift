@@ -99,13 +99,11 @@ extension TouchAndFlyUiServiceImpl {
 
         service.targetPublisher
             .removeDuplicates()
-            .combineLatest(locations.droneLocationPublisher.removeDuplicates())
-            .sink { [weak self] (target, droneOrientedLocation) in
+            .combineLatest(locations.drone2DLocationPublisher(animated: false).removeDuplicates())
+            .sink { [weak self] (target, droneCoordinates) in
                 guard let self = self, self.draggingStartPoint == nil else { return }
 
-                if let droneCoordinates = droneOrientedLocation.coordinates?.coordinate {
-                    self.lastDroneLocation = CLLocation(latitude: droneCoordinates.latitude, longitude: droneCoordinates.longitude)
-                }
+                self.lastDroneLocation = CLLocation(latitude: droneCoordinates.latitude, longitude: droneCoordinates.longitude)
                 if target == .none {
                     self.commonMapViewController?.touchAndFlyOverlay?.viewModel.clearTouchAndFly()
                 }
@@ -141,7 +139,7 @@ extension TouchAndFlyUiServiceImpl {
         guard let start = draggingStartPoint else { return .none }
         let offsetLatitude = location.latitude - start.latitude
         let offsetLongitude = location.longitude - start.longitude
-        switch service.target {
+        switch service.droneTarget {
         case .none:
             return .none
         case .wayPoint(location: let location, altitude: let altitude, speed: let speed):
@@ -158,27 +156,14 @@ extension TouchAndFlyUiServiceImpl {
     func handleCustomMapTap(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?) {
         guard shouldHandleGesture(), !handleTapIdentifyResult(identifyResult: identifyResult) else { return }
         let location = mapPoint.toCLLocationCoordinate2D()
+        service.setWayPoint(to: location, altitude: nil)
 
-        if case .wayPoint = service.target {
-            // There is already a WP on map => move it.
-            service.moveWayPoint(to: location, altitude: nil)
-        } else {
-            // No active WP on map => create new WP.
-            service.setWayPoint(location, altitude: nil)
-        }
     }
 
     func handleCustomMapLongPress(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?) {
         guard shouldHandleGesture(), !handleTapIdentifyResult(identifyResult: identifyResult) else { return }
         let location = mapPoint.toCLLocationCoordinate2D()
-
-        if case .poi = service.target {
-            // There is already a POI on map => move it.
-            service.movePoi(to: location, altitude: nil)
-        } else {
-            // No active POI on map => create new POI.
-            service.setPoi(location, altitude: nil)
-        }
+        service.setPoi(to: location, altitude: nil)
     }
 
     func handleCustomMapTouchDown(mapPoint: AGSPoint, identifyResult: AGSIdentifyGraphicsOverlayResult?, completion: @escaping (Bool) -> Void) {
@@ -204,9 +189,9 @@ extension TouchAndFlyUiServiceImpl {
         case .none:
             break
         case .wayPoint(location: let location, _, _):
-            service.moveWayPoint(to: location, altitude: nil)
+            service.setWayPoint(to: location, altitude: nil)
         case .poi(location: let location, _):
-            service.movePoi(to: location, altitude: nil)
+            service.setPoi(to: location, altitude: nil)
         }
     }
 }

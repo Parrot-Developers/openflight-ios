@@ -27,8 +27,11 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+// TODO: move this file to Shared/Extensions
+
 import Foundation
 import Combine
+import Pictor
 
 public protocol UserStatus {
 
@@ -37,37 +40,16 @@ public protocol UserStatus {
 
     /// Tells if the user is connected
     var isConnected: Bool { get }
-
-    /// Tells if the user is anonymous
-    var isAnonymous: Bool { get }
-
-    /// Tells if the user is in private mode
-    var isPrivateMode: Bool { get }
 }
 
-extension User: UserStatus {
+extension PictorUserModel: UserStatus {
 
     public var name: String {
-        return "\(firstName ?? "") \(lastName ?? "")"
-    }
-
-    /// Tells if the user is anonymous
-    public var isAnonymous: Bool {
-        return apcId == User.anonymousId
+        return "\(firstName) \(lastName)"
     }
 
     /// Tells if the user is connected
     public var isConnected: Bool {
         return !isAnonymous
-    }
-
-    /// Tells if the user is in private mode
-    public var isPrivateMode: Bool {
-        get {
-            return !isSynchronizeFlightDataExtended
-        }
-        set {
-            isSynchronizeFlightDataExtended = !newValue
-        }
     }
 }

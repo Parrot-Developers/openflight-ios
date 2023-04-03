@@ -1,0 +1,18 @@
+# colors
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/Colors.swift
+
+# ib
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/Storyboards.swift
+
+# strings
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/Strings.swift
+
+# xcassets
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/Images.swift
+
+# Localizables
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/es.lproj/Localizable.strings
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/de.lproj/Localizable.strings
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/ja.lproj/Localizable.strings
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/en.lproj/Localizable.strings
+$(SRCROOT)/OpenFlight/Swiftgen/Generated/fr.lproj/Localizable.strings

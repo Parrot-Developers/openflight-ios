@@ -115,15 +115,18 @@ final class SettingsCameraViewModel: SettingsViewModelProtocol {
         drone.getPeripheral(Peripherals.antiflicker)?.setting.mode = CameraPreset.antiflickerMode
 
         if let currentEditor = drone.currentCamera?.currentEditor {
-            currentEditor[Camera2Params.autoRecordMode]?.value = CameraPreset.autoRecord
-            currentEditor[Camera2Params.zoomVelocityControlQualityMode]?.value = CameraPreset.velocityQuality
             currentEditor[Camera2Params.videoRecordingCodec]?.value = CameraPreset.videoencoding
             currentEditor[Camera2Params.videoRecordingDynamicRange]?.value = CameraPreset.dynamicHdrRange
             currentEditor[Camera2Params.photoDigitalSignature]?.value = CameraPreset.photoSignature
             currentEditor.saveSettings(currentConfig: drone.currentCamera?.config)
         }
 
+        Defaults.userVideoCodecSetting = CameraPreset.videoencoding.rawValue
+        Defaults.videoDynamicRangeSetting = CameraPreset.videoDynamicRange.rawValue
+        Defaults.highDynamicRangeSetting = CameraPreset.dynamicHdrRange.rawValue
+        Defaults.userPhotoSignatureSetting = CameraPreset.photoSignature.rawValue
         Defaults.overexposureSetting = CameraPreset.overexposure.rawValue
+        notifyChangePublisher.send()
     }
 
     /// Listen if there is an active execution ongoing.

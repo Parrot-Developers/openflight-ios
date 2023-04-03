@@ -702,7 +702,7 @@ public final class DroneDetailCellularViewModel {
     /// Reset the pin code
     func forgetPin() {
         coordinator?.displayAlertReboot {
-            ULog.d(.tag, "Forget PIN")
+            ULog.i(.tag, "Forget PIN")
             self.unpairAllUser()
         }
     }

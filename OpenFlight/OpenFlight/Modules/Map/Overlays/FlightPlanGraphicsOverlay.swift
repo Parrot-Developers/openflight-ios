@@ -40,7 +40,7 @@ private extension ULogTag {
 }
 
 /// Flight plan overlay.
-public final class FlightPlanGraphicsOverlay: CommonGraphicsOverlay {
+public final class FlightPlanGraphicsOverlay: AGSGraphicsOverlay {
     static let Key = "FlightPlanGraphicsOverlayKey"
 
     // MARK: - Private Enums
@@ -110,11 +110,13 @@ public final class FlightPlanGraphicsOverlay: CommonGraphicsOverlay {
     /// Heading of camera.
     var cameraHeading: Double = 0
 
-    // MARK: - Private Properties
     /// Returns all Flight Plan's graphics.
     public var flightPlanGraphics: [FlightPlanGraphic] {
         graphics.compactMap { $0 as? FlightPlanGraphic }
     }
+    // MARK: - Private Properties
+    /// Combine cancellables
+    private var cancellables = Set<AnyCancellable>()
     /// Returns all Flight Plan's waypoint to point of interest graphics.
     private var wayPointToPoiLines: [FlightPlanWayPointToPoiLineGraphic] {
         graphics.compactMap { $0 as? FlightPlanWayPointToPoiLineGraphic }
@@ -168,7 +170,6 @@ public final class FlightPlanGraphicsOverlay: CommonGraphicsOverlay {
                 flightPlanRunManager: FlightPlanRunManager?,
                 memoryPressureMonitor: MemoryPressureMonitorService?) {
         super.init()
-        self.isActive.value = true
         self.bamService = bamService
         self.missionsStore = missionsStore
         self.flightPlanEditionService = flightPlanEditionService
@@ -217,7 +218,7 @@ public final class FlightPlanGraphicsOverlay: CommonGraphicsOverlay {
         didSet {
             let differentFlightPlan = oldValue?.uuid != flightPlan?.uuid
             let settingsChanged = flightPlanEditionService?.settingsChanged ?? []
-            let reloadCamera = oldValue?.projectUuid != flightPlan?.projectUuid
+            let reloadCamera = oldValue?.pictorModel.projectUuid != flightPlan?.pictorModel.projectUuid
             let firstOpen = oldValue == nil
             didUpdateFlightPlan(flightPlan,
                                 differentFlightPlan: differentFlightPlan,
@@ -950,10 +951,12 @@ extension FlightPlanGraphicsOverlay {
         }
 
         generationTask = Task {
-            ULog.d(.tag, "Start Graphics Generation. Degraded display: \(degradedMode)")
+            ULog.i(.tag, "Start Graphics Generation. Degraded display: \(degradedMode)")
             // In any cases, refresh the map centering at the end of the process.
             defer {
-                if shouldReloadCamera { flightPlanViewModel.refreshCenter.value = true }
+                DispatchQueue.main.async {
+                    if shouldReloadCamera { self.flightPlanViewModel.refreshViewPoint.value = true }
+                }
             }
             // Generate all graphics.
             // In case of degraded display mode, only trajectory is generated.
@@ -1015,7 +1018,7 @@ extension FlightPlanGraphicsOverlay {
     ///
     /// - Parameter reason: the cancellation reason
     private func cancelDisplayTasks(for reason: DisplayTasksCancellationReason) {
-        ULog.d(.tag, "Cancelling current display tasks")
+        ULog.i(.tag, "Cancelling current display tasks")
         displayTasksCancellationReason = reason
         generationTask?.cancel()
         drawingTask?.cancel()
@@ -1043,7 +1046,7 @@ extension FlightPlanGraphicsOverlay {
             // Show an alert about the degraded display mode otherwise.
             if !degradedMode,
                let flightPlan = flightPlan {
-                ULog.d(.tag, "Restart in degraded mode after memory pressure")
+                ULog.i(.tag, "Restart in degraded mode after memory pressure")
                 displayFlightPlan(flightPlan,
                                   shouldReloadCamera: shouldReloadCamera,
                                   mapMode: mapMode,
@@ -1054,7 +1057,7 @@ extension FlightPlanGraphicsOverlay {
         case .refreshNeeded(let flightPlan, let shouldReloadCamera, let mapMode, let degradedMode):
             // An up-to-date flight plan needs to be displayed.
             // Start a new display task with this flight plan.
-            ULog.d(.tag, "Displaying the new flight plan")
+            ULog.i(.tag, "Displaying the new flight plan")
             displayFlightPlan(flightPlan,
                               shouldReloadCamera: shouldReloadCamera,
                               mapMode: mapMode,

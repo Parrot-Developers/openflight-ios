@@ -28,7 +28,8 @@
 //    SUCH DAMAGE.
 
 import Foundation
-import OpenFlight
+@testable import OpenFlight
+@testable import Pictor
 
 struct FlightTestModel: Codable {
     var uuid: String
@@ -40,16 +41,30 @@ struct FlightTestModel: Codable {
     var gutmaFile: Data?
 
     func flightModel(gutma: Data?) -> FlightModel {
-        return FlightModel(apcId: "", uuid: uuid, version: "", startTime: Date(), photoCount: photoCount,
-                           videoCount: videoCount, startLatitude: 0, startLongitude: 0,
-                           batteryConsumption: batteryConsumption, distance: distance,
-                           duration: duration, gutmaFile: gutma ?? gutmaFile)
+        return FlightModel(uuid: uuid,
+                           cloudId: 0,
+                           formatVersion: "",
+                           title: "",
+                           parseError: false,
+                           runDate: nil,
+                           serial: "",
+                           firmware: "",
+                           modelId: "",
+                           gutmaFile: gutma ?? gutmaFile,
+                           photoCount: photoCount,
+                           videoCount: videoCount,
+                           startLatitude: 0,
+                           startLongitude: 0,
+                           batteryConsumption: batteryConsumption,
+                           distance: distance,
+                           duration: duration,
+                           thumbnail: nil)
     }
 
     /// Exports all flights currently in the repository.
     /// Stores them as files in the document directory of the app
     static func export() {
-        let flights = Services.hub.repos.flight.getAllFlights()
+        let flights = Services.hub.repos.flight.getAll()
         for flight in flights {
             let flightExport = FlightTestModel(
                 uuid: flight.uuid,
@@ -78,21 +93,24 @@ struct FlightPlanTest: Codable {
     /// Exports all flight plans currently in the repository.
     /// Stores them as files in the document directory of the app
     func flightPlanModel() -> FlightPlanModel {
-        var fpm = FlightPlanModel(apcId: "", type: "", uuid: uuid,
-                                  version: "", customTitle: "", thumbnailUuid: nil,
-                                  projectUuid: "", dataStringType: "",
-                                  dataString: nil, pgyProjectId: nil,
-                                  state: .unknown, lastMissionItemExecuted: nil,
-                                  mediaCount: nil, uploadedMediaCount: nil,
-                                  lastUpdate: Date(), synchroStatus: nil,
-                                  fileSynchroStatus: 0, fileSynchroDate: nil,
-                                  latestSynchroStatusDate: nil, cloudId: nil,
-                                  parrotCloudUploadUrl: nil, isLocalDeleted: false,
-                                  latestCloudModificationDate: nil,
-                                  uploadAttemptCount: nil, lastUploadAttempt: nil,
-                                  thumbnail: nil, flightPlanFlights: nil,
-                                  latestLocalModificationDate: nil,
-                                  synchroError: nil)
+        let pictorfpm = PictorFlightPlanModel(uuid: uuid,
+                                              cloudId: 0,
+                                              name: "",
+                                              state: .editable,
+                                              flightPlanType: "",
+                                              formatVersion: "1",
+                                              lastUpdated: Date(),
+                                              fileType: "",
+                                              dataSetting: nil,
+                                              mediaCount: 0,
+                                              uploadedMediaCount: 0,
+                                              lastMissionItemExecuted: 0,
+                                              executionRank: nil,
+                                              hasReachedFirstWaypoint: nil,
+                                              projectUuid: nil,
+                                              projectPix4dUuid: nil,
+                                              thumbnail: nil)
+        var fpm = FlightPlanModel(pictorModel: pictorfpm)
         fpm.dataSetting = dataSetting
         return fpm
     }

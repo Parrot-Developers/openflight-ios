@@ -415,7 +415,7 @@ private extension MediaStoreServiceImpl {
     func listenTo(_ currentDroneHolder: CurrentDroneHolder) {
         currentDroneHolder.dronePublisher
             .sink { [unowned self] drone in
-                ULog.d(.tag, "[galleryRework] Drone update \(drone.uid)")
+                ULog.i(.tag, "[galleryRework] Drone update \(drone.uid)")
                 listenToMediaStore(drone: drone)
             }
             .store(in: &cancellables)
@@ -425,7 +425,7 @@ private extension MediaStoreServiceImpl {
     ///
     /// - Parameter drone: the current drone
     func listenToMediaStore(drone: Drone) {
-        ULog.d(.tag, "[galleryRework] Listen to media store")
+        ULog.i(.tag, "[galleryRework] Listen to media store")
         mediaStoreRef = drone.getPeripheral(Peripherals.mediaStore) { [weak self] mediaStore in
             self?.updateMediaStore(mediaStore)
         }
@@ -436,10 +436,10 @@ private extension MediaStoreServiceImpl {
     /// - Parameter store: the media store
     func updateMediaStore(_ store: MediaStore?) {
         indexingState = store?.indexingState ?? .unavailable
-        ULog.d(.tag, "[galleryRework] Indexing state: \(indexingState)")
+        ULog.i(.tag, "[galleryRework] Indexing state: \(indexingState)")
         guard let store = store else {
             // Store is unavailable => clear media list.
-            ULog.d(.tag, "[galleryRework] Empty media store => Clear list.")
+            ULog.i(.tag, "[galleryRework] Empty media store => Clear list.")
             clearMediaList()
             return
         }
@@ -466,7 +466,7 @@ private extension MediaStoreServiceImpl {
                 return
             }
 
-            ULog.d(.tag, "[galleryRework] Media total count: \(list.count) | video: \(list.videoMediaCount) | photo: \(list.photoMediaCount)")
+            ULog.i(.tag, "[galleryRework] Media total count: \(list.count) | video: \(list.videoMediaCount) | photo: \(list.photoMediaCount)")
             self.mediaList = list.galleryMedias(droneUid: self.droneUid)
             // This refresh is supposed to only be temporary, as we should be able to update the delete uids list
             // dynamically according to deleter events. To be checked after SDK rework.
@@ -524,7 +524,7 @@ private extension MediaStoreServiceImpl {
     /// - Parameter items: the items array
     func initDownloadIds(from items: [MediaItem]) {
         let uids = items.filter({ !$0.isDownloaded }).map { ($0.uid, $0.customTitle) }
-        ULog.d(.tag, "[galleryRework] Init download for: \(uids)")
+        ULog.i(.tag, "[galleryRework] Init download for: \(uids)")
         downloadIds = uids
     }
 
@@ -661,7 +661,7 @@ private extension MediaStoreServiceImpl {
     ///
     /// - Parameter uids: the uids set
     func initDeleteUids(_ uids: Set<String>) {
-        ULog.d(.tag, "[galleryRework] Init delete for: [\(uids)]")
+        ULog.i(.tag, "[galleryRework] Init delete for: [\(uids)]")
         deleteUids = uids
     }
 

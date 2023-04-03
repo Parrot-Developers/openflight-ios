@@ -42,29 +42,25 @@ final class DroneDetailsButtonsViewController: AGSMapViewController, DroneDetail
     @IBOutlet private weak var batteryButtonView: DeviceDetailsButtonView!
 
     // MARK: - Private Properties
-    private var firmwareAndMissionsInteractorListener: FirmwareAndMissionsListener?
     private var viewModel: DroneDetailsButtonsViewModel!
+    private var firmwareUpdateButtonViewModel: FirmwareUpdateButtonViewModel!
     private weak var coordinator: DroneCoordinator?
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Setup
     static func instantiate(coordinator: DroneCoordinator,
-                            viewModel: DroneDetailsButtonsViewModel) -> DroneDetailsButtonsViewController {
+                            viewModel: DroneDetailsButtonsViewModel,
+                            firmwareUpdateButtonViewModel: FirmwareUpdateButtonViewModel) -> DroneDetailsButtonsViewController {
         let viewController = StoryboardScene.DroneDetailsButtons.initialScene.instantiate()
         viewController.coordinator = coordinator
         viewController.viewModel = viewModel
+        viewController.firmwareUpdateButtonViewModel = firmwareUpdateButtonViewModel
         return viewController
-    }
-
-    // MARK: - Deinit
-    deinit {
-        FirmwareAndMissionsInteractor.shared.unregister(firmwareAndMissionsInteractorListener)
     }
 
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-
         initUI()
         bindToViewModel()
     }
@@ -229,25 +225,24 @@ private extension DroneDetailsButtonsViewController {
             }
             .store(in: &cancellables)
 
-        firmwareAndMissionsInteractorListener = FirmwareAndMissionsInteractor.shared
-            .register { [weak self] (_, firmwareAndMissionToUpdateModel) in
-                self?.updateFirmwareUpdateButtonView(for: firmwareAndMissionToUpdateModel)
-            }
+        firmwareUpdateButtonViewModel.$buttonProperties
+                .receive(on: RunLoop.main)
+                .sink { [weak self] buttonProperties in
+                    self?.updateFirmwareUpdateButtonView(properties: buttonProperties)
+                }
+                .store(in: &cancellables)
     }
 
-    /// Updates the firmwareUpdateButtonView UI.
-    ///
-    /// - Parameters:
-    ///    - model: the current `FirmwareAndMissionToUpdateModel`
-    func updateFirmwareUpdateButtonView(for model: FirmwareAndMissionToUpdateModel) {
-        firmwareUpdateButtonView.model?.subtitle = model.subtitle
-        firmwareUpdateButtonView.model?.subImage = model.subImage
-        firmwareUpdateButtonView.model?.backgroundColor = model.backgroundColor
-        firmwareUpdateButtonView.model?.titleColor = model.titleColor
-        firmwareUpdateButtonView.model?.mainImageTintColor = model.titleColor
-        firmwareUpdateButtonView.model?.subtitleColor = model.titleColor
-        firmwareUpdateButtonView.model?.subimageTintColor = model.subImageTintColor
-        firmwareUpdateButtonView.isEnabled = model.isEnabled
+    func updateFirmwareUpdateButtonView(properties: FirmwareUpdateButtonProperties) {
+        firmwareUpdateButtonView.model?.subtitle = properties.subtitle
+        firmwareUpdateButtonView.model?.subImage = properties.subImage
+        firmwareUpdateButtonView.model?.backgroundColor = properties.backgroundColor
+        firmwareUpdateButtonView.model?.titleColor = properties.titleColor
+        firmwareUpdateButtonView.model?.mainImageTintColor = properties.titleColor
+        firmwareUpdateButtonView.model?.subtitleColor = properties.titleColor
+        firmwareUpdateButtonView.model?.subimageTintColor = properties.subImageTintColor
+        firmwareUpdateButtonView.isEnabled = properties.isEnabled
+
     }
 
     /// Calls log event.

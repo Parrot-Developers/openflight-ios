@@ -62,6 +62,7 @@ public final class FlightPlanExecutionDetailsCoordinator: Coordinator {
         let viewModel = FlightPlanExecutionViewModel(flightPlan: flightPlan,
                                                      flightRepository: repos.flight,
                                                      flightPlanRepository: repos.flightPlan,
+                                                     gutmaLinkRepository: repos.gutmaLink,
                                                      coordinator: self,
                                                      flightPlanExecutionDetailsSettingsProvider: uiServices.flightPlanExecutionDetailsSettingsProvider,
                                                      flightPlanUiStateProvider: uiServices.flightPlanUiStateProvider,

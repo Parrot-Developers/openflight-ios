@@ -50,6 +50,7 @@ public final class BehaviourModeView: BarButtonView {
 
     // MARK: - Deinit
     deinit {
+        delegate?.hideLevelOne(viewModel: viewModel)
         removeTarget()
     }
 }
