@@ -296,6 +296,7 @@ private extension TouchAndFlyServiceImpl {
             poiItfState.value = (blocker: .droneNotConnected, inProgress: false)
             streamElementSubject.value = .none
             clearTarget()
+            clearExecution()
             return
         }
         listenAltimeter(drone: drone)
@@ -398,6 +399,7 @@ private extension TouchAndFlyServiceImpl {
                 if let directive = directive as? FlyDirective {
                     wayPointSpeedSubject.value = directive.horizontalSpeed
                 }
+                userTarget = .wayPoint(location: newLocation, altitude: directive.altitude, speed: wayPointSpeed)
             }
             pointAndFlyItfState.value = (blocker: blocker, inProgress: inProgress)
         }
@@ -429,6 +431,7 @@ private extension TouchAndFlyServiceImpl {
             if let poi = itf.currentPointOfInterest {
                 poiSubject.value = CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
                 altitudeSubject.value = poi.altitude
+                userTarget = .poi(location: CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude), altitude: poi.altitude)
             }
         }
     }
@@ -850,8 +853,8 @@ private extension TouchAndFlyBlocker {
             return .droneAboveMaxAltitude
         case .insufficientBattery:
             return .insufficientBattery
-//        case .droneNotFlying:
-//            return .droneNotFlying
+        case .droneNotFlying:
+            return .droneNotFlying
         }
     }
 

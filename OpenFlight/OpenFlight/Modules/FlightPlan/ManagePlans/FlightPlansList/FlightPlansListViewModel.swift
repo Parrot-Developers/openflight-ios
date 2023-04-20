@@ -67,7 +67,7 @@ protocol FlightPlansListViewModelUIInput {
     var uuidPublisher: AnyPublisher<String?, Never> { get }
 
     /// Publisher that give value of changed array of `ProjectModel`
-    var allProjectsPublisher: AnyPublisher<[ProjectModel], Never> { get }
+    var allProjectUuidsPublisher: AnyPublisher<[String], Never> { get }
 
     /// Select a project, from the filtered projects list, via his index.
     ///
@@ -144,6 +144,19 @@ protocol FlightPlansListViewModelUIInput {
     /// - Parameters:
     ///     - forSelectedProject: the selected project
     func getProjectIndex(forSelectedProject: ProjectModel?) -> Int?
+
+    /// Get UUID of project in filteredProjectUuids from index
+    ///
+    /// - Parameters:
+    ///     - index: index to specified
+    func projectUuid(for index: Int) -> String?
+
+    /// Get Project Cell Model from UUID
+    ///
+    /// - Parameters:
+    ///     - uuid: UUID to specified
+    ///  - Returns: ProjectCellModel
+    func cellViewModel(for uuid: String) -> ProjectCellModel?
 }
 
 /// Protocol allow to communicate from Parent ViewModel to Child ViewModel
@@ -178,7 +191,7 @@ final class FlightPlansListViewModel {
 
     // MARK: - Private variables
     @Published private var uuid: String?
-    private var filteredProjects = CurrentValueSubject<[ProjectModel], Never>([])
+    private var filteredProjectUuids = CurrentValueSubject<[String], Never>([])
     private var headerProvider: [FlightPlanListHeaderCellProvider] = []
     private(set) var displayMode: FlightPlansListDisplayMode = .compact
     private weak var delegate: FlightPlansListViewModelDelegate?
@@ -213,17 +226,17 @@ final class FlightPlansListViewModel {
     }
 
     // MARK: - Private funcs
-    private func loadAllProjects() -> [ProjectModel] {
+    private func loadAllProjects() -> [String] {
         if displayMode == .compact {
             return manager.loadProjects(type: Services.hub.currentMissionManager.mode.flightPlanProvider?.projectType,
-                                        limit: manager.numberOfProjectsPerPage)
+                                        limit: manager.numberOfProjectsPerPage).map { $0.uuid }
         } else {
-            return manager.loadExecutedProjects(offset: 0, limit: manager.numberOfProjectsPerPage, withType: nil)
+            return manager.loadExecutedProjects(offset: 0, limit: manager.numberOfProjectsPerPage, withType: nil).map { $0.uuid }
         }
     }
 
-    private func didSelect(project: ProjectModel) {
-        updateUUID(with: project.uuid)
+    private func didSelect(projectUuid: String?) {
+        updateUUID(with: projectUuid)
     }
 
     private func didDeselectProjects() {
@@ -278,7 +291,7 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
     }
 
     func selectProject(_ project: ProjectModel) {
-        didSelect(project: project)
+        didSelect(projectUuid: project.uuid)
     }
 
     func deselectProject() {
@@ -296,22 +309,25 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         $uuid.eraseToAnyPublisher()
     }
 
-    var allProjectsPublisher: AnyPublisher<[ProjectModel], Never> {
-        filteredProjects.eraseToAnyPublisher()
+    var allProjectUuidsPublisher: AnyPublisher<[String], Never> {
+        filteredProjectUuids.eraseToAnyPublisher()
     }
 
     func indexOfProject(_ project: ProjectModel) -> Int {
-        filteredProjects.value.firstIndex(where: { project.uuid == $0.uuid }) ?? 0
+        filteredProjectUuids.value.firstIndex(where: { project.uuid == $0 }) ?? 0
     }
 
     @discardableResult
     func selectProject(at index: Int) -> ProjectModel? {
         // Ensure index is not out of range.
-        guard index < filteredProjects.value.count else { return nil }
+        guard index < filteredProjectUuids.value.count else { return nil }
         // Get the project from the filtered list.
-        let project = filteredProjects.value[index]
+        guard let project = manager.getProject(byUuid: filteredProjectUuids.value[index]) else {
+            didSelect(projectUuid: nil)
+            return nil
+        }
         // Publish the selected project's `uuid`.
-        didSelect(project: project)
+        didSelect(projectUuid: project.uuid)
         // Inform the delegate about the selection.
         delegate?.didSelect(project: project)
         return project
@@ -331,21 +347,27 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
             buildHeader()
             updateFilteredProjects()
         case .compact:
-            filteredProjects.value = loadAllProjects()
+            filteredProjectUuids.value = loadAllProjects()
         }
     }
 
     func projectProvider(at index: Int) -> CellProjectListProvider? {
-        if index < filteredProjects.value.count {
-            let project = filteredProjects.value[index]
-            let isSelected = isSelected(uuid: project.uuid)
-            return CellProjectListProvider(isSelected: isSelected, project: project)
+        if index < filteredProjectUuids.value.count {
+            let projectUuid = filteredProjectUuids.value[index]
+            if let project = manager.getProject(byUuid: projectUuid) {
+                return CellProjectListProvider(isSelected: isSelected(uuid: projectUuid), project: project)
+            }
         }
         return nil
     }
 
     func projectsCount() -> Int {
-        filteredProjects.value.count
+        filteredProjectUuids.value.count
+    }
+
+    func projectUuid(for index: Int) -> String? {
+        guard index < filteredProjectUuids.value.count else { return nil }
+        return filteredProjectUuids.value[index]
     }
 
     func getProjectIndex(forSelectedProject: ProjectModel?) -> Int? {
@@ -353,11 +375,11 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
             return nil
         }
 
-        if let index = filteredProjects.value.firstIndex(where: { $0.uuid == forSelectedProject.uuid }) {
+        if let index = filteredProjectUuids.value.firstIndex(where: { $0 == forSelectedProject.uuid }) {
             return index
         } else {
             while getMoreProjects() {
-                if let index = filteredProjects.value.firstIndex(where: { $0.uuid == forSelectedProject.uuid }) {
+                if let index = filteredProjectUuids.value.firstIndex(where: { $0 == forSelectedProject.uuid }) {
                     return index
                 }
             }
@@ -385,9 +407,9 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
         guard projectsCount < allCount else {
             return false
         }
-        let moreProjects = manager.loadExecutedProjects(offset: projectsCount, limit: manager.numberOfProjectsPerPage, withType: type)
-        if !moreProjects.isEmpty {
-            filteredProjects.value.append(contentsOf: moreProjects)
+        let moreProjectUuids = manager.loadExecutedProjects(offset: projectsCount, limit: manager.numberOfProjectsPerPage, withType: type).map { $0.uuid }
+        if !moreProjectUuids.isEmpty {
+            filteredProjectUuids.value.append(contentsOf: moreProjectUuids)
         }
         return true
     }
@@ -400,9 +422,9 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
             type = projectType
         }
 
-        filteredProjects.value = manager.loadExecutedProjects(offset: 0,
+        filteredProjectUuids.value = manager.loadExecutedProjects(offset: 0,
                                                               limit: manager.numberOfProjectsPerPage,
-                                                              withType: type)
+                                                                  withType: type).map { $0.uuid }
     }
 
     func headerCellProvider() -> [FlightPlanListHeaderCellProvider] {
@@ -412,6 +434,30 @@ extension FlightPlansListViewModel: FlightPlansListViewModelUIInput {
     func updateNavigationStack(with selectedProject: ProjectModel?) {
         navigationStack.updateLast(with: .myFlightsExecutedProjects(selectedProject: selectedProject,
                                                                     selectedHeaderUuid: selectedHeaderUuid))
+    }
+
+    func cellViewModel(for uuid: String) -> ProjectCellModel? {
+        guard let project = manager.getProject(byUuid: uuid) else { return nil}
+
+        var date = project.lastUpdated ?? Date.distantPast
+        if let lastFlightExecutionDate = project.latestExecutedFlightPlan?.flightPlanModel.lastFlightDate {
+            date = lastFlightExecutionDate
+        }
+        let formattedDate = date.commonFormattedString
+
+        var icon: UIImage?
+        if project.type != FlightPlanMissionMode.standard.missionMode.flightPlanProvider?.projectType,
+           let flightStoreProvider = Services.hub.flightPlan.typeStore.typeForKey(project.type.rawValue) {
+            // Set image for custom Flight Plan types
+            icon = flightStoreProvider.icon
+        }
+
+        return ProjectCellModel(title: project.title,
+                                date: formattedDate,
+                                isExecuted: project.latestExecutedFlightPlan != nil,
+                                icon: icon,
+                                thumbnail: project.editableFlightPlan?.thumbnail?.image,
+                                isSelected: uuid == self.uuid)
     }
 }
 
@@ -448,7 +494,9 @@ extension FlightPlansListViewModel: FlightPlanListHeaderDelegate {
         // update the selection
         updateFilteredProjects()
         // update navigation stack to save the current filter
-        updateNavigationStack(with: filteredProjects.value.first { $0.uuid == uuid })
+        if let projectUuid = filteredProjectUuids.value.first(where: { $0 == uuid }) {
+            updateNavigationStack(with: manager.getProject(byUuid: projectUuid))
+        }
     }
 }
 

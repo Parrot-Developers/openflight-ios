@@ -54,7 +54,7 @@ final class ProjectsListViewController: UIViewController {
     }
 
     private func bindViewModel() {
-        viewModel.$filteredProjects
+        viewModel.$filteredProjectUuids
             .receive(on: RunLoop.main)
             .sink { [weak self] projects in
                 guard let self = self else { return }
@@ -77,7 +77,7 @@ final class ProjectsListViewController: UIViewController {
     // MARK: - Override Funcs
     override func viewDidLoad() {
         super.viewDidLoad()
-        collectionView.register(cellType: ProjectCell.self)
+        collectionView.register(cellType: ProjectCollectionViewCell.self)
         collectionView.delegate = self
         collectionView.dataSource = self
         emptyProjectsTitleLabel.text = L10n.flightPlanEmptyListTitle
@@ -110,18 +110,18 @@ final class ProjectsListViewController: UIViewController {
 // MARK: - UICollectionViewDataSource
 extension ProjectsListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        viewModel.filteredProjects.count
+        viewModel.filteredProjectUuids.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(for: indexPath) as ProjectCell
-        guard indexPath.row < viewModel.filteredProjects.count else { return cell }
+        let cell = collectionView.dequeueReusableCell(for: indexPath) as ProjectCollectionViewCell
+        guard indexPath.row < viewModel.filteredProjectUuids.count else { return cell }
 
-        let project = viewModel.filteredProjects[indexPath.row]
-        let projectCellModel = ProjectCellModel(project: project,
-                                                isSelected: viewModel.isProjectSelected(project),
-                                                projectManager: viewModel.manager)
-        cell.configureCell(viewModel: projectCellModel)
+        let projectUuid = viewModel.filteredProjectUuids[indexPath.row]
+        guard let projectCellModel = viewModel.cellViewModel(for: projectUuid) else {
+            return cell
+        }
+        cell.configureCell(projectCellModel)
 
         viewModel.shouldGetMoreProjects(fromIndexPath: indexPath)
 
@@ -132,8 +132,14 @@ extension ProjectsListViewController: UICollectionViewDataSource {
 // MARK: - UICollectionViewDelegate
 extension ProjectsListViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let project = viewModel.filteredProjects[indexPath.row]
-        viewModel.isProjectSelected(project) ? viewModel.removeSelectedProject() : viewModel.selectProject(forIndexPath: indexPath)
+        let projectUuid = viewModel.filteredProjectUuids[indexPath.row]
+        if let project = viewModel.getProject(byUuid: projectUuid) {
+            if viewModel.isProjectSelected(project) {
+                viewModel.removeSelectedProject()
+            } else {
+                viewModel.selectProject(forIndexPath: indexPath)
+            }
+        }
     }
 }
 

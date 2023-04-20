@@ -54,8 +54,8 @@ public class ProjectManagerViewModel {
     private let flightPlanStateMachine: FlightPlanStateMachine?
     private var isSynchronizingSubject = CurrentValueSubject<Bool, Never>(false)
     private var isFlightPlanProjectTypeSubject = CurrentValueSubject<Bool, Never>(Defaults.isFlightPlanProjectType)
-    private var projectDidUpdateSubject = CurrentValueSubject<ProjectModel?, Never>(nil)
-    private var projectAddedSubject = CurrentValueSubject<ProjectModel?, Never>(nil)
+    private var projectDidUpdateSubject = PassthroughSubject<ProjectModel?, Never>()
+    private var projectAddedSubject = PassthroughSubject<ProjectModel?, Never>()
     private var idFlyingProject: String?
     private var cancellables = Set<AnyCancellable>()
 
@@ -140,7 +140,7 @@ extension ProjectManagerViewModel {
 
     func renameProject(_ project: ProjectModel, with title: String) {
         manager.rename(project, title: title) { [weak self] in
-            self?.projectDidUpdateSubject.value = $0
+            self?.projectDidUpdateSubject.send($0)
         }
     }
 
@@ -148,7 +148,7 @@ extension ProjectManagerViewModel {
         manager.duplicate(project: project) { [weak self] duplicatedProject in
             guard let self = self, let duplicatedProject = duplicatedProject else { return }
 
-            self.projectAddedSubject.value = self.manager.currentProject
+            self.projectAddedSubject.send(self.manager.currentProject)
             self.coordinator?.open(project: duplicatedProject, startEdition: false, isBrandNew: true)
         }
    }
@@ -157,7 +157,7 @@ extension ProjectManagerViewModel {
         manager.newProject(flightPlanProvider: flightPlanProvider) { [weak self] project in
             guard let self = self,
                   let project = project else { return }
-            self.projectAddedSubject.value = project
+            self.projectAddedSubject.send(project)
             self.coordinator?.open(project: project, startEdition: true, isBrandNew: true)
         }
     }
@@ -172,7 +172,7 @@ extension ProjectManagerViewModel {
         // TODO: Inform user he can't delete a project in use.
         guard canDeleteProject(project) else { return }
         manager.delete(project: project) { [weak self] _ in
-            self?.projectDidUpdateSubject.value = nil
+            self?.projectDidUpdateSubject.send(nil)
         }
     }
 

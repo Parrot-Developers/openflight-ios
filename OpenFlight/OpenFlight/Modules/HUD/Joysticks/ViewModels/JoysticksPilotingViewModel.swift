@@ -39,6 +39,9 @@ final class JoysticksPilotingViewModel: DroneStateViewModel<DeviceConnectionStat
     private var guidedPilotedItf: GuidedPilotingItf? {
         return drone?.getPilotingItf(PilotingItfs.guided)
     }
+    private var pointAndFlyItf: PointAndFlyPilotingItf? {
+        return drone?.getPilotingItf(PilotingItfs.pointAndFly)
+    }
     private var pilotedPOIItf: PointOfInterestPilotingItf? {
         return drone?.getPilotingItf(PilotingItfs.pointOfInterest)
     }
@@ -147,6 +150,8 @@ private extension JoysticksPilotingViewModel {
             lookAtItf?.set(pitch: pitch)
         } else if followMeItf?.state == .active {
             followMeItf?.set(pitch: pitch)
+        } else if pointAndFlyItf?.state == .active {
+            pointAndFlyItf?.set(pitch: pitch)
         } else if guidedPilotedItf?.state == .active
             || flightPlanItf?.state == .active {
             _ = manualPilotingItf?.activate()
@@ -171,6 +176,8 @@ private extension JoysticksPilotingViewModel {
             lookAtItf?.set(roll: roll)
         } else if followMeItf?.state == .active {
             followMeItf?.set(roll: roll)
+        } else if pointAndFlyItf?.state == .active {
+            pointAndFlyItf?.set(roll: roll)
         } else if guidedPilotedItf?.state == .active
             || flightPlanItf?.state == .active {
             _ = manualPilotingItf?.activate()
@@ -195,6 +202,8 @@ private extension JoysticksPilotingViewModel {
             lookAtItf?.set(verticalSpeed: verticalSpeed)
         } else if followMeItf?.state == .active {
             followMeItf?.set(verticalSpeed: verticalSpeed)
+        } else if pointAndFlyItf?.state == .active {
+            pointAndFlyItf?.set(verticalSpeed: verticalSpeed)
         } else if guidedPilotedItf?.state == .active
             || flightPlanItf?.state == .active {
             _ = manualPilotingItf?.activate()

@@ -33,8 +33,7 @@ import Pictor
 import SwiftyUserDefaults
 
 public class ProjectsListViewModel {
-
-    @Published private(set) var filteredProjects: [ProjectModel] = [ProjectModel]()
+    @Published private(set) var filteredProjectUuids: [String] = []
     @Published private(set) var selectedProject: ProjectModel?
 
     let manager: ProjectManager
@@ -81,9 +80,7 @@ public class ProjectsListViewModel {
     }
 
     private func listenProjectsChange() {
-        // TODO: Change publisher to Passthrough to avoid calling dropFirst()
         projectManagerViewModel?.projectDidUpdate
-            .dropFirst()
             .sink { [weak self] projectUpdated in
                 guard let self = self else { return }
                 self.refreshProjects()
@@ -91,9 +88,7 @@ public class ProjectsListViewModel {
             }
             .store(in: &cancellables)
 
-        // TODO: Change publisher to Passthrough to avoid calling dropFirst()
         projectManagerViewModel?.projectAdded
-            .dropFirst()
             .sink { [weak self] projectAdded in
                 guard let self = self else { return }
                 self.refreshProjects()
@@ -103,25 +98,31 @@ public class ProjectsListViewModel {
     }
 
     private func project(with uuid: String?) -> ProjectModel? {
-        guard let uuid = uuid else { return nil }
-        return filteredProjects.first { $0.uuid == uuid }
+        guard let uuid = uuid,
+              let projectUuid = filteredProjectUuids.first(where: { $0 == uuid }) else {
+            return nil
+        }
+        return manager.getProject(byUuid: projectUuid)
     }
 
     // MARK: - Public funcs
     func selectProjectByDoubleTap(forIndexPath: IndexPath) {
-        guard forIndexPath.row < filteredProjects.count else {
+        guard forIndexPath.row < filteredProjectUuids.count else {
             return
         }
-
-        selectedProject = filteredProjects[forIndexPath.row]
-        projectManagerViewModel?.openProject(filteredProjects[forIndexPath.row])
+        let projectUuid = filteredProjectUuids[forIndexPath.row]
+        selectedProject = manager.getProject(byUuid: projectUuid)
+        if let selectedProject = selectedProject {
+            projectManagerViewModel?.openProject(selectedProject)
+        }
     }
 
     func selectProject(forIndexPath: IndexPath) {
-        guard forIndexPath.row < filteredProjects.count else {
+        guard forIndexPath.row < filteredProjectUuids.count else {
             return
         }
-        selectedProject = filteredProjects[forIndexPath.row]
+        let projectUuid = filteredProjectUuids[forIndexPath.row]
+        selectedProject = manager.getProject(byUuid: projectUuid)
     }
 
     func selectProject(_ project: ProjectModel) {
@@ -142,11 +143,11 @@ public class ProjectsListViewModel {
         }
         var result: Int?
 
-        if let index = filteredProjects.firstIndex(where: { $0.uuid == selectedProject.uuid }) {
+        if let index = filteredProjectUuids.firstIndex(where: { $0 == selectedProject.uuid }) {
             result = index
         } else {
             while getMoreProjects() {
-                if let index = filteredProjects.firstIndex(where: { $0.uuid == selectedProject.uuid }) {
+                if let index = filteredProjectUuids.firstIndex(where: { $0 == selectedProject.uuid }) {
                     result = index
                     break
                 }
@@ -157,30 +158,64 @@ public class ProjectsListViewModel {
     }
 
     func shouldGetMoreProjects(fromIndexPath indexPath: IndexPath) {
-        if indexPath.row == filteredProjects.count - 1 {
+        if indexPath.row == filteredProjectUuids.count - 1 {
             getMoreProjects()
         }
     }
 
     @discardableResult
     func getMoreProjects() -> Bool {
-        let allFlightsCount = manager.getProjectsCount(withType: filteredProjectType)
-        guard filteredProjects.count < allFlightsCount else {
+        let projectsCount = manager.getProjectsCount(withType: filteredProjectType)
+        guard filteredProjectUuids.count < projectsCount else {
             return false
         }
-        let moreProjects = manager.loadProjects(type: filteredProjectType, offset: filteredProjects.count, limit: manager.numberOfProjectsPerPage)
-        if !moreProjects.isEmpty {
-            filteredProjects.append(contentsOf: moreProjects)
+        let moreProjectUuids = manager.loadProjects(type: filteredProjectType,
+                                                    offset: filteredProjectUuids.count,
+                                                    limit: manager.numberOfProjectsPerPage).map { $0.uuid }
+        if !moreProjectUuids.isEmpty {
+            filteredProjectUuids.append(contentsOf: moreProjectUuids)
         }
         return true
     }
 
     func refreshProjects(forLimit: Int? = nil) {
         guard let forLimit = forLimit else {
-            filteredProjects = manager.loadProjects(type: filteredProjectType, limit: filteredProjects.count)
+            filteredProjectUuids = manager.loadProjects(type: filteredProjectType, limit: filteredProjectUuids.count).map { $0.uuid }
             return
         }
 
-        filteredProjects = manager.loadProjects(type: filteredProjectType, limit: forLimit)
+        filteredProjectUuids = manager.loadProjects(type: filteredProjectType, limit: forLimit).map { $0.uuid }
+    }
+
+    func projectProvider(for uuid: String) -> CellProjectListProvider? {
+        guard let projectUuid = filteredProjectUuids.first(where: { $0 == uuid }),
+              let project = manager.getProject(byUuid: projectUuid) else {
+            return nil
+        }
+        return CellProjectListProvider(isSelected: isProjectSelected(project), project: project)
+    }
+
+    func getProject(byUuid: String) -> ProjectModel? {
+        manager.getProject(byUuid: byUuid)
+    }
+
+    /// Returns a project table view cell model for a specific project.
+    ///
+    /// - Parameter uuid: the project uuid
+    /// - Returns: the corresponding project table view cell model
+    func cellViewModel(for uuid: String) -> ProjectCellModel? {
+        guard let project = manager.getProject(byUuid: uuid) else { return nil }
+        var icon: UIImage?
+        if !project.isSimpleFlightPlan,
+           let executionType = Services.hub.flightPlan.typeStore.typeForKey(project.editableFlightPlan?.flightPlanType) {
+            icon = executionType.icon
+        }
+
+        return ProjectCellModel(title: project.title,
+                                date: project.lastUpdated?.commonFormattedString,
+                                isExecuted: project.latestExecutedFlightPlan != nil,
+                                icon: icon,
+                                thumbnail: project.editableFlightPlan?.thumbnail?.image,
+                                isSelected: isProjectSelected(project))
     }
 }

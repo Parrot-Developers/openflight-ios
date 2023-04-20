@@ -1,4 +1,4 @@
-//    Copyright (C) 2021 Parrot Drones SAS
+//    Copyright (C) 2023 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -28,45 +28,45 @@
 //    SUCH DAMAGE.
 
 import Foundation
-import Combine
+import Pictor
 
-class ProjectCellModel {
+/// A cell model describing a flights list table view row.
+open class ProjectCellModel {
 
-    @Published private(set) var thumbnail: UIImage!
-    @Published private(set) var title: String?
-    @Published private(set) var description: String?
-    @Published private(set) var projectTypeIcon: UIImage?
-    @Published private(set) var isSelected: Bool = false
-    @Published private(set) var hasExecutions: Bool = false
+    /// The project name
+    private(set) var title: String
+    /// The last modification date
+    private(set) var date: String?
+    /// The project execution icon
+    private(set) var isExecuted: Bool = false
+    /// The project type
+    private(set) var icon: UIImage?
+    /// The project thumbnail
+    private(set) var thumbnail: UIImage?
+    /// Whether cell is selected.
+    private(set) var isSelected: Bool = false
 
-    private let project: ProjectModel!
-
-    enum Constants {
-        static let defaultThumbnail = Asset.MyFlights.projectPlaceHolder.image
-    }
-
-    init(project: ProjectModel,
-         isSelected: Bool,
-         projectManager: ProjectManager) {
-        self.project = project
+    // MARK: - Init
+    /// Constructor.
+    ///
+    /// - Parameters:
+    ///    - title: the project title
+    ///    - date: the project date
+    ///    - icon: the project type icon
+    ///    - thumbnail: the project thumbnail
+    ///    - isExecuted: the project has executions
+    ///    - isSelected: whether the cell is selected
+    init(title: String,
+         date: String?,
+         isExecuted: Bool,
+         icon: UIImage?,
+         thumbnail: UIImage?,
+         isSelected: Bool) {
+        self.title = title
+        self.date = date
+        self.isExecuted = isExecuted
+        self.icon = icon
+        self.thumbnail = thumbnail
         self.isSelected = isSelected
-
-        thumbnail = Constants.defaultThumbnail
-
-        let editableFlightPlan = project.editableFlightPlan?.flightPlanModel
-
-        title = project.title.isEmpty ? editableFlightPlan?.dataSetting?.coordinate?.coordinatesDescription : project.title
-        description = project.lastUpdated?.commonFormattedString
-
-        thumbnail = editableFlightPlan?.pictorModel.thumbnail?.image ?? Constants.defaultThumbnail
-
-        if !project.isSimpleFlightPlan,
-           let executionType = Services.hub.flightPlan.typeStore.typeForKey(editableFlightPlan?.pictorModel.flightPlanType) {
-            projectTypeIcon = executionType.icon
-        } else {
-            projectTypeIcon = nil
-        }
-
-        hasExecutions = project.latestExecutedFlightPlan != nil
     }
 }

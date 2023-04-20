@@ -31,7 +31,7 @@ import UIKit
 import Reusable
 import Combine
 
-class ProjectCell: UICollectionViewCell, NibReusable {
+class ProjectCollectionViewCell: UICollectionViewCell, NibReusable {
 
     @IBOutlet private weak var backgroundImageView: UIImageView!
     @IBOutlet private weak var gradientView: UIView!
@@ -45,6 +45,7 @@ class ProjectCell: UICollectionViewCell, NibReusable {
         static let selectedItemBorderWidth = Style.selectedItemBorderWidth
         static let gradientStartAlpha: CGFloat = 0.0
         static let gradientEndAlpha: CGFloat = 0.65
+        static let defaultThumbnail = Asset.MyFlights.projectPlaceHolder.image
     }
 
     override func awakeFromNib() {
@@ -76,13 +77,13 @@ class ProjectCell: UICollectionViewCell, NibReusable {
         selectedView.isHidden = true
     }
 
-    func configureCell(viewModel: ProjectCellModel) {
-        backgroundImageView.image = viewModel.thumbnail
-        titleLabel.text = viewModel.title
-        descriptionLabel.text = viewModel.description
-        typeImage.image = viewModel.projectTypeIcon
-        selectedView.isHidden = !viewModel.isSelected
-        projectExecutedIcon.isHidden = !viewModel.hasExecutions
-        gradientView.backgroundColor = viewModel.isSelected ? ColorName.white50.color : .clear
+    func configureCell(_ model: ProjectCellModel) {
+        backgroundImageView.image = model.thumbnail ?? Constants.defaultThumbnail
+        titleLabel.text = model.title
+        descriptionLabel.text = model.date
+        typeImage.image = model.icon
+        selectedView.isHidden = !model.isSelected
+        projectExecutedIcon.isHidden = !model.isExecuted
+        gradientView.backgroundColor = model.isSelected ? ColorName.white50.color : .clear
       }
 }

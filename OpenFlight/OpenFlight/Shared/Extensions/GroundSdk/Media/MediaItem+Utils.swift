@@ -58,12 +58,11 @@ extension MediaItem {
                     return .photo
                 }
             case .single:
-                switch resources.first?.format {
-                case .dng:
+                if resources.first(where: { $0.format == .dng }) != nil {
+                    // At least 1 DNG resource found in media => return DNG type.
                     return .dng
-                default:
-                    return .photo
                 }
+                return .photo
             case .timeLapse:
                 return .timeLapse
             default:

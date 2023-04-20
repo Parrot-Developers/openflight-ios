@@ -197,7 +197,7 @@ extension StartedNotFlyingState {
 private extension StartedNotFlyingState {
     enum Constants {
         /// Farthest distance, in meters, between the drone and the FP's first WP, before preventing a start.
-        static let droneFirstWpFarthestDistance: CLLocationDistance = 50_000
+        static let droneFirstWpFarthestDistance: CLLocationDistance = 30_000
     }
 
     func ensureExecutionIsPossible(for plan: Plan) throws {

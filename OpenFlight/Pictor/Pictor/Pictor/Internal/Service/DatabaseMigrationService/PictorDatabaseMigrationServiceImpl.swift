@@ -108,11 +108,6 @@ class PictorDatabaseMigrationServiceImpl: PictorDatabaseMigrationService {
             + oldFlightPlanCount
             + oldGutmaLinksCount
             + oldThumbnailCount
-
-            // - If any old records are found, add connecting user migration step as last step
-            if result > 0 {
-                result += 1
-            }
         }
         return result
     }
@@ -161,12 +156,13 @@ class PictorDatabaseMigrationServiceImpl: PictorDatabaseMigrationService {
             migrateDrones {
                 handleProgress()
             }
-            migrateUsers {
+            migrateUsers(willDeleteOldUser: { [unowned self] userUuid in
+                if let oldApcId = oldSessionData.oldApcId, oldApcId == userUuid {
+                    connectOldUser(oldSessionData)
+                }
+            }) {
                 handleProgress()
             }
-
-            connectOldUser(oldSessionData)
-            handleProgress()
         }
 
         logDuration()
@@ -242,7 +238,7 @@ private extension PictorDatabaseMigrationServiceImpl {
     ///
     /// - Parameters:
     ///    - didMigrateRecord: callback closure called when a record has been fully migrated (deleted in old database)
-    func migrateUsers(_ didMigrateRecord: (() -> Void)?) {
+    func migrateUsers(willDeleteOldUser: ((_ userUuid: String) -> Void)?, _ didMigrateRecord: (() -> Void)?) {
         PictorLogger.shared.i(.tag, "💾🔵 Migrating users...")
         while let oldCDs = getFirstOldRecords(entityName: UserParrot.entityName) as? [UserParrot], !oldCDs.isEmpty {
             let oldModels: [OldUserModel] = oldCDs.compactMap { $0.toModel() }
@@ -255,6 +251,8 @@ private extension PictorDatabaseMigrationServiceImpl {
                         modelCD.update(from: oldModel)
                         coreDataService.saveChildContext(childContext)
                     }
+
+                    willDeleteOldUser?(oldModel.apcId)
 
                     // - Delete old record
                     deleteOldRecord(for: oldModel._uuid, in: oldCDs)

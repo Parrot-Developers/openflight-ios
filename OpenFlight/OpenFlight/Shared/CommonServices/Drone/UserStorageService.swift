@@ -324,7 +324,10 @@ private extension UserStorageServiceImpl {
 
     /// Updates formatting state according to current conditions.
     func updateFormattingState() {
-        if isDroneFlying {
+        if isDroneFlying && formattingStatus == nil {
+            // Set formatting state to unavailable for `.droneIsFlying` reason only if no
+            // formatting is already ongoing (user may have initiated a formatting process
+            // from ground).
             formattingStateSubject.value = .unavailable(.droneIsFlying)
         } else if !isFormattingSupported && formattingStatus == nil {
             // SDK reports `!canFormat` during a formatting process

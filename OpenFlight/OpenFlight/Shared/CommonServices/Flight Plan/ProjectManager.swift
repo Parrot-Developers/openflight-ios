@@ -149,6 +149,12 @@ public protocol ProjectManager {
     /// - Returns: List of executed flight plans with hasReachedFirstWaypoint to true
     func getExecutedFlightPlans(ofProject project: ProjectModel) -> [FlightPlanModel]
 
+    /// Returns project model gathered from repository for a specific UUID.
+    ///
+    /// - Parameter uuid: the UUID of the flight model to get
+    /// - Returns: the project model with provided UUID (if any)
+    func getProject(byUuid uuid: String) -> ProjectModel?
+
     /// Creates new Project.
     ///
     /// - Parameters:
@@ -583,7 +589,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                          types: nil,
                                                          excludedTypes: nil,
                                                          hasReachedFirstWaypoint: true)
-        
+
         return pictorFlightPlans
             .compactMap { $0 }
             .sorted {
@@ -598,6 +604,10 @@ extension ProjectManagerImpl: ProjectManager {
                 return executionRank0 > executionRank1
             }
             .map { $0.flightPlanModel }
+    }
+
+    public func getProject(byUuid uuid: String) -> ProjectModel? {
+        projectRepository.get(byUuid: uuid)
     }
 
     public func delete(project: ProjectModel, completion: ((_ success: Bool) -> Void)?) {

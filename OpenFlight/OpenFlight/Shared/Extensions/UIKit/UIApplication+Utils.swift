@@ -51,6 +51,11 @@ public extension UIApplication {
             .first { $0.isKeyWindow }
     }
 
+    /// Checks if app is in active state.
+    static var isAppActive: Bool {
+        return UIApplication.shared.applicationState == .active
+    }
+
     /// Gets the current top view controller
     ///
     /// - Parameters:

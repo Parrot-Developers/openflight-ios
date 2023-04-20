@@ -252,8 +252,8 @@ private extension BannerAlertsManagerViewController {
     ///
     /// - Parameter banner: the banner to get feedback parameters from
     func playFeedbackIfNeeded(_ banner: AnyBannerAlert) {
-        // Do not play any feedback if view controller is not displayed on screen.
-        guard isVisible() else { return }
+        // Do not play any feedback if app is not active or view controller is not displayed on screen
+        guard UIApplication.isAppActive, isVisible() else { return }
 
         if let feedbackType = banner.behavior.feedbackType {
             let generator = UINotificationFeedbackGenerator()

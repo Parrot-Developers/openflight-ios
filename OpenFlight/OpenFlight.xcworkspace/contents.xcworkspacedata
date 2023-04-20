@@ -2,9 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "container:OpenFlight.xcodeproj">
+      location = "group:Pictor/Pictor/Pictor.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Pictor/Pictor/Pictor.xcodeproj">
+      location = "container:OpenFlight.xcodeproj">
    </FileRef>
 </Workspace>

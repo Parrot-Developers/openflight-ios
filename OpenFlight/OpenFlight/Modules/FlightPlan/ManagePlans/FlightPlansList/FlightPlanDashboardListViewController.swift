@@ -79,7 +79,7 @@ final class FlightPlanDashboardListViewController: UIViewController {
     }
 
     private func bindViewModel() {
-        viewModel.allProjectsPublisher
+        viewModel.allProjectUuidsPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self = self else { return }
@@ -105,7 +105,7 @@ final class FlightPlanDashboardListViewController: UIViewController {
         collectionView.register(FlightPlanListReusableHeaderView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
                                 withReuseIdentifier: FlightPlanListReusableHeaderView.identifier)
-        collectionView.register(cellType: FlightPlanCollectionViewCell.self)
+        collectionView.register(cellType: ProjectCollectionViewCell.self)
         collectionView.delegate = self
         collectionView.dataSource = self
 
@@ -236,10 +236,12 @@ extension FlightPlanDashboardListViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(for: indexPath) as FlightPlanCollectionViewCell
-        guard let cellProvider = viewModel.projectProvider(at: indexPath.row) else { return cell }
-        cell.configureCell(project: cellProvider.project,
-                           isSelected: cellProvider.isSelected)
+        let cell = collectionView.dequeueReusableCell(for: indexPath) as ProjectCollectionViewCell
+        guard let projectUuid = viewModel.projectUuid(for: indexPath.row),
+              let projectCellModel = viewModel.cellViewModel(for: projectUuid) else {
+            return cell
+        }
+        cell.configureCell(projectCellModel)
 
         viewModel.shouldGetMoreProjects(fromIndexPath: indexPath)
 
@@ -257,7 +259,6 @@ extension FlightPlanDashboardListViewController: UICollectionViewDataSource {
         header.configure(provider: viewModel.headerCellProvider(), delegate: viewModel)
         return header
     }
-
 }
 
 // MARK: - UICollectionViewDelegate

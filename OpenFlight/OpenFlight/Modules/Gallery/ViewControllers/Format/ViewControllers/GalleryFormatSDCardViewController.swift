@@ -176,6 +176,7 @@ private extension GalleryFormatSDCardViewController {
         case .unavailable(let reason):
             // Formatting is unavailable => disable interaction and update UI.
             secondaryLabel.text = reason.message
+            choicesStackView.isUserInteractionEnabled = false
             choicesStackView.alphaWithEnabledState(false)
             confirmationAlert?.dismissAlert()
             confirmationAlert = nil
@@ -183,6 +184,7 @@ private extension GalleryFormatSDCardViewController {
         case .available(let status):
             // Formatting is available => enable default UI.
             secondaryLabel.text = L10n.galleryFormatDataErased
+            choicesStackView.isUserInteractionEnabled = true
             choicesStackView.alphaWithEnabledState(true)
 
             guard let status = status else { return }
