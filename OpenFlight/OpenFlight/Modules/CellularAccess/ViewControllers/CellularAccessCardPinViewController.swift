@@ -169,7 +169,6 @@ private extension CellularAccessCardPinViewController {
                     self.viewModel.dismissPinCodeView(animated: true)
                 } else {
                     self.descriptionLabel.textColor = connectionState.descriptionColor
-                    self.descriptionLabel.isHidden = connectionState.isDescriptionHidden
                 }
             }
             .store(in: &cancellables)

@@ -46,7 +46,14 @@ protocol PictorBaseContext {
     ///     - models: array of models to update
     func update<T: PictorBaseModel>(_ models: [T])
 
+    /// Create or update locally if found list of models in current context.
+    /// - Parameters:
+    ///     - models: array of models to create
     func createLocal<T: PictorBaseModel>(_ models: [T])
+
+    /// Update locally list of models in current context.
+    /// - Parameters:
+    ///     - models: array of models to update
     func updateLocal<T: PictorBaseModel>(_ models: [T])
 
     /// Delete list of models in current context.

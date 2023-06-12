@@ -63,6 +63,8 @@ extension LogEvent {
         static let measurementSystem: String = "MeasurementSystem"
         static let gridDisplayType: String = "GridDisplayType"
         static let geofence: String = "Geofence"
+        static let geofenceDistance: String = "GeofenceDistance"
+        static let geofenceAltitude: String = "GeofenceAltitude"
         static let returnHome: String = "ReturnHome"
         static let extraZoom: String = "ExtraZoom"
         static let displayOverexposure: String = "DisplayOverexposure"

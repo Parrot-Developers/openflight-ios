@@ -1,4 +1,4 @@
-//    Copyright (C) 2020 Parrot Drones SAS
+//    Copyright (C) 2023 Parrot Drones SAS
 //
 //    Redistribution and use in source and binary forms, with or without
 //    modification, are permitted provided that the following conditions
@@ -27,22 +27,22 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-// MARK: - Internal Enums
-/// Stores each setting cell type.
-enum SettingsCellType {
-    case controlMode
-    case segmented
-    case rth
-    case resetAllSettingsButton
-    case slider
-    case networkName
-    case buttonCell
-    case separator
-    case title
-    case grid
-    case wifiChannels
-    case cellularData
-    case endHovering
-    case dri
-    case shellAccess
+import Foundation
+import GroundSdk
+
+class SliderSetting: DoubleSetting {
+    var updating: Bool
+    /// Setting minimum value.
+    var min: Double
+    /// Setting maximum value.
+    var max: Double
+    /// Setting current value.
+    var value: Double
+
+    init(min: Double, max: Double, value: Double, updating: Bool = false) {
+        self.min = min
+        self.max = max
+        self.value = value
+        self.updating = updating
+    }
 }

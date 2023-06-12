@@ -38,7 +38,13 @@ class GutmaLinkCD: PictorEngineManagedObject {
         if let model = model as? PictorBaseGutmaLinkModel {
             updateBaseModel(model)
         } else if let model = model as? PictorEngineBaseGutmaLinkModel {
-            updateEngineModel(model)
+            updateEngineModel(model, updateBase: true)
+        }
+    }
+
+    func updateEngine(_ model: PictorBaseModel) {
+        if let model = model as? PictorEngineBaseGutmaLinkModel {
+            updateEngineModel(model, updateBase: false)
         }
     }
 }
@@ -50,17 +56,19 @@ private extension GutmaLinkCD {
 
         flightUuid = model.flightUuid
         flightPlanUuid = model.flightPlanUuid
-        cloudId = Int64(model.cloudId)
         executionDate = model.executionDate
     }
 
-    func updateEngineModel(_ model: PictorEngineBaseGutmaLinkModel) {
+    func updateEngineModel(_ model: PictorEngineBaseGutmaLinkModel, updateBase: Bool) {
         // - Base model
-        updateBaseModel(model.gutmaLinkModel)
+        if updateBase {
+            updateBaseModel(model.gutmaLinkModel)
+        }
         localCreationDate = model.localCreationDate
         localModificationDate = model.localModificationDate
 
         // - Synchro properties
+        cloudId = model.cloudId
         synchroStatus = model.synchroStatus.rawValue
         synchroError = model.synchroError.rawValue
         synchroLatestUpdatedDate = model.synchroLatestUpdatedDate

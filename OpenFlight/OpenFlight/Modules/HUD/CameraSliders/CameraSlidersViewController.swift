@@ -43,6 +43,8 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     @IBOutlet private weak var overzoomLabel: UILabel!
     @IBOutlet private weak var joysticksButtonContainer: UIView!
     @IBOutlet private weak var joysticksButton: InsetHitAreaButton!
+    @IBOutlet public weak var otherButtonContainer: UIView!
+    @IBOutlet public weak var otherButton: InsetHitAreaButton!
     @IBOutlet private weak var infoTiltLabel: PaddingLabel!
 
     @IBOutlet private weak var defaultViewContainer: UIView!
@@ -73,12 +75,20 @@ final class CameraSlidersViewController: UIViewController, DelayedTaskProvider {
     }
 
     // MARK: - Override Funcs
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         zoomSliderView.viewModel = coordinator.zoomSliderViewModel()
         tiltSliderView.viewModel = coordinator.gimbalTiltSliderViewModel()
         setupView()
         setupViewModel()
+    }
+
+    @objc public dynamic func configureOtherButton() {
+        otherButtonContainer.isHidden = true
+    }
+
+    @objc public dynamic func otherButtonDoSomething() {
+        // Do nothing by default
     }
 }
 
@@ -99,6 +109,12 @@ private extension CameraSlidersViewController {
     @IBAction func joysticksButtonTouchedUpInside(_ sender: Any) {
         viewModel.joysticksButtonTapped()
     }
+
+    /// Called when user touch other button.
+    @IBAction func otherButtonTouchedUpInside(_ sender: Any) {
+//        viewModel.joysticksButtonTapped()
+        otherButtonDoSomething()
+    }
 }
 
 // MARK: - Private Funcs
@@ -114,6 +130,8 @@ private extension CameraSlidersViewController {
         // joysticksButton
         joysticksButton.roundCornered()
         joysticksButton.tintColor = ColorName.defaultTextColor.color
+        // otherButton
+        configureOtherButton()
         // overzoomLabel
         overzoomLabel.applyCornerRadius(Style.largeCornerRadius)
         overzoomLabel.text = L10n.zoomMaxReached

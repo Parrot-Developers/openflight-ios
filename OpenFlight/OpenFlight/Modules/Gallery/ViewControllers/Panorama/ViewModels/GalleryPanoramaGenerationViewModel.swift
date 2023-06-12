@@ -175,12 +175,20 @@ private extension GalleryPanoramaGenerationViewModel {
 
         mediaStoreService.downloadTaskStatePublisher
             .sink { [weak self] state in
+                let progressLog = "progress = \(String(describing: state.progress))"
+                let statusLog = "status = \(String(describing: state.status))"
+                ULog.i(.tag, "Panorama download state \(progressLog) | \(statusLog)")
+
                 self?.updateDownloadProgress(progress: state.progress, status: state.status)
             }
             .store(in: &cancellables)
 
         mediaStoreService.uploadTaskStatePublisher
             .sink { [weak self] state in
+                let progressLog = "progress = \(String(describing: state.progress))"
+                let statusLog = "status = \(String(describing: state.status))"
+                ULog.i(.tag, "Panorama upload state \(progressLog) | \(statusLog)")
+
                 self?.updateUploader(progress: state.progress, status: state.status)
             }
             .store(in: &cancellables)
@@ -196,6 +204,7 @@ private extension GalleryPanoramaGenerationViewModel {
 // MARK: - Process States Handling
 private extension GalleryPanoramaGenerationViewModel {
     func activateCurrentStep() {
+        ULog.i(.tag, "Panorama activateCurrentStep isCurrentIndexValid \(currentStepIndex) = \(isCurrentIndexValid)")
         guard isCurrentIndexValid else { return }
 
         updateCurrentStep(with: .active)
@@ -203,12 +212,17 @@ private extension GalleryPanoramaGenerationViewModel {
     }
 
     func updateCurrentStep(with status: GalleryPanoramaStepStatus, activateNextStep: Bool = false) {
+        let statusLog = "status = \(status)"
+        let activateStepLog = "activateNextStep = \(activateNextStep)"
+        let indexValidLog = "isCurrentIndexValid \(currentStepIndex) = \(isCurrentIndexValid)"
+        ULog.i(.tag, "Panorama updateCurrentStep with \(statusLog) | \(activateStepLog) | \(indexValidLog)")
         guard isCurrentIndexValid else { return }
 
         generationStepModels[currentStepIndex].status = status
 
         if activateNextStep {
             if isFullProcessComplete {
+                ULog.i(.tag, "Panorama full process complete")
                 closeView()
             } else {
                 currentStepIndex += 1
@@ -279,8 +293,16 @@ private extension GalleryPanoramaGenerationViewModel {
 
     func downloadMedia() {
         Task {
-            for await status in mediaListService.download(medias: [media]) where status == .error { }
-            updateCurrentStep(with: .success, activateNextStep: true)
+            for await status in mediaListService.download(medias: [media]) {
+                switch status {
+                case .complete:
+                    updateCurrentStep(with: .success, activateNextStep: true)
+                case .error:
+                    updateCurrentStep(with: .failure, activateNextStep: false)
+                default:
+                    break
+                }
+            }
         }
     }
 }

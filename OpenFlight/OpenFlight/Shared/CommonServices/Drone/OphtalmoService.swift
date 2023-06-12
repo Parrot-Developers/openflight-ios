@@ -51,16 +51,12 @@ protocol OphtalmoService: AnyObject {
     var calibrationStatusPublisher: AnyPublisher<OpthalmoMissionCalibrationStatus, Never> { get }
     /// The current step of the calibration
     var calibrationStepPublisher: AnyPublisher<OpthalmoMissionCalibrationStep, Never> { get }
-    /// The current altitude asked.
-    var calibrationAltitudeAskPublisher: AnyPublisher<Float?, Never> { get }
     /// Indicates if the drone is flying
     var isFlyingPublisher: AnyPublisher<Bool, Never> { get }
     /// Publisher of the current gps strength
     var gpsStrengthPublisher: AnyPublisher<GpsStrength, Never> { get }
     /// The current gps strength
     var gpsStrength: GpsStrength { get }
-    /// The current handlanding state
-    var isHandLandingPublisher: AnyPublisher<Bool, Never> { get }
     /// The current calibration status
     var calibrationStatus: OpthalmoMissionCalibrationStatus? { get }
     /// The current flying status
@@ -69,8 +65,6 @@ protocol OphtalmoService: AnyObject {
     var ophtalmoLastMissionStatePublisher: AnyPublisher<MissionState?, Never> { get }
     /// The last state of the mission value.
     var ophtalmoLastMissionState: MissionState? { get }
-    /// Whether hand calibration can be start.
-    var canStartHandCalibration: Bool { get }
     /// Listens the ophtalmo mission
     func listenMission()
     /// Stops listening the ophtalmo mission
@@ -85,8 +79,6 @@ protocol OphtalmoService: AnyObject {
     /// Starts the ophtalmo mission
     /// - Parameter altitude: The altitude the drone will fly up to
     func startCalibration(altitude: Float)
-    /// Starts the ophtalmo mission with hand launch
-    func startHandCalibration()
     /// Stops the calibration
     func cancelCalibration()
     /// Resets the calibration
@@ -117,7 +109,6 @@ final class OphtalmoServiceImpl {
     private var gpsStrengthSubject = CurrentValueSubject<GpsStrength, Never>(.none)
     private var ophtalmoLastMissionStateSubject = CurrentValueSubject<MissionState?, Never>(nil)
     private var isHandLandingSubject = CurrentValueSubject<Bool, Never>(false)
-    private var calibrationAltitudeAskSubject = CurrentValueSubject<Float?, Never>(nil)
 
     /// Reference to gps instrument.
     private var gpsRef: Ref<Gps>?
@@ -141,52 +132,6 @@ final class OphtalmoServiceImpl {
                 listenGps(drone: drone)
                 listenFlyingState(drone: drone)
                 listenStatus(drone: drone)
-            }
-            .store(in: &cancellables)
-
-        handLaunchService.isDisabledByUserPublisher
-            .removeDuplicates()
-            .sink { [unowned self] isDisabledByUser in
-                // Clears pending calibration if user disables hand launch.
-                if isDisabledByUser {
-                    ULog.i(.tag, "Clears pending calibration (reason: disabled by user)")
-                    calibrationAltitudeAskSubject.value = nil
-                }
-            }
-            .store(in: &cancellables)
-
-        handLaunchService.canStartPublisher
-            .removeDuplicates()
-            .sink { [unowned self] canStart in
-                if !canStart,
-                   connectedDroneHolder.drone?.getPilotingItf(PilotingItfs.manualCopter)?.smartTakeOffLandAction == .takeOff {
-                    ULog.i(.tag, "Clears pending calibration (reason: land drone manually)")
-                    calibrationAltitudeAskSubject.value = nil
-                }
-            }
-            .store(in: &cancellables)
-
-        isFlyingPublisher
-            .removeDuplicates()
-            .combineLatest(calibrationAltitudeAskPublisher.removeDuplicates())
-            .sink { [unowned self] isFlying, altitudeAsk in
-                guard isFlying, altitudeAsk != nil else { return }
-                ULog.i(.tag, "Clears pending calibration (reason: drone launched)")
-                calibrationAltitudeAskSubject.value = nil
-            }
-            .store(in: &cancellables)
-
-        isHandLandingPublisher
-            .removeDuplicates()
-            .sink { isHandLanding in
-                ULog.i(.tag, "isHandLanding : \(isHandLanding)")
-            }
-            .store(in: &cancellables)
-
-        calibrationAltitudeAskPublisher
-            .removeDuplicates()
-            .sink { altitudeAsk in
-                ULog.i(.tag, "altitudeAsk : \(String(describing: altitudeAsk))")
             }
             .store(in: &cancellables)
 
@@ -272,7 +217,7 @@ private extension OphtalmoServiceImpl {
 
 extension OphtalmoServiceImpl: OphtalmoService {
     var altitude: Float {
-        calibrationAltitudeAskSubject.value ?? (calibrationAltitudeSubject.value ?? 0)
+        calibrationAltitudeSubject.value ?? 0
     }
     var calibrationPercentagePublisher: AnyPublisher<Float?, Never> {
         calibrationPercentageSubject.eraseToAnyPublisher()
@@ -300,19 +245,10 @@ extension OphtalmoServiceImpl: OphtalmoService {
             .compactMap { $0 }
             .eraseToAnyPublisher()
     }
-    var calibrationAltitudeAskPublisher: AnyPublisher<Float?, Never> {
-        calibrationAltitudeAskSubject.eraseToAnyPublisher()
-    }
     var isFlyingPublisher: AnyPublisher<Bool, Never> { isFlyingSubject.eraseToAnyPublisher() }
     var gpsStrengthPublisher: AnyPublisher<GpsStrength, Never> { gpsStrengthSubject.eraseToAnyPublisher() }
-    var isHandLandingPublisher: AnyPublisher<Bool, Never> { isHandLandingSubject.eraseToAnyPublisher() }
 
     var ophtalmoLastMissionState: MissionState? { ophtalmoLastMissionStateSubject.value }
-
-    var canStartHandCalibration: Bool {
-        getMissionState(drone: connectedDroneHolder.drone) == .active
-            && calibrationAltitudeAskSubject.value != nil
-    }
 
     func listenMission() {
         listener = airsdkMissionsListener.register(
@@ -323,7 +259,7 @@ extension OphtalmoServiceImpl: OphtalmoService {
 
                 do {
                     let event = try MissionEvent(serializedData: message.payload)
-                    guard self.calibrationAltitudeAskSubject.value == nil || event.state.calibrationStatus != .aborted else {
+                    guard event.state.calibrationStatus != .aborted else {
                         self.resetCalibration()
                         return
                     }
@@ -350,19 +286,7 @@ extension OphtalmoServiceImpl: OphtalmoService {
     }
 
     func startCalibration(altitude: Float) {
-        if handLaunchService.canStart {
-            calibrationAltitudeAskSubject.value = altitude
-        } else {
-            calibrationAltitudeAskSubject.value = nil
-            sendCalibrationCommand(altitude: altitude)
-        }
-    }
-
-    func startHandCalibration() {
-        guard let altitude = calibrationAltitudeAskSubject.value else {
-            return
-        }
-        sendCalibrationCommand(altitude: altitude, isHand: true)
+        sendCalibrationCommand(altitude: altitude)
     }
 
     func cancelCalibration() {
@@ -380,7 +304,6 @@ extension OphtalmoServiceImpl: OphtalmoService {
     }
 
     func resetValue() {
-        calibrationAltitudeAskSubject.value = nil
         calibrationPercentageSubject.value = nil
         calibrationStatusSubject.value = nil
         calibrationStepSubject.value = nil
@@ -398,11 +321,11 @@ extension OphtalmoServiceImpl: OphtalmoService {
 
 private extension OphtalmoServiceImpl {
 
-    func sendCalibrationCommand(altitude: Float, isHand: Bool = false) {
+    func sendCalibrationCommand(altitude: Float) {
         var config = OphtalmoMissionConfig()
         config.altitude = altitude
         var startCommand = MissionCommand()
-        startCommand.id = isHand ? .startHand(config) : .start(config)
+        startCommand.id = .start(config)
 
         send(command: startCommand)
     }

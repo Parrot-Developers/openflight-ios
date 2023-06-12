@@ -241,7 +241,9 @@ open class FlightPlanSceneViewController: SceneWithOverlaysViewController {
                 }
             }
         } else {
-            if droneLocationOverlay?.isDroneConnected == true, droneLocationOverlay?.droneLocation?.coordinates != nil {
+            if droneLocationOverlay?.isDroneConnected == true,
+               droneLocationOverlay?.droneGpsFixed == true,
+               droneLocationOverlay?.droneLocation?.coordinates != nil {
                 getDroneViewPoint { viewPoint in
                     completion(viewPoint)
                 }

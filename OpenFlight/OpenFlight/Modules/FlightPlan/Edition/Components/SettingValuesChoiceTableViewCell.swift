@@ -127,7 +127,8 @@ private extension SettingValuesChoiceTableViewCell {
     ///     - sender: selected value for the current setting
     @objc func settingValueButtonTouchedUpInside(sender: UIButton) {
         updateType(tag: sender.tag)
-        guard let key = settingType?.key else { return }
+        guard let key = settingType?.key,
+        settingType?.currentValue != sender.tag else { return }
 
         switch key {
         case ClassicFlightPlanSettingType.imageMode.key,

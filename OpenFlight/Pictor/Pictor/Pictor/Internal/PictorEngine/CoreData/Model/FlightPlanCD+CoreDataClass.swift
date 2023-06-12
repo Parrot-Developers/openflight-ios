@@ -38,7 +38,13 @@ class FlightPlanCD: PictorEngineManagedObject {
         if let model = model as? PictorBaseFlightPlanModel {
             updateBaseModel(model)
         } else if let model = model as? PictorEngineBaseFlightPlanModel {
-            updateEngineModel(model)
+            updateEngineModel(model, updateBase: true)
+        }
+    }
+
+    func updateEngine(_ model: PictorBaseModel) {
+        if let model = model as? PictorEngineBaseFlightPlanModel {
+            updateEngineModel(model, updateBase: false)
         }
     }
 }
@@ -48,7 +54,6 @@ private extension FlightPlanCD {
     func updateBaseModel(_ model: PictorBaseFlightPlanModel) {
         uuid = model.uuid
 
-        cloudId = Int64(model.cloudId)
         name = model.name
         state = model.state.rawValue
         fileType = model.fileType
@@ -67,16 +72,21 @@ private extension FlightPlanCD {
         hasReachedFirstWaypoint = NSNumber.from(boolValue: model.hasReachedFirstWaypoint)
     }
 
-    func updateEngineModel(_ model: PictorEngineBaseFlightPlanModel) {
+    func updateEngineModel(_ model: PictorEngineBaseFlightPlanModel, updateBase: Bool) {
         // - Base model
-        updateBaseModel(model.flightPlanModel)
+        if updateBase {
+            updateBaseModel(model.flightPlanModel)
+        }
+
         localCreationDate = model.localCreationDate
         localModificationDate = model.localModificationDate
 
         // - Engine model
         cloudModificationDate = model.cloudModificationDate
+        lastUpdated = model.cloudModificationDate
 
         // - Synchro model
+        cloudId = Int64(model.cloudId)
         synchroStatus = model.synchroStatus.rawValue
         synchroError = model.synchroError.rawValue
         synchroLatestUpdatedDate = model.synchroLatestUpdatedDate

@@ -438,7 +438,9 @@ extension FlightPlanMapViewController {
                                                        altitudeOffset: 0)
             return AGSViewpoint(targetExtent: envelope)
         } else {
-            if droneLocationOverlay?.isDroneConnected == true, let coordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
+            if droneLocationOverlay?.isDroneConnected == true,
+               droneLocationOverlay?.droneGpsFixed == true,
+               let coordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
                     return AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate), scale: CommonMapConstants.cameraDistanceToCenterLocation)
             } else {
                 if let coordinate = userLocationOverlay?.userLocation?.coordinates?.coordinate {

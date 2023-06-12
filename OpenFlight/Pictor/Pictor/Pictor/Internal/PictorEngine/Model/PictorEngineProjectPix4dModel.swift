@@ -44,6 +44,7 @@ struct PictorEngineProjectPix4dModel: PictorEngineBaseProjectPix4dModel {
     var localModificationDate: Date?
 
     // MARK: - Engine synchro base model
+    var cloudId: Int64
     var synchroStatus: PictorEngineSynchroStatus
     var synchroError: PictorEngineSynchroError
     var synchroLatestStatusDate: Date?
@@ -53,6 +54,7 @@ struct PictorEngineProjectPix4dModel: PictorEngineBaseProjectPix4dModel {
     init(projectPix4dModel: PictorProjectPix4dModel,
          localCreationDate: Date? = nil,
          localModificationDate: Date? = nil,
+         cloudId: Int64 = 0,
          synchroStatus: PictorEngineSynchroStatus = .notSync,
          synchroError: PictorEngineSynchroError = .noError,
          synchroLatestStatusDate: Date? = nil,
@@ -61,6 +63,7 @@ struct PictorEngineProjectPix4dModel: PictorEngineBaseProjectPix4dModel {
         self.projectPix4dModel = projectPix4dModel
         self.localCreationDate = localCreationDate
         self.localModificationDate = localModificationDate
+        self.cloudId = cloudId
         self.synchroStatus = synchroStatus
         self.synchroError = synchroError
         self.synchroLatestStatusDate = synchroLatestStatusDate
@@ -72,6 +75,7 @@ struct PictorEngineProjectPix4dModel: PictorEngineBaseProjectPix4dModel {
         self.init(projectPix4dModel: model,
                   localCreationDate: record.localCreationDate,
                   localModificationDate: record.localModificationDate,
+                  cloudId: record.cloudId,
                   synchroStatus: PictorEngineSynchroStatus(rawValue: record.synchroStatus) ?? .notSync,
                   synchroError: PictorEngineSynchroError(rawValue: record.synchroError) ?? .noError,
                   synchroLatestStatusDate: record.synchroLatestStatusDate,
@@ -85,6 +89,7 @@ extension PictorEngineProjectPix4dModel: Equatable {
         return lhs.projectPix4dModel == rhs.projectPix4dModel
             && lhs.localCreationDate == rhs.localCreationDate
             && lhs.localModificationDate == rhs.localModificationDate
+            && lhs.cloudId == rhs.cloudId
             && lhs.synchroStatus == rhs.synchroStatus
             && lhs.synchroError == rhs.synchroError
             && lhs.synchroLatestStatusDate == rhs.synchroLatestStatusDate

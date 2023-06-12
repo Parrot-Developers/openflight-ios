@@ -54,6 +54,7 @@ public final class DroneLocationGraphicsOverlay: AGSGraphicsOverlay {
     public var droneLocation: OrientedLocation?
 
     public var isDroneConnected: Bool = false
+    public var droneGpsFixed: Bool = false
 
     // MARK: - Override Funcs
     /// Init
@@ -82,6 +83,13 @@ public final class DroneLocationGraphicsOverlay: AGSGraphicsOverlay {
         viewModel.isDroneConnectedPublisher
             .sink { [weak self] isDroneConnected in
                 self?.isDroneConnected = isDroneConnected
+            }
+            .store(in: &cancellables)
+
+        viewModel.$droneGpsFixed
+            .sink { [weak self] droneGpsFixed in
+                guard let self = self, let droneGpsFixed = droneGpsFixed else { return }
+                self.droneGpsFixed = droneGpsFixed
             }
             .store(in: &cancellables)
 

@@ -212,7 +212,7 @@ public class ProjectsListViewModel {
         }
 
         return ProjectCellModel(title: project.title,
-                                date: project.lastUpdated?.commonFormattedString,
+                                date: project.lastUpdated.commonFormattedString,
                                 isExecuted: project.latestExecutedFlightPlan != nil,
                                 icon: icon,
                                 thumbnail: project.editableFlightPlan?.thumbnail?.image,

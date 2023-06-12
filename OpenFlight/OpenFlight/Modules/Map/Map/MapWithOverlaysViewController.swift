@@ -27,8 +27,20 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
+import SwiftyUserDefaults
+import Combine
+
 /// View controller for flightplan map.
 open class MapWithOverlaysViewController: AGSMapViewController {
+
+    public let viewpointSubject = PassthroughSubject<Void, Never>()
+    open var overlayCancellables = Set<AnyCancellable>()
+    open var observers: [DefaultsDisposable] = []
+
+    open override func viewDidLoad() {
+        super.viewDidLoad()
+        addOtherOverlays()
+    }
 
     // MARK: - Common overlays
     /// Add home overlay
@@ -65,5 +77,12 @@ open class MapWithOverlaysViewController: AGSMapViewController {
         returnHomeOverlay.sceneProperties?.surfacePlacement = .drapedFlat
         mapView.graphicsOverlays.add(returnHomeOverlay)
         return returnHomeOverlay
+    }
+
+    // MARK: - Dynamic implementations
+
+    /// This method can be overwritten to add other layers from extension
+    @objc open dynamic func addOtherOverlays() {
+        // do nothing by default
     }
 }

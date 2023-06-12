@@ -31,11 +31,11 @@ import Foundation
 
 // MARK: - Protocol
 public protocol PictorBaseProjectModel: PictorBaseModel {
-    var cloudId: Int64 { get set }
+    var cloudId: Int64 { get }
     var title: String { get set }
     var type: PictorProjectModel.ProjectType { get set }
     var latestExecutionIndex: Int? { get set }
-    var lastUpdated: Date? { get set }
+    var lastUpdated: Date { get set }
     var lastOpened: Date? { get set }
 
     var editableFlightPlan: PictorFlightPlanModel? { get set }
@@ -61,7 +61,7 @@ public struct PictorProjectModel: PictorBaseProjectModel, Equatable {
     public var title: String
     public var type: ProjectType
     public var latestExecutionIndex: Int?
-    public var lastUpdated: Date?
+    public var lastUpdated: Date
     public var lastOpened: Date?
 
     // - Model Specifics
@@ -74,7 +74,7 @@ public struct PictorProjectModel: PictorBaseProjectModel, Equatable {
          title: String,
          type: ProjectType,
          latestExecutionIndex: Int?,
-         lastUpdated: Date?,
+         lastUpdated: Date,
          lastOpened: Date?) {
         self.uuid = uuid
         self.cloudId = cloudId
@@ -93,7 +93,7 @@ public struct PictorProjectModel: PictorBaseProjectModel, Equatable {
                   title: record.title,
                   type: PictorProjectModel.ProjectType(rawValue: record.type ?? "") ?? .classic,
                   latestExecutionIndex: record.latestExecutionIndex?.intValue,
-                  lastUpdated: record.lastUpdated,
+                  lastUpdated: record.lastUpdated ?? Date(),
                   lastOpened: record.lastOpened)
         self.editableFlightPlan = editableFlightPlan
         self.latestExecutedFlightPlan = latestExecutedFlightPlan
@@ -103,7 +103,7 @@ public struct PictorProjectModel: PictorBaseProjectModel, Equatable {
     public init(title: String,
                 type: ProjectType,
                 latestExecutionIndex: Int?,
-                lastUpdated: Date?,
+                lastUpdated: Date,
                 lastOpened: Date?) {
         self.init(uuid: UUID().uuidString,
                   cloudId: 0,

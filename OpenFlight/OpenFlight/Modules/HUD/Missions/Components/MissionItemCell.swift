@@ -92,6 +92,9 @@ final class MissionItemCell: MainTableViewCell, NibReusable {
                         ? model.isSelected ? .white : ColorName.defaultTextColor.color
                         : ColorName.defaultTextColor80.color
         customBackgroundView.backgroundColor = bgColor
+        missionLabel?.accessibilityTraits.insert(.staticText)
+        missionLabel?.accessibilityTraits.insert(model.isSelectable ? .selected : .notEnabled)
+        missionLabel?.accessibilityTraits.remove(model.isSelectable ? .notEnabled : .selected)
         missionLabel?.textColor = textColor
         missionImage?.tintColor = textColor
         let opacity = model.isSelectable ? 1 : 0.5

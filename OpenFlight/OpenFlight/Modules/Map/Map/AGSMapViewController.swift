@@ -121,8 +121,11 @@ open class AGSMapViewController: CommonMapViewController, MapAutoScrollDelegate 
     /// Sets camera handler.
     func setCameraHandler() {
         mapView.viewpointChangedHandler = { [weak self] in
+            guard let self else { return }
 
-            guard let self = self, let viewPointThatShouldBeApplied = self.viewPointThatShouldBeApplied,
+            self.addOtherCameraHandler()
+
+            guard let viewPointThatShouldBeApplied = self.viewPointThatShouldBeApplied,
                   !self.mapView.isNavigating else {
                 return
             }
@@ -136,6 +139,10 @@ open class AGSMapViewController: CommonMapViewController, MapAutoScrollDelegate 
                 self.mapView.setViewpoint(viewPointThatShouldBeApplied)
             }
         }
+    }
+
+    @objc open dynamic func addOtherCameraHandler() {
+        // do nothing by default
     }
 
     /// User navigating state on map

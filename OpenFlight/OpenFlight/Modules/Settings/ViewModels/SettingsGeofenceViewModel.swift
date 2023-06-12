@@ -32,10 +32,8 @@ import GroundSdk
 import Combine
 
 /// Geofence setting view model.
-final class GeofenceViewModel {
-
+open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
     // MARK: - Published Properties
-
     @Published private(set) var isGeofenceActivated: Bool = GeofencePreset.geofenceMode.isGeofenceActive
     @Published private(set) var altitude: Double = Defaults.maxAltitudeSetting ?? GeofencePreset.defaultAltitude
     @Published private(set) var distance: Double = GeofencePreset.defaultDistance
@@ -45,21 +43,59 @@ final class GeofenceViewModel {
     /// Max altitude is not provided by the drone, it's a preset.
     @Published private(set) var maxAltitude: Double = GeofencePreset.maxAltitude
 
-    private(set) var notifyChangePublisher = CurrentValueSubject<Void, Never>(())
+    // MARK: - Public Properties
+    /// Returns the setting entry for geoFence mode.
+    var geoFenceModeEntry: SettingEntry {
+        return SettingEntry(setting: SettingsGeofenceViewModel.geofenceModeModel(geofence: geofence),
+                            title: L10n.settingsAdvancedTitleGeofenceActivate,
+                            itemLogKey: LogEvent.LogKeyAdvancedSettings.geofence)
+    }
+
+    /// Returns the setting entry for alitude slider.
+    var geoFenceAltitudeEntry: SettingEntry {
+        let sliderSetting = SliderSetting(min: minAltitude, max: maxAltitude, value: altitude)
+        return SettingEntry(setting: sliderSetting,
+                            title: L10n.settingsAdvancedTitleGeofenceMaxAlt,
+                            unit: UnitType.distance,
+                            defaultValue: Float(altitude),
+                            isEnabled: geofence?.mode.value.isGeofenceActive ?? GeofencePreset.geofenceMode.isGeofenceActive,
+                            itemLogKey: LogEvent.LogKeyAdvancedSettings.geofenceAltitude.description,
+                            settingStepperSlider: SettingStepperSlider(limitIntervalChange: Float(sliderSetting.min),
+                                                                       leftIntervalStep: 1,
+                                                                       rightIntervalStep: 1))
+    }
+
+    /// Returns the setting entry for distance slider.
+    var geoFenceDistanceEntry: SettingEntry {
+        let sliderSetting = SliderSetting(min: minDistance, max: maxDistance, value: distance)
+        return SettingEntry(setting: sliderSetting,
+                            title: L10n.settingsAdvancedTitleGeofenceMaxDist,
+                            unit: UnitType.distance,
+                            defaultValue: Float(distance),
+                            isEnabled: geofence?.mode.value.isGeofenceActive ?? GeofencePreset.geofenceMode.isGeofenceActive,
+                            itemLogKey: LogEvent.LogKeyAdvancedSettings.geofenceDistance.description,
+                            settingStepperSlider: SettingStepperSlider(limitIntervalChange: Float(sliderSetting.min),
+                                                                       leftIntervalStep: 1,
+                                                                       rightIntervalStep: 1))
+    }
+
+    open var settingEntries: [SettingEntry] {
+        return [SettingEntry(setting: SettingsCellType.geoFence)]
+    }
+    open var infoHandler: ((SettingMode.Type) -> Void)?
+    open var isUpdating: Bool? = false
 
     // MARK: - Private Properties
-
+    private(set) var notifyChangePublisher = CurrentValueSubject<Void, Never>(())
     private var currentDroneHolder: CurrentDroneHolder
     private var cancellables = Set<AnyCancellable>()
-    private var isUpdating: Bool = false
     private var geofence: Geofence?
 
     // MARK: - Ground SDK References
-
     private var geofenceRef: Ref<Geofence>?
     private var geofenceDistanceRef: Ref<Geofence>?
 
-    init(currentDroneHolder: CurrentDroneHolder) {
+    public init(currentDroneHolder: CurrentDroneHolder) {
         self.currentDroneHolder = currentDroneHolder
 
         $altitude
@@ -77,27 +113,27 @@ final class GeofenceViewModel {
             .store(in: &cancellables)
     }
 
-    var settingEntries: [SettingEntry] {
-        return [SettingEntry(setting: GeofenceViewModel.geofenceModeModel(geofence: geofence),
-                             title: L10n.settingsAdvancedCategoryGeofence,
-                             itemLogKey: LogEvent.LogKeyAdvancedSettings.geofence),
-                SettingEntry(setting: SettingsCellType.grid)]
-    }
-
     // MARK: - Internal Funcs
-    /// Save geofence in drone.
+    /// Save geofence altitude value in drone.
     ///
     /// - Parameters:
     ///     - altitude: altitude to save
-    ///     - distance: distance to save
-    func saveGeofence(altitude: Double, distance: Double) {
+    func saveGeofenceAltitude(_ altitude: Double) {
         guard let geofence = geofence else { return }
         geofence.maxAltitude.value = altitude
+    }
+
+    /// Save geofence distance value in drone.
+    ///
+    /// - Parameters:
+    ///     - distance: distance to save
+    func saveGeofenceDistance(_ distance: Double) {
+        guard let geofence = geofence else { return }
         geofence.maxDistance.value = distance
     }
 
     /// Reset geofence settings to default.
-    func resetSettings() {
+    open func resetSettings() {
         guard let geofence = geofence else { return }
         geofence.maxAltitude.value = GeofencePreset.defaultAltitude
         geofence.maxDistance.value = GeofencePreset.defaultDistance
@@ -135,7 +171,7 @@ final class GeofenceViewModel {
 }
 
 // MARK: - Private Funcs
-private extension GeofenceViewModel {
+private extension SettingsGeofenceViewModel {
     /// Listen geofence.
     func listenGeofence(_ drone: Drone) {
         geofenceRef = drone.getPeripheral(Peripherals.geofence) { [unowned self] geofence in
@@ -165,6 +201,7 @@ private extension GeofenceViewModel {
             if let distance = geofence?.maxDistance.value {
                 // Update only distance. Altitude must not be updated here.
                 self.distance = distance
+                notifyChangePublisher.send()
             }
         }
     }

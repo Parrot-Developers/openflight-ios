@@ -31,7 +31,7 @@ import Foundation
 
 // MARK: - Protocol
 public protocol PictorBaseFlightPlanModel: PictorBaseModel {
-    var cloudId: Int64 { get set }
+    var cloudId: Int64 { get }
 
     var name: String { get set }
     var state: PictorFlightPlanModel.State { get set }
@@ -194,7 +194,7 @@ public struct PictorFlightPlanModel: PictorBaseFlightPlanModel {
                   state: PictorFlightPlanModel.State(rawString: record.state) ?? .unknown,
                   flightPlanType: record.flightPlanType ?? "",
                   formatVersion: record.formatVersion ?? PictorFlightPlanModel.FormatVersion.unknown,
-                  lastUpdated: record.lastUpdated,
+                  lastUpdated: record.lastUpdated ?? Date(),
                   fileType: record.fileType ?? "",
                   dataSetting: record.dataSetting,
                   mediaCount: Int(record.mediaCount),

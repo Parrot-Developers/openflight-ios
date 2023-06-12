@@ -38,7 +38,13 @@ class ProjectCD: PictorEngineManagedObject {
         if let model = model as? PictorBaseProjectModel {
             updateBaseModel(model)
         } else if let model = model as? PictorEngineBaseProjectModel {
-            updateEngineModel(model)
+            updateEngineModel(model, updateBase: true)
+        }
+    }
+
+    func updateEngine(_ model: PictorBaseModel) {
+        if let model = model as? PictorEngineBaseProjectModel {
+            updateEngineModel(model, updateBase: false)
         }
     }
 }
@@ -48,7 +54,6 @@ private extension ProjectCD {
     func updateBaseModel(_ model: PictorBaseProjectModel) {
         uuid = model.uuid
 
-        cloudId = Int64(model.cloudId)
         title = model.title
         type = model.type.rawValue
         if let aLatestExecutionIndex = model.latestExecutionIndex {
@@ -60,16 +65,21 @@ private extension ProjectCD {
         lastOpened = model.lastOpened
     }
 
-    func updateEngineModel(_ model: PictorEngineBaseProjectModel) {
+    func updateEngineModel(_ model: PictorEngineBaseProjectModel, updateBase: Bool) {
         // - Base model
-        updateBaseModel(model.projectModel)
+        if updateBase {
+            updateBaseModel(model.projectModel)
+        }
         localCreationDate = model.localCreationDate
         localModificationDate = model.localModificationDate
 
         // - Engine base model
         cloudCreationDate = model.cloudCreationDate
+        cloudModificationDate = model.cloudModificationDate
+        lastUpdated = model.cloudModificationDate
 
         // - Synchro properties
+        cloudId = Int64(model.cloudId)
         synchroStatus = model.synchroStatus.rawValue
         synchroError = model.synchroError.rawValue
         synchroLatestUpdatedDate = model.synchroLatestUpdatedDate

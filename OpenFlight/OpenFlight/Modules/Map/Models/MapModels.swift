@@ -99,10 +99,8 @@ public enum MapCenterState: String {
         switch self {
         case .drone:
             return Asset.Map.centerOnDrone.image
-        case .user, .project:
+        default:
             return Asset.Map.centerOnUser.image
-        case .none:
-            return nil
         }
     }
 }

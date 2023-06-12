@@ -85,6 +85,8 @@ final class MyFlightsViewController: UIViewController {
     private var flightsViewController: FlightsViewController?
     private var flightPlanViewController: FlightPlanDashboardListViewController?
     private weak var coordinator: MyFlightsCoordinator?
+    private var projectManager: ProjectManager!
+    private var flightPlanManager : FlightPlanManager!
     private var selectedPanel: MyFlightsPanelType {
         MyFlightsPanelType.type(at: segmentedControl?.selectedSegmentIndex ?? 0)
     }
@@ -102,13 +104,16 @@ final class MyFlightsViewController: UIViewController {
     static func instantiate(coordinator: MyFlightsCoordinator,
                             defaultSelectedProject: ProjectModel?,
                             defaultSelectedFlight: FlightModel?,
-                            defaultSelectedHeaderUuid: String?) -> MyFlightsViewController {
+                            defaultSelectedHeaderUuid: String?,
+                            projectManager: ProjectManager,
+                            flightPlanManager: FlightPlanManager) -> MyFlightsViewController {
         let viewController = StoryboardScene.MyFlightsViewController.initialScene.instantiate()
         viewController.coordinator = coordinator
         viewController.defaultSelectedProject = defaultSelectedProject
         viewController.defaultSelectedFlight = defaultSelectedFlight
         viewController.defaultSelectedHeaderUuid = defaultSelectedHeaderUuid
-
+        viewController.projectManager = projectManager
+        viewController.flightPlanManager = flightPlanManager
         return viewController
     }
 
@@ -244,12 +249,13 @@ private extension MyFlightsViewController {
             } else {
                 // Initial case
                 let newViewController = StoryboardScene.FlightPlansDashboardList.flightPlanDashboardListViewController.instantiate()
-                // TODO: wrong injection
-                newViewController.setupViewModel(with: FlightPlansListViewModel(manager: Services.hub.flightPlan.projectManager,
-                                                                                flightPlanTypeStore: Services.hub.flightPlan.typeStore,
-                                                                                navigationStack: Services.hub.ui.navigationStack,
-                                                                                synchroService: Services.hub.synchroService,
-                                                                                selectedHeaderUuid: defaultSelectedHeaderUuid),
+                newViewController.setupViewModel(with: FlightPlansListViewModel(
+                    projectManager: projectManager,
+                    flightPlanManager: flightPlanManager,
+                    flightPlanTypeStore: Services.hub.flightPlan.typeStore,
+                    navigationStack: Services.hub.ui.navigationStack,
+                    synchroService: Services.hub.synchroService,
+                    selectedHeaderUuid: defaultSelectedHeaderUuid),
                                                  delegate: self)
                 self.flightPlanViewController = newViewController
                 controller = newViewController

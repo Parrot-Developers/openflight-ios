@@ -287,6 +287,9 @@ open class AGSSceneViewController: CommonMapViewController, MapAutoScrollDelegat
     func setCameraHandler() {
         sceneView.viewpointChangedHandler = { [weak self] in
             guard let self = self else { return }
+
+            self.addOtherCameraHandler()
+
             guard self.sceneView.cameraController is AGSGlobeCameraController else {
                 return
             }
@@ -323,6 +326,10 @@ open class AGSSceneViewController: CommonMapViewController, MapAutoScrollDelegat
                 self.updateCameraIfNeeded()
             }
         }
+    }
+
+    @objc open dynamic func addOtherCameraHandler() {
+        // do nothing by default
     }
 
     /// Returns max camera pitch as Double.

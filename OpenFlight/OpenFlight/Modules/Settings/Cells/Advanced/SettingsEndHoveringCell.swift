@@ -107,7 +107,7 @@ private extension SettingsEndHoveringCell {
 // MARK: - SettingsSliderCellDelegate
 extension SettingsEndHoveringCell: SettingsSliderCellDelegate {
     func settingsSliderCellSliderDidFinishEditing(value: Float, atIndexPath indexPath: IndexPath) {
-        if let setting = viewModel.endHoveringAltitudeEntry.setting as? HoveringAltitudeModel {
+        if let setting = viewModel.endHoveringAltitudeEntry.setting as? SliderSetting {
             setting.value = Double(value)
             let userPreferredRthSettings = viewModel.rthSettingsMonitor.getUserRthSettings()
             let rthSettings = RthSettings(rthReturnTarget: userPreferredRthSettings.rthReturnTarget,

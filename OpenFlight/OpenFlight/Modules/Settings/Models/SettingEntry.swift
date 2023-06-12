@@ -84,20 +84,20 @@ public struct SettingsSegmentModel {
 }
 
 /// Defines a model for boolean settings. Used to provides custom names.
-struct SettingsBoolChoice {
+public struct SettingsBoolChoice {
     let firstChoiceName: String
     let secondChoiceName: String
 }
 
 /// Define a model to add a range stepper on the slider
-struct SettingStepperSlider {
+public struct SettingStepperSlider {
     let limitIntervalChange: Float
     let leftIntervalStep: Float
     let rightIntervalStep: Float
 }
 
 /// Model defines to display setting in cells for specific settings.
-class SettingEntry: Equatable {
+public class SettingEntry: Equatable {
     // MARK: - Internal Properties
     /// Type of the setting.
     var setting: Any?
@@ -135,24 +135,24 @@ class SettingEntry: Equatable {
     var settingStepperSlider: SettingStepperSlider?
 
     // MARK: - Init
-    init(setting: Any? = nil,
-         title: String? = nil,
-         subtitle: String? = nil,
-         unit: UnitType? = nil,
-         overLimitValue: Float? = nil,
-         defaultValue: Float? = nil,
-         savedValue: Float? = nil,
-         isEnabled: Bool = true,
-         subtitleColor: UIColor = ColorName.defaultTextColor.color,
-         bgColor: UIColor? = nil,
-         showInfo: (() -> Void)? = nil,
-         infoText: String? = nil,
-         image: UIImage? = nil,
-         imageDisabled: UIImage? = nil,
-         itemLogKey: String? = nil,
-         settingsBoolChoice: SettingsBoolChoice = SettingsBoolChoice(firstChoiceName: L10n.commonNo, secondChoiceName: L10n.commonYes),
-         settingStepperSlider: SettingStepperSlider? = nil
-         ) {
+    public init(setting: Any? = nil,
+                title: String? = nil,
+                subtitle: String? = nil,
+                unit: UnitType? = nil,
+                overLimitValue: Float? = nil,
+                defaultValue: Float? = nil,
+                savedValue: Float? = nil,
+                isEnabled: Bool = true,
+                subtitleColor: UIColor = ColorName.defaultTextColor.color,
+                bgColor: UIColor? = nil,
+                showInfo: (() -> Void)? = nil,
+                infoText: String? = nil,
+                image: UIImage? = nil,
+                imageDisabled: UIImage? = nil,
+                itemLogKey: String? = nil,
+                settingsBoolChoice: SettingsBoolChoice? = nil,
+                settingStepperSlider: SettingStepperSlider? = nil
+    ) {
         self.setting = setting
         self.title = title
         self.subtitle = subtitle
@@ -168,12 +168,12 @@ class SettingEntry: Equatable {
         self.image = image
         self.imageDisabled = imageDisabled
         self.itemLogKey = itemLogKey
-        self.settingsBoolChoice = settingsBoolChoice
+        self.settingsBoolChoice = settingsBoolChoice ?? SettingsBoolChoice(firstChoiceName: L10n.commonNo, secondChoiceName: L10n.commonYes)
         self.settingStepperSlider = settingStepperSlider
     }
 
     // MARK: - Equatable Implementation
-    static func == (lhs: SettingEntry, rhs: SettingEntry) -> Bool {
+    public static func == (lhs: SettingEntry, rhs: SettingEntry) -> Bool {
         return lhs.title == rhs.title
             && lhs.subtitle == rhs.subtitle
             && lhs.unit == rhs.unit

@@ -58,6 +58,27 @@ public protocol PictorBaseGutmaLinkRepository: PictorBaseRepository where Pictor
     /// - Returns: list of related `PictorFlightModel`
     func getRelatedFlights(byFlightPlanUuid: String) -> [PictorFlightModel]
 
+    /// Get first flight by flight plan UUID.
+    ///
+    /// - Parameters:
+    ///    - byFlightPlanUuid: UUID of flight plan
+    /// - Returns: `PictorFlightModel` if any
+    func getFirstFlight(byFlightPlanUuid: String) -> PictorFlightModel?
+
+    /// Get last flight by flight plan UUID.
+    ///
+    /// - Parameters:
+    ///    - byFlightPlanUuid: UUID of flight plan
+    /// - Returns: `PictorFlightModel` if any
+    func getLastFlight(byFlightPlanUuid: String) -> PictorFlightModel?
+
+    /// Get list of run date related by flight plan UUID.
+    ///
+    /// - Parameters:
+    ///    - byFlightPlanUuids: list of flight plan UUIDs
+    /// - Returns: latest run date if found
+    func getLatestFlightRunDate(byFlightPlanUuids: [String]) -> Date?
+
     /// Get related flight plans by flight UUID.
     ///
     /// - Parameters:
@@ -128,6 +149,76 @@ public class PictorGutmaLinkRepository: PictorRepository<PictorGutmaLinkModel>, 
                 result = repositories.flight.get(byUuids: flightUuids)
             } catch let error {
                 PictorLogger.shared.e(.tag, "❌💾🔗 getRelatedFlights(byFlightPlanUuid:) error: \(error)")
+            }
+        }
+
+        return result
+    }
+
+    public func getFirstFlight(byFlightPlanUuid: String) -> PictorFlightModel? {
+        var result: PictorFlightModel?
+
+        coreDataService.mainContext.performAndWait { [unowned self] in
+            do {
+                let fetchRequest = try fetchRequest(flightPlanUuids: [byFlightPlanUuid],
+                                                    sortBy: [(AttributeName.executionDate, true)])
+                fetchRequest.fetchLimit = 1
+                let fetchResult = try coreDataService.mainContext.fetch(fetchRequest)
+                let flightUuids = fetchResult.compactMap { $0.flightUuid }
+                result = repositories.flight.get(byUuids: flightUuids).first
+            } catch let error {
+                PictorLogger.shared.e(.tag, "❌💾🔗 getFirstFlight(byFlightPlanUuid:) error: \(error)")
+            }
+        }
+
+        return result
+    }
+
+    public func getLastFlight(byFlightPlanUuid: String) -> PictorFlightModel? {
+        var result: PictorFlightModel?
+
+        coreDataService.mainContext.performAndWait { [unowned self] in
+            do {
+                let fetchRequest = try fetchRequest(flightPlanUuids: [byFlightPlanUuid],
+                                                    sortBy: [(AttributeName.executionDate, false)])
+                fetchRequest.fetchLimit = 1
+                let fetchResult = try coreDataService.mainContext.fetch(fetchRequest)
+                let flightUuids = fetchResult.compactMap { $0.flightUuid }
+                result = repositories.flight.get(byUuids: flightUuids).first
+            } catch let error {
+                PictorLogger.shared.e(.tag, "❌💾🔗 getLastFlight(byFlightPlanUuid:) error: \(error)")
+            }
+        }
+
+        return result
+    }
+
+    public func getLatestFlightRunDate(byFlightPlanUuids: [String]) -> Date? {
+        var result: Date?
+
+        coreDataService.mainContext.performAndWait { [unowned self] in
+            do {
+                let fetchRequest = try fetchRequest(flightPlanUuids: byFlightPlanUuids,
+                                                    sortBy: [(AttributeName.executionDate, true)])
+                let fetchResult = try coreDataService.mainContext.fetch(fetchRequest)
+                let flightUuids = fetchResult.compactMap { $0.flightUuid }
+
+                guard let sessionCD = getCurrentSessionCD() else {
+                    PictorLogger.shared.e(.tag, "❌💾🔗 getLatestFlightRunDate gutma link error: current session not found")
+                    throw PictorRepositoryError.noSessionFound
+                }
+
+                let flightFetchRequest = FlightCD.fetchRequest()
+                var subPredicateList: [NSPredicate] = []
+                subPredicateList.append(userPredicate(from: sessionCD))
+                subPredicateList.append(synchroIsNotDeletedPredicate)
+                subPredicateList.append(NSPredicate(format: "uuid IN %@", flightUuids))
+                flightFetchRequest.predicate = NSCompoundPredicate(type: .and, subpredicates: subPredicateList)
+                flightFetchRequest.sortDescriptors = [NSSortDescriptor(key: "runDate", ascending: false)]
+                let flightFetchResult = try coreDataService.mainContext.fetch(flightFetchRequest)
+                result = flightFetchResult.first?.runDate
+            } catch let error {
+                PictorLogger.shared.e(.tag, "❌💾🔗 getLatestFlightRunDate(byFlightPlanUuids:) error: \(error)")
             }
         }
 

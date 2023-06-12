@@ -36,6 +36,8 @@ import Combine
 public protocol SettingsProvider {
     /// Returns list of advanced settings types to show.
     var advancedSettingsTypes: [SettingsType] { get }
+    /// Returns list of advanced controllers that will replace existing ones.
+    var advancedViewControllers: [(sectionToChange: SettingsType, controller: UIViewController)] { get }
 }
 
 /// AccountProvider protocol

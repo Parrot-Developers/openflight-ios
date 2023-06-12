@@ -68,7 +68,10 @@ public final class MyFlightsCoordinator: Coordinator {
         let viewController = MyFlightsViewController.instantiate(coordinator: self,
                                                                  defaultSelectedProject: defaultSelectedProject,
                                                                  defaultSelectedFlight: defaultSelectedFlight,
-                                                                 defaultSelectedHeaderUuid: defaultSelectedHeaderUuid)
+                                                                 defaultSelectedHeaderUuid: defaultSelectedHeaderUuid,
+                                                                 projectManager: flightPlanServices.projectManager,
+                                                                 flightPlanManager: flightPlanServices.manager)
+
         viewController.modalPresentationStyle = .fullScreen
         navigationController = NavigationController(rootViewController: viewController)
         navigationController?.isNavigationBarHidden = true

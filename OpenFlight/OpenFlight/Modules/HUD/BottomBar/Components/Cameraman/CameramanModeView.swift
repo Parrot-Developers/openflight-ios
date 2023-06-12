@@ -77,6 +77,7 @@ private extension CameramanModeView {
 
         guard let currentState = self.viewModel?.state.value.currentState else { return }
         self.updateStackView(cameramanState: currentState)
+        stopView.accessibilityIdentifier = "StopCameraman"
     }
 
     /// Setup all observers.

@@ -51,6 +51,10 @@ internal extension PictorContext {
         updateFlights(models, forceSave: false, local: local)
     }
 
+    func updateEngineFlights<T: PictorBaseModel>(_ models: [T], local: Bool) {
+        updateFlights(models, forceSave: false, local: local, onlyEngine: true)
+    }
+
     func deleteFlights<T: PictorBaseModel>(_ models: [T]) {
         guard T.self is PictorBaseFlightModel.Type || T.self is PictorEngineBaseFlightModel.Type else { return }
 
@@ -78,7 +82,7 @@ internal extension PictorContext {
                         cloudId = 0
                     }
                     if let engineModel = models.first(where: { $0.uuid == existingCD.uuid }) as? PictorEngineBaseFlightModel,
-                       engineModel.flightModel.cloudId == 0 {
+                       engineModel.cloudId == 0 {
                         cloudId = 0
                     }
 
@@ -122,7 +126,7 @@ internal extension PictorContext {
 }
 
 private extension PictorContext {
-    func updateFlights<T: PictorBaseModel>(_ models: [T], forceSave: Bool, local: Bool) {
+    func updateFlights<T: PictorBaseModel>(_ models: [T], forceSave: Bool, local: Bool, onlyEngine: Bool = false) {
         guard T.self is PictorBaseFlightModel.Type || T.self is PictorEngineBaseFlightModel.Type else { return }
 
         currentChildContext.performAndWait { [weak self] in
@@ -200,7 +204,11 @@ private extension PictorContext {
                     }
 
                     // - Update record
-                    modelCD.update(model)
+                    if onlyEngine {
+                        modelCD.updateEngine(model)
+                    } else {
+                        modelCD.update(model)
+                    }
                     modelCD.localModificationDate = currentDate
 
                     // - Set engine synchro engine properties only if model conforms to BaseModel

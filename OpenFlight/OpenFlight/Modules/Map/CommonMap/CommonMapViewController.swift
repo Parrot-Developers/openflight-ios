@@ -42,7 +42,7 @@ public enum CommonMapConstants {
     static let minZoomLevel: Double = 30.0
     static let maxZoomLevel: Double = 2000000.0
     static let defaultLocation = CLLocationCoordinate2D(latitude: 48.879, longitude: 2.3673)
-    public static let cameraDistanceToCenterLocation: Double = 1000
+    public static let cameraDistanceToCenterLocation: Double = 2000
 }
 
 /// View controller for common map display.

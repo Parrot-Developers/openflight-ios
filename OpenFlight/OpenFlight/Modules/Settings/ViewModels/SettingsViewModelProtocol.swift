@@ -28,7 +28,7 @@
 //    SUCH DAMAGE.
 
 /// Base settings view model protocol.
-protocol SettingsViewModelProtocol {
+public protocol SettingsViewModelProtocol {
     /// Setting entries list.
     var settingEntries: [SettingEntry] { get }
     /// Optional handler to display informations in a dedicated view.
@@ -42,7 +42,7 @@ protocol SettingsViewModelProtocol {
 }
 
 /// Default implementation.
-extension SettingsViewModelProtocol {
+public extension SettingsViewModelProtocol {
 
     /// Save settings entries.
     ///

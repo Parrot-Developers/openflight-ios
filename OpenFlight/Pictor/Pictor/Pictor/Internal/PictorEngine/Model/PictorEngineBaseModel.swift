@@ -39,6 +39,7 @@ protocol PictorEngineBaseModel: PictorBaseModel {
 }
 
 protocol PictorEngineSynchroBaseModel: PictorEngineBaseModel {
+    var cloudId: Int64 { get set }
     var synchroStatus: PictorEngineSynchroStatus { get set }
     var synchroError: PictorEngineSynchroError { get set }
     var synchroLatestUpdatedDate: Date? { get set }

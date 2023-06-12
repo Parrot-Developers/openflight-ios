@@ -171,6 +171,8 @@ private extension StereoCalibrationViewController {
         stopView.delegate = self
 
         progressView.setup(viewModel: viewModel)
+
+        addAlertPanel()
     }
 
     /// Adds left panel for proactive alerts.
@@ -179,7 +181,6 @@ private extension StereoCalibrationViewController {
 
         let alertPanel = HUDAlertPanelViewController.instantiate()
         alertPanel.delegate = alertControls
-        alertPanel.alertDelegate = self
         add(alertPanel, in: alertPanelContainerView)
         self.alertPanel = alertPanel
     }
@@ -272,14 +273,6 @@ private extension StereoCalibrationViewController {
                 self.alertView.isHidden = message == nil
             }
             .store(in: &cancellables)
-
-        viewModel.shouldHideAlertPanelPublisher
-            .removeDuplicates()
-            .sink { [weak self] in
-                guard let self = self else { return }
-                $0 ? self.removeAlertPanel() : self.addAlertPanel()
-            }
-            .store(in: &cancellables)
     }
 }
 
@@ -310,12 +303,5 @@ extension StereoCalibrationViewController: HUDTopBarViewControllerNavigation {
 extension StereoCalibrationViewController: StopViewDelegate {
     func didClickOnStop() {
         viewModel.stopHandLaunch()
-    }
-}
-
-// MARK: - StopViewDelegate
-extension StereoCalibrationViewController: HUDAlertPanelDelegate {
-    func actionButtonDidClick() {
-        viewModel.startHandCalibration()
     }
 }

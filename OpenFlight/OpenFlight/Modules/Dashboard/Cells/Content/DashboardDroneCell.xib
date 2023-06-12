@@ -128,6 +128,9 @@
                             </stackView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <accessibility key="accessibilityConfiguration" label="Drone Details">
+                            <bool key="isElement" value="YES"/>
+                        </accessibility>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="yEN-en-3AP" secondAttribute="trailing" constant="5" id="MPS-1Y-PhL">
                                 <variation key="heightClass=regular-widthClass=regular" constant="10"/>

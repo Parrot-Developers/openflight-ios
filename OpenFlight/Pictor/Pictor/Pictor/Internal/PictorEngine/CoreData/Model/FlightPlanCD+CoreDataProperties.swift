@@ -53,7 +53,7 @@ extension FlightPlanCD {
     @NSManaged public var dataSetting: Data?
 
     // - Local
-    @NSManaged public var lastUpdated: Date
+    @NSManaged public var lastUpdated: Date?
     @NSManaged public var hasReachedFirstWaypoint: NSNumber?
     @NSManaged public var executionRank: NSNumber?
 

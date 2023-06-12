@@ -31,7 +31,7 @@ import Foundation
 
 // MARK: - Protocol
 public protocol PictorBaseGutmaLinkModel: PictorBaseModel {
-    var cloudId: Int64 { get set }
+    var cloudId: Int64 { get }
     var executionDate: Date { get set }
 
     var flightUuid: String { get set }

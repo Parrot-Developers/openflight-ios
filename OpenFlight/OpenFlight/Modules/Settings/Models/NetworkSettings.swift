@@ -141,7 +141,7 @@ extension Cellular {
 // MARK: - NetworkControlRoutingPolicy
 /// NetworkControlRoutingPolicy mode extension for network priority. It can be auto, wifi or 4G.
 extension NetworkControlRoutingPolicy: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .cellular:
             return L10n.settingsConnection4gLabel
@@ -154,7 +154,7 @@ extension NetworkControlRoutingPolicy: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 

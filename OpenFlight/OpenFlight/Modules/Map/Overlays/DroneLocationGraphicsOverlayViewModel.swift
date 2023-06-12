@@ -50,6 +50,8 @@ public class DroneLocationGraphicsOverlayViewModel {
     // MARK: Public Properties
     /// Returns the drone location as displayed in the map
     @Published public var droneLocation: OrientedLocation?
+    /// Returns the drone gps fixed
+    @Published public var droneGpsFixed: Bool?
     public var droneIconPublisher: AnyPublisher<AGSSymbol?, Never> { droneIconSubject.eraseToAnyPublisher() }
 
     public let isScene: Bool
@@ -57,9 +59,9 @@ public class DroneLocationGraphicsOverlayViewModel {
     private var isMiniMapSubject = CurrentValueSubject<Bool, Never>(false)
 
     private enum Constants {
-        static let icon3DWidth = 3.2823805809020996
-        static let icon3DDepth = 1.0493721961975098
-        static let icon3DHeight = 3.4851346015930176
+        static let icon3DWidth = 2.49834
+        static let icon3DDepth = 0.337177
+        static let icon3DHeight = 2.81204
         static let icon2DWidth = 116.0
         static let icon2DHeight = 116.0
     }
@@ -93,6 +95,11 @@ public class DroneLocationGraphicsOverlayViewModel {
                 self?.updateDroneIcon(isConnected: isConnected, isGpsFixed: isGpsFixed, isMiniMap: isMiniMap)
             }
             .store(in: &cancellables)
+
+        locationsTracker.droneGpsFixedPublisher.removeDuplicates()
+            .sink { [weak self] isGpsFixed in
+                self?.droneGpsFixed = isGpsFixed
+            }.store(in: &cancellables)
     }
 
     /// Updates drone icon

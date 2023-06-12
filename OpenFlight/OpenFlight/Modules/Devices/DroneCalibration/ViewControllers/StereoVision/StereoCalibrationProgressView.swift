@@ -37,6 +37,7 @@ class StereoCalibrationProgressView: UIView, NibOwnerLoadable {
 
     // MARK: - Outlet
 
+    @IBOutlet weak var mainProgressViewContainer: UIView!
     @IBOutlet weak var progressViewContainer: UIView!
     @IBOutlet weak var containerStackView: MainContainerStackView!
     @IBOutlet weak var circleProgressView: CircleProgressView!
@@ -114,6 +115,7 @@ private extension StereoCalibrationProgressView {
             .compactMap { $0 }
             .removeDuplicates()
             .sink { [unowned self] in
+                mainProgressViewContainer.accessibilityLabel = $0
                 missionStateLabel.text = $0
             }
             .store(in: &cancellables)
@@ -122,6 +124,7 @@ private extension StereoCalibrationProgressView {
             .compactMap { $0 }
             .removeDuplicates()
             .sink { [unowned self] in
+                mainProgressViewContainer.accessibilityValue = "\($0)"
                 circleProgressView.setProgress($0 / 100)
             }
             .store(in: &cancellables)

@@ -62,21 +62,18 @@
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </view>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" translatesAutoresizingMaskIntoConstraints="NO" id="li2-Ue-yuo">
-                                                <rect key="frame" x="426" y="15" width="426" height="273"/>
+                                                <rect key="frame" x="426" y="5" width="426" height="293"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gyx-kv-01u" customClass="UpdatingSuccessHeader" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="426" height="30"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="426" height="50"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="30" id="3gW-am-IZ5"/>
-                                                        </constraints>
                                                     </view>
                                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="D39-ug-JmG" customClass="UpdatingTableView" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="60" width="426" height="57.333333333333343"/>
+                                                        <rect key="frame" x="0.0" y="80" width="426" height="57.333333333333343"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     </tableView>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iVJ-4X-jPQ">
-                                                        <rect key="frame" x="0.0" y="147.33333333333334" width="426" height="40.666666666666657"/>
+                                                        <rect key="frame" x="0.0" y="167.33333333333334" width="426" height="40.666666666666657"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="40.670000000000002" id="N4x-AZ-GLW"/>
                                                         </constraints>
@@ -85,7 +82,7 @@
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bxU-u7-XgK" customClass="UpdatingDoneFooter" customModule="OpenFlight" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="218" width="426" height="55"/>
+                                                        <rect key="frame" x="0.0" y="238" width="426" height="55"/>
                                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
                                                             <constraint firstAttribute="height" constant="55" id="20M-D6-XEF"/>

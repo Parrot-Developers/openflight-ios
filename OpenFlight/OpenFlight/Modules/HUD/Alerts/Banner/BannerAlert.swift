@@ -37,7 +37,7 @@ public enum BannerAlertConstants {
     /// The default on duration for critical severity.
     static let defaultCriticalOnDuration: TimeInterval = 30
     /// The default on duration for warning severity.
-    static let defaultWarningOnDuration: TimeInterval = 30
+    public static let defaultWarningOnDuration: TimeInterval = 30
     /// The default on duration for advice severity.
     static let defaultAdviceOnDuration: TimeInterval = 5
     /// The default snooze duration.

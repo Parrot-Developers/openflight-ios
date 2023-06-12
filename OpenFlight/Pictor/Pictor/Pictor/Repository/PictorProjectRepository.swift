@@ -127,6 +127,7 @@ public class PictorProjectRepository: PictorRepository<PictorProjectModel>, Pict
                                                               projectUuids: projectUuids,
                                                               projectPix4dUuids: nil,
                                                               states: [.editable],
+                                                              excludedStates: nil,
                                                               types: nil,
                                                               excludedTypes: nil,
                                                               hasReachedFirstWaypoint: nil)

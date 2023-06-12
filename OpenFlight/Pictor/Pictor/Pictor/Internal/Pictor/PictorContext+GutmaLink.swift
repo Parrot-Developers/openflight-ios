@@ -51,6 +51,10 @@ internal extension PictorContext {
         updateGutmaLinks(models, forceSave: false, local: local)
     }
 
+    func updateEngineGutmaLinks<T: PictorBaseModel>(_ models: [T], local: Bool) {
+        updateGutmaLinks(models, forceSave: false, local: local, onlyEngine: true)
+    }
+
     func deleteGutmaLinks<T: PictorBaseModel>(_ models: [T]) {
         guard T.self is PictorBaseGutmaLinkModel.Type || T.self is PictorEngineBaseGutmaLinkModel.Type else { return }
 
@@ -76,7 +80,7 @@ internal extension PictorContext {
                         cloudId = 0
                     }
                     if let engineModel = models.first(where: { $0.uuid == existingCD.uuid }) as? PictorEngineBaseGutmaLinkModel,
-                       engineModel.gutmaLinkModel.cloudId == 0 {
+                       engineModel.cloudId == 0 {
                         cloudId = 0
                     }
 
@@ -103,7 +107,7 @@ internal extension PictorContext {
 }
 
 private extension PictorContext {
-    func updateGutmaLinks<T: PictorBaseModel>(_ models: [T], forceSave: Bool, local: Bool) {
+    func updateGutmaLinks<T: PictorBaseModel>(_ models: [T], forceSave: Bool, local: Bool, onlyEngine: Bool = false) {
         guard T.self is PictorBaseGutmaLinkModel.Type || T.self is PictorEngineBaseGutmaLinkModel.Type else { return }
 
         currentChildContext.performAndWait { [weak self] in
@@ -125,33 +129,36 @@ private extension PictorContext {
                 // - Handle models
                 let currentDate = Date()
                 for model in models {
-                    var modelCD: GutmaLinkCD?
+                    var modelCD: GutmaLinkCD
 
                     // - Search for model in existing records, create new record if not found
                     if let existingCDs = existingCDs.first(where: { $0.uuid == model.uuid }) {
                         modelCD = existingCDs
                     } else if forceSave {
                         modelCD = GutmaLinkCD(context: self.currentChildContext)
-                        modelCD?.userUuid = currentSessionCD.userUuid
-                        modelCD?.localCreationDate = currentDate
+                        modelCD.userUuid = currentSessionCD.userUuid
+                        modelCD.localCreationDate = currentDate
                     } else {
                         PictorLogger.shared.w(.tag, "[\(GutmaLinkCD.entityName)] Trying to update an unknown record \(model.uuid)")
+                        continue
                     }
 
-                    if let modelCD = modelCD {
-                        // - Update record
+                    // - Update record
+                    if onlyEngine {
+                        modelCD.updateEngine(model)
+                    } else {
                         modelCD.update(model)
-                        modelCD.localModificationDate = currentDate
+                    }
+                    modelCD.localModificationDate = currentDate
 
-                        // - Set engine synchro engine properties only if model conforms to BaseModel
-                        if isBase(model) {
-                            // - Synchro
-                            if !local {
-                                // - Set synchro updated date for incremental
-                                modelCD.synchroLatestUpdatedDate = currentDate
-                                // - Send event to trigger synchro incremental
-                                self.coreDataService.sendEventToSynchro(entityName: GutmaLinkCD.entityName)
-                            }
+                    // - Set engine synchro engine properties only if model conforms to BaseModel
+                    if isBase(model) {
+                        // - Synchro
+                        if !local {
+                            // - Set synchro updated date for incremental
+                            modelCD.synchroLatestUpdatedDate = currentDate
+                            // - Send event to trigger synchro incremental
+                            self.coreDataService.sendEventToSynchro(entityName: GutmaLinkCD.entityName)
                         }
                     }
                 }

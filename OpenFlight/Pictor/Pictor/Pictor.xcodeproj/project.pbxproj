@@ -138,6 +138,7 @@
 
 /* Begin PBXFileReference section */
 		4B01B533296C27E800B0C9A9 /* AcademyErrorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AcademyErrorService.swift; sourceTree = "<group>"; };
+		4B047DDB2A04FA4600970D25 /* Model-v2.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "Model-v2.1.xcdatamodel"; sourceTree = "<group>"; };
 		4B12F84C298AAA0700762277 /* PictorConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PictorConfiguration.swift; sourceTree = "<group>"; };
 		4B19A0ED29267B54007B632D /* AuthenticationUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationUtils.swift; sourceTree = "<group>"; };
 		4B2795262934C79900C9059B /* Int+String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Int+String.swift"; sourceTree = "<group>"; };
@@ -1092,10 +1093,11 @@
 		4BD0CE59291D6021004256C6 /* PictorModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				4B047DDB2A04FA4600970D25 /* Model-v2.1.xcdatamodel */,
 				7E5BC7FA29A388500001633A /* Model-v2.xcdatamodel */,
 				4BD0CE5A291D6021004256C6 /* Model.xcdatamodel */,
 			);
-			currentVersion = 7E5BC7FA29A388500001633A /* Model-v2.xcdatamodel */;
+			currentVersion = 4B047DDB2A04FA4600970D25 /* Model-v2.1.xcdatamodel */;
 			name = PictorModel.xcdatamodeld;
 			path = ../../../../../Pictor/Pictor/Internal/PictorEngine/CoreData/PictorModel.xcdatamodeld;
 			sourceTree = "<group>";

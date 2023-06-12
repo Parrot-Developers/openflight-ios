@@ -100,6 +100,7 @@ private extension StopView {
 
     /// Initalize UI for the view.
     func initUI() {
+        accessibilityIdentifier = "StopView"
         backView.backgroundColor = ColorName.black.color
         redView.backgroundColor = ColorName.errorColor.color
         centerView.cornerRadiusedWith(backgroundColor: ColorName.white.color,

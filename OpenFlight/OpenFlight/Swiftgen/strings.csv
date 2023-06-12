@@ -140,7 +140,8 @@ Battery update - preparing;battery_update_preparing_update;Preparing update;Pré
 Battery update - updating;battery_update_updating;Updating battery gauge;Mise à jour de la jauge batterie;Updating battery gauge;Updating battery gauge;Updating battery gauge
 Battery update - waiting for reboot;battery_update_waiting_for_reboot;Automatic reboot;Redémarrage automatique;Automatic reboot;Automatic reboot;Automatic reboot
 Battery update - Install;battery_update_install;Install update;Installer la mise à jour;Install update;Install update;Install update
-Battery update – warning;battery_update_warning;Dot not unplug the battery during the update process.;Ne déconnectez pas la batterie pendant la procédure de mise à jour.;Dot not unplug the battery during the update process.;Dot not unplug the battery during the update process.;Dot not unplug the battery during the update process.
+Battery update - warning;battery_update_warning;Dot not unplug the battery during the update process.;Ne déconnectez pas la batterie pendant la procédure de mise à jour.;Dot not unplug the battery during the update process.;Dot not unplug the battery during the update process.;Dot not unplug the battery during the update process.
+Battery update - serial changed;battery_update_serial_changed;A battery swap has been detected.;Un changement de batterie a été détecté.;A battery swap has been detected.;A battery swap has been detected.;A battery swap has been detected.
 Mission - Mode - Cameraman;mission_mode_cameraman;Cameraman;Cameraman;Cameraman;Cameraman;Cameraman
 Select target;cameraman_select_target;Select target;Sélectionnez une cible;Select target;Select target;Select target
 Take off the drone;cameraman_take_off;Take off the drone;Faites décoller le drone;Take off the drone;Take off the drone;Take off the drone
@@ -602,6 +603,9 @@ Controls - Mapping: camera rotation;settings_controls_mapping_camera_rotation;Ca
 Controls - Mapping: camera lateral;settings_controls_mapping_camera_lateral;Camera tilt\nLateral;Tilt caméra\nLateral;Kameraneigung\nLateral;Inclinación de la cámara\nLateral;カメラ・チルト\nLateral
 Advanced - Category: Interface;settings_advanced_category_interface;Interface;Interface;Interface;Interfaz;インターフェース
 Advanced - Category: Geofence;settings_advanced_category_geofence;Geocage;Géo-cage;Geocage;Barrera geográfica;Geocage
+Advanced – Title: Geofence activate;settings_advanced_title_geofence_activate;Activate geocage;Activer la fonction géo-cage;Activate geocage;Activate geocage;Activate geocage
+Advanced – Title: Geofence max distance;settings_advanced_title_geofence_max_dist;Max distance;Distance maximum;Max distance;Max distance;Max distance
+Advanced – Title: Geofence max altitude;settings_advanced_title_geofence_max_alt;Max altitude;Altitude maximum;Max altitude;Max altitude;Max altitude
 Advanced - Category: RTH;settings_advanced_category_rth;RTH;RTH;RTH;RTH;RTH
 Advanced - Category: Camera;settings_advanced_category_camera;Recording;Enregistrement;Recording;Recording;Recording
 Advanced - Category: Connection;settings_advanced_category_connection;Connection;Connexion;Connection;Connection;Connection
@@ -1166,10 +1170,10 @@ firmware version singular;firmware_mission_update_firmware_version_singular;Firm
 firmware version plural;firmware_mission_update_firmware_version_plural;Firmware versions;Versions de firmware;Firmware versions;Firmware versions;Firmware versions
 firmware and mission drone update;firmware_mission_update_drone_update;Drone update;Mise à jour du drone;Drone update;Drone update;Drone update
 firmware and mission quit installation;firmware_mission_update_quit_installation_title;Cancel update?;Annuler la mise à jour ?;Cancel update?;Cancel update?;Cancel update?
-firmware and mission quit installation validate title;firmware_mission_update_quit_installation_validate_action;Quit;Arrêter;Quit;Quit;Quit
+firmware and mission quit installation validate title;firmware_mission_update_quit_installation_validate_action;Cancel update;Annuler la mise à jour;Cancel update;Cancel update;Cancel update
 firmware and mission drone quit installation message;firmware_mission_update_quit_installation_drone_message;Your drone is currently being updated, are you sure you want to quit the procedure?;Votre drone est en train d'être mis à jour, êtes vous sûr(e) de vouloir arrêter la procédure ?;Your drone is currently being updated, are you sure you want to quit the procedure?;Your drone is currently being updated, are you sure you want to quit the procedure?;Your drone is currently being updated, are you sure you want to quit the procedure?
 firmware and mission controller quit installation message;firmware_mission_update_quit_installation_controller_message;Your controller is currently being updated, are you sure you want to quit the procedure?;Votre contrôleur est en train d'être mis à jour, êtes vous sûr(e) de vouloir arrêter la procédure ?;Your controller is currently being updated, are you sure you want to quit the procedure?;Your controller is currently being updated, are you sure you want to quit the procedure?;Your controller is currently being updated, are you sure you want to quit the procedure?
-firmware and mission quit installation cancel title;firmware_mission_update_quit_installation_cancel_action;Keep updating;Continuer la mise à jour;Keep updating;Keep updating;Keep updating
+firmware and mission quit installation cancel title;firmware_mission_update_quit_installation_cancel_action;Confirm update;Confirmer la mise à jour;Confirm update;Confirm update;Confirm update
 firmware and mission number of file plural;firmware_mission_update_number_of_file_plural;%d files;%d fichiers;%d files;%d files;%d files
 firmware and mission number of file singular;firmware_mission_update_number_of_file_singular;%d file;%d fichier;%d file;%d file;%d file
 firmware upload missions;firmware_mission_update_mission_upload_missions;Upload missions;Charger les missions;Upload missions;Upload missions;Upload missions

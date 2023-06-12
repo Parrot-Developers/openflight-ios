@@ -56,22 +56,20 @@ internal extension PictorContext {
                 // - Handle models
                 let currentDate = Date()
                 for model in models {
-                    var modelCD: ThumbnailCD?
+                    var modelCD: ThumbnailCD
 
                     // Search for model in existing records, create new record if not found
                     if let existingCDs = existingCDs.first(where: { $0.uuid == model.uuid }) {
                         modelCD = existingCDs
                     } else {
                         modelCD = ThumbnailCD(context: self.currentChildContext)
-                        modelCD?.userUuid = currentSessionCD.userUuid
-                        modelCD?.localCreationDate = currentDate
+                        modelCD.userUuid = currentSessionCD.userUuid
+                        modelCD.localCreationDate = currentDate
                     }
 
-                    if let modelCD = modelCD {
-                        // - Update record
-                        modelCD.update(model)
-                        modelCD.localModificationDate = currentDate
-                    }
+                    // - Update record
+                    modelCD.update(model)
+                    modelCD.localModificationDate = currentDate
                 }
             } catch let error {
                 PictorLogger.shared.e(.tag, "save error: \(error)")

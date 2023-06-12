@@ -52,9 +52,9 @@ open class SettingsContentViewController: UIViewController, StoryboardBased {
         return settings.filter({ $0.setting != nil })
     }
     /// Reset cell label.
-    var resetCellLabel: String?
+    public var resetCellLabel: String?
     /// Settings view model.
-    var viewModel: SettingsViewModelProtocol?
+    public var viewModel: SettingsViewModelProtocol?
 
     // MARK: - Private Properties
     private let droneStateViewModel = DroneStateViewModel<DeviceConnectionState>()
@@ -90,7 +90,7 @@ open class SettingsContentViewController: UIViewController, StoryboardBased {
 
     // MARK: - Internal Funcs
     /// Resets settings.
-    func resetSettings() {
+    open func resetSettings() {
         viewModel?.resetSettings()
     }
 
@@ -108,7 +108,7 @@ open class SettingsContentViewController: UIViewController, StoryboardBased {
     ///
     /// - Parameters:
     ///     - state: device connection state
-    func updateDataSource(_ state: DeviceConnectionState = DeviceConnectionState()) {
+    public func updateDataSource(_ state: DeviceConnectionState = DeviceConnectionState()) {
         guard !isSliderEditing,
               let updatedSettings = settingEntries() else {
                   return
@@ -138,10 +138,10 @@ private extension SettingsContentViewController {
         settingsTableView.register(cellType: SettingsSliderCell.self)
         settingsTableView.register(cellType: SettingsRthCell.self)
         settingsTableView.register(cellType: SettingsTitleCell.self)
-        settingsTableView.register(cellType: SettingsGridTableViewCell.self)
         settingsTableView.register(cellType: SettingsCellularDataCell.self)
         settingsTableView.register(cellType: SettingsEndHoveringCell.self)
         settingsTableView.register(cellType: SettingsDriCell.self)
+        settingsTableView.register(cellType: SettingsGeoFenceCell.self)
         settingsTableView.register(cellType: SettingsShellAccessCell.self)
         settingsTableView.estimatedRowHeight = Layout.buttonIntrinsicHeight(isRegularSizeClass)
         settingsTableView.delaysContentTouches = false

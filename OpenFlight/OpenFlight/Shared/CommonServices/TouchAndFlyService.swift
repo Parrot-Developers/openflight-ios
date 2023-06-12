@@ -191,6 +191,8 @@ class TouchAndFlyServiceImpl {
     /// Whether drone is in flying (or waiting) state.
     private var isDroneFlyingOrWaiting: Bool?
 
+    /// `true` if drone is connected.
+    private var isDroneConnected: Bool = false
     /// Target chosen by the user
     ///
     /// This target will be used to send commands, but not to update the UI.
@@ -286,6 +288,7 @@ private extension TouchAndFlyServiceImpl {
 
     func listenDrone(drone: Drone?) {
         guard let drone = drone else {
+            isDroneConnected = false
             poiPilotingItfRef = nil
             pointAndFlyPilotingRef = nil
             altimeterInstrumentRef = nil
@@ -299,6 +302,7 @@ private extension TouchAndFlyServiceImpl {
             clearExecution()
             return
         }
+        isDroneConnected = drone.state.connectionState == .connected
         listenAltimeter(drone: drone)
         listenFlyingIndicators(drone: drone)
         listenPointAndFlyPilotingItf(drone: drone)
@@ -360,11 +364,13 @@ private extension TouchAndFlyServiceImpl {
 
             self.isDroneFlyingOrWaiting = itf.flyingState.isFlyingOrWaiting
 
-            if self.isDroneFlyingOrWaiting == true, self.latestFlyingState == .takingOff {
+            if self.isDroneFlyingOrWaiting == true,
+               (self.latestFlyingState == .takingOff || self.latestFlyingState == FlyingIndicatorsFlyingState.none) {
                 self.startWpOfPoiAfterTakeOff = true
             } else {
                 self.startWpOfPoiAfterTakeOff = false
             }
+            ULog.i(.tag, "listenFlyingIndicators: flyingState:\(itf.flyingState) pointState:\(self.pointAndFlyItfState.value) startWpOfPoiAfterTakeOff=\(self.startWpOfPoiAfterTakeOff)")
             self.latestFlyingState = itf.flyingState
         }
     }
@@ -373,6 +379,7 @@ private extension TouchAndFlyServiceImpl {
         pointAndFlyPilotingRef = drone.getPilotingItf(PilotingItfs.pointAndFly) { [unowned self] itf in
             guard let itf = itf else {
                 pointAndFlyItfState.value = (blocker: .droneNotConnected, inProgress: false)
+                ULog.i(.tag, "listenPointAndFlyPilotingItf droneNotConnected")
                 return
             }
             let blocker = itf.unavailabilityReasons.first.map(TouchAndFlyBlocker.from)
@@ -380,18 +387,21 @@ private extension TouchAndFlyServiceImpl {
 
             guard itf.state != .unavailable else {
                 pointAndFlyItfState.value = (blocker: blocker, inProgress: false)
+                ULog.i(.tag, "listenPointAndFlyPilotingItf state unavailable blocker:\(String(describing: blocker))")
                 return
             }
 
             if let executionStatus = itf.executionStatus {
                 // executionStatus is transient and will change back to `nil` immediately after the status is notified.
-                ULog.i(.tag, "Flight did finish with status: \(executionStatus)")
-                wayPointSubject.value = nil
+                ULog.i(.tag, "listenPointAndFlyPilotingItf: flight did finish with status: \(executionStatus)")
+                self.clearTarget()
+                self.clearExecution()
                 return
             }
 
             var inProgress = false
             if let directive = itf.currentDirective {
+                ULog.i(.tag, "listenPointAndFlyPilotingItf currentDirective:\(directive)")
                 inProgress = itf.currentDirective is FlyDirective
                 let newLocation = CLLocationCoordinate2D(latitude: directive.latitude, longitude: directive.longitude)
                 wayPointSubject.value = newLocation
@@ -401,6 +411,7 @@ private extension TouchAndFlyServiceImpl {
                 }
                 userTarget = .wayPoint(location: newLocation, altitude: directive.altitude, speed: wayPointSpeed)
             }
+            ULog.i(.tag, "listenPointAndFlyPilotingItf setting pointAndFlyItfState with blocker:\(String(describing: blocker)) progress:\(inProgress)")
             pointAndFlyItfState.value = (blocker: blocker, inProgress: inProgress)
         }
     }
@@ -432,6 +443,11 @@ private extension TouchAndFlyServiceImpl {
                 poiSubject.value = CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
                 altitudeSubject.value = poi.altitude
                 userTarget = .poi(location: CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude), altitude: poi.altitude)
+            } else {
+                if blocker == .droneGpsInfoInaccurate {
+                    clearTarget()
+                    clearExecution()
+                }
             }
         }
     }
@@ -455,6 +471,7 @@ private extension TouchAndFlyServiceImpl {
             guard let itf = itf else { return }
 
             if itf.state == .active {
+                ULog.i(.tag, "listenRth: clear")
                 self.clearTarget()
                 self.clearExecution()
             }
@@ -481,7 +498,8 @@ private extension TouchAndFlyServiceImpl {
         .store(in: &cancellables)
 
         pointAndFlyItfState
-            .sink { [unowned self] _ in
+            .sink { [unowned self] state in
+                ULog.i(.tag," pointAndFlyItfState updated blocker:\(String(describing: state.blocker)) inProgress:\(state.inProgress) ")
             updateRunningState(connectedDroneHolder: connectedDroneHolder)
         }
         .store(in: &cancellables)
@@ -504,7 +522,6 @@ private extension TouchAndFlyServiceImpl {
     /// - Parameters:
     ///   - connectedDroneHolder: the connected drone's holder
     private func updateRunningState(connectedDroneHolder: ConnectedDroneHolder) {
-        let isDroneConnected = connectedDroneHolder.drone?.state.connectionState == .connected
         if poiSubject.value != nil {
             if poiItfState.value.inProgress {
                 runningStateSubject.value = .running
@@ -524,12 +541,14 @@ private extension TouchAndFlyServiceImpl {
         } else {
             runningStateSubject.value = .noTarget(droneConnected: isDroneConnected)
         }
+        ULog.i(.tag, "updateRunningState: \(runningStateSubject.value)")
     }
 
     func watchWayPoint() {
         switch userTarget {
         case .wayPoint(let location, let altitude, _):
             let pointDirective = PointDirective(latitude: location.latitude, longitude: location.longitude, altitude: altitude, gimbalControlMode: .free)
+            ULog.i(.tag, "watchWayPoint: Executing PointDirective \(pointDirective)")
             _ = poiPilotingItfRef?.value?.deactivate()
             _ = pointAndFlyPilotingRef?.value?.execute(directive: pointDirective)
         default:
@@ -553,6 +572,7 @@ private extension TouchAndFlyServiceImpl {
                 altitude: altitude, gimbalControlMode: .lockedOnce,
                 horizontalSpeed: speed, verticalSpeed: Constants.defaultVerticalSpeed,
                 yawRotationSpeed: Constants.defaultYawRotationSpeed, heading: .toTargetBefore)
+            ULog.i(.tag, "executeTarget: Executing FlyDirective \(flyDirective)")
             pointAndFlyPilotingRef?.value?.execute(directive: flyDirective)
         case .poi(let location, let altitude):
             _ = pointAndFlyPilotingRef?.value?.deactivate()
@@ -672,6 +692,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
             usedAltitude = Constants.defaultWayPointAltitude
         }
         altitudeSubject.value = usedAltitude
+        ULog.i(.tag, "User action set waypoint: location=\(location) alt=\(usedAltitude)")
         userTarget = .wayPoint(location: location, altitude: usedAltitude, speed: wayPointSpeed)
         startWayPoint()
     }
@@ -680,8 +701,10 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
     private func startWayPoint() {
         let isIdle = runningState != .running
         if  isIdle {
+            ULog.i(.tag, "startWayPoint: watch")
             watchWayPoint()
         } else {
+            ULog.i(.tag, "startWayPoint: execute")
             executeTarget()
         }
     }
@@ -702,6 +725,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
         poiSubject.value = location
         // priority is 1:given altitude, 2:currentAltitude, 3:defaultAltitude
         altitudeSubject.value = altitude ?? altitudeSubject.value ?? Constants.defaultPoiAltitude
+        ULog.i(.tag, "User action set poi: location=\(location) alt=\(altitudeSubject.value ?? 0)")
         userTarget = .poi(location: location, altitude: altitudeSubject.value ?? Constants.defaultPoiAltitude)
         executeTarget()
     }
@@ -744,6 +768,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
 
     /// Clears the variables used to display the current target.
     func clearTarget() {
+        ULog.i(.tag, "Clear target")
         wayPointSubject.value = nil
         altitudeSubject.value = nil
         poiSubject.value = nil
@@ -753,12 +778,14 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
 
     /// Clears the variables used to send a command and process an execution.
     func clearExecution() {
+        ULog.i(.tag, "Clear execution")
         userTarget = .none
         guidingStartCoordinates.value = nil
     }
 
     /// Deactivates the piloting interfaces.
     func clearItf() {
+        ULog.d(.tag, "Clear itf")
         _ = poiPilotingItfRef?.value?.deactivate()
         _ = pointAndFlyPilotingRef?.value?.deactivate()
     }
@@ -776,6 +803,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
     }
 
     func setPoiLocation(point: CGPoint) -> CLLocation? {
+        guard isDroneConnected else { return nil }
         let takeoffRelativeAltitude = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
         let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
         // Takeoff altitude above sea (in meters)
@@ -807,6 +835,7 @@ extension TouchAndFlyServiceImpl: TouchAndFlyService {
     }
 
     func setWaypointLocation(point: CGPoint) -> CLLocation? {
+        guard isDroneConnected else { return nil }
         let takeoffRelativeAltitude = altimeterInstrumentRef?.value?.takeoffRelativeAltitude ?? 0
         let absoluteAltitudeDrone = altimeterInstrumentRef?.value?.absoluteAltitude ?? 0
         // Takeoff altitude above sea (in meters)

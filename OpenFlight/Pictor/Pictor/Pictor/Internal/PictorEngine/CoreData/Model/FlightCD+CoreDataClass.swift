@@ -38,7 +38,13 @@ class FlightCD: PictorEngineManagedObject {
         if let model = model as? PictorBaseFlightModel {
             updateBaseModel(model)
         } else if let model = model as? PictorEngineBaseFlightModel {
-            updateEngineModel(model)
+            updateEngineModel(model, updateBase: true)
+        }
+    }
+
+    func updateEngine(_ model: PictorBaseModel) {
+        if let model = model as? PictorEngineBaseFlightModel {
+            updateEngineModel(model, updateBase: false)
         }
     }
 }
@@ -48,7 +54,6 @@ private extension FlightCD {
     func updateBaseModel(_ model: PictorBaseFlightModel) {
         uuid = model.uuid
 
-        cloudId = Int64(model.cloudId)
         formatVersion = model.formatVersion
         title = model.title
         parseError = model.parseError
@@ -68,9 +73,12 @@ private extension FlightCD {
         thumbnailUuid = model.thumbnail?.uuid
     }
 
-    func updateEngineModel(_ model: PictorEngineBaseFlightModel) {
+    func updateEngineModel(_ model: PictorEngineBaseFlightModel, updateBase: Bool) {
         // - Base model
-        updateBaseModel(model.flightModel)
+        if updateBase {
+            updateBaseModel(model.flightModel)
+        }
+
         localCreationDate = model.localCreationDate
         localModificationDate = model.localModificationDate
 
@@ -79,6 +87,7 @@ private extension FlightCD {
         cloudModificationDate = model.cloudModificationDate
 
         // - Synchro model
+        cloudId = Int64(model.cloudId)
         synchroStatus = model.synchroStatus.rawValue
         synchroError = model.synchroError.rawValue
         synchroLatestUpdatedDate = model.synchroLatestUpdatedDate

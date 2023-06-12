@@ -49,7 +49,7 @@ enum CameraPreset {
 
 extension AntiflickerMode: SettingMode {
 
-    var localized: String {
+    public var localized: String {
         switch self {
         case .off:
             return L10n.commonOff
@@ -62,7 +62,7 @@ extension AntiflickerMode: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
@@ -76,7 +76,7 @@ extension AntiflickerMode: SettingMode {
 
 /// `Camera2ZoomVelocityControlQualityMode` extension for Settings.
 extension Camera2ZoomVelocityControlQualityMode: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .allowDegrading:
             return L10n.commonNo
@@ -85,7 +85,7 @@ extension Camera2ZoomVelocityControlQualityMode: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
@@ -94,7 +94,7 @@ extension Camera2ZoomVelocityControlQualityMode: SettingMode {
                 Camera2ZoomVelocityControlQualityMode.stopBeforeDegrading]
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .allowDegrading:
             return Asset.Settings.Quick.losslessZoomInactive.image
@@ -103,14 +103,14 @@ extension Camera2ZoomVelocityControlQualityMode: SettingMode {
         }
     }
 
-    var usedAsBool: Bool {
+    public var usedAsBool: Bool {
         return true
     }
 }
 
 /// `Camera2AutoRecordMode` extension for Settings.
 extension Camera2AutoRecordMode: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .disabled:
             return L10n.commonNo
@@ -119,7 +119,7 @@ extension Camera2AutoRecordMode: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
@@ -128,7 +128,7 @@ extension Camera2AutoRecordMode: SettingMode {
                 Camera2AutoRecordMode.recordFlight]
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .disabled:
             return Asset.Settings.Quick.autorecordInactive.image
@@ -137,7 +137,7 @@ extension Camera2AutoRecordMode: SettingMode {
         }
     }
 
-    var usedAsBool: Bool {
+    public var usedAsBool: Bool {
         return true
     }
 }
@@ -186,7 +186,7 @@ enum SettingsOverexposure: String, SettingEnum {
 
 /// `Camera2AudioRecordingMode` extension for Settings.
 extension Camera2AudioRecordingMode: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .mute:
             return L10n.settingsQuickAudioOff
@@ -195,7 +195,7 @@ extension Camera2AudioRecordingMode: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
@@ -204,7 +204,7 @@ extension Camera2AudioRecordingMode: SettingMode {
                 Camera2AudioRecordingMode.drone]
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .mute:
             return Asset.Settings.Quick.icStopAudio.image
@@ -213,7 +213,7 @@ extension Camera2AudioRecordingMode: SettingMode {
         }
     }
 
-    var usedAsBool: Bool {
+    public var usedAsBool: Bool {
         return true
     }
 }
@@ -221,7 +221,7 @@ extension Camera2AudioRecordingMode: SettingMode {
 /// Defines settings video encoding mode.
 /// `Camera2VideoCodec` extension for Settings.
 extension Camera2VideoCodec: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .h264:
             return L10n.settingsCameraH264
@@ -230,7 +230,7 @@ extension Camera2VideoCodec: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
@@ -243,7 +243,7 @@ extension Camera2VideoCodec: SettingMode {
 /// Defines settings video HDR mode.
 /// `Camera2DynamicRange` extension for Settings.
 extension Camera2DynamicRange: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .hdr8:
             return L10n.settingsCameraHdr8
@@ -263,7 +263,7 @@ extension Camera2DynamicRange: SettingMode {
 /// Defines settings photo signature.
 /// `Camera2DigitalSignature` extension for Settings.
 extension Camera2DigitalSignature: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .none:
             return L10n.commonNo
@@ -272,7 +272,7 @@ extension Camera2DigitalSignature: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 

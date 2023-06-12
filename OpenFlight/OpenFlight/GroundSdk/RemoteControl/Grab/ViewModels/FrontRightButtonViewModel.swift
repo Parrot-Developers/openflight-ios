@@ -99,13 +99,8 @@ private extension FrontRightButtonViewModel {
         switch manualPilotingItf.smartTakeOffLandAction {
         case .thrownTakeOff:
             if Services.hub.drone.handLaunchService.canStart {
-                if Services.hub.drone.ophtalmoService.canStartHandCalibration {
-                    ULog.i(.tag, "takeOffOrLandDrone execute ophtalmo start hand")
-                    Services.hub.drone.ophtalmoService.startHandCalibration()
-                } else {
-                    ULog.i(.tag, "takeOffOrLandDrone execute thrownTakeOff")
-                    manualPilotingItf.thrownTakeOff()
-                }
+                ULog.i(.tag, "takeOffOrLandDrone execute thrownTakeOff")
+                manualPilotingItf.thrownTakeOff()
             } else {
                 ULog.i(.tag, "takeOffOrLandDrone execute takeOff")
                 Services.hub.drone.handLaunchService.updateTakeOffButtonPressed(true)

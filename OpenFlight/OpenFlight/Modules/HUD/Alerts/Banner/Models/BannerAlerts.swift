@@ -64,7 +64,7 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
     case needCalibration
     case stereoCameraDecalibrated
     case rthIcedPropeller
-    case rthPoorBatteryConnection
+    case batteryPoorConnection
 
     public var severity: BannerAlertSeverity { .critical }
 
@@ -85,7 +85,7 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
                 .internalMemoryError,
                 .geofence,
                 .rthIcedPropeller,
-                .rthPoorBatteryConnection:
+                .batteryPoorConnection:
             // Specific case: use severity's default behavior without any 'on' or 'snooze' duration.
             return BannerAlertBehavior(feedbackType: severity.feedbackType,
                                        systemSoundId: severity.systemSoundId)
@@ -196,7 +196,7 @@ public enum CriticalBannerAlert: Int, BannerAlert, Equatable {
             return L10n.alertStereoSensorsNotCalibrated
         case .rthIcedPropeller:
             return L10n.alertPropellerFault
-        case .rthPoorBatteryConnection:
+        case .batteryPoorConnection:
             return L10n.alertPoorBatteryConnection
         }
     }
@@ -346,7 +346,14 @@ public enum HomeAlert: Int, BannerAlert, Equatable {
     case preciseRthInProgress
     case preciseLandingInProgress
 
-    public var severity: BannerAlertSeverity { .advice }
+    public var severity: BannerAlertSeverity {
+        switch self {
+        case .homePositionSet:
+            return .mandatory
+        default:
+            return .advice
+        }
+    }
 
     public var content: BannerAlertContent { .init(icon: icon, title: title) }
 
@@ -455,7 +462,8 @@ public extension AnyBannerAlert {
             CriticalBannerAlert.headingLockedKoEarthMagnetic,
             CriticalBannerAlert.tooMuchWind,
             CriticalBannerAlert.stereoCameraDecalibrated,
-            CriticalBannerAlert.rthIcedPropeller
+            CriticalBannerAlert.rthIcedPropeller,
+            CriticalBannerAlert.batteryPoorConnection
         ]
     }
 

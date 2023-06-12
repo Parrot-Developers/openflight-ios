@@ -31,8 +31,13 @@ extension PictorUserServiceImpl: PictorUserServiceConfiguration {
             return
         }
 
-        refresh { [weak self] _ in
-            self?.userEventSubject.send(.didRefreshUser)
+        // Refreshes the anonymous user
+        if let apcToken = currentUser.apcToken, !apcToken.isEmpty {
+            userEventSubject.send(.didRefreshUser)
+        } else {
+            refresh { [unowned self] _ in
+                self.userEventSubject.send(.didRefreshUser)
+            }
         }
     }
 }

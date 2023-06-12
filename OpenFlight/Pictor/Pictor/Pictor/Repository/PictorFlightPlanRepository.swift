@@ -45,6 +45,7 @@ public protocol PictorBaseFlightPlanRepository: PictorBaseRepository where Picto
     ///    - projectUuids: optional list of project UUIDs
     ///    - projectPix4dUuids: optional list of project Pix4D UUIDs
     ///    - states: optional list of states
+    ///    - excludedStates: optional list of states to exclude
     ///    - types: optional list of types
     ///    - excludedTypes: optional list of types to exclude
     ///    - hasReachedFirstWaypoint:
@@ -54,6 +55,7 @@ public protocol PictorBaseFlightPlanRepository: PictorBaseRepository where Picto
                projectUuids: [String]?,
                projectPix4dUuids: [String]?,
                states: [PictorFlightPlanModel.State]?,
+               excludedStates: [PictorFlightPlanModel.State]?,
                types: [String]?,
                excludedTypes: [String]?,
                hasReachedFirstWaypoint: Bool?) -> Int
@@ -66,6 +68,7 @@ public protocol PictorBaseFlightPlanRepository: PictorBaseRepository where Picto
     ///    - projectUuids: optional list of project UUIDs
     ///    - projectPix4dUuids: optional list of project Pix4D UUIDs
     ///    - states: optional list of states
+    ///    - excludedStates: optional list of states to exclude
     ///    - types: optional list of types
     ///    - excludedTypes: optional list of types to exclude
     ///    - hasReachedFirstWaypoint:
@@ -75,6 +78,7 @@ public protocol PictorBaseFlightPlanRepository: PictorBaseRepository where Picto
              projectUuids: [String]?,
              projectPix4dUuids: [String]?,
              states: [PictorFlightPlanModel.State]?,
+             excludedStates: [PictorFlightPlanModel.State]?,
              types: [String]?,
              excludedTypes: [String]?,
              hasReachedFirstWaypoint: Bool?) -> [PictorFlightPlanModel]
@@ -100,27 +104,19 @@ public protocol PictorBaseFlightPlanRepository: PictorBaseRepository where Picto
     /// - Returns: list of `PictorFlightPlanModel`
     func get(formatVersions: [String]) -> [PictorFlightPlanModel]
 
-
-    /// Get first flight date if found.
-    ///
-    /// - Parameters:
-    ///    - uuid: UUID to specified
-    /// - Returns: `Date` of first flight if found
-    func getFirstFlightDate(uuid: String) -> Date?
-
-    /// Get last flight date if found.
-    ///
-    /// - Parameters:
-    ///    - uuid: UUID to specified
-    /// - Returns: `Date` of first flight if found
-    func getLastFlightDate(uuid: String) -> Date?
-
     /// Get latest execution with a specified project UUID
     ///
     ///- Parameters:
     ///    - projectUuid: project's UUID to specified
     /// - Returns: `PictorFlightPlanModel`  if found
     func getLatestExecution(projectUuid: String) -> PictorFlightPlanModel?
+
+    /// Get all executions with a specified project UUID
+    ///
+    ///- Parameters:
+    ///    - projectUuid: project's UUID to specified
+    /// - Returns: list of `PictorFlightPlanModel`
+    func getExecutions(projectUuid: String) -> [PictorFlightPlanModel]
 
     /// Gets all records without thumbnail.
     ///
@@ -132,6 +128,8 @@ public protocol PictorBaseFlightPlanRepository: PictorBaseRepository where Picto
 public class PictorFlightPlanRepository: PictorRepository<PictorFlightPlanModel>, PictorBaseFlightPlanRepository  {
     private struct AttributeName {
         static var lastUpdated: String { "lastUpdated" }
+        static var executionRank: String { "executionRank" }
+        static var name: String { "name" }
     }
 
     override var sortBy: [(attributeName: String, ascending: Bool)] {
@@ -153,6 +151,7 @@ public class PictorFlightPlanRepository: PictorRepository<PictorFlightPlanModel>
                       projectUuids: [String]?,
                       projectPix4dUuids: [String]?,
                       states: [PictorFlightPlanModel.State]?,
+                      excludedStates: [PictorFlightPlanModel.State]?,
                       types: [String]?,
                       excludedTypes: [String]?,
                       hasReachedFirstWaypoint: Bool?) -> Int {
@@ -165,6 +164,7 @@ public class PictorFlightPlanRepository: PictorRepository<PictorFlightPlanModel>
                                                     projectUuids: projectUuids,
                                                     projectPix4dUuids: projectPix4dUuids,
                                                     states: states,
+                                                    excludedStates: excludedStates,
                                                     types: types,
                                                     excludedTypes: excludedTypes,
                                                     hasReachedFirstWaypoint: hasReachedFirstWaypoint)
@@ -183,6 +183,7 @@ public class PictorFlightPlanRepository: PictorRepository<PictorFlightPlanModel>
                     projectUuids: [String]?,
                     projectPix4dUuids: [String]?,
                     states: [PictorFlightPlanModel.State]?,
+                    excludedStates: [PictorFlightPlanModel.State]?,
                     types: [String]?,
                     excludedTypes: [String]?,
                     hasReachedFirstWaypoint: Bool?) -> [PictorFlightPlanModel] {
@@ -195,6 +196,7 @@ public class PictorFlightPlanRepository: PictorRepository<PictorFlightPlanModel>
                                                     projectUuids: projectUuids,
                                                     projectPix4dUuids: projectPix4dUuids,
                                                     states: states,
+                                                    excludedStates: excludedStates,
                                                     types: types,
                                                     excludedTypes: excludedTypes,
                                                     hasReachedFirstWaypoint: hasReachedFirstWaypoint,
@@ -207,24 +209,6 @@ public class PictorFlightPlanRepository: PictorRepository<PictorFlightPlanModel>
         }
 
         return result
-    }
-
-#warning("Use Following method from caller directly")
-    public func getFirstFlightDate(uuid: String) -> Date? {
-        return repositories.gutmaLink
-            .getRelatedFlights(byFlightPlanUuid: uuid)
-            .compactMap { $0.runDate }
-            .sorted(by: { $0 < $1 })
-            .first
-    }
-
-#warning("Use Following method from caller directly")
-    public func getLastFlightDate(uuid: String) -> Date? {
-        return repositories.gutmaLink
-            .getRelatedFlights(byFlightPlanUuid: uuid)
-            .compactMap { $0.runDate }
-            .sorted(by: { $0 > $1 })
-            .first
     }
 
     public func count(formatVersions: [String]) -> Int {
@@ -284,15 +268,35 @@ public class PictorFlightPlanRepository: PictorRepository<PictorFlightPlanModel>
             do {
                 let fetchRequest = try fetchRequest(projectUuids: [projectUuid],
                                                     hasReachedFirstWaypoint: true,
-                                                    sortBy: sortBy)
+                                                    sortBy: [(AttributeName.executionRank, false),
+                                                             (AttributeName.name, false)])
                 fetchRequest.fetchLimit = 1
-
                 let fetchResult = try coreDataService.mainContext.fetch(fetchRequest)
                 if let flightPlanCD = fetchResult.first {
                     result = convertToModel(flightPlanCD)
                 }
             } catch let error {
                 PictorLogger.shared.e(.tag, "❌💾 get(byUuid:) error: \(error)")
+            }
+        }
+
+        return result
+    }
+
+    public func getExecutions(projectUuid: String) -> [PictorFlightPlanModel] {
+        var result: [PictorFlightPlanModel] = []
+
+        coreDataService.mainContext.performAndWait {
+            do {
+                let fetchRequest = try fetchRequest(projectUuids: [projectUuid],
+                                                    excludedStates: [.editable],
+                                                    hasReachedFirstWaypoint: true,
+                                                    sortBy: [(AttributeName.executionRank, false),
+                                                             (AttributeName.name, false)])
+                let fetchResult = try coreDataService.mainContext.fetch(fetchRequest)
+                result = convertToModels(fetchResult)
+            } catch let error {
+                PictorLogger.shared.e(.tag, "❌💾 getExecutions(projectUuid:) error: \(error)")
             }
         }
 

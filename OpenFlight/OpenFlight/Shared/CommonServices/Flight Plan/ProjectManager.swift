@@ -155,6 +155,11 @@ public protocol ProjectManager {
     /// - Returns: the project model with provided UUID (if any)
     func getProject(byUuid uuid: String) -> ProjectModel?
 
+    /// Get the latest run date of executed flight plans from specified project
+    /// - Parameter project: project to specified
+    /// - Returns: latest run date if found
+    func getLatestRunDate(of project: ProjectModel) -> Date?
+
     /// Creates new Project.
     ///
     /// - Parameters:
@@ -351,6 +356,7 @@ public class ProjectManagerImpl {
 
     private let flightPlanTypeStore: FlightPlanTypeStore
     private let flightPlanRepository: PictorFlightPlanRepository
+    private let gutmaLinkRepository: PictorGutmaLinkRepository
     private let projectRepository: PictorProjectRepository
     private let editionService: FlightPlanEditionService
     private let currentMissionManager: CurrentMissionManager
@@ -386,6 +392,7 @@ public class ProjectManagerImpl {
          flightPlanTypeStore: FlightPlanTypeStore,
          projectRepository: PictorProjectRepository,
          flightPlanRepository: PictorFlightPlanRepository,
+         gutmaLinkRepository: PictorGutmaLinkRepository,
          editionService: FlightPlanEditionService,
          currentMissionManager: CurrentMissionManager,
          userService: PictorUserService,
@@ -396,6 +403,7 @@ public class ProjectManagerImpl {
         self.flightPlanTypeStore = flightPlanTypeStore
         self.projectRepository = projectRepository
         self.flightPlanRepository = flightPlanRepository
+        self.gutmaLinkRepository = gutmaLinkRepository
         self.editionService = editionService
         self.currentMissionManager = currentMissionManager
         self.userService = userService
@@ -445,6 +453,7 @@ extension ProjectManagerImpl: ProjectManager {
                                           projectUuids: [project.uuid],
                                           projectPix4dUuids: nil,
                                           states: nil,
+                                          excludedStates: nil,
                                           types: nil,
                                           excludedTypes: nil,
                                           hasReachedFirstWaypoint: true) > 0
@@ -503,6 +512,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                          projectUuids: [project.uuid],
                                                          projectPix4dUuids: nil,
                                                          states: nil,
+                                                         excludedStates: nil,
                                                          types: nil,
                                                          excludedTypes: nil,
                                                          hasReachedFirstWaypoint: nil)
@@ -523,6 +533,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                    projectUuids: [project.uuid],
                                                    projectPix4dUuids: nil,
                                                    states: nil,
+                                                   excludedStates: nil,
                                                    types: nil,
                                                    excludedTypes: nil,
                                                    hasReachedFirstWaypoint: true)
@@ -542,6 +553,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                 projectUuids: [project.uuid],
                                                 projectPix4dUuids: nil,
                                                 states: [FlightPlanState.editable],
+                                                excludedStates: nil,
                                                 types: nil,
                                                 excludedTypes: nil,
                                                 hasReachedFirstWaypoint: nil).first
@@ -586,6 +598,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                          projectUuids: [project.uuid],
                                                          projectPix4dUuids: nil,
                                                          states: nil,
+                                                         excludedStates: [.editable],
                                                          types: nil,
                                                          excludedTypes: nil,
                                                          hasReachedFirstWaypoint: true)
@@ -608,6 +621,21 @@ extension ProjectManagerImpl: ProjectManager {
 
     public func getProject(byUuid uuid: String) -> ProjectModel? {
         projectRepository.get(byUuid: uuid)
+    }
+
+    public func getLatestRunDate(of project: ProjectModel) -> Date? {
+        let executedFlightPlans = flightPlanRepository.getExecutions(projectUuid: project.uuid)
+
+        var date: Date?
+        for executedFlightPlan in executedFlightPlans {
+            if !executedFlightPlan.gutmaLinks.isEmpty,
+               let firstFlightDate = gutmaLinkRepository.getFirstFlight(byFlightPlanUuid: executedFlightPlan.uuid)?.runDate {
+                date = firstFlightDate
+                break
+            }
+        }
+
+        return date
     }
 
     public func delete(project: ProjectModel, completion: ((_ success: Bool) -> Void)?) {
@@ -885,6 +913,7 @@ extension ProjectManagerImpl: ProjectManager {
                                                    projectUuids: [project.uuid],
                                                    projectPix4dUuids: nil,
                                                    states: nil,
+                                                   excludedStates: nil,
                                                    types: nil,
                                                    excludedTypes: nil,
                                                    hasReachedFirstWaypoint: nil)
@@ -1115,6 +1144,7 @@ private extension ProjectManagerImpl {
                                                           projectUuids: nil,
                                                           projectPix4dUuids: nil,
                                                           states: [FlightPlanState.editable],
+                                                          excludedStates: nil,
                                                           types: ["default"],
                                                           excludedTypes: nil,
                                                           hasReachedFirstWaypoint: nil)
@@ -1124,6 +1154,7 @@ private extension ProjectManagerImpl {
                                                                projectUuids: nil,
                                                                projectPix4dUuids: nil,
                                                                states: [FlightPlanState.editable],
+                                                               excludedStates: nil,
                                                                types: nil,
                                                                excludedTypes: ["default"],
                                                                hasReachedFirstWaypoint: nil)

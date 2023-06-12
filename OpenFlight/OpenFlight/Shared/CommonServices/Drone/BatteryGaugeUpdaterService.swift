@@ -80,7 +80,7 @@ class BatteryGaugeUpdaterServiceImpl {
 
             ULog.i(.tag, "Battery gauge state: \(batteryGaugeUpdater.state), "
                    + "progress: \(batteryGaugeUpdater.currentProgress), "
-                   + "unavailabilityReasons:\(batteryGaugeUpdater.unavailabilityReasons)")
+                   + "unavailabilityReasons:\(batteryGaugeUpdater.unavailabilityReasons.map { return $0.description })")
             self.batteryGaugeUpdater = batteryGaugeUpdater
             unavailabilityReasonsSubject.value = batteryGaugeUpdater.unavailabilityReasons
             stateSubject.value = batteryGaugeUpdater.state

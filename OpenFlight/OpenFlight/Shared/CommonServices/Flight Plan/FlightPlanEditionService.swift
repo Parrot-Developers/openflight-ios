@@ -214,8 +214,6 @@ public class FlightPlanEditionServiceImpl {
     private var initialFlightPlan: FlightPlanModel?
     /// The current modified FP. Updated by each user changes.
     private var modifiedFlightPlan: FlightPlanModel?
-    /// The Flight Plan containing latest Cloud state after a server response.
-    private var cloudUpdatedFlightPlan: FlightPlanModel?
 
     private var currentFlightPlanSubject = CurrentValueSubject<FlightPlanModel?, Never>(nil)
 
@@ -242,7 +240,6 @@ public class FlightPlanEditionServiceImpl {
                 // Save his initial states.
                 updateInitialFlightPlan(with: newValue)
                 updateModifiedFlightPlan(with: newValue)
-                cloudUpdatedFlightPlan = nil
             }
         }
     }
@@ -265,7 +262,6 @@ public class FlightPlanEditionServiceImpl {
         self.currentMissionManager = currentMissionManager
         self.userService = userService
         self.thumbnailGeneratorService = thumbnailGeneratorService
-        listenFlightPlanRepository()
     }
 }
 
@@ -602,13 +598,6 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
         ULog.i(.tag, "ending edition of flight plan '\(flightPlan.uuid)'")
         flightPlan.pictorModel.lastUpdated = Date()
 
-        // If we received some Cloud state updates from the server (e.g. cloudID), apply them to the current FP.
-        if let cloudUpdatedFlightPlan = cloudUpdatedFlightPlan {
-            flightPlan.pictorModel.cloudId = flightPlan.pictorModel.cloudId > 0 ? flightPlan.pictorModel.cloudId : cloudUpdatedFlightPlan.pictorModel.cloudId
-            // Reset it for next use.
-            self.cloudUpdatedFlightPlan = nil
-        }
-
         // Clear mavlink data if the data can be generated for this type and current FP hasn't an imported mavlink.
         // Mavlink generation is done by FPRunManager > StartedNotFlyingState > PlanGenerator
         let type = typeStore.typeForKey(flightPlan.pictorModel.flightPlanType)
@@ -688,6 +677,7 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
             currentGsdSetting.currentValue = gsdSetting.value
             dataSetting.settings[currentGsdSettingIndex] = currentGsdSetting
         } else {
+            dataSetting.settings.append(FlightPlanLightSetting(key: gsdSetting.key, currentValue: gsdSetting.value))
             dataSetting.defaultGSD = gsdSetting.value
         }
 
@@ -743,24 +733,6 @@ extension FlightPlanEditionServiceImpl: FlightPlanEditionService {
 }
 
 private extension FlightPlanEditionServiceImpl {
-    func listenFlightPlanRepository() {
-        flightPlanRepository.didUpdatePublisher
-            .sink { [unowned self] uuids in
-                // Ensure the updated FP is the one opened in Edition Service.
-                guard let currentUuid = uuids.first(where: { $0 == currentFlightPlan?.uuid}),
-                      let flightPlan = flightPlanRepository.get(byUuid: currentUuid) else {
-                    return
-                }
-                // Save the Cloud state in dedicated local variable.
-                // This will be used during endEditing process.
-                // Updating directly the currentFlightPlan can cause some unexpected
-                // behaviors like removing the keyboard while editing.
-                cloudUpdatedFlightPlan = currentFlightPlan
-                // Update CloudId.
-                cloudUpdatedFlightPlan?.updateCloudIdIfNeeded(from: flightPlan)
-            }.store(in: &cancellables)
-    }
-
     /// Update the `initialFlightPlan`.
     func updateInitialFlightPlan(with flightPlan: FlightPlanModel?) {
         updateFlightPlan(&initialFlightPlan, with: flightPlan)

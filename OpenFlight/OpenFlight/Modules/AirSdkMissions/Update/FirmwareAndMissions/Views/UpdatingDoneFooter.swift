@@ -69,8 +69,7 @@ final class UpdatingDoneFooter: UIView, NibOwnerLoadable {
         switch state {
         case .waiting:
             continueButton.isHidden = true
-        case .error,
-             .success:
+        case .error, .serialChange, .success:
             continueButton.isHidden = false
         }
     }

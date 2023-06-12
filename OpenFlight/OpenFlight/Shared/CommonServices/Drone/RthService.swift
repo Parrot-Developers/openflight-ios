@@ -213,9 +213,7 @@ private extension RthServiceImpl {
 
         // Show potentiel RTH banner alert according to RTH reason.
         let isIcedPropellerRth = isReturningHome && returnHome?.reason == .icedPropeller
-        let isPoorBatteryConnectionRth = isReturningHome && returnHome?.reason == .batteryPoorConnection
         bamService.update(CriticalBannerAlert.rthIcedPropeller, show: isIcedPropellerRth)
-        bamService.update(CriticalBannerAlert.rthPoorBatteryConnection, show: isPoorBatteryConnectionRth)
     }
 
     /// Updates home location subject by listening to related publishers.

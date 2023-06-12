@@ -34,6 +34,7 @@ import Reusable
 enum UpdatingState {
     case success
     case error
+    case serialChange
     case waiting
 }
 
@@ -42,7 +43,7 @@ private extension UpdatingState {
     /// Title color.
     var titleColor: UIColor {
         switch self {
-        case .error, .success:
+        case .error, .success, .serialChange:
             return  ColorName.defaultTextColor.color
         case .waiting:
             return ColorName.clear.color
@@ -53,6 +54,8 @@ private extension UpdatingState {
         switch self {
         case .error:
             return L10n.firmwareMissionUpdateProcessesFailed
+        case .serialChange:
+            return L10n.batteryUpdateSerialChanged
         case .success:
             return L10n.firmwareMissionUpdateProcessesSucceeded
         case .waiting:

@@ -214,6 +214,7 @@
 		4BA3C23A2746995100B18602 /* SettingsSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA3C2392746995000B18602 /* SettingsSegmentedControl.swift */; };
 		4BA61FC128EC316D00518334 /* OverlayStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA61FC028EC316D00518334 /* OverlayStreamView.swift */; };
 		4BA61FC428EC399500518334 /* GridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA61FC328EC399500518334 /* GridView.swift */; };
+		4BAAC70129E55BC800AB1710 /* DiskSpaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1AE9A629E04D94001D572D /* DiskSpaceService.swift */; };
 		4BAB214827197E9700E90496 /* DashboardSettingsCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 220A103D270B3C8200966BD5 /* DashboardSettingsCell.xib */; };
 		4BB5F9E827AAE93A0024C922 /* PairingConnectDroneDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BB5F9E727AAE93A0024C922 /* PairingConnectDroneDetailViewModel.swift */; };
 		4BB67056282A50D600B80FEC /* SettingsImageTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4BB67054282A50D600B80FEC /* SettingsImageTableViewCell.xib */; };
@@ -237,6 +238,10 @@
 		51BA12DF28BF899A0008EB7C /* ParrotDebugViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA12DE28BF899A0008EB7C /* ParrotDebugViewModel.swift */; };
 		51D833649EDECD43AB73A476 /* Pods_OpenFlightTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 167C98E28C574D9037B1A869 /* Pods_OpenFlightTests.framework */; };
 		584BE9282926898B00700581 /* DroneCalibrationMoreMissionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584BE9222926791B00700581 /* DroneCalibrationMoreMissionsProvider.swift */; };
+		58D7676129F7DAC400130D7F /* SettingsGeoFenceCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58D7676029F7DAC400130D7F /* SettingsGeoFenceCell.xib */; };
+		58D7676429F7DAD800130D7F /* SettingsGeoFenceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58D7676329F7DAD800130D7F /* SettingsGeoFenceCell.swift */; };
+		58D7676729F9633B00130D7F /* SliderSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58D7676629F9633B00130D7F /* SliderSetting.swift */; };
+		58D7676A29FA7DCC00130D7F /* SettingsCellType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58D7676929FA7DCC00130D7F /* SettingsCellType.swift */; };
 		680B6F5E26F3526700916471 /* EditionSettingsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D740F7B26EBB83500A456FE /* EditionSettingsCoordinator.swift */; };
 		6835F78C270F1F41008E8B51 /* MapElevationSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6835F78A270F1F2A008E8B51 /* MapElevationSource.swift */; };
 		6835F78E270F9769008E8B51 /* DashboardSettingsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220A103B270B3C3E00966BD5 /* DashboardSettingsCell.swift */; };
@@ -257,6 +262,11 @@
 		688D7468282E8A8000A9179C /* PoiGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B41AC8A27D0D22F008FC426 /* PoiGraphic.swift */; };
 		688D7469282E8A8000A9179C /* UserGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B41AC8C27D0D23E008FC426 /* UserGraphic.swift */; };
 		688D746A282E8A8000A9179C /* CircleGraphic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B41AC8E27D0D26D008FC426 /* CircleGraphic.swift */; };
+		6892E6422A3779AF00CA85A6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6892E6382A3779AF00CA85A6 /* Localizable.strings */; };
+		6892E6432A3779AF00CA85A6 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6892E63A2A3779AF00CA85A6 /* Strings.swift */; };
+		6892E6442A3779AF00CA85A6 /* Storyboards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6892E63E2A3779AF00CA85A6 /* Storyboards.swift */; };
+		6892E6452A3779AF00CA85A6 /* Images.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6892E63F2A3779AF00CA85A6 /* Images.swift */; };
+		6892E6462A3779AF00CA85A6 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6892E6412A3779AF00CA85A6 /* Colors.swift */; };
 		689E0C6E2684ECBC00794DC2 /* ExposureLockViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 682355082680CAB3000E98F3 /* ExposureLockViewModel.swift */; };
 		689F050C271825FD00E73690 /* TrajectoryPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 685D93732715DEA9005CA99A /* TrajectoryPoint.swift */; };
 		68CA6F75275A125C00687A71 /* NSManagedObject+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B1891C12758F4EE0014E94D /* NSManagedObject+Utils.swift */; };
@@ -384,11 +394,9 @@
 		6ADE0EA523F1480E00925CF2 /* URL+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ADE0EA423F1480E00925CF2 /* URL+Utils.swift */; };
 		6AE23C0F237EDEF100699347 /* BehavioursViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AE23C0D237EDEEC00699347 /* BehavioursViewController.storyboard */; };
 		6AE23C10237EDEF100699347 /* BehavioursViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE23C0E237EDEF100699347 /* BehavioursViewController.swift */; };
-		6AE46576238ED165004FE818 /* SettingsGeofenceViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AE46574238ED165004FE818 /* SettingsGeofenceViewController.storyboard */; };
-		6AE46577238ED165004FE818 /* SettingsGeofenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE46575238ED165004FE818 /* SettingsGeofenceViewController.swift */; };
-		6AE46579238ED1C6004FE818 /* GeofenceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE46578238ED1C6004FE818 /* GeofenceViewModel.swift */; };
-		6AE4657C238EE38A004FE818 /* SettingsGridTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE4657A238EE389004FE818 /* SettingsGridTableViewCell.swift */; };
-		6AE4657D238EE38A004FE818 /* SettingsGridTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6AE4657B238EE389004FE818 /* SettingsGridTableViewCell.xib */; };
+		6AE46576238ED165004FE818 /* SettingsGeoFenceViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AE46574238ED165004FE818 /* SettingsGeoFenceViewController.storyboard */; };
+		6AE46577238ED165004FE818 /* SettingsGeoFenceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE46575238ED165004FE818 /* SettingsGeoFenceViewController.swift */; };
+		6AE46579238ED1C6004FE818 /* SettingsGeofenceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE46578238ED1C6004FE818 /* SettingsGeofenceViewModel.swift */; };
 		6AE8FCEF2382F6570028A2C8 /* SettingsCameraViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6AE8FCED2382F6570028A2C8 /* SettingsCameraViewController.storyboard */; };
 		6AE8FCF02382F6570028A2C8 /* SettingsCameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE8FCEE2382F6570028A2C8 /* SettingsCameraViewController.swift */; };
 		6AE8FCF22382F6D10028A2C8 /* SettingsCameraViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE8FCF12382F6D10028A2C8 /* SettingsCameraViewModel.swift */; };
@@ -408,11 +416,6 @@
 		701D859124E54D510061E824 /* StereoVisionBlended.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9B3C63E024DB0DF100652059 /* StereoVisionBlended.storyboard */; };
 		701D859224E54D550061E824 /* StereoVisionBlendedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3C63E124DB0DF100652059 /* StereoVisionBlendedViewController.swift */; };
 		7040265925DD045200714103 /* DroneCellularModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C6260125DA8E7D0045FCB4 /* DroneCellularModels.swift */; };
-		7042EE4029F18AFC00CCBC18 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7042EE3629F18AFB00CCBC18 /* Localizable.strings */; };
-		7042EE4229F18AFC00CCBC18 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7042EE3829F18AFB00CCBC18 /* Strings.swift */; };
-		7042EE4429F18AFC00CCBC18 /* Storyboards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7042EE3C29F18AFB00CCBC18 /* Storyboards.swift */; };
-		7042EE4629F18AFC00CCBC18 /* Images.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7042EE3D29F18AFB00CCBC18 /* Images.swift */; };
-		7042EE4829F18AFC00CCBC18 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7042EE3F29F18AFB00CCBC18 /* Colors.swift */; };
 		704F57E8299D3E160006FA4C /* ThumbnailGeneratorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704F57A4299D3E150006FA4C /* ThumbnailGeneratorService.swift */; };
 		704F57EA299D3E160006FA4C /* ThumbnailRequester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704F57A5299D3E150006FA4C /* ThumbnailRequester.swift */; };
 		704F57EC299D3E160006FA4C /* PanoramaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704F57A6299D3E150006FA4C /* PanoramaService.swift */; };
@@ -480,6 +483,7 @@
 		70603AD024B8834D00663E02 /* BeamEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70603ACF24B8834C00663E02 /* BeamEntity.swift */; };
 		70603AD324B88A7300663E02 /* BeamComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70603AD224B88A7300663E02 /* BeamComponent.swift */; };
 		70639D002628B91700B20641 /* DashboardFooterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81A5A1C2628499000C7B063 /* DashboardFooterViewModel.swift */; };
+		707498B02A150B090070BC96 /* anafi3_app_defaults.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6875970A2A14FFEF00C7DAB9 /* anafi3_app_defaults.plist */; };
 		70861D33281991130032C950 /* OpenFlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70861D32281991130032C950 /* OpenFlightTests.swift */; };
 		7093BD0D292E8C7F00F02D87 /* FilleManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7093BD0B292E862F00F02D87 /* FilleManager+Extensions.swift */; };
 		7094391F2788E6B5002CAA24 /* OphtalmoCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBB9A5F27724B2400A71732 /* OphtalmoCoordinator.swift */; };
@@ -489,6 +493,7 @@
 		70C8AEB72462E73900A0BE98 /* Thumbnail+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCD427724597ADF0024CF92 /* Thumbnail+Utils.swift */; };
 		70D84B2C26F87E470001BD87 /* HUDCriticalAlert.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E426A75C2547041000E8BA19 /* HUDCriticalAlert.storyboard */; };
 		70DA644424B76CA5007EC020 /* OGSpeedometer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70DA644324B76CA5007EC020 /* OGSpeedometer.swift */; };
+		70F1A10625B185B3008BA38A /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		7A0D5B68282A5ECA00400B3B /* UIApplication+Publisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A0D5B67282A5ECA00400B3B /* UIApplication+Publisher.swift */; };
 		7A2CA11E27CCB6AA00FA4146 /* String+Regex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A2CA11D27CCB6AA00FA4146 /* String+Regex.swift */; };
 		7A4C74C029A25D1600BF1A12 /* MetricLogsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4C74BF29A25D1600BF1A12 /* MetricLogsListView.swift */; };
@@ -649,6 +654,7 @@
 		84F3FB6C2447412D0073F77A /* DroneCalibrationAxesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84F3FB682447412D0073F77A /* DroneCalibrationAxesView.xib */; };
 		84F3FB71244742580073F77A /* DroneCalibrationInstructionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F3FB6F244742580073F77A /* DroneCalibrationInstructionsView.swift */; };
 		84F3FB74244742580073F77A /* DroneCalibrationInstructionsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84F3FB70244742580073F77A /* DroneCalibrationInstructionsView.xib */; };
+		8F2EF8437C1839CF144266E2 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		9B0F5D682552F6A000B56646 /* ParrotLogEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0F5D672552F6A000B56646 /* ParrotLogEvent.swift */; };
 		9B1145CC25DC270300AFCB05 /* ParrotLogEvent+DebugLogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B1145CB25DC270300AFCB05 /* ParrotLogEvent+DebugLogs.swift */; };
 		9B13E306256C064200BFEB23 /* ParrotLogEvent+Panel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B13E305256C064200BFEB23 /* ParrotLogEvent+Panel.swift */; };
@@ -777,6 +783,9 @@
 		E1E05E1B268350B800E221E1 /* JsonDecoder+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E05E1A268350B800E221E1 /* JsonDecoder+Extension.swift */; };
 		E332AFF1240431E100ED246E /* ProvidersProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = E332AFF0240431E100ED246E /* ProvidersProtocols.swift */; };
 		E332AFF324057A1C00ED246E /* MissionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E332AFF224057A1C00ED246E /* MissionsStore.swift */; };
+		E341E805235DE75400C1F1C8 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		E341E806235DE75B00C1F1C8 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		E341E807235DE79F00C1F1C8 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		E34F8A972359F78A00F711D9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E34F8A952359F78A00F711D9 /* InfoPlist.strings */; };
 		E34F8A9A2359FC0500F711D9 /* HUDCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34F8A992359FC0500F711D9 /* HUDCoordinator.swift */; };
 		E34F8A9E2359FC8B00F711D9 /* HUDViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34F8A9C2359FC8B00F711D9 /* HUDViewController.swift */; };
@@ -802,7 +811,6 @@
 		E37989AD241131C1006A91C3 /* AccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E37989AC241131C1006A91C3 /* AccountManager.swift */; };
 		E3996A2E241A638100F22F22 /* DashboardCoordinatorNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3996A2D241A638100F22F22 /* DashboardCoordinatorNavigation.swift */; };
 		E3996A37241A673900F22F22 /* BottomBarEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3996A36241A673900F22F22 /* BottomBarEnums.swift */; };
-		E3996A41241A6ACB00F22F22 /* SettingsContentViewControllerEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3996A40241A6ACB00F22F22 /* SettingsContentViewControllerEnums.swift */; };
 		E3B568F424640D9F0035FAF2 /* BehaviourModeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E3B568F224640C9A0035FAF2 /* BehaviourModeView.xib */; };
 		E3BC2EF8236AE41E0050B25A /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BC2EF7236AE41E0050B25A /* Services.swift */; };
 		E3BDCCB62461B0EF00CC41EE /* UIImage+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCD427924597B5B0024CF92 /* UIImage+Utils.swift */; };
@@ -1469,6 +1477,7 @@
 		4B0759A427107FDE00B9C469 /* POFTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POFTextField.swift; sourceTree = "<group>"; };
 		4B07ED7E2684CC5D00D9DFBE /* Color.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Color.xcassets; sourceTree = "<group>"; };
 		4B1891C12758F4EE0014E94D /* NSManagedObject+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSManagedObject+Utils.swift"; sourceTree = "<group>"; };
+		4B1AE9A629E04D94001D572D /* DiskSpaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskSpaceService.swift; sourceTree = "<group>"; };
 		4B1B4A4D27ECB382000F269D /* ModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ModelV14.xcdatamodel; sourceTree = "<group>"; };
 		4B31DE2E299D1351005B193F /* PersistentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentContainer.swift; sourceTree = "<group>"; };
 		4B36543228ACD16C002EF220 /* CellularSupportProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellularSupportProvider.swift; sourceTree = "<group>"; };
@@ -1518,12 +1527,26 @@
 		51BA12DE28BF899A0008EB7C /* ParrotDebugViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParrotDebugViewModel.swift; sourceTree = "<group>"; };
 		556BD70B2A7312804E2DA8E8 /* Pods_OpenFlight.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenFlight.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		584BE9222926791B00700581 /* DroneCalibrationMoreMissionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneCalibrationMoreMissionsProvider.swift; sourceTree = "<group>"; };
+		58D7676029F7DAC400130D7F /* SettingsGeoFenceCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SettingsGeoFenceCell.xib; sourceTree = "<group>"; };
+		58D7676329F7DAD800130D7F /* SettingsGeoFenceCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGeoFenceCell.swift; sourceTree = "<group>"; };
+		58D7676629F9633B00130D7F /* SliderSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SliderSetting.swift; sourceTree = "<group>"; };
+		58D7676929FA7DCC00130D7F /* SettingsCellType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCellType.swift; sourceTree = "<group>"; };
 		682355082680CAB3000E98F3 /* ExposureLockViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExposureLockViewModel.swift; sourceTree = "<group>"; };
 		6835F78A270F1F2A008E8B51 /* MapElevationSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapElevationSource.swift; sourceTree = "<group>"; };
 		685D93732715DEA9005CA99A /* TrajectoryPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrajectoryPoint.swift; sourceTree = "<group>"; };
+		6875970A2A14FFEF00C7DAB9 /* anafi3_app_defaults.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = anafi3_app_defaults.plist; sourceTree = "<group>"; };
 		687963AF26E7495900033707 /* Camera2Editor+Helpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Camera2Editor+Helpers.swift"; sourceTree = "<group>"; };
 		687963B126E74AF100033707 /* Camera2Editor+Hdr.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Camera2Editor+Hdr.swift"; sourceTree = "<group>"; };
 		687963B726EB495600033707 /* DeviceStateButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceStateButton.swift; sourceTree = "<group>"; };
+		6892E6392A3779AF00CA85A6 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6892E63A2A3779AF00CA85A6 /* Strings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
+		6892E63B2A3779AF00CA85A6 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6892E63C2A3779AF00CA85A6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6892E63D2A3779AF00CA85A6 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6892E63E2A3779AF00CA85A6 /* Storyboards.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Storyboards.swift; sourceTree = "<group>"; };
+		6892E63F2A3779AF00CA85A6 /* Images.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Images.swift; sourceTree = "<group>"; };
+		6892E6402A3779AF00CA85A6 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6892E6412A3779AF00CA85A6 /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		6A0460C42431D29A00F4B828 /* DownloadButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadButton.swift; sourceTree = "<group>"; };
 		6A0460C924324AB600F4B828 /* MediaPagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPagerViewController.swift; sourceTree = "<group>"; };
 		6A0460CC24324AD600F4B828 /* PhotoViewerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewerViewController.swift; sourceTree = "<group>"; };
@@ -1653,11 +1676,9 @@
 		6ADE0EA423F1480E00925CF2 /* URL+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Utils.swift"; sourceTree = "<group>"; };
 		6AE23C0D237EDEEC00699347 /* BehavioursViewController.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = BehavioursViewController.storyboard; sourceTree = "<group>"; };
 		6AE23C0E237EDEF100699347 /* BehavioursViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BehavioursViewController.swift; sourceTree = "<group>"; };
-		6AE46574238ED165004FE818 /* SettingsGeofenceViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SettingsGeofenceViewController.storyboard; sourceTree = "<group>"; };
-		6AE46575238ED165004FE818 /* SettingsGeofenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGeofenceViewController.swift; sourceTree = "<group>"; };
-		6AE46578238ED1C6004FE818 /* GeofenceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeofenceViewModel.swift; sourceTree = "<group>"; };
-		6AE4657A238EE389004FE818 /* SettingsGridTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGridTableViewCell.swift; sourceTree = "<group>"; };
-		6AE4657B238EE389004FE818 /* SettingsGridTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SettingsGridTableViewCell.xib; sourceTree = "<group>"; };
+		6AE46574238ED165004FE818 /* SettingsGeoFenceViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SettingsGeoFenceViewController.storyboard; sourceTree = "<group>"; };
+		6AE46575238ED165004FE818 /* SettingsGeoFenceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGeoFenceViewController.swift; sourceTree = "<group>"; };
+		6AE46578238ED1C6004FE818 /* SettingsGeofenceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGeofenceViewModel.swift; sourceTree = "<group>"; };
 		6AE8FCED2382F6570028A2C8 /* SettingsCameraViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SettingsCameraViewController.storyboard; sourceTree = "<group>"; };
 		6AE8FCEE2382F6570028A2C8 /* SettingsCameraViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCameraViewController.swift; sourceTree = "<group>"; };
 		6AE8FCF12382F6D10028A2C8 /* SettingsCameraViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCameraViewModel.swift; sourceTree = "<group>"; };
@@ -1677,15 +1698,6 @@
 		6C84E9662666A239002A889B /* DroneInfosViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroneInfosViewModel.swift; sourceTree = "<group>"; };
 		6CE3E54426F4E1C7005144A1 /* DroneDetailCellularViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DroneDetailCellularViewController.storyboard; sourceTree = "<group>"; };
 		7015A91228199395006A56A4 /* TestExample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestExample.swift; sourceTree = "<group>"; };
-		7042EE3729F18AFB00CCBC18 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7042EE3829F18AFB00CCBC18 /* Strings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
-		7042EE3929F18AFB00CCBC18 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7042EE3A29F18AFB00CCBC18 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7042EE3B29F18AFB00CCBC18 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7042EE3C29F18AFB00CCBC18 /* Storyboards.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Storyboards.swift; sourceTree = "<group>"; };
-		7042EE3D29F18AFB00CCBC18 /* Images.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Images.swift; sourceTree = "<group>"; };
-		7042EE3E29F18AFB00CCBC18 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
-		7042EE3F29F18AFB00CCBC18 /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		704F57A4299D3E150006FA4C /* ThumbnailGeneratorService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailGeneratorService.swift; sourceTree = "<group>"; };
 		704F57A5299D3E150006FA4C /* ThumbnailRequester.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThumbnailRequester.swift; sourceTree = "<group>"; };
 		704F57A6299D3E150006FA4C /* PanoramaService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PanoramaService.swift; sourceTree = "<group>"; };
@@ -2096,7 +2108,6 @@
 		E37989AC241131C1006A91C3 /* AccountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountManager.swift; sourceTree = "<group>"; };
 		E3996A2D241A638100F22F22 /* DashboardCoordinatorNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCoordinatorNavigation.swift; sourceTree = "<group>"; };
 		E3996A36241A673900F22F22 /* BottomBarEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBarEnums.swift; sourceTree = "<group>"; };
-		E3996A40241A6ACB00F22F22 /* SettingsContentViewControllerEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsContentViewControllerEnums.swift; sourceTree = "<group>"; };
 		E3B568F224640C9A0035FAF2 /* BehaviourModeView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BehaviourModeView.xib; sourceTree = "<group>"; };
 		E3BC2EF7236AE41E0050B25A /* Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
 		E3CF8C79243632B7006AC563 /* VideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewController.swift; sourceTree = "<group>"; };
@@ -2558,7 +2569,12 @@
 				4B63D9EE296C4FCB00B32A2F /* Pictor.framework in Frameworks */,
 				FB8DC76C23605066005C6378 /* GLKit.framework in Frameworks */,
 				FB8DC76A2360505C005C6378 /* OpenGLES.framework in Frameworks */,
+				E341E806235DE75B00C1F1C8 /* (null) in Frameworks */,
+				E341E805235DE75400C1F1C8 /* (null) in Frameworks */,
+				70F1A10625B185B3008BA38A /* (null) in Frameworks */,
 				AAB6D5869984351348373CFE /* Foundation.framework in Frameworks */,
+				E341E807235DE79F00C1F1C8 /* (null) in Frameworks */,
+				8F2EF8437C1839CF144266E2 /* (null) in Frameworks */,
 				4B01B52A296C17E000B0C9A9 /* Pictor.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2911,6 +2927,7 @@
 				3BD8BDB12812EEEB0098F498 /* BannerAlertManagerService.swift */,
 				3B4CD4CE281C5CCC0075AD62 /* AlertsMonitor.swift */,
 				4B4A8D8628818FD30041C3CC /* DatabaseUpdateService.swift */,
+				4B1AE9A629E04D94001D572D /* DiskSpaceService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -2930,13 +2947,13 @@
 		44D85DAF1FE10ABF7526E3D2 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				6892E6372A3779AF00CA85A6 /* Generated */,
 				2DDBA1CC25C992A3009AFD83 /* embedded_missions */,
 				F1B5BB3A0316BA560BB384B7 /* LaunchScreen.xib */,
 				6A5DE02123CF1229007523EF /* FlightPlan */,
 				E376C02F235F3B8B003C5914 /* DevicesDefaults */,
 				E34F8A822359EDDF00F711D9 /* Fonts */,
 				84853D21240EA93300920E2C /* Protobuf */,
-				7042EE3529F18AFB00CCBC18 /* Generated */,
 				6A95B57A5ED56E2F07694EBE /* Images.xcassets */,
 				8418F3C82459B21400DF7065 /* SceneCatalog.scnassets */,
 				E376C04423603F75003C5914 /* embedded_updates */,
@@ -3000,6 +3017,19 @@
 			);
 			path = Constants;
 			sourceTree = "<group>";
+		};
+		6892E6372A3779AF00CA85A6 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				6892E6382A3779AF00CA85A6 /* Localizable.strings */,
+				6892E63A2A3779AF00CA85A6 /* Strings.swift */,
+				6892E63E2A3779AF00CA85A6 /* Storyboards.swift */,
+				6892E63F2A3779AF00CA85A6 /* Images.swift */,
+				6892E6412A3779AF00CA85A6 /* Colors.swift */,
+			);
+			name = Generated;
+			path = OpenFlight/Swiftgen/Generated;
+			sourceTree = SOURCE_ROOT;
 		};
 		68E078B9268CC985009CD870 /* ExposureLock */ = {
 			isa = PBXGroup;
@@ -3107,8 +3137,8 @@
 				6A6C9514236B3FA80027842D /* SettingsInterfaceViewController.storyboard */,
 				6AE8FCEE2382F6570028A2C8 /* SettingsCameraViewController.swift */,
 				6AE8FCED2382F6570028A2C8 /* SettingsCameraViewController.storyboard */,
-				6AE46575238ED165004FE818 /* SettingsGeofenceViewController.swift */,
-				6AE46574238ED165004FE818 /* SettingsGeofenceViewController.storyboard */,
+				6AE46575238ED165004FE818 /* SettingsGeoFenceViewController.swift */,
+				6AE46574238ED165004FE818 /* SettingsGeoFenceViewController.storyboard */,
 				6A11B30A2397F69E00F17A49 /* SettingsRTHViewController.swift */,
 				6A11B3092397F69E00F17A49 /* SettingsRTHViewController.storyboard */,
 				6A271943239E84F50079C67A /* SettingsNetworkViewController.swift */,
@@ -3124,7 +3154,6 @@
 			isa = PBXGroup;
 			children = (
 				6A7763EE2368471200B01BA6 /* SettingsContentViewController.swift */,
-				E3996A40241A6ACB00F22F22 /* SettingsContentViewControllerEnums.swift */,
 				6A6C94CA236B347E0027842D /* SettingsQuickViewController.storyboard */,
 				6A6C94C9236B347E0027842D /* SettingsQuickViewController.swift */,
 				6A4C324623857CD600F54F8A /* Controls */,
@@ -3157,8 +3186,6 @@
 				6A6C94DE236B3A180027842D /* SettingsSegmentedCell.xib */,
 				3E9E76A427EB754800BBD089 /* SettingsDriCell.swift */,
 				3EDC642C27ECA66200D90D58 /* SettingsDriCell.xib */,
-				6AE4657A238EE389004FE818 /* SettingsGridTableViewCell.swift */,
-				6AE4657B238EE389004FE818 /* SettingsGridTableViewCell.xib */,
 				6A11B30D2397FA6300F17A49 /* SettingsRthCell.swift */,
 				6A11B30E2397FA6300F17A49 /* SettingsRthCell.xib */,
 				6A271948239E89980079C67A /* SettingsNetworkNameCell.swift */,
@@ -3169,6 +3196,8 @@
 				E4B98F57257E851C00E24ED6 /* SettingsEndHoveringCell.xib */,
 				4BB7B39228982B8A00D82284 /* SettingsShellAccessCell.swift */,
 				4BBF5D10289915300088D980 /* SettingsShellAccessCell.xib */,
+				58D7676329F7DAD800130D7F /* SettingsGeoFenceCell.swift */,
+				58D7676029F7DAC400130D7F /* SettingsGeoFenceCell.xib */,
 			);
 			path = Advanced;
 			sourceTree = "<group>";
@@ -3195,6 +3224,7 @@
 				6A6C94CF236B35580027842D /* UnitType.swift */,
 				6A6C94CD236B34E90027842D /* SettingEntry.swift */,
 				6A7763E72368394100B01BA6 /* SettingsType.swift */,
+				58D7676929FA7DCC00130D7F /* SettingsCellType.swift */,
 				6A7763E5236838D800B01BA6 /* SettingsPanelType.swift */,
 				6AE8FCF32382F8220028A2C8 /* Camera2Settings.swift */,
 				6AF8133C2384209900089878 /* ControlsSettings.swift */,
@@ -3202,6 +3232,7 @@
 				6A271954239E8CCF0079C67A /* NetworkSettings.swift */,
 				9B8A6FEC24FCF96F0001C719 /* ObstacleAvoidanceSetting.swift */,
 				4B9DE297289803F800197F21 /* DeveloperSettings.swift */,
+				58D7676629F9633B00130D7F /* SliderSetting.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -3227,7 +3258,7 @@
 				6ABE403323829ED6002D01E1 /* InterfaceViewModel.swift */,
 				6AE8FCF12382F6D10028A2C8 /* SettingsCameraViewModel.swift */,
 				6AF813462384270800089878 /* ControlsViewModel.swift */,
-				6AE46578238ED1C6004FE818 /* GeofenceViewModel.swift */,
+				6AE46578238ED1C6004FE818 /* SettingsGeofenceViewModel.swift */,
 				6AC03D1C2399087D00C64C0A /* SettingsRthViewModel.swift */,
 				6A271946239E85920079C67A /* SettingsNetworkViewModel.swift */,
 				E4DEEA7024EE7F68004B6C0C /* SettingsCellularDataViewModel.swift */,
@@ -3407,18 +3438,6 @@
 				6AF81348238430ED00089878 /* SettingsControlModeCell.xib */,
 			);
 			path = Controls;
-			sourceTree = "<group>";
-		};
-		7042EE3529F18AFB00CCBC18 /* Generated */ = {
-			isa = PBXGroup;
-			children = (
-				7042EE3629F18AFB00CCBC18 /* Localizable.strings */,
-				7042EE3829F18AFB00CCBC18 /* Strings.swift */,
-				7042EE3C29F18AFB00CCBC18 /* Storyboards.swift */,
-				7042EE3D29F18AFB00CCBC18 /* Images.swift */,
-				7042EE3F29F18AFB00CCBC18 /* Colors.swift */,
-			);
-			path = Generated;
 			sourceTree = "<group>";
 		};
 		704F57A2299D3E150006FA4C /* CommonServices */ = {
@@ -4869,6 +4888,7 @@
 			isa = PBXGroup;
 			children = (
 				9BEAF83A252B4B6A0013B44D /* anafi2_app_defaults.plist */,
+				6875970A2A14FFEF00C7DAB9 /* anafi3_app_defaults.plist */,
 			);
 			path = DevicesDefaults;
 			sourceTree = "<group>";
@@ -6638,7 +6658,6 @@
 				E4D7D37F2368A7270000D55B /* DeviceStateButton.xib in Resources */,
 				E452907423A7875000B5B72A /* DeviceButtonView.xib in Resources */,
 				EB1AA12325764CC200F3A141 /* HelloWorldMessageView.xib in Resources */,
-				7042EE4029F18AFC00CCBC18 /* Localizable.strings in Resources */,
 				6A6C9516236B3FA80027842D /* SettingsInterfaceViewController.storyboard in Resources */,
 				EB1AA12725764CC800F3A141 /* HelloWorldBottomView.xib in Resources */,
 				2D42F48426FB7C7800933440 /* FlightPlansDashboardList.storyboard in Resources */,
@@ -6716,6 +6735,7 @@
 				E4B570C525FA696400BCEEC4 /* PairingWhereIsWifi.storyboard in Resources */,
 				E4A190D025F8CAC2009F770D /* DroneDetailsInformations.storyboard in Resources */,
 				9B7EDA1A28F48867009D31C7 /* CameramanModeView.xib in Resources */,
+				6892E6422A3779AF00CA85A6 /* Localizable.strings in Resources */,
 				F801C3202641AF890008D224 /* yaw.json in Resources */,
 				E42AC25C261CB7DE00A77201 /* SettingsCellularDataCell.xib in Resources */,
 				3C2D70E624A24BEE003CB44D /* GalleryPanorama.storyboard in Resources */,
@@ -6764,9 +6784,10 @@
 				E49F4ED523BF4B4D00737D2D /* CircleProgressView.xib in Resources */,
 				7C4496E42375738D00BB4E1E /* BottomBar.storyboard in Resources */,
 				7CC58A4E237AEFD000F286B5 /* BarButtonView.xib in Resources */,
+				58D7676129F7DAC400130D7F /* SettingsGeoFenceCell.xib in Resources */,
 				E45305A124A1DCB2006A5F28 /* AdjustmentTableViewCell.xib in Resources */,
-				6AE4657D238EE38A004FE818 /* SettingsGridTableViewCell.xib in Resources */,
 				7CC58A5A237C099600F286B5 /* SegmentedBarView.xib in Resources */,
+				707498B02A150B090070BC96 /* anafi3_app_defaults.plist in Resources */,
 				7C6DB5A023C4876A0068B4E9 /* ParrotDebug.storyboard in Resources */,
 				3EDC642F27ECAD1200D90D58 /* SettingsDriCell.xib in Resources */,
 				6A66262E25CDAB49006037CD /* ProjectMenuTableViewCell.xib in Resources */,
@@ -6785,7 +6806,7 @@
 				7CAFA03F238EB51800CC07B0 /* Missions.storyboard in Resources */,
 				E4D34FE025F7B3BD004B2BD8 /* RemoteDetailsDevice.storyboard in Resources */,
 				7A4DA0C82715D7B30005B2CB /* DashboardProjectManagerCell.xib in Resources */,
-				6AE46576238ED165004FE818 /* SettingsGeofenceViewController.storyboard in Resources */,
+				6AE46576238ED165004FE818 /* SettingsGeoFenceViewController.storyboard in Resources */,
 				6AC802F825FF77130045BD42 /* HeaderMenuTableViewCell.xib in Resources */,
 				6A89FD8C23A7759A009A9C3F /* AlertViewController.storyboard in Resources */,
 				E4AC48CC24B3300600E234E7 /* PinNumberCollectionViewCell.xib in Resources */,
@@ -6988,7 +7009,6 @@
 				9BB4B4F4274E347700709849 /* AGSConstants+TouchAndFly.swift in Sources */,
 				9BB4B4F5274E347700709849 /* TouchAndFlyPointGraphic.swift in Sources */,
 				6848761B2747E79E000EA91D /* LayoutGridView.swift in Sources */,
-				7042EE4829F18AFC00CCBC18 /* Colors.swift in Sources */,
 				6848761A2747E6D7000EA91D /* FlightPlanTopBarViewController.swift in Sources */,
 				684EBE68273C4D0C0085672E /* DroneLocationGraphic.swift in Sources */,
 				684EBE68273C4D0C0085672E /* DroneLocationGraphic.swift in Sources */,
@@ -7006,7 +7026,6 @@
 				3B7DC14A270F5DA90098470A /* PhotoViewerCell.swift in Sources */,
 				683BFCDA26CEA7D8007C4B55 /* DashboardPhotogrammetryDebugCell.swift in Sources */,
 				4BE0F1DF298981D200D838B7 /* PictorGutma+Mavlink.swift in Sources */,
-				7042EE4429F18AFC00CCBC18 /* Storyboards.swift in Sources */,
 				685F839A26CD4500005A6AE1 /* TopBarViewModel.swift in Sources */,
 				2DBAE5D8288A77EC005B5258 /* ArrowGraphic.swift in Sources */,
 				704F57FC299D3E160006FA4C /* FlightPlanUiStateProvider.swift in Sources */,
@@ -7014,7 +7033,6 @@
 				689E0C6E2684ECBC00794DC2 /* ExposureLockViewModel.swift in Sources */,
 				43D25C0026D79FC000871062 /* FlightDetailsViewModel.swift in Sources */,
 				6879038326691FD6006DA545 /* CurrentMissionManager.swift in Sources */,
-				7042EE4629F18AFC00CCBC18 /* Images.swift in Sources */,
 				7A805CE92772FFA200A1D8AE /* SynchroUtils.swift in Sources */,
 				FB785B0123901EDC008D7602 /* CameraModeViewModel.swift in Sources */,
 				704F5800299D3E160006FA4C /* ProjectManager.swift in Sources */,
@@ -7038,6 +7056,7 @@
 				6C84E9672666A239002A889B /* DroneInfosViewModel.swift in Sources */,
 				2D8648AE299CC21B008974E6 /* BatteryUpdateChecklistViewController.swift in Sources */,
 				E426A774254704A300E8BA19 /* HUDCriticalAlertModel.swift in Sources */,
+				58D7676A29FA7DCC00130D7F /* SettingsCellType.swift in Sources */,
 				E4A7E3FE264424EE00AF9E82 /* DashboardAccountView.swift in Sources */,
 				7C18FC3E237EB8F500FF08CC /* DroneWatcherViewModel.swift in Sources */,
 				FB7ABAFF24489F49003A9378 /* GalleryLoadingView.swift in Sources */,
@@ -7077,7 +7096,6 @@
 				FB7FC902238EA0AD00111361 /* Storage+Utils.swift in Sources */,
 				AFD8A2192690DB5000457E15 /* FlightPlanEditionViewModel.swift in Sources */,
 				8418F3DB2459B7F700DF7065 /* Quaternion+EulerAngles.swift in Sources */,
-				7042EE4229F18AFC00CCBC18 /* Strings.swift in Sources */,
 				E4393A5123A7D139000DC184 /* RemoteDetailsButtonsViewModel.swift in Sources */,
 				704F5814299D3E160006FA4C /* FlightPlanFilesManager.swift in Sources */,
 				2D6F443C26E76C2100733354 /* FlightPlanSettingInfoCell.swift in Sources */,
@@ -7189,6 +7207,7 @@
 				6AA9A480242A241000E98905 /* GalleryMediaCollectionViewCell.swift in Sources */,
 				E48B53FC241004E8009B1984 /* BottomBarViewModel.swift in Sources */,
 				FBCA70D025F8DA3000E0382F /* Drone+Storage.swift in Sources */,
+				4BAAC70129E55BC800AB1710 /* DiskSpaceService.swift in Sources */,
 				3BD8BDB72812EEEB0098F498 /* TopOverlayController.swift in Sources */,
 				704F5838299D3E160006FA4C /* CameraRecordingService.swift in Sources */,
 				7A4DA0CB2715DBB70005B2CB /* DashboardProjectManagerCellModel.swift in Sources */,
@@ -7236,7 +7255,7 @@
 				FB8DC751235F40A2005C6378 /* Drone+Utils.swift in Sources */,
 				3C5C842F249A23AD00625CB9 /* GalleryFormatSDCardViewModel.swift in Sources */,
 				FB7ABB0D2448A0FB003A9378 /* JoysticksPilotingViewModel.swift in Sources */,
-				6AE46577238ED165004FE818 /* SettingsGeofenceViewController.swift in Sources */,
+				6AE46577238ED165004FE818 /* SettingsGeoFenceViewController.swift in Sources */,
 				FBCA4A81240D3B3B005D54DE /* FlyingIndicatorsFlyingState+Utils.swift in Sources */,
 				E49F4EC223BE360200737D2D /* RemoteUpdateViewController.swift in Sources */,
 				FBC3522F256FA75B00E6D291 /* CustomHUDControlsProvider.swift in Sources */,
@@ -7397,7 +7416,6 @@
 				FB5C22C9249A55A100A662AE /* Float+Utils.swift in Sources */,
 				704F57EC299D3E160006FA4C /* PanoramaService.swift in Sources */,
 				EB671D962590E978000B778B /* AirSdkMissionsUpdatingViewController.swift in Sources */,
-				6AE4657C238EE38A004FE818 /* SettingsGridTableViewCell.swift in Sources */,
 				7CC58A5B237C099600F286B5 /* SegmentedBarView.swift in Sources */,
 				8431A4AA247C23FC00370DD4 /* HUDTargetTrackableMode.swift in Sources */,
 				FB3395A4237460A10099683F /* TiltSliderView.swift in Sources */,
@@ -7436,6 +7454,7 @@
 				4BB5F9E827AAE93A0024C922 /* PairingConnectDroneDetailViewModel.swift in Sources */,
 				2D42F48126FB7C4800933440 /* FlightPlanDashboardListViewController.swift in Sources */,
 				E3EE46942625EF0F00CB69A0 /* DevToolboxCell.swift in Sources */,
+				6892E6462A3779AF00CA85A6 /* Colors.swift in Sources */,
 				3B701A8C27BA4356000D97DC /* MainBannerInfoView.swift in Sources */,
 				3B3AD667273F9CDD00401F84 /* CollectionViews.swift in Sources */,
 				9B7ED9EA28F413C4009D31C7 /* DroneLocationGraphicsOverlay.swift in Sources */,
@@ -7505,6 +7524,7 @@
 				6ABE403423829ED6002D01E1 /* InterfaceViewModel.swift in Sources */,
 				7AB70ABF27026DF8007E5040 /* UIButton+Publisher.swift in Sources */,
 				7CC58A4F237AEFD000F286B5 /* BarButtonView.swift in Sources */,
+				6892E6452A3779AF00CA85A6 /* Images.swift in Sources */,
 				E376C03C235F4B56003C5914 /* Platform+Utils.swift in Sources */,
 				3C53F0BC24938331007472FF /* GalleryFormatSDCardChoiceView.swift in Sources */,
 				436EE843268A061D00E2C239 /* JoysticksService.swift in Sources */,
@@ -7541,6 +7561,7 @@
 				E376C038235F4B4F003C5914 /* UIViewController+SizeClass.swift in Sources */,
 				8496D36B2449A7EF00AE4E1E /* DroneCalibrationInstructionsModel.swift in Sources */,
 				704F580C299D3E160006FA4C /* InitializingState.swift in Sources */,
+				58D7676729F9633B00130D7F /* SliderSetting.swift in Sources */,
 				6AC802F625FF77130045BD42 /* HeaderMenuTableViewCell.swift in Sources */,
 				44AD2FEE2906B34E00A8F063 /* VideoPlayerViewModel.swift in Sources */,
 				704F5836299D3E160006FA4C /* CameraPhotoCaptureService.swift in Sources */,
@@ -7566,7 +7587,7 @@
 				9B1145CC25DC270300AFCB05 /* ParrotLogEvent+DebugLogs.swift in Sources */,
 				FB777586240E5F06005F27FE /* AGSPolyline+Utils.swift in Sources */,
 				4B9DE2952897D83500197F21 /* SettingsDeveloperViewModel.swift in Sources */,
-				6AE46579238ED1C6004FE818 /* GeofenceViewModel.swift in Sources */,
+				6AE46579238ED1C6004FE818 /* SettingsGeofenceViewModel.swift in Sources */,
 				FB3395C12375A4070099683F /* RemoteControlGrabManager.swift in Sources */,
 				EB671D7A2590B526000B778B /* DroneFirmwaresTableViewCell.swift in Sources */,
 				6A0460CA24324AB600F4B828 /* MediaPagerViewController.swift in Sources */,
@@ -7631,7 +7652,6 @@
 				9B51EFD525B582A600B03229 /* ParrotLogEvent+Dashboard.swift in Sources */,
 				84853D1C240EA79000920E2C /* TargetView.swift in Sources */,
 				E4AEF0FE252C556B00B61243 /* NetworkControl+Utils.swift in Sources */,
-				E3996A41241A6ACB00F22F22 /* SettingsContentViewControllerEnums.swift in Sources */,
 				6A7763F7236883AD00B01BA6 /* Style.swift in Sources */,
 				FB855463238FE9BF00FA7061 /* ImagingBarItemView.swift in Sources */,
 				704F5812299D3E160006FA4C /* StartedNotFlyingState.swift in Sources */,
@@ -7662,6 +7682,7 @@
 				EB671D9C2590EAB2000B778B /* AirSdkMissionUpdatingTableViewCell.swift in Sources */,
 				FB105E0725C3280500A5D5B1 /* ParrotLogEvent+DataConfidentiality.swift in Sources */,
 				FB777594240E6A31005F27FE /* SettingValueRulerView.swift in Sources */,
+				58D7676429F7DAD800130D7F /* SettingsGeoFenceCell.swift in Sources */,
 				FBC1B1E02396657100BB3E8E /* BottomBarLevelTwoViewController.swift in Sources */,
 				FB66492F23FFEE48005036F4 /* FlightPlanGraphic.swift in Sources */,
 				3BD8BDBF2812EEEB0098F498 /* BannerAlertManagerService.swift in Sources */,
@@ -7682,6 +7703,7 @@
 				FB85544F238ED6FA00FA7061 /* UIViewController+Children.swift in Sources */,
 				FBDD9E6025E90759006E8281 /* FlightPlanUnavailabilityReason+Utils.swift in Sources */,
 				7C53ED8A23C4C002001ABF35 /* SecretView.swift in Sources */,
+				6892E6442A3779AF00CA85A6 /* Storyboards.swift in Sources */,
 				7A8DAB422750CC3F00C38973 /* ActivityProgressView.swift in Sources */,
 				FB4A253F25E50AF300CC120E /* FlightPlanPanelProgressView.swift in Sources */,
 				E4CF44F8236AE25100B3173B /* NavigationController.swift in Sources */,
@@ -7691,6 +7713,7 @@
 				704F584A299D3E160006FA4C /* AirSdkMissionsManager.swift in Sources */,
 				EB34CAB425AF1C6E00035E0A /* FirmwareMissionsUpdatingCase.swift in Sources */,
 				9B1411012995610D0076E29E /* parrot_missions_ophtalmo_airsdk_messages.pb.swift in Sources */,
+				6892E6432A3779AF00CA85A6 /* Strings.swift in Sources */,
 				A3859C53258523F400CE30E3 /* CorrectionViewCell.swift in Sources */,
 				704F5846299D3E160006FA4C /* PinCodeService.swift in Sources */,
 				6AE8FCF02382F6570028A2C8 /* SettingsCameraViewController.swift in Sources */,
@@ -7921,14 +7944,14 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		7042EE3629F18AFB00CCBC18 /* Localizable.strings */ = {
+		6892E6382A3779AF00CA85A6 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				7042EE3729F18AFB00CCBC18 /* de */,
-				7042EE3929F18AFB00CCBC18 /* ja */,
-				7042EE3A29F18AFB00CCBC18 /* en */,
-				7042EE3B29F18AFB00CCBC18 /* es */,
-				7042EE3E29F18AFB00CCBC18 /* fr */,
+				6892E6392A3779AF00CA85A6 /* de */,
+				6892E63B2A3779AF00CA85A6 /* ja */,
+				6892E63C2A3779AF00CA85A6 /* en */,
+				6892E63D2A3779AF00CA85A6 /* es */,
+				6892E6402A3779AF00CA85A6 /* fr */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

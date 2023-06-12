@@ -264,6 +264,8 @@ public struct SystemServices {
     public let memoryPressureMonitor: MemoryPressureMonitorService
     /// Metric Kit Service.
     public let metricKitService: MetricKitService
+    /// Disk space service.
+    public let diskSpaceService: DiskSpaceService
 }
 
 /// Implementation of the service hub
@@ -313,9 +315,11 @@ private class ServiceHubImpl: ServiceHub {
         let networkService = NetworkServiceImpl()
         let memoryPressureMonitor = MemoryPressureMonitorServiceImpl()
         let metricKitService = MetricKitServiceImpl(autoStart: Defaults.isMetricKitEnabled)
+        let diskSpaceService = DiskSpaceServiceImpl()
         systemServices = SystemServices(networkService: networkService,
                                         memoryPressureMonitor: memoryPressureMonitor,
-                                        metricKitService: metricKitService)
+                                        metricKitService: metricKitService,
+                                        diskSpaceService: diskSpaceService)
 
         if let oldPersistentContainer = PictorConfiguration.shared.oldPersistentContainer {
             Pictor.shared.service.databaseMigration.setup(withOldPersistentContainer: oldPersistentContainer)
@@ -469,6 +473,7 @@ private class ServiceHubImpl: ServiceHub {
         let flightPlanFilesManager = FlightPlanFilesManagerImpl()
 
         let flightPlanManager = FlightPlanManagerImpl(flightPlanRepository: repos.flightPlan,
+                                                      gutmaLinkRepository: repos.gutmaLink,
                                                       userService: userService,
                                                       filesManager: flightPlanFilesManager,
                                                       pgyProjectRepo: repos.pgyProject)
@@ -494,6 +499,7 @@ private class ServiceHubImpl: ServiceHub {
                                                 flightPlanTypeStore: flightPlanTypeStore,
                                                 projectRepository: repos.project,
                                                 flightPlanRepository: repos.flightPlan,
+                                                gutmaLinkRepository: repos.gutmaLink,
                                                 editionService: flightPlanEditionService,
                                                 currentMissionManager: currentMissionManager,
                                                 userService: userService,

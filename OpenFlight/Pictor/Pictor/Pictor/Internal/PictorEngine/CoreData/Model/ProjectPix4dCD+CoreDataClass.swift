@@ -48,10 +48,13 @@ private extension ProjectPix4dCD {
     func updateBaseModel(_ model: PictorBaseProjectPix4dModel) {
         uuid = model.uuid
 
-        cloudId = model.cloudId
         title = model.title
         projectDate = model.projectDate
         processingCalled = model.processingCalled
+
+        // - Base model is allowed to set engine property 'cloudId' as Pix4D project are fully cloud
+        // and does not depend on incremental synchronization
+        cloudId = Int64(model.cloudId)
     }
 
     func updateEngineModel(_ model: PictorEngineBaseProjectPix4dModel) {

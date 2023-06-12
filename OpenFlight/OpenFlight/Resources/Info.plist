@@ -41,6 +41,8 @@
 		<dict>
 			<key>anafi2</key>
 			<string>anafi2_app_defaults</string>
+			<key>anafi3</key>
+			<string>anafi3_app_defaults</string>
 		</dict>
 		<key>AutoConnectionAtStartup</key>
 		<true/>
@@ -130,11 +132,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>

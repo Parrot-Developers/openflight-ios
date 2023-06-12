@@ -29,6 +29,7 @@
 
 import UIKit
 import Combine
+import GroundSdk
 
 /// The interface for the battery updating process
 class BatteryUpdatingViewController: UIViewController {
@@ -37,6 +38,7 @@ class BatteryUpdatingViewController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
     private var viewModel: BatteryUpdatingViewModel!
     private weak var coordinator: DroneFirmwaresCoordinator?
+    private var batteryInfoRef: Ref<BatteryInfo>?
 
     @IBOutlet weak var cancelButton: InsetHitAreaButton!
     @IBOutlet weak var titleLabel: UILabel!
@@ -130,8 +132,8 @@ class BatteryUpdatingViewController: UIViewController {
         case .rebooting:
             cancelButton.isHidden = true
             progressView.setFakeProgress(duration: Constants.rebootDuration)
-        case .error:
-            displayErrorUI()
+        case .error(let errorType):
+            displayErrorUI(errorType)
         case .success:
             displaySuccessUI()
         }
@@ -149,9 +151,14 @@ class BatteryUpdatingViewController: UIViewController {
     }
 
     /// Displays error UI.
-    func displayErrorUI() {
+    func displayErrorUI(_ errorType: BatteryUpdateErrorType) {
         warningLabel.isHidden = true
-        reportView.setup(with: .error)
+        switch errorType {
+        case .defaultError:
+            reportView.setup(with: .error)
+        case .serialChange:
+            reportView.setup(with: .serialChange)
+        }
         reportView.isHidden = false
         continueView.setup(delegate: self, state: .error)
         continueView.isHidden = false

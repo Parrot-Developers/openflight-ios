@@ -261,6 +261,7 @@ private extension AlertsMonitor {
             self.updateConditionsAlerts(alarms: alarms)
             self.updateObstacleAvoidanceAlerts(alarms: alarms)
             self.updateGeofenceAlerts(alarms: alarms)
+            self.updateBatteryAlerts(alarms: alarms)
         }
     }
 
@@ -406,6 +407,14 @@ private extension AlertsMonitor {
 }
 
 private extension AlertsMonitor {
+
+    /// Updates battery specific banner alerts.
+    ///
+    /// - Parameter alarms: the alarms instrument
+    func updateBatteryAlerts(alarms: Alarms) {
+        bamService.update(CriticalBannerAlert.batteryPoorConnection,
+                          show: alarms.isOn(.batteryPoorConnection))
+    }
 
     /// Updates take off checklist alerts.
     ///

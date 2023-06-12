@@ -33,19 +33,19 @@ import GroundSdk
 
 extension ObstacleAvoidanceMode: SettingMode {
 
-    var localized: String {
+    public var localized: String {
         return L10n.settingsQuickAvoidance.capitalized
     }
 
-    var usedAsBool: Bool {
+    public var usedAsBool: Bool {
         return true
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .standard:
             return Asset.Settings.Quick.iconAvoidanceActive.image

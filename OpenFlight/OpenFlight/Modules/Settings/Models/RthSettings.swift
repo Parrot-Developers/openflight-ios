@@ -44,7 +44,7 @@ enum RthPreset {
 
 /// `ReturnHomeTarget` extension used in Settings.
 extension ReturnHomeTarget: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .controllerPosition:
             return L10n.settingsRthTypePilot
@@ -55,7 +55,7 @@ extension ReturnHomeTarget: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
@@ -73,7 +73,7 @@ extension ReturnHomeTarget: SettingMode {
 // MARK: - ReturnHomeEndingBehavior
 /// `ReturnHomeEndingBehavior` extension used in Settings.
 extension ReturnHomeEndingBehavior: SettingMode {
-    var localized: String {
+    public var localized: String {
         switch self {
         case .hovering:
             return L10n.commonHovering
@@ -82,7 +82,7 @@ extension ReturnHomeEndingBehavior: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 

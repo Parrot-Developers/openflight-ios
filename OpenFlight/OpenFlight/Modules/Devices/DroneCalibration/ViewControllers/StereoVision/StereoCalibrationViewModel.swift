@@ -50,13 +50,6 @@ public final class StereoCalibrationViewModel {
     @Published private(set) var warningText: String?
     @Published private(set) var calibrationMessage: String = L10n.loveCalibrationSetupMessage
 
-    var shouldHideAlertPanelPublisher: AnyPublisher<Bool, Never> {
-        shouldHideHandLaunchAlertPanelPublisher
-            .removeDuplicates()
-            .combineLatest(shouldHideHandLandAlertPanelPublisher.removeDuplicates())
-            .map { $0 && $1 }
-            .eraseToAnyPublisher()
-    }
     var shouldHideProgressViewPublisher: AnyPublisher<Bool, Never> {
         ophtalmoService.calibrationStatusPublisher
             .combineLatest(connectedDroneHolder.dronePublisher)
@@ -104,19 +97,6 @@ public final class StereoCalibrationViewModel {
     private let handLaunchService: HandLaunchService
     /// Reference to drone state information.
     private var droneStateRef: Ref<DeviceState>?
-
-    // MARK: Private Publishers
-    private var shouldHideHandLaunchAlertPanelPublisher: AnyPublisher<Bool, Never> {
-        ophtalmoService.calibrationAltitudeAskPublisher
-            .map { $0 == nil }
-            .eraseToAnyPublisher()
-    }
-
-    private var shouldHideHandLandAlertPanelPublisher: AnyPublisher<Bool, Never> {
-        ophtalmoService.isHandLandingPublisher
-            .map { !$0 }
-            .eraseToAnyPublisher()
-    }
 
     init(coordinator: DroneCalibrationCoordinator?,
          connectedDroneHolder: ConnectedDroneHolder,
@@ -173,11 +153,6 @@ extension StereoCalibrationViewModel {
     /// - Parameter altitude: the altitude the drone will fly up to
     func startCalibration(altitude: Float = 0) {
         ophtalmoService.startCalibration(altitude: altitude)
-    }
-
-    /// Starts the stereo vision sensor calibration with hand launch.
-    func startHandCalibration() {
-        ophtalmoService.startHandCalibration()
     }
 
     /// Cancels the stereo vision sensor calibration.

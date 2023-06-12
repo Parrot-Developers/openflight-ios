@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ALf-eV-b3G">
-    <device id="ipad9_7" orientation="portrait" layout="fullscreen" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="ALf-eV-b3G">
+    <device id="retina6_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Settings Geofence View Controller-->
+        <!--Settings Geo Fence View Controller-->
         <scene sceneID="CI0-SF-9bI">
             <objects>
-                <viewController storyboardIdentifier="SettingsGeofenceViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ALf-eV-b3G" customClass="SettingsGeofenceViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SettingsGeofenceViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ALf-eV-b3G" customClass="SettingsGeoFenceViewController" customModule="OpenFlight" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="inp-at-9em"/>
+                        <viewControllerLayoutGuide type="bottom" id="cdx-Lv-guP"/>
+                    </layoutGuides>
                     <view key="view" opaque="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="N7n-hf-LSO">
                         <rect key="frame" x="0.0" y="0.0" width="601" height="330"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

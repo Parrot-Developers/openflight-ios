@@ -40,11 +40,16 @@ struct BatteryUpdatingStep {
     var label: String
 }
 
+enum BatteryUpdateErrorType {
+    case defaultError
+    case serialChange
+}
+
 enum ProgressStep {
     case preparingUpdate(progress: Float)
     case updating
     case rebooting
-    case error
+    case error(_ error: BatteryUpdateErrorType)
     case success
 }
 
@@ -79,10 +84,16 @@ class BatteryUpdatingViewModel {
     private var isRebooting = false
     /// Becomes `true` when any error happens.
     private var hasFailed = false
+    /// Becomes `true` if a different battery was plugged.
+    private var serialChanged = false
     /// Subject for the updating process datasource.
     private var elementsSubject = CurrentValueSubject<[BatteryUpdatingStep], Never>([])
     /// Battery gauge updater service.
     private var batteryGaugeUpdaterService: BatteryGaugeUpdaterService
+    /// Battery serial number.
+    private var batterySerial: String?
+    /// Battery configuration date.
+    private var batteryConfigurationDate: Date?
     /// Current progress from 0 to 100, used to udpate the progress view.
     @Published private(set) var currentProgress: Float = Constants.minProgress
     /// progress step, used to update the progress view.
@@ -161,14 +172,40 @@ class BatteryUpdatingViewModel {
                         self.updateListForReboot()
                     } else {
                         // The connection was lost during preparation, possibly because the battery was removed. Stop the procedure immediately.
-                        self.progressStep = .error
+                        self.progressStep = .error(.defaultError)
                     }
                 } else {
+                    let batteryInfo = drone?.getInstrument(Instruments.batteryInfo)
+                    let configurationDate = batteryInfo?.batteryDescription?.configurationDate
+                    ULog.i(.tag, "listenDroneConnection - on connection: "
+                           + "isRebooting: \(self.isRebooting)"
+                           + "previous date:\(String(describing: self.batteryConfigurationDate))"
+                           + "new date:\(String(describing: configurationDate))")
+                    if self.batterySerial != nil
+                        && batteryInfo?.serial != nil
+                        && self.batterySerial != batteryInfo?.serial {
+                        // The battery serial has changed: the battery has been replaced.
+                        self.serialChanged = true
+                        self.updateProgressForReboot()
+                        self.updateListForReboot()
+                        return
+                    }
+                    self.batterySerial = batteryInfo?.serial
+
                     if self.isRebooting {
                         // The drone is reconnected after rebooting.
+                        // Check if configuration date has changed.
+                        if self.batteryConfigurationDate != nil
+                            && configurationDate != nil
+                            && self.batteryConfigurationDate == configurationDate {
+                            // Same date means no update.
+                            self.progressStep = .error(.defaultError)
+                            return
+                        }
                         self.updateProgressForReboot()
                         self.updateListForReboot()
                     }
+                    self.batteryConfigurationDate = configurationDate
                 }
             }
             .store(in: &cancellables)
@@ -197,6 +234,7 @@ class BatteryUpdatingViewModel {
                 updateElement.step = .waiting
                 rebootElement.step = .waiting
             case .readyToUpdate:
+                prepareElement.step = .succeeded
                 if !isUpdating {
                     // Send the update commmand
                     batteryGaugeUpdaterService.update()
@@ -229,7 +267,7 @@ class BatteryUpdatingViewModel {
     ///   - unavailabilityReasons: the set of current unavailability reasons (e.g. USB unplugged)
     func updateProgress(state: BatteryGaugeUpdaterState, currentProgress: UInt, unavailabilityReasons: Set<BatteryGaugeUpdaterUnavailabilityReasons>) {
         guard unavailabilityReasons.isEmpty else {
-            self.progressStep = .error
+            self.progressStep = .error(.defaultError)
             return
         }
         switch state {
@@ -240,7 +278,7 @@ class BatteryUpdatingViewModel {
         case .readyToUpdate, .updating:
             self.progressStep = .updating
         case .error:
-            self.progressStep = .error
+            self.progressStep = .error(.defaultError)
         }
     }
 
@@ -250,8 +288,13 @@ class BatteryUpdatingViewModel {
         var updateElement = elements[Elements.update.rawValue]
         var rebootElement = elements[Elements.reboot.rawValue]
         if isDroneConnected {
-            updateElement.step = .succeeded
-            rebootElement.step = .succeeded
+            if serialChanged {
+                updateElement.step = .failed("")
+                rebootElement.step = .succeeded
+            } else {
+                updateElement.step = .succeeded
+                rebootElement.step = .succeeded
+            }
         } else {
             updateElement.step = .succeeded
             rebootElement.step = .loading
@@ -261,6 +304,10 @@ class BatteryUpdatingViewModel {
 
     /// Updates the progress step during the reboot phase.
     func updateProgressForReboot() {
+        if serialChanged {
+            self.progressStep = .error(.serialChange)
+            return
+        }
         if isRebooting && isDroneConnected {
             // reboot ended
             self.progressStep = .success

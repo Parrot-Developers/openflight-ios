@@ -27,10 +27,18 @@
 //    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 //    SUCH DAMAGE.
 
-import Foundation
-import ArcGIS
+import SwiftyUserDefaults
+import Combine
 
 open class SceneWithOverlaysViewController: AGSSceneViewController {
+    public let viewpointSubject = PassthroughSubject<Void, Never>()
+    open var overlayCancellables = Set<AnyCancellable>()
+    open var observers: [DefaultsDisposable] = []
+
+    open override func viewDidLoad() {
+        super.viewDidLoad()
+        addOtherOverlays()
+    }
 
     // MARK: - Common overlays
     /// Add home overlay
@@ -63,5 +71,12 @@ open class SceneWithOverlaysViewController: AGSSceneViewController {
         returnHomeOverlay.sceneProperties?.surfacePlacement = .drapedFlat
         sceneView.graphicsOverlays.add(returnHomeOverlay)
         return returnHomeOverlay
+    }
+
+    // MARK: - Dynamic implementations
+
+    /// This method can be overwritten to add other layers from extension
+    @objc open dynamic func addOtherOverlays() {
+        // do nothing by default
     }
 }

@@ -51,6 +51,10 @@ internal extension PictorContext {
         updateFlightPlans(models, forceSave: false, local: local)
     }
 
+    func updateEngineFlightPlans<T: PictorBaseModel>(_ models: [T], local: Bool) {
+        updateFlightPlans(models, forceSave: false, local: local, onlyEngine: true)
+    }
+
     func deleteFlightPlans<T: PictorBaseModel>(_ models: [T]) {
         guard T.self is PictorBaseFlightPlanModel.Type || T.self is PictorEngineBaseFlightPlanModel.Type else { return }
 
@@ -78,7 +82,7 @@ internal extension PictorContext {
                         cloudId = 0
                     }
                     if let engineModel = models.first(where: { $0.uuid == existingCD.uuid }) as? PictorEngineBaseFlightPlanModel,
-                       engineModel.flightPlanModel.cloudId == 0 {
+                       engineModel.cloudId == 0 {
                         cloudId = 0
                     }
 
@@ -126,7 +130,7 @@ internal extension PictorContext {
 }
 
 private extension PictorContext {
-    func updateFlightPlans<T: PictorBaseModel>(_ models: [T], forceSave: Bool, local: Bool) {
+    func updateFlightPlans<T: PictorBaseModel>(_ models: [T], forceSave: Bool, local: Bool, onlyEngine: Bool = false) {
         guard T.self is PictorBaseFlightPlanModel.Type || T.self is PictorEngineBaseFlightPlanModel.Type else { return }
 
         currentChildContext.performAndWait { [weak self] in
@@ -182,56 +186,59 @@ private extension PictorContext {
                 // - Handle models
                 let currentDate = Date()
                 for model in models {
-                    var modelCD: FlightPlanCD?
+                    var modelCD: FlightPlanCD
 
                     // - Search for model in existing records, create new record if not found
                     if let existingCDs = existingCDs.first(where: { $0.uuid == model.uuid }) {
                         modelCD = existingCDs
                     } else if forceSave {
                         modelCD = FlightPlanCD(context: self.currentChildContext)
-                        modelCD?.userUuid = currentSessionCD.userUuid
-                        modelCD?.localCreationDate = currentDate
+                        modelCD.userUuid = currentSessionCD.userUuid
+                        modelCD.localCreationDate = currentDate
                     } else {
                         PictorLogger.shared.w(.tag, "[\(FlightPlanCD.entityName)] Trying to update an unknown record \(model.uuid)")
+                        continue
                     }
 
-                    if let modelCD = modelCD {
-                        // - Get project dataSetting & formatVersion from model
-                        var hasDataSettingChanged: Bool = false
-                        var hasFormatVersionChanged: Bool = false
-                        if let flightPlan = model as? PictorBaseFlightPlanModel {
-                            if modelCD.dataSetting != flightPlan.dataSetting {
-                                hasDataSettingChanged = true
-                            }
-                            if modelCD.formatVersion != flightPlan.formatVersion {
-                                hasFormatVersionChanged = true
-                            }
+                    // - Get project dataSetting & formatVersion from model
+                    var hasDataSettingChanged: Bool = false
+                    var hasFormatVersionChanged: Bool = false
+                    if let flightPlan = model as? PictorBaseFlightPlanModel {
+                        if modelCD.dataSetting != flightPlan.dataSetting {
+                            hasDataSettingChanged = true
                         }
+                        if modelCD.formatVersion != flightPlan.formatVersion {
+                            hasFormatVersionChanged = true
+                        }
+                    }
 
-                        // - Update record
+                    // - Update record
+                    if onlyEngine {
+                        modelCD.updateEngine(model)
+                    } else {
                         modelCD.update(model)
-                        modelCD.localModificationDate = currentDate
+                    }
+                    modelCD.localModificationDate = currentDate
 
-                        // - Set engine synchro engine properties only if model conforms to BaseModel
-                        if isBase(model) {
-                            // - Reset synchro status to upload file if dataSetting or formatVersion has changed
-                            // so it will be uploaded in next synchro appointment
-                            if hasDataSettingChanged || hasFormatVersionChanged {
-                                modelCD.synchroStatus = PictorEngineSynchroStatus.notSync.rawValue
-                            }
-
-                            // - Synchro
-                            if !local {
-                                // - Set synchro updated date for incremental
-                                modelCD.synchroLatestUpdatedDate = currentDate
-                                // - Send event to trigger synchro incremental
-                                self.coreDataService.sendEventToSynchro(entityName: FlightPlanCD.entityName)
-                            }
+                    // - Set engine synchro engine properties only if model conforms to BaseModel
+                    if isBase(model) {
+                        // - Reset synchro status to upload file if dataSetting or formatVersion has changed
+                        // so it will be uploaded in next synchro appointment
+                        if hasDataSettingChanged || hasFormatVersionChanged {
+                            modelCD.synchroStatus = PictorEngineSynchroStatus.notSync.rawValue
                         }
 
-                        // - Update related project
-                        try updateProjectFromRelatedFlightPlans(withUuid: modelCD.projectUuid)
+                        // - Synchro
+                        if !local {
+                            // - Set synchro updated date for incremental
+                            modelCD.synchroLatestUpdatedDate = currentDate
+                            // - Send event to trigger synchro incremental
+                            self.coreDataService.sendEventToSynchro(entityName: FlightPlanCD.entityName)
+                        }
                     }
+
+                    // - Update related project
+                    try updateProjectFromRelatedFlightPlans(withUuid: modelCD.projectUuid)
                 }
             } catch let error {
                 PictorLogger.shared.e(.tag, "save error: \(error)")

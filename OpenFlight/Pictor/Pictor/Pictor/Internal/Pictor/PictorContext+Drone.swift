@@ -91,24 +91,23 @@ private extension PictorContext {
                 // - Handle models
                 let currentDate = Date()
                 for model in models {
-                    var modelCD: DroneCD?
+                    var modelCD: DroneCD
 
                     // - Search for model in existing records, create new record if not found
                     if let existingCDs = existingCDs.first(where: { $0.uuid == model.uuid }) {
                         modelCD = existingCDs
                     } else if forceSave {
                         modelCD = DroneCD(context: self.currentChildContext)
-                        modelCD?.userUuid = currentSessionCD.userUuid
-                        modelCD?.localCreationDate = currentDate
+                        modelCD.userUuid = currentSessionCD.userUuid
+                        modelCD.localCreationDate = currentDate
                     } else {
                         PictorLogger.shared.w(.tag, "[\(DroneCD.entityName)] Trying to update an unknown record \(model.uuid)")
+                        continue
                     }
 
-                    if let modelCD = modelCD {
-                        // - Update record
-                        modelCD.update(model)
-                        modelCD.localModificationDate = currentDate
-                    }
+                    // - Update record
+                    modelCD.update(model)
+                    modelCD.localModificationDate = currentDate
                 }
             } catch let error {
                 PictorLogger.shared.e(.tag, "save error: \(error)")

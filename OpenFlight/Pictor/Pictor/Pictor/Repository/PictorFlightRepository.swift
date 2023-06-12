@@ -56,6 +56,8 @@ public protocol PictorBaseFlightRepository: PictorBaseRepository where PictorBas
 
     /// Gets summary of flights by uuids.
     ///
+    /// - Parameters:
+    ///    - byUuids: list of uuids to search
     /// - Returns: the summary
     func getAllSummary(byUuids: [String]) -> PictorFlightSummary
 }
@@ -78,7 +80,7 @@ public class PictorFlightRepository: PictorRepository<PictorFlightModel>, Pictor
 
     override func convertToModels(_ records: [PictorEngineManagedObject]) -> [PictorFlightModel] {
         guard let records = records as? [FlightCD] else {
-            PictorLogger.shared.e(.tag, "❌💾🗂 Bad managed object of \(entityName)")
+            PictorLogger.shared.e(.tag, "❌💾✈️ Bad managed object of \(entityName)")
             return []
         }
 

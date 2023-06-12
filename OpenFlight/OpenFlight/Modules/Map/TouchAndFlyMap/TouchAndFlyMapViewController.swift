@@ -88,7 +88,9 @@ open class TouchAndFlyMapViewController: MapWithOverlaysViewController {
     }
 
     open override func getCenter(completion: @escaping(AGSViewpoint?) -> Void) {
-        if droneLocationOverlay?.isDroneConnected == true, let coordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
+        if droneLocationOverlay?.isDroneConnected == true,
+           droneLocationOverlay?.droneGpsFixed == true,
+           let coordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
                 completion(AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: coordinate),
                                         scale: CommonMapConstants.cameraDistanceToCenterLocation))
         } else {

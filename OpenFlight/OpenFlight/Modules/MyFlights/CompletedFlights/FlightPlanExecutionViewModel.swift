@@ -157,6 +157,7 @@ open class FlightPlanExecutionViewModel {
                                                            projectUuids: nil,
                                                            projectPix4dUuids: nil,
                                                            states: nil,
+                                                           excludedStates: nil,
                                                            types: nil,
                                                            excludedTypes: nil,
                                                            hasReachedFirstWaypoint: nil).first {

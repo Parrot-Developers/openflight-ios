@@ -55,6 +55,7 @@ struct PictorEngineProjectModel: PictorEngineBaseProjectModel {
     }
 
     // MARK: - Engine synchro base model
+    var cloudId: Int64
     var synchroStatus: PictorEngineSynchroStatus
     var synchroError: PictorEngineSynchroError
     var synchroLatestStatusDate: Date?
@@ -65,6 +66,7 @@ struct PictorEngineProjectModel: PictorEngineBaseProjectModel {
          localCreationDate: Date? = nil,
          localModificationDate: Date? = nil,
          cloudCreationDate: Date? = nil,
+         cloudId: Int64 = 0,
          synchroStatus: PictorEngineSynchroStatus = .notSync,
          synchroError: PictorEngineSynchroError = .noError,
          synchroLatestStatusDate: Date? = nil,
@@ -74,6 +76,7 @@ struct PictorEngineProjectModel: PictorEngineBaseProjectModel {
         self.localCreationDate = localCreationDate
         self.localModificationDate = localModificationDate
         self.cloudCreationDate = cloudCreationDate
+        self.cloudId = cloudId
         self.synchroStatus = synchroStatus
         self.synchroError = synchroError
         self.synchroLatestStatusDate = synchroLatestStatusDate
@@ -86,6 +89,7 @@ struct PictorEngineProjectModel: PictorEngineBaseProjectModel {
                   localCreationDate: record.localCreationDate,
                   localModificationDate: record.localModificationDate,
                   cloudCreationDate: record.cloudCreationDate,
+                  cloudId: record.cloudId,
                   synchroStatus: PictorEngineSynchroStatus(rawValue: record.synchroStatus) ?? .notSync,
                   synchroError: PictorEngineSynchroError(rawValue: record.synchroError) ?? .noError,
                   synchroLatestStatusDate: record.synchroLatestStatusDate,
@@ -100,6 +104,7 @@ extension PictorEngineProjectModel: Equatable {
             && lhs.localCreationDate == rhs.localCreationDate
             && lhs.localModificationDate == rhs.localModificationDate
             && lhs.cloudCreationDate == rhs.cloudCreationDate
+            && lhs.cloudId == rhs.cloudId
             && lhs.synchroStatus == rhs.synchroStatus
             && lhs.synchroError == rhs.synchroError
             && lhs.synchroLatestStatusDate == rhs.synchroLatestStatusDate

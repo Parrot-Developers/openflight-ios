@@ -150,6 +150,11 @@ public protocol FlightPlanManager {
     /// This method searches for the first FlightPlan's Flight and gets its start date (representing the Drone's take-off date).
     ///  If not found, we fallback into the execution's date which represents the moment when the FP has ben launched.
     func firstFlightFormattedDate(of flightPlan: FlightPlanModel) -> String
+
+    /// Get the latest related flight run date from a specified flight plan UUIDs.
+    /// - Parameter byFlightPlanUuids
+    /// - Returns: latest flight run date if any
+    func getLatestFlightRunDate(byFlightPlanUuids: [String]) -> Date?
 }
 
 private extension ULogTag {
@@ -158,15 +163,18 @@ private extension ULogTag {
 
 public class FlightPlanManagerImpl: FlightPlanManager {
     private let flightPlanRepository: PictorFlightPlanRepository!
+    private let gutmaLinkRepository: PictorGutmaLinkRepository!
     private let userService: PictorUserService!
     private let filesManager: FlightPlanFilesManager!
     private let pgyProjectRepo: PictorProjectPix4dRepository!
 
     public init(flightPlanRepository: PictorFlightPlanRepository,
+                gutmaLinkRepository: PictorGutmaLinkRepository,
                 userService: PictorUserService,
                 filesManager: FlightPlanFilesManager,
                 pgyProjectRepo: PictorProjectPix4dRepository) {
         self.flightPlanRepository = flightPlanRepository
+        self.gutmaLinkRepository = gutmaLinkRepository
         self.userService = userService
         self.filesManager = filesManager
         self.pgyProjectRepo = pgyProjectRepo
@@ -212,6 +220,7 @@ public class FlightPlanManagerImpl: FlightPlanManager {
                                                     projectUuids: [projectId],
                                                     projectPix4dUuids: nil,
                                                     states: [FlightPlanState.editable],
+                                                    excludedStates: nil,
                                                     types: nil,
                                                     excludedTypes: nil,
                                                     hasReachedFirstWaypoint: nil)
@@ -226,6 +235,7 @@ public class FlightPlanManagerImpl: FlightPlanManager {
                                                     projectUuids: nil,
                                                     projectPix4dUuids: nil,
                                                     states: [state],
+                                                    excludedStates: nil,
                                                     types: nil,
                                                     excludedTypes: ["default"],
                                                     hasReachedFirstWaypoint: nil)
@@ -312,6 +322,7 @@ public class FlightPlanManagerImpl: FlightPlanManager {
                                                     projectUuids: nil,
                                                     projectPix4dUuids: ["\(pgyId)"],
                                                     states: nil,
+                                                    excludedStates: nil,
                                                     types: nil,
                                                     excludedTypes: nil,
                                                     hasReachedFirstWaypoint: nil)
@@ -319,11 +330,11 @@ public class FlightPlanManagerImpl: FlightPlanManager {
     }
 
     public func lastFlightDate(_ flightPlan: FlightPlanModel) -> Date? {
-        flightPlanRepository.getLastFlightDate(uuid: flightPlan.uuid)
+        gutmaLinkRepository.getLastFlight(byFlightPlanUuid: flightPlan.uuid)?.runDate
     }
 
     public func firstFlightDate(of flightPlan: FlightPlanModel) -> Date? {
-        flightPlanRepository.getFirstFlightDate(uuid: flightPlan.uuid)
+        gutmaLinkRepository.getFirstFlight(byFlightPlanUuid: flightPlan.uuid)?.runDate
     }
 
     public func firstFlightFormattedDate(of flightPlan: FlightPlanModel) -> String {
@@ -333,5 +344,9 @@ public class FlightPlanManagerImpl: FlightPlanManager {
         }
         // Format the date.
         return flightDate.commonFormattedString
+    }
+
+    public func getLatestFlightRunDate(byFlightPlanUuids: [String]) -> Date? {
+        gutmaLinkRepository.getLatestFlightRunDate(byFlightPlanUuids: byFlightPlanUuids)
     }
 }

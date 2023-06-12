@@ -31,7 +31,7 @@ import Foundation
 
 // MARK: - Protocol
 public protocol PictorBaseProjectPix4dModel: PictorBaseModel {
-    var cloudId: Int64 { get set }
+    var cloudId: Int64 { get }
     var title: String { get set }
     var projectDate: Date { get set }
     var processingCalled: Bool { get set }

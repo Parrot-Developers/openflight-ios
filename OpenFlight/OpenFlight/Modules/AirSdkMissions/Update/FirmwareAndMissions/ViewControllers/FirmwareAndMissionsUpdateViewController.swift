@@ -379,7 +379,7 @@ private extension FirmwareAndMissionsUpdateViewController {
                     self?.quitProcesses(closeFirmwareList: true)
                 }
             })
-        let cancelAction = AlertAction(title: L10n.cancel, actionHandler: nil)
+        let cancelAction = AlertAction(title: L10n.firmwareMissionUpdateQuitInstallationCancelAction, actionHandler: nil)
 
         let alert = AlertViewController.instantiate(
             title: L10n.firmwareMissionUpdateQuitInstallationTitle,

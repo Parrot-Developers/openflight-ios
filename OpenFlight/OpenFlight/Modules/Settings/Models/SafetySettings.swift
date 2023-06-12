@@ -44,7 +44,7 @@ enum GeofencePreset {
 
 extension GeofenceMode: SettingMode {
 
-    var localized: String {
+    public var localized: String {
         switch self {
         case .altitude:
             return L10n.commonOff.capitalized
@@ -53,19 +53,19 @@ extension GeofenceMode: SettingMode {
         }
     }
 
-    var usedAsBool: Bool {
+    public var usedAsBool: Bool {
         return true
     }
 
-    var isGeofenceActive: Bool {
+    public var isGeofenceActive: Bool {
         return self == .cylinder
     }
 
-    var key: String {
+    public var key: String {
         return description
     }
 
-    var image: UIImage? {
+    public var image: UIImage? {
         switch self {
         case .altitude:
             return Asset.Settings.Quick.geofenceInactive.image

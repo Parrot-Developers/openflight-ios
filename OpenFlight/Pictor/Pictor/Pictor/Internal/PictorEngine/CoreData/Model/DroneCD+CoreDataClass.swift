@@ -48,7 +48,6 @@ private extension DroneCD {
     func updateBaseModel(_ model: PictorBaseDroneModel) {
         uuid = model.uuid
 
-        cloudId = Int64(model.cloudId)
         serialNumber = model.serialNumber
         commonName = model.commonName
         modelId = model.modelId
@@ -62,6 +61,7 @@ private extension DroneCD {
         localModificationDate = model.localModificationDate
 
         // - Synchro properties
+        cloudId = model.cloudId
         synchroStatus = model.synchroStatus.rawValue
         synchroError = model.synchroError.rawValue
         synchroLatestUpdatedDate = model.synchroLatestUpdatedDate

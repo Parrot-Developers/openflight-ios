@@ -31,7 +31,7 @@ import Foundation
 
 // MARK: - Protocol
 public protocol PictorBaseFlightModel: PictorBaseModel {
-    var cloudId: Int64 { get set }
+    var cloudId: Int64 { get }
     var formatVersion: String { get set }
     var title: String { get set }
     var parseError: Bool { get set }

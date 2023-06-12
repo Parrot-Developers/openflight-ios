@@ -45,6 +45,7 @@ struct PictorEngineUserModel: PictorEngineBaseUserModel {
     var localModificationDate: Date?
 
     // MARK: - Engine synchro base model
+    var cloudId: Int64
     var synchroStatus: PictorEngineSynchroStatus
     var synchroError: PictorEngineSynchroError
     var synchroLatestStatusDate: Date?
@@ -54,6 +55,7 @@ struct PictorEngineUserModel: PictorEngineBaseUserModel {
     init(userModel: PictorUserModel,
          localCreationDate: Date? = nil,
          localModificationDate: Date? = nil,
+         cloudId: Int64 = 0,
          synchroStatus: PictorEngineSynchroStatus = .notSync,
          synchroError: PictorEngineSynchroError = .noError,
          synchroLatestStatusDate: Date? = nil,
@@ -63,6 +65,7 @@ struct PictorEngineUserModel: PictorEngineBaseUserModel {
         self.userModel = userModel
         self.localCreationDate = localCreationDate
         self.localModificationDate = localModificationDate
+        self.cloudId = cloudId
         self.synchroStatus = synchroStatus
         self.synchroError = synchroError
         self.synchroLatestStatusDate = synchroLatestStatusDate

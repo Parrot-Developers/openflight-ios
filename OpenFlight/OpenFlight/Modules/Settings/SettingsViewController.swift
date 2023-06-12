@@ -156,27 +156,33 @@ private extension SettingsViewController {
     /// Reload container view.
     func reloadContainerView() {
         let controller: UIViewController
-        switch selectedSection {
-        case .interface:
-            controller = StoryboardScene.SettingsInterfaceViewController.initialScene.instantiate()
-        case .quick:
-            controller = StoryboardScene.SettingsQuickViewController.initialScene.instantiate()
-        case .behaviour:
-            controller = StoryboardScene.BehavioursViewController.initialScene.instantiate()
-        case .camera:
-            controller = StoryboardScene.SettingsCameraViewController.initialScene.instantiate()
-        case .rth:
-            controller = StoryboardScene.SettingsRTHViewController.initialScene.instantiate()
-        case .controls:
-            controller = StoryboardScene.SettingsControlsViewController.initialScene.instantiate()
-        case .geofence:
-            controller = StoryboardScene.SettingsGeofenceViewController.initialScene.instantiate()
-        case .network:
-            controller = StoryboardScene.SettingsNetworkViewController.initialScene.instantiate()
-        case .developer:
-            controller = StoryboardScene.SettingsDeveloperViewController.initialScene.instantiate()
-        case .provider(_, let sectionController):
-            controller = sectionController
+
+        /// Checks if a section's UIViewController needs to be replaced with a provided one.
+        if let provider = settingsProvider?.advancedViewControllers.first(where: { $0.sectionToChange == selectedSection }) {
+            controller = provider.controller
+        } else {
+            switch selectedSection {
+            case .interface:
+                controller = StoryboardScene.SettingsInterfaceViewController.initialScene.instantiate()
+            case .quick:
+                controller = StoryboardScene.SettingsQuickViewController.initialScene.instantiate()
+            case .behaviour:
+                controller = StoryboardScene.BehavioursViewController.initialScene.instantiate()
+            case .camera:
+                controller = StoryboardScene.SettingsCameraViewController.initialScene.instantiate()
+            case .rth:
+                controller = StoryboardScene.SettingsRTHViewController.initialScene.instantiate()
+            case .controls:
+                controller = StoryboardScene.SettingsControlsViewController.initialScene.instantiate()
+            case .geofence:
+                controller = StoryboardScene.SettingsGeoFenceViewController.initialScene.instantiate()
+            case .network:
+                controller = StoryboardScene.SettingsNetworkViewController.initialScene.instantiate()
+            case .developer:
+                controller = StoryboardScene.SettingsDeveloperViewController.initialScene.instantiate()
+            case .provider(_, let sectionController):
+                controller = sectionController
+            }
         }
 
         if let controller = controller as? SettingsContentViewController {

@@ -34,6 +34,8 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
     // MARK: - BarItemMode
     var value: String {
         switch self {
+        case .fps9:
+            return "9"
         case .fps24:
             return "24"
         case .fps25:
@@ -99,6 +101,6 @@ extension Camera2RecordingFramerate: BarItemMode, Sortable {
 
     // MARK: - Sortable
     public static var sortedCases: [Camera2RecordingFramerate] {
-        return [.fps24, .fps25, .fps30, .fps48, .fps50, .fps60]
+        return [.fps9, .fps24, .fps25, .fps30, .fps48, .fps50, .fps60]
     }
 }

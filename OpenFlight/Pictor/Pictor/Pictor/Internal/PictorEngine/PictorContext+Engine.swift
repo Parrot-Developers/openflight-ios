@@ -32,6 +32,11 @@ import CoreData
 
 // MARK: - Protocol
 protocol PictorBaseEngineContext {
+    /// Update locally only engine properties of list of models in current context
+    /// - Parameters:
+    ///     - models: array of models to update
+    func updateLocalEngine<T: PictorBaseModel>(_ models: [T])
+
     /// Performs asynchronous specified task closure in context's thread
     /// - Parameters:
     ///     - task: closure called in context's thread
@@ -45,6 +50,13 @@ protocol PictorBaseEngineContext {
 
 // MARK: - Pictor Context Extension
 extension PictorContext: PictorBaseEngineContext {
+    func updateLocalEngine<T: PictorBaseModel>(_ models: [T]) {
+        updateEngineProjects(models, local: true)
+        updateEngineFlights(models, local: true)
+        updateEngineFlightPlans(models, local: true)
+        updateEngineGutmaLinks(models, local: true)
+    }
+
     func perform(_ task: @escaping ((_ context: NSManagedObjectContext) -> Void)) {
         currentChildContext.perform { [weak self] in
             guard let self = self else { return }

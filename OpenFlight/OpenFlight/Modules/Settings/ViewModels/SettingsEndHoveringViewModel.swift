@@ -158,29 +158,11 @@ private extension SettingsEndHoveringViewModel {
         }
     }
 
-    func endHoveringAltitudeModel() -> HoveringAltitudeModel {
+    func endHoveringAltitudeModel() -> SliderSetting {
         let userSettings = rthSettingsMonitor.getUserRthSettings()
         let endingHoveringAltitude = returnHome?.endingHoveringAltitude
-        return HoveringAltitudeModel(min: endingHoveringAltitude?.min ?? RthPreset.minAltitude,
+        return SliderSetting(min: endingHoveringAltitude?.min ?? RthPreset.minAltitude,
                                      max: endingHoveringAltitude?.max ?? RthPreset.maxAltitude,
                                      value: userSettings.rthHoveringHeight)
-    }
-}
-
-/// Dedicated model for hovering altitude settings.
-class HoveringAltitudeModel: DoubleSetting {
-    var updating: Bool
-    /// Setting minimum value.
-    var min: Double
-    /// Setting maximum value.
-    var max: Double
-    /// Setting current value.
-    var value: Double
-
-    init(min: Double, max: Double, value: Double, updating: Bool = false) {
-        self.min = min
-        self.max = max
-        self.value = value
-        self.updating = updating
     }
 }

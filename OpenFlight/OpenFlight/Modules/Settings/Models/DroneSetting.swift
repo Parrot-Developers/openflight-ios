@@ -31,7 +31,7 @@ import Foundation
 import GroundSdk
 
 /// Protocol to normalize settings mode.
-protocol SettingMode {
+public protocol SettingMode {
     // MARK: - Internal Properties
     /// Setting name.
     var localized: String { get }
@@ -43,7 +43,7 @@ protocol SettingMode {
     var usedAsBool: Bool { get }
 }
 
-extension SettingMode {
+public extension SettingMode {
     /// Default usedAsBool is false.
     var usedAsBool: Bool {
         return false
@@ -56,11 +56,11 @@ extension SettingMode {
 
 /// SettingMode helper for Bool type.
 extension Bool: SettingMode {
-    var usedAsBool: Bool {
+    public var usedAsBool: Bool {
         return true
     }
 
-    var localized: String {
+    public var localized: String {
         switch self {
         case true:
             return L10n.commonYes
@@ -69,7 +69,7 @@ extension Bool: SettingMode {
         }
     }
 
-    var key: String {
+    public var key: String {
         switch self {
         case true:
             return "true"

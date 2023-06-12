@@ -357,7 +357,7 @@ extension UserStorage {
 
     /// The space used (in Go).
     var storageUsed: Double? {
-        guard let mediaInfo = mediaInfo, availableSpace > 0 else { return nil }
+        guard let mediaInfo = mediaInfo, availableSpace >= 0 else { return nil }
         return max(0, Double((mediaInfo.capacity) - availableSpace)) / Double(StorageUtils.Constants.bytesPerGigabyte)
     }
 

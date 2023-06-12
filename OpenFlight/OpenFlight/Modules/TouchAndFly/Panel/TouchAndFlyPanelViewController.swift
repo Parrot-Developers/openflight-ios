@@ -154,6 +154,11 @@ class TouchAndFlyPanelViewController: UIViewController, UITableViewDelegate {
         }
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        loadingProgressBar.stopAnimating()
+    }
+
     // There is a bug in the StreamView. If the size (width or height) is zero, the stream is broken
     // A workaround is to stop and restart the stream
     public override func viewDidLayoutSubviews() {

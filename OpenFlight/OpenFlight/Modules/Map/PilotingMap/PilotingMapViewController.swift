@@ -77,7 +77,8 @@ open class PilotingMapViewController: MapWithOverlaysViewController {
         var viewPoint: AGSViewpoint?
 
         if droneLocationOverlay?.isDroneConnected == true,
-            let droneCoordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
+           droneLocationOverlay?.droneGpsFixed == true,
+           let droneCoordinate = droneLocationOverlay?.droneLocation?.coordinates?.coordinate {
             viewPoint = AGSViewpoint(center: AGSPoint(clLocationCoordinate2D: droneCoordinate), scale: CommonMapConstants.cameraDistanceToCenterLocation)
         } else {
             if let userCoordinate = userLocationOverlay?.userLocation?.coordinates?.coordinate {

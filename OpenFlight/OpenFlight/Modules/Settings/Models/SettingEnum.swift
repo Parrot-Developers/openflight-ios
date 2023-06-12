@@ -31,7 +31,7 @@ import SwiftyUserDefaults
 
 /// Protocol to normalize settings content.
 
-protocol SettingEnum {
+public protocol SettingEnum {
     /// List all setting values.
     static var allValues: [SettingEnum] { get }
     /// Default setting key.
@@ -47,7 +47,7 @@ protocol SettingEnum {
 }
 
 // MARK: - Default implementation
-extension SettingEnum {
+public extension SettingEnum {
     /// Default image is 0.
     static var defaultIndex: Int {
         return 0
