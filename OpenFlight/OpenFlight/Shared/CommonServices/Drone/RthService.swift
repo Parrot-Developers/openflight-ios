@@ -235,7 +235,7 @@ private extension RthServiceImpl {
                     self.homeDestinationSubject.value = ReturnHomeDestination(
                         location: Location3D(coordinate: homeLocation.coordinate, altitude: homeLocation.altitude),
                         target: currentTarget)
-                } else if let userLocation3D = userLocation.coordinates, userLocation.isValid {
+                } else if currentTarget == .controllerPosition, let userLocation3D = userLocation.coordinates, userLocation.isValid {
                     self.homeDestinationSubject.value = ReturnHomeDestination(
                         location: Location3D(coordinate: userLocation3D.coordinate, altitude: userLocation3D.altitude),
                         target: currentTarget)

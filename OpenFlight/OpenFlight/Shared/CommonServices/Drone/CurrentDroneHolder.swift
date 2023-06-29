@@ -90,7 +90,11 @@ class CurrentDroneHolderImpl: CurrentDroneHolder {
             .compactMap({ $0 })
             .filter { [unowned self] drone in
                 // Avoid triggering anything when the drone instance is the same
-                drone.uid != self.drone.uid
+                if drone.uid != self.drone.uid || (drone.uid == self.drone.uid && drone.isConnected != self.drone.isConnected) {
+                    return true
+                } else {
+                    return false
+                }
             }
             .sink { [unowned self] drone in
                 // Store the drone uid for availability in future sessions

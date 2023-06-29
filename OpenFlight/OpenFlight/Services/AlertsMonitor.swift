@@ -270,7 +270,7 @@ private extension AlertsMonitor {
     /// - Parameter drone: drone to monitor
     func listenMotors(drone: Drone) {
         motorsRef = drone.getPeripheral(Peripherals.copterMotors) { [weak self] copterMotors in
-            self?.copterMotorsBannerAlerts = copterMotors?.bannerAlerts ?? [CriticalBannerAlert.motorCutout]
+            self?.copterMotorsBannerAlerts = copterMotors?.bannerAlerts ?? []
         }
     }
 

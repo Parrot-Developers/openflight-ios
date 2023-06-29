@@ -2029,7 +2029,7 @@ internal enum L10n {
   internal static let settingsAdvancedCategoryConnection = L10n.tr("Localizable", "settings_advanced_category_connection")
   /// Developer
   internal static let settingsAdvancedCategoryDeveloper = L10n.tr("Localizable", "settings_advanced_category_developer")
-  /// Geocage
+  /// Flight area
   internal static let settingsAdvancedCategoryGeofence = L10n.tr("Localizable", "settings_advanced_category_geofence")
   /// Interface
   internal static let settingsAdvancedCategoryInterface = L10n.tr("Localizable", "settings_advanced_category_interface")
@@ -2306,6 +2306,8 @@ internal enum L10n {
   internal static let settingsQuickAudioRec = L10n.tr("Localizable", "settings_quick_audio_rec")
   /// Obstacle avoidance
   internal static let settingsQuickAvoidance = L10n.tr("Localizable", "settings_quick_avoidance")
+  /// Geocage
+  internal static let settingsQuickCategoryGeofence = L10n.tr("Localizable", "settings_quick_category_geofence")
   /// Extra zoom
   internal static let settingsQuickExtraZoom = L10n.tr("Localizable", "settings_quick_extra_zoom")
   /// Hand land

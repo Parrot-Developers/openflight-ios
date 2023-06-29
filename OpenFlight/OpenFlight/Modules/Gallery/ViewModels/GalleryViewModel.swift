@@ -487,6 +487,7 @@ extension GalleryViewModel {
         start(action: .delete)
 
         try await mediaListService.delete(medias: medias)
+        deselectAll()
         stop(action: .delete)
     }
 

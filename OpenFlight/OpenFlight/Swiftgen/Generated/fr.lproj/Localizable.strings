@@ -602,8 +602,9 @@
 "settings_controls_mapping_elevation" = "Élévation";
 "settings_controls_mapping_camera_rotation" = "Tilt caméra\nRotation";
 "settings_controls_mapping_camera_lateral" = "Tilt caméra\nLateral";
+"settings_quick_category_geofence" = "Géo-cage";
 "settings_advanced_category_interface" = "Interface";
-"settings_advanced_category_geofence" = "Géo-cage";
+"settings_advanced_category_geofence" = "Espace de vol";
 "settings_advanced_title_geofence_activate" = "Activer la fonction géo-cage";
 "settings_advanced_title_geofence_max_dist" = "Distance maximum";
 "settings_advanced_title_geofence_max_alt" = "Altitude maximum";

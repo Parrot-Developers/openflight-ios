@@ -48,6 +48,9 @@ final class SettingsGeoFenceCell: MainTableViewCell, NibReusable {
     private enum Constants {
         static let altitudeIndex: Int = 1
         static let distanceIndex: Int = 2
+        static let distanceMinRange: Float = 10
+        static let distanceMaxRange: Float = 1000
+        static let distanceHighlightedRangePercent: Float = 0.6
     }
 
     // MARK: - Override Funcs
@@ -62,7 +65,14 @@ final class SettingsGeoFenceCell: MainTableViewCell, NibReusable {
         guard let viewModel = viewModel as? SettingsGeofenceViewModel else { return }
         self.viewModel = viewModel
 
-        viewModel.notifyChangePublisher
+        viewModel.isGeofenceActivatedPublisher
+            .removeDuplicates()
+            .combineLatest(viewModel.minDistancePublisher.removeDuplicates(),
+                           viewModel.distancePublisher.removeDuplicates(),
+                           viewModel.maxDistancePublisher.removeDuplicates())
+            .combineLatest(viewModel.minAltitudePublisher.removeDuplicates(),
+                           viewModel.altitudePublisher.removeDuplicates(),
+                           viewModel.isUpdatingPublisher.removeDuplicates())
             .sink { [weak self] _ in
                 guard let self = self else { return }
                 self.updateView()
@@ -114,9 +124,14 @@ private extension SettingsGeoFenceCell {
     /// Configures the distance slider cell.
     func configureDistanceSliderCell() {
         let settingSegmentedEntry = viewModel.geoFenceDistanceEntry
+        let min = Float((settingSegmentedEntry.setting as? SliderSetting)?.min) ?? Constants.distanceMinRange
+        let max = settingSegmentedEntry.settingStepperSlider?.limitIntervalChange ?? Constants.distanceMaxRange
         distanceSliderCell.configureCell(settingEntry: settingSegmentedEntry,
                                          atIndexPath: IndexPath(row: Constants.distanceIndex, section: 0),
-                                         shouldShowBackground: false)
+                                         shouldShowBackground: false,
+                                         highlightedRange: SliderHighlightedRange(min: min,
+                                                                            max: max,
+                                                                            percent: Constants.distanceHighlightedRangePercent))
         distanceSliderCell.enabledMargins = []
     }
 
@@ -137,12 +152,12 @@ extension SettingsGeoFenceCell: SettingsSliderCellDelegate {
 
         switch indexPath.row {
         case Constants.altitudeIndex:
-            if let setting = viewModel.geoFenceAltitudeEntry.setting as? DoubleSetting {
+            if let setting = viewModel.geoFenceAltitudeEntry.setting as? SliderSetting {
                 setting.value = convertedValue
                 viewModel.saveGeofenceAltitude(convertedValue)
             }
         case Constants.distanceIndex:
-            if let setting = viewModel.geoFenceDistanceEntry.setting as? DoubleSetting {
+            if let setting = viewModel.geoFenceDistanceEntry.setting as? SliderSetting {
                 setting.value = convertedValue
                 viewModel.saveGeofenceDistance(convertedValue)
             }

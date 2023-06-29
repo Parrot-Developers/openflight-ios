@@ -323,6 +323,7 @@ private extension ProjectManagerViewController {
         } else {
             // Cancel the view tap gesture subscriber.
             tapAroundKeyboardSubscriber?.cancel()
+            handleProjectNameModification()
         }
     }
 }

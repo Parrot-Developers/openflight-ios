@@ -31,33 +31,64 @@ import SwiftyUserDefaults
 import GroundSdk
 import Combine
 
+private extension ULogTag {
+    static let tag = ULogTag(name: "SettingsGeofenceViewModel")
+}
+
 /// Geofence setting view model.
 open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
-    // MARK: - Published Properties
-    @Published private(set) var isGeofenceActivated: Bool = GeofencePreset.geofenceMode.isGeofenceActive
-    @Published private(set) var altitude: Double = Defaults.maxAltitudeSetting ?? GeofencePreset.defaultAltitude
-    @Published private(set) var distance: Double = GeofencePreset.defaultDistance
-    @Published private(set) var minDistance: Double = GeofencePreset.defaultDistance
-    @Published private(set) var maxDistance: Double = GeofencePreset.maxDistance
-    @Published private(set) var minAltitude: Double = GeofencePreset.minAltitude
-    /// Max altitude is not provided by the drone, it's a preset.
-    @Published private(set) var maxAltitude: Double = GeofencePreset.maxAltitude
 
-    // MARK: - Public Properties
+    // MARK: - Observable properties
+    private var isGeofenceActivatedSubject = CurrentValueSubject<Bool, Never>(GeofencePreset.geofenceMode.isGeofenceActive)
+    public var isGeofenceActivatedPublisher: AnyPublisher<Bool, Never> {
+        isGeofenceActivatedSubject.eraseToAnyPublisher()
+    }
+
+    private var minAltitudeSubject = CurrentValueSubject<Double, Never>(GeofencePreset.minAltitude)
+    public var minAltitudePublisher: AnyPublisher<Double, Never> {
+        minAltitudeSubject.eraseToAnyPublisher()
+    }
+
+    private var altitudeSubject = CurrentValueSubject<Double, Never>(Defaults.maxAltitudeSetting ?? GeofencePreset.defaultAltitude)
+    public var altitudePublisher: AnyPublisher<Double, Never> {
+        altitudeSubject.eraseToAnyPublisher()
+    }
+
+    private var minDistanceSubject = CurrentValueSubject<Double, Never>(GeofencePreset.defaultDistance)
+    public var minDistancePublisher: AnyPublisher<Double, Never> {
+        minDistanceSubject.eraseToAnyPublisher()
+    }
+
+    private var distanceSubject = CurrentValueSubject<Double, Never>(GeofencePreset.defaultDistance)
+    public var distancePublisher: AnyPublisher<Double, Never> {
+        distanceSubject.eraseToAnyPublisher()
+    }
+
+    private var maxDistanceSubject = CurrentValueSubject<Double, Never>(GeofencePreset.maxDistance)
+    public var maxDistancePublisher: AnyPublisher<Double, Never> {
+        maxDistanceSubject.eraseToAnyPublisher()
+    }
+
+    private var isUpdatingSubject = CurrentValueSubject<Bool, Never>(false)
+    public var isUpdatingPublisher: AnyPublisher<Bool, Never> {
+        isUpdatingSubject.eraseToAnyPublisher()
+    }
+
+    // MARK: - Open Properties
     /// Returns the setting entry for geoFence mode.
-    var geoFenceModeEntry: SettingEntry {
+    open var geoFenceModeEntry: SettingEntry {
         return SettingEntry(setting: SettingsGeofenceViewModel.geofenceModeModel(geofence: geofence),
                             title: L10n.settingsAdvancedTitleGeofenceActivate,
                             itemLogKey: LogEvent.LogKeyAdvancedSettings.geofence)
     }
 
     /// Returns the setting entry for alitude slider.
-    var geoFenceAltitudeEntry: SettingEntry {
-        let sliderSetting = SliderSetting(min: minAltitude, max: maxAltitude, value: altitude)
+    open var geoFenceAltitudeEntry: SettingEntry {
+        let sliderSetting = SliderSetting(min: minAltitudeSubject.value, max: maxAltitude, value: altitudeSubject.value)
         return SettingEntry(setting: sliderSetting,
                             title: L10n.settingsAdvancedTitleGeofenceMaxAlt,
                             unit: UnitType.distance,
-                            defaultValue: Float(altitude),
+                            defaultValue: Float(altitudeSubject.value),
                             isEnabled: geofence?.mode.value.isGeofenceActive ?? GeofencePreset.geofenceMode.isGeofenceActive,
                             itemLogKey: LogEvent.LogKeyAdvancedSettings.geofenceAltitude.description,
                             settingStepperSlider: SettingStepperSlider(limitIntervalChange: Float(sliderSetting.min),
@@ -66,17 +97,17 @@ open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
     }
 
     /// Returns the setting entry for distance slider.
-    var geoFenceDistanceEntry: SettingEntry {
-        let sliderSetting = SliderSetting(min: minDistance, max: maxDistance, value: distance)
+    open var geoFenceDistanceEntry: SettingEntry {
+        let sliderSetting = SliderSetting(min: minDistanceSubject.value, max: maxDistanceSubject.value, value: distanceSubject.value)
         return SettingEntry(setting: sliderSetting,
                             title: L10n.settingsAdvancedTitleGeofenceMaxDist,
                             unit: UnitType.distance,
-                            defaultValue: Float(distance),
+                            defaultValue: Float(distanceSubject.value),
                             isEnabled: geofence?.mode.value.isGeofenceActive ?? GeofencePreset.geofenceMode.isGeofenceActive,
                             itemLogKey: LogEvent.LogKeyAdvancedSettings.geofenceDistance.description,
-                            settingStepperSlider: SettingStepperSlider(limitIntervalChange: Float(sliderSetting.min),
-                                                                       leftIntervalStep: 1,
-                                                                       rightIntervalStep: 1))
+                            settingStepperSlider: SettingStepperSlider(limitIntervalChange: 1000.0,
+                                                                       leftIntervalStep: 10,
+                                                                       rightIntervalStep: 100))
     }
 
     open var settingEntries: [SettingEntry] {
@@ -86,7 +117,8 @@ open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
     open var isUpdating: Bool? = false
 
     // MARK: - Private Properties
-    private(set) var notifyChangePublisher = CurrentValueSubject<Void, Never>(())
+    /// Max altitude stays as a preset.
+    private var maxAltitude: Double = GeofencePreset.maxAltitude
     private var currentDroneHolder: CurrentDroneHolder
     private var cancellables = Set<AnyCancellable>()
     private var geofence: Geofence?
@@ -98,7 +130,7 @@ open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
     public init(currentDroneHolder: CurrentDroneHolder) {
         self.currentDroneHolder = currentDroneHolder
 
-        $altitude
+        altitudePublisher
             .sink { altitude in
                 Defaults.maxAltitudeSetting = altitude
             }
@@ -108,7 +140,6 @@ open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
             .sink { [weak self] drone in
                 guard let self = self else { return }
                 self.listenGeofence(drone)
-                self.listenDistanceGeofence(drone)
             }
             .store(in: &cancellables)
     }
@@ -151,21 +182,21 @@ open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
                                  supportedValues: GeofenceMode.allValues,
                                  currentValue: currentGeofenceMode.value,
                                  isUpdating: currentGeofenceMode.updating) { [weak geofence] mode in
-                                    // Altitude value is set to max when there is no geofence (mode == .altitude).
-                                    if let mode = mode as? GeofenceMode {
-                                        switch mode {
-                                        case .altitude:
-                                            // Set mode, then altitude value.
-                                            geofence?.mode.value = .altitude
-                                            Defaults.maxAltitudeSetting = geofence?.maxAltitude.value
-                                            // Set drone's maxAltitude.max to max altitude
-                                            geofence?.maxAltitude.value = geofence?.maxAltitude.max ?? GeofencePreset.maxAltitude
-                                        case .cylinder:
-                                            // Set altitude value, then mode.
-                                            geofence?.maxAltitude.value = Defaults.maxAltitudeSetting ?? GeofencePreset.maxAltitude
-                                            geofence?.mode.value = .cylinder
-                                        }
-                                    }
+            // Altitude value is set to max when there is no geofence (mode == .altitude).
+            if let mode = mode as? GeofenceMode {
+                switch mode {
+                case .altitude:
+                    // Set mode, then altitude value.
+                    geofence?.mode.value = .altitude
+                    Defaults.maxAltitudeSetting = geofence?.maxAltitude.value
+                    // Set drone's maxAltitude.max to max altitude
+                    geofence?.maxAltitude.value = geofence?.maxAltitude.max ?? GeofencePreset.maxAltitude
+                case .cylinder:
+                    // Set altitude value, then mode.
+                    geofence?.maxAltitude.value = Defaults.maxAltitudeSetting ?? GeofencePreset.maxAltitude
+                    geofence?.mode.value = .cylinder
+                }
+            }
         }
     }
 }
@@ -174,35 +205,34 @@ open class SettingsGeofenceViewModel: SettingsViewModelProtocol {
 private extension SettingsGeofenceViewModel {
     /// Listen geofence.
     func listenGeofence(_ drone: Drone) {
-        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [unowned self] geofence in
-            if let altitude = geofence?.maxAltitude.value,
-               let minAltitude = geofence?.maxAltitude.min,
-               let minDistance = geofence?.maxDistance.min,
-               let maxDistance = geofence?.maxDistance.max {
-                isGeofenceActivated = geofence?.mode.value.isGeofenceActive ?? GeofencePreset.geofenceMode.isGeofenceActive
-                if isGeofenceActivated {
+        geofenceRef = drone.getPeripheral(Peripherals.geofence) { [weak self] newGeofence in
+            guard let self = self else { return }
+
+            if let altitude = newGeofence?.maxAltitude.value,
+               let minAltitude = newGeofence?.maxAltitude.min,
+               let minDistance = newGeofence?.maxDistance.min,
+               let maxDistance = newGeofence?.maxDistance.max {
+                self.isGeofenceActivatedSubject.value = newGeofence?.mode.value.isGeofenceActive ?? GeofencePreset.geofenceMode.isGeofenceActive
+                if self.isGeofenceActivatedSubject.value == true {
                     // Update only altitude. Distance must not be updated here.
-                    self.altitude = altitude
+                    self.altitudeSubject.value = altitude
                 }
                 // Update min/max (change only first time).
-                self.maxDistance = maxDistance
-                self.minAltitude = minAltitude
-                self.minDistance = minDistance
-                isUpdating = geofence?.mode.updating ?? false
+                self.maxDistanceSubject.value = maxDistance
+                self.minAltitudeSubject.value = minAltitude
+                self.minDistanceSubject.value = minDistance
+                self.isUpdating = newGeofence?.mode.updating ?? false
             }
-            self.geofence = geofence
-            notifyChangePublisher.send()
-        }
-    }
-
-    /// Listen geofence, dedicated to distance.
-    func listenDistanceGeofence(_ drone: Drone) {
-        geofenceDistanceRef = drone.getPeripheral(Peripherals.geofence) { [unowned self] geofence in
-            if let distance = geofence?.maxDistance.value {
+            if let distance = newGeofence?.maxDistance.value {
                 // Update only distance. Altitude must not be updated here.
-                self.distance = distance
-                notifyChangePublisher.send()
+                self.distanceSubject.value = distance
             }
+            self.isUpdatingSubject.value = self.isUpdating ?? false
+            self.geofence = newGeofence
+
+            ULog.i(.tag, "Did receive new geoFence attributes: isGeoFenceActive = \(self.isGeofenceActivatedSubject.value) | " +
+                   "currentAlt = \(self.altitudeSubject.value) | currentDist = \(self.distanceSubject.value) | " +
+                   "centerAltitude = \(self.geofence?.center?.altitude) | centerCoordinate \(self.geofence?.center?.coordinate)")
         }
     }
 }

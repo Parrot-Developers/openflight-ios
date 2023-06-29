@@ -601,8 +601,9 @@ Controls - Mapping: Elevation and Lateral;settings_controls_mapping_elevation_la
 Controls - Mapping: Elevation;settings_controls_mapping_elevation;Elevation;Élévation;Höhe;Elevación;上昇
 Controls - Mapping: camera rotation;settings_controls_mapping_camera_rotation;Camera tilt\nRotation;Tilt caméra\nRotation;Kameraneigung\nRotation;Inclinación de la cámara\nRotation;カメラ・チルト\nRotation
 Controls - Mapping: camera lateral;settings_controls_mapping_camera_lateral;Camera tilt\nLateral;Tilt caméra\nLateral;Kameraneigung\nLateral;Inclinación de la cámara\nLateral;カメラ・チルト\nLateral
+Quick - Category: Geofence;settings_quick_category_geofence;Geocage;Géo-cage;Geocage;Barrera geográfica;Geocage
 Advanced - Category: Interface;settings_advanced_category_interface;Interface;Interface;Interface;Interfaz;インターフェース
-Advanced - Category: Geofence;settings_advanced_category_geofence;Geocage;Géo-cage;Geocage;Barrera geográfica;Geocage
+Advanced - Category: Geofence;settings_advanced_category_geofence;Flight area;Espace de vol;Flight area;Flight area;Flight area
 Advanced – Title: Geofence activate;settings_advanced_title_geofence_activate;Activate geocage;Activer la fonction géo-cage;Activate geocage;Activate geocage;Activate geocage
 Advanced – Title: Geofence max distance;settings_advanced_title_geofence_max_dist;Max distance;Distance maximum;Max distance;Max distance;Max distance
 Advanced – Title: Geofence max altitude;settings_advanced_title_geofence_max_alt;Max altitude;Altitude maximum;Max altitude;Max altitude;Max altitude

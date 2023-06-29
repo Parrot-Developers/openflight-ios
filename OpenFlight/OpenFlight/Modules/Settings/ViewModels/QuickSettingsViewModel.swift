@@ -112,7 +112,7 @@ extension QuickSettingsViewModel {
                              imageDisabled: Asset.Settings.Quick.icStopAudio.image,
                              itemLogKey: LogEvent.LogKeyQuickSettings.audio),
                 SettingEntry(setting: SettingsGeofenceViewModel.geofenceModeModel(geofence: geofence),
-                             title: L10n.settingsAdvancedCategoryGeofence,
+                             title: L10n.settingsQuickCategoryGeofence,
                              itemLogKey: LogEvent.LogKeyQuickSettings.geofence),
                 SettingEntry(setting: newZoomModel,
                              title: L10n.settingsCameraLossyZoom,

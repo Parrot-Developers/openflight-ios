@@ -2,10 +2,10 @@ platform :ios, '14.0'
 
 target 'OpenFlightApp' do
   use_frameworks!
-  pod 'GroundSdk', '7.7.0-rc1'
-  pod 'ArsdkEngine', '7.7.0-rc1'
-  pod 'SdkCore', '7.7.0-rc1'
-  pod 'OpenFlightCore', '7.7.0-rc1'
+  pod 'GroundSdk', '7.7.0'
+  pod 'ArsdkEngine', '7.7.0'
+  pod 'SdkCore', '7.7.0'
+  pod 'OpenFlightCore', '7.7.0'
   pod 'SwiftGen', '6.5.1'
   pod 'SwiftLint', '0.50.3'
   pod 'Reusable', '4.1.2'
@@ -14,3 +14,13 @@ target 'OpenFlightApp' do
   pod 'lottie-ios', '4.0.1'
   pod 'ArcGIS-Runtime-SDK-iOS', '~> 100.15'
 end
+
+post_install do |installer|
+    installer.generated_projects.each do |project|
+          project.targets.each do |target|
+              target.build_configurations.each do |config|
+                  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+               end
+          end
+   end
+end                                                                                                                                                                       

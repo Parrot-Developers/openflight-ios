@@ -177,8 +177,7 @@ private extension SettingValuesChoiceTableViewCell {
                     }
                 }
                 button.cornerRadiusedWith(backgroundColor: backgroundColor,
-                                          radius: Style.largeCornerRadius,
-                                          borderWidth: Style.largeBorderWidth)
+                                          radius: Style.largeCornerRadius)
                 button.addShadow()
                 button.isSelected = isSelected
                 button.tintColor = button.isSelected ? .white : ColorName.defaultTextColor.color

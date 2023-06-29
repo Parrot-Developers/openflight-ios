@@ -259,10 +259,7 @@ extension OphtalmoServiceImpl: OphtalmoService {
 
                 do {
                     let event = try MissionEvent(serializedData: message.payload)
-                    guard event.state.calibrationStatus != .aborted else {
-                        self.resetCalibration()
-                        return
-                    }
+
                     self.calibrationAltitudeSubject.value = event.state.config.altitude
                     self.calibrationStepSubject.value = event.state.calibrationStep
                     self.calibrationStatusSubject.value = event.state.calibrationStatus

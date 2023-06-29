@@ -602,8 +602,9 @@
 "settings_controls_mapping_elevation" = "Höhe";
 "settings_controls_mapping_camera_rotation" = "Kameraneigung\nRotation";
 "settings_controls_mapping_camera_lateral" = "Kameraneigung\nLateral";
+"settings_quick_category_geofence" = "Geocage";
 "settings_advanced_category_interface" = "Interface";
-"settings_advanced_category_geofence" = "Geocage";
+"settings_advanced_category_geofence" = "Flight area";
 "settings_advanced_title_geofence_activate" = "Activate geocage";
 "settings_advanced_title_geofence_max_dist" = "Max distance";
 "settings_advanced_title_geofence_max_alt" = "Max altitude";

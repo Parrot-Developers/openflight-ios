@@ -602,8 +602,9 @@
 "settings_controls_mapping_elevation" = "上昇";
 "settings_controls_mapping_camera_rotation" = "カメラ・チルト\nRotation";
 "settings_controls_mapping_camera_lateral" = "カメラ・チルト\nLateral";
+"settings_quick_category_geofence" = "Geocage";
 "settings_advanced_category_interface" = "インターフェース";
-"settings_advanced_category_geofence" = "Geocage";
+"settings_advanced_category_geofence" = "Flight area";
 "settings_advanced_title_geofence_activate" = "Activate geocage";
 "settings_advanced_title_geofence_max_dist" = "Max distance";
 "settings_advanced_title_geofence_max_alt" = "Max altitude";

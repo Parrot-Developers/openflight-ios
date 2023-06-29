@@ -43,7 +43,7 @@ public struct TouchAndFlyActivationModel: MissionActivationModel {
 
     public func stopMissionIfNeeded() {
         _ = Services.hub.connectedDroneHolder.drone?.getPilotingItf(PilotingItfs.pointOfInterest)?.deactivate()
-        _ = Services.hub.connectedDroneHolder.drone?.getPilotingItf(PilotingItfs.guided)?.deactivate()
+        _ = Services.hub.connectedDroneHolder.drone?.getPilotingItf(PilotingItfs.pointAndFly)?.deactivate()
     }
 
     /// Whether the mission can be stop.
@@ -66,9 +66,9 @@ public struct TouchAndFlyActivationModel: MissionActivationModel {
 
     public func isActive() -> Bool {
         let poi = Services.hub.connectedDroneHolder.drone?.getPilotingItf(PilotingItfs.pointOfInterest)
-        let guided = Services.hub.connectedDroneHolder.drone?.getPilotingItf(PilotingItfs.guided)
-        guard let poi = poi, let guided = guided else { return false }
-        return poi.state == .active || guided.state == .active
+        let pointAndFly = Services.hub.connectedDroneHolder.drone?.getPilotingItf(PilotingItfs.pointAndFly)
+        guard let poi = poi, let pointAndFly = pointAndFly else { return false }
+        return poi.state == .active || pointAndFly.state == .active
     }
 
     public func getPriority() -> MissionPriority {
